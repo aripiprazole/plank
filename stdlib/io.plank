@@ -1,0 +1,3 @@
+native fun println(message: String): Void;
+
+native fun print(message: String): Void;

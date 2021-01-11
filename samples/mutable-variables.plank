@@ -1,0 +1,13 @@
+import io;
+
+type Person = {mutable name: String};
+
+fun main(argc: Int, argv: [String]): Void {
+  let person = Person{name: "some name"};
+
+  println(person.name);
+
+  person.name = "new name";
+
+  println(person.name);
+}
