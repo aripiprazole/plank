@@ -1,0 +1,122 @@
+parser grammar PlankParser;
+
+options {tokenVocab=PlankLexer;}
+
+// file
+program : imports? decl* EOF;
+
+imports : importDirective* ;
+
+importDirective : IMPORT module=IDENTIFIER SEMICOLON ;
+
+// types
+funType : LPAREN RPAREN ( typeDef ( COMMA typeDef)* )? ARROW_LEFT returnType=typeDef ;
+
+arrayType : LBRACKET type=typeDef RBRACKET ;
+
+nameType : name=IDENTIFIER ;
+
+typeDef : nameType | funType | arrayType ;
+
+parameter : name=IDENTIFIER COLON type=typeDef;
+
+// classes
+classField : MUTABLE? parameter;
+
+classDecl : TYPE name=IDENTIFIER EQUAL LBRACE (classField (COMMA classField)*)? RBRACE SEMICOLON;
+
+// decls
+decl : letDecl WS*
+     | classDecl WS*
+     | funDecl WS*
+     ;
+
+letDecl : LET MUTABLE? name=IDENTIFIER EQUAL value=expr SEMICOLON
+        | LET MUTABLE? name=IDENTIFIER (COLON type=typeDef) EQUAL value=expr SEMICOLON
+        ;
+
+funHeader : FUN name=IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN COLON returnType=typeDef ;
+
+funDecl : funHeader LBRACE stmt* RBRACE
+        | nativeFunDecl
+        ;
+
+nativeFunDecl : NATIVE funHeader SEMICOLON ;
+
+// stmts
+stmt : decl
+     | ifExpr WS*
+     | exprStmt WS*
+     | returnStmt WS*
+     ;
+
+exprStmt : value=expr SEMICOLON ;
+
+returnStmt : RETURN value=expr? SEMICOLON ;
+
+// exprs
+expr : assignExpr
+     | ifExpr
+     | instanceExpr
+     ;
+
+instanceArgument : IDENTIFIER COLON expr ;
+
+instanceExpr : name=IDENTIFIER LBRACE ( instanceArgument (COMMA instanceArgument) )* RBRACE
+             | name=IDENTIFIER LBRACE instanceArgument RBRACE
+             | name=IDENTIFIER LBRACE RBRACE
+             ;
+
+elseBranch : ELSE expr
+           | ELSE LBRACE stmt* RBRACE
+           | ELSE LBRACE stmt RBRACE
+           ;
+
+thenBranch : LBRACE stmt* RBRACE
+           | LBRACE stmt RBRACE
+           | expr
+           ;
+
+ifExpr : IF LPAREN cond=expr RPAREN thenBranch elseBranch?
+       | IF LPAREN cond=expr RPAREN thenBranch elseBranch?
+       | IF LPAREN cond=expr RPAREN thenBranch elseBranch?
+       ;
+
+assignExpr : (callExpr DOT) ? name=IDENTIFIER EQUAL value=assignExpr
+           | logicalExpr
+           ;
+
+logicalExpr : lhs=logicalExpr op=(EQUAL_EQUAL | BANG_EQUAL) rhs=logicalExpr
+            | lhs=logicalExpr op=(GREATER | GREATER_EQUAL | LESS | LESS_EQUAL) rhs=logicalExpr
+            | binaryExpr
+            ;
+
+binaryExpr : lhs=binaryExpr op=(STAR | SLASH) rhs=binaryExpr
+           | lhs=binaryExpr op=(PLUS | MINUS) rhs=binaryExpr
+           | unaryExpr
+           ;
+
+unaryExpr : op=(BANG | MINUS) rhs=unaryExpr
+          | callExpr
+          ;
+
+get : DOT IDENTIFIER;
+
+arguments :  LPAREN ( expr (COMMA expr)* )? RPAREN ;
+
+callExpr : access=primary ( arguments | get )* ;
+
+groupExpr : LPAREN (value=expr) RPAREN ;
+
+booleanExpr : TRUE
+            | FALSE
+            ;
+
+stringExpr : STRING ;
+
+primary : INT
+        | IDENTIFIER
+        | stringExpr
+        | booleanExpr
+        | groupExpr
+        ;
