@@ -3,6 +3,7 @@ package com.lorenzoog.jplank.compiler
 import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.analyzer.type.PkArray
 import com.lorenzoog.jplank.analyzer.type.PkCallable
+import com.lorenzoog.jplank.analyzer.type.PkPtr
 import com.lorenzoog.jplank.analyzer.type.PkStructure
 import com.lorenzoog.jplank.analyzer.type.PkType
 import io.vexelabs.bitbuilder.llvm.ir.Type
@@ -19,7 +20,12 @@ class TypeMapper {
       is PkArray -> mapPkArray(context, type)
       is PkStructure -> mapPkStructure(context, type)
       is PkCallable -> mapPkCallable(context, type)
+      is PkPtr -> mapPkPtr(context, type)
     }
+  }
+
+  private fun mapPkPtr(context: PlankContext, ptr: PkPtr): Type? {
+    return map(context, ptr.inner)?.getPointerType()
   }
 
   private fun mapPkArray(context: PlankContext, array: PkArray): Type? {

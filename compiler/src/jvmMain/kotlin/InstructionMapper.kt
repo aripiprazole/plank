@@ -15,9 +15,11 @@ import com.lorenzoog.jplank.compiler.instructions.expr.GroupInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.IfInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.InstanceInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.LogicalInstruction
+import com.lorenzoog.jplank.compiler.instructions.expr.ReferenceInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.SetInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.SizeofInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.UnaryInstruction
+import com.lorenzoog.jplank.compiler.instructions.expr.ValueInstruction
 import com.lorenzoog.jplank.compiler.instructions.stmt.ExprStmtInstruction
 import com.lorenzoog.jplank.compiler.instructions.stmt.ReturnInstruction
 import com.lorenzoog.jplank.element.Decl
@@ -101,5 +103,13 @@ class InstructionMapper(val typeMapper: TypeMapper) :
 
   override fun visitSizeofExpr(sizeof: Expr.Sizeof): PlankInstruction {
     return SizeofInstruction(sizeof)
+  }
+
+  override fun visitReferenceExpr(reference: Expr.Reference): PlankInstruction {
+    return ReferenceInstruction(reference)
+  }
+
+  override fun visitValueExpr(value: Expr.Value): PlankInstruction {
+    return ValueInstruction(value)
   }
 }

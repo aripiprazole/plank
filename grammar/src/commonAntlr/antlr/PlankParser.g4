@@ -16,7 +16,9 @@ arrayType : LBRACKET type=typeDef RBRACKET ;
 
 nameType : name=IDENTIFIER ;
 
-typeDef : nameType | funType | arrayType ;
+ptrType : STAR type=typeDef ;
+
+typeDef : nameType | funType | arrayType | ptrType ;
 
 parameter : name=IDENTIFIER COLON type=typeDef;
 
@@ -107,7 +109,7 @@ get : DOT IDENTIFIER;
 
 arguments :  LPAREN ( expr (COMMA expr)* )? RPAREN ;
 
-callExpr : access=primary ( arguments | get )* ;
+callExpr : access=ptr ( arguments | get )* ;
 
 groupExpr : LPAREN (value=expr) RPAREN ;
 
@@ -116,6 +118,11 @@ booleanExpr : TRUE
             ;
 
 stringExpr : STRING ;
+
+ptr : AMPERSTAND expr
+    | STAR expr
+    | primary
+    ;
 
 primary : INT
         | IDENTIFIER

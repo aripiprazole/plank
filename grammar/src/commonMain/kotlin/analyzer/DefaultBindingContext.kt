@@ -1,6 +1,7 @@
 package com.lorenzoog.jplank.analyzer
 
 import com.lorenzoog.jplank.analyzer.type.PkCallable
+import com.lorenzoog.jplank.analyzer.type.PkPtr
 import com.lorenzoog.jplank.analyzer.type.PkStructure
 import com.lorenzoog.jplank.analyzer.type.PkType
 import com.lorenzoog.jplank.element.Decl
@@ -251,6 +252,21 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
     Builtin.Int
   }
 
+  override fun visitReferenceExpr(reference: Expr.Reference): PkType = reference.bind {
+    PkType.createPtr(visit(reference.expr))
+  }
+
+  override fun visitValueExpr(value: Expr.Value): PkType = value.bind {
+    val ptr = visit(value.expr)
+    if (ptr !is PkPtr) {
+      _violations += TypeViolation("ptr", ptr, value.location)
+
+      return@bind Builtin.Any
+    }
+
+    ptr.inner
+  }
+
   override fun visitExprStmt(exprStmt: Stmt.ExprStmt): PkType = exprStmt.bind {
     visit(exprStmt.expr)
   }
@@ -329,6 +345,10 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
       Builtin.Void
     }
+  }
+
+  override fun visitPtrTypeDef(ptr: TypeDef.Ptr): PkType = ptr.bind {
+    PkType.createPtr(visit(ptr.type))
   }
 
   override fun visitArrayTypeDef(array: TypeDef.Array): PkType = array.bind {

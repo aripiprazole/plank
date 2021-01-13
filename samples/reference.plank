@@ -1,0 +1,9 @@
+import io;
+
+fun main(argc: Int, argv: [String]): Void {
+  let var = 4;
+  let ref = &var;
+
+  println(toStringPtr(&var));
+  println(toString(*ref))
+}
