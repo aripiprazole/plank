@@ -8,8 +8,8 @@ class EntryPoint : PlankInstruction() {
     val function = context.main
 
     val mainFunctionType = context.llvm.getFunctionType(
-      context.runtime.types.i32,
-      context.runtime.types.i32,
+      context.runtime.types.int,
+      context.runtime.types.int,
       context.runtime.types.string.getPointerType(),
       variadic = false
     )
@@ -26,7 +26,7 @@ class EntryPoint : PlankInstruction() {
       context.builder.createCall(function, listOf(argc, argv))
     }
 
-    context.builder.createRet(context.runtime.types.i32.getConstant(0))
+    context.builder.createRet(context.runtime.types.int.getConstant(0))
 
     return mainFunction
   }

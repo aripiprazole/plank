@@ -58,7 +58,10 @@ returnStmt : RETURN value=expr? SEMICOLON ;
 expr : assignExpr
      | ifExpr
      | instanceExpr
+     | sizeofExpr
      ;
+
+sizeofExpr : SIZEOF type=IDENTIFIER;
 
 instanceArgument : IDENTIFIER COLON expr ;
 

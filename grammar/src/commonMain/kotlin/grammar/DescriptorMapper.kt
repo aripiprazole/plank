@@ -164,8 +164,13 @@ class DescriptorMapper(
       ctx.findIfExpr()
         ?: ctx.findAssignExpr()
         ?: ctx.findInstanceExpr()
+        ?: ctx.findSizeofExpr()
         ?: error("Unsupported expr")
     ) as Expr
+  }
+
+  override fun visitSizeofExpr(ctx: PlankParser.SizeofExprContext): PkElement {
+    return Expr.Sizeof(ctx.type!!, ctx.SIZEOF()?.symbol.location)
   }
 
   override fun visitInstanceExpr(ctx: PlankParser.InstanceExprContext): PkElement {

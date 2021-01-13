@@ -9,7 +9,7 @@ class ConstInstruction(private val descriptor: Expr.Const) : PlankInstruction() 
   override fun codegen(context: PlankContext): Value? {
     return when (val value = descriptor.value) {
       is Double -> context.runtime.types.double.getConstant(value.toDouble())
-      is Int -> context.runtime.types.i32.getConstant(value.toInt())
+      is Int -> context.runtime.types.int.getConstant(value.toInt())
       is Byte -> context.runtime.types.i8.getConstant(value.toInt())
       is Short -> context.runtime.types.i16.getConstant(value.toInt())
       is Float -> context.runtime.types.float.getConstant(value.toDouble())

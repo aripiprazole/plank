@@ -31,7 +31,7 @@ class PlankRuntime(private val module: Module) {
     val i1 = context.getIntType(1)
     val i8 = context.getIntType(8)
     val i16 = context.getIntType(16)
-    val i32 = context.getIntType(32)
+    val int = context.getIntType(64)
     val double = context.getFloatType(TypeKind.Double)
     val float = context.getFloatType(TypeKind.Float)
     val string = i8.getPointerType()

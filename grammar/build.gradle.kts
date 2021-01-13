@@ -2,8 +2,6 @@
 
 import com.lorenzoog.jplank.build.Dependencies
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompile
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 group = "com.lorenzoog"
 version = "1.0-SNAPSHOT"
