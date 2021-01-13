@@ -50,9 +50,14 @@ class DescriptorMapper(
     val declContext = ctx.findArrayType()
       ?: ctx.findFunType()
       ?: ctx.findNameType()
+      ?: ctx.findPtrType()
       ?: error("Unsupported typedef")
 
     return visit(declContext) as TypeDef
+  }
+
+  override fun visitPtrType(ctx: PlankParser.PtrTypeContext): PkElement {
+    return TypeDef.Ptr(visitTypeDef(ctx.findTypeDef()!!), ctx.start.location)
   }
 
   override fun visitFunType(ctx: PlankParser.FunTypeContext): TypeDef {
@@ -311,6 +316,22 @@ class DescriptorMapper(
     val value = ctx.text.substring(1, ctx.text.length - 1)
 
     return Expr.Const(value, ctx.start.location)
+  }
+
+  override fun visitPtr(ctx: PlankParser.PtrContext): PkElement {
+    val reference = ctx.AMPERSTAND()
+    val value = ctx.STAR()
+    val expr = ctx.findExpr()
+
+    if (expr != null && reference != null) {
+      return Expr.Reference(visitExpr(expr), reference.symbol.location)
+    }
+
+    if (expr != null && value != null) {
+      return Expr.Value(visitExpr(expr), reference?.symbol.location)
+    }
+
+    return visitPrimary(ctx.findPrimary()!!)
   }
 
   override fun visitPrimary(ctx: PlankParser.PrimaryContext): Expr {

@@ -3,3 +3,5 @@ native fun println(message: String): Void;
 native fun print(message: String): Void;
 
 native fun toString(int: Int): String;
+
+native fun toStringPtr(int: *Int): String;

@@ -22,6 +22,8 @@ MINUS   : '-' ;
 SLASH   : '/' ;
 STAR   : '*' ;
 
+AMPERSTAND   : '&' ;
+
 BANG : '!' ;
 EQUAL : '=' ;
 GREATER : '>' ;

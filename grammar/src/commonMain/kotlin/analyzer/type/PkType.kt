@@ -16,6 +16,10 @@ sealed class PkType : TypeCompanion {
       return PkArray(inner)
     }
 
+    fun createPtr(inner: PkType): PkPtr {
+      return PkPtr(inner)
+    }
+
     fun createStructure(
       name: String,
       fields: List<PkStructure.Field> = emptyList(),
@@ -27,6 +31,12 @@ sealed class PkType : TypeCompanion {
     fun createCallable(parameters: List<PkType>, returnType: PkType): PkCallable {
       return PkCallable(parameters, returnType)
     }
+  }
+}
+
+data class PkPtr(val inner: PkType) : PkType() {
+  override fun toString(): String {
+    return "*$inner"
   }
 }
 

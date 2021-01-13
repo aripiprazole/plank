@@ -12,8 +12,12 @@ void io_print(char *message) {
   std::cout << message;
 }
 
-char* io_toString(int i) {
+char *io_toString(int i) {
   return strdup(std::move(std::to_string(i)).c_str());
+}
+
+char *io_toStringPtr(int *i) {
+  return strdup(std::move(std::to_string(reinterpret_cast<unsigned long>(i))).c_str());
 }
 }
 
