@@ -42,8 +42,8 @@ class GetInstruction(private val descriptor: Expr.Get) : PlankInstruction() {
 
       val index = struct.fields.indexOfFirst { it.name == member }
       val indices = listOf(
-        context.runtime.types.i32.getConstant(0),
-        context.runtime.types.i32.getConstant(index),
+        context.runtime.types.int.getConstant(0),
+        context.runtime.types.int.getConstant(index),
       )
 
       return context.builder.createGEP(receiver, type, indices, true, "geptmp")

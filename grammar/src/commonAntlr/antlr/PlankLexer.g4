@@ -48,6 +48,7 @@ TRUE : 'true' ;
 FALSE : 'false' ;
 IMPORT : 'import' ;
 NATIVE : 'native' ;
+SIZEOF : 'sizeof' ;
 
 // identifiers
 IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_]*  ;

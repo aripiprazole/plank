@@ -1,0 +1,7 @@
+import io;
+
+type Person = { name: String, age: Int };
+
+fun main(argc: Int, argv: [String]): Void {
+  println(toString(sizeof Person));
+}

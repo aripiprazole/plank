@@ -245,6 +245,12 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
     structure
   }
 
+  override fun visitSizeofExpr(sizeof: Expr.Sizeof): PkType = sizeof.bind {
+    findStructure(Expr.Access(sizeof.name, sizeof.location))
+
+    Builtin.Int
+  }
+
   override fun visitExprStmt(exprStmt: Stmt.ExprStmt): PkType = exprStmt.bind {
     visit(exprStmt.expr)
   }

@@ -12,7 +12,7 @@ class TypeMapper {
     return when (type) {
       null -> context.runtime.types.void
       Builtin.Void -> context.runtime.types.void
-      Builtin.Int -> context.runtime.types.i32
+      Builtin.Int -> context.runtime.types.int
       Builtin.Double -> context.runtime.types.double
       Builtin.Bool -> context.runtime.types.i1
       Builtin.String -> context.runtime.types.string

@@ -18,6 +18,7 @@ sealed class Expr : PkElement {
     fun visitGetExpr(get: Get): T
     fun visitGroupExpr(group: Group): T
     fun visitInstanceExpr(instance: Instance): T
+    fun visitSizeofExpr(sizeof: Sizeof): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -143,6 +144,12 @@ sealed class Expr : PkElement {
   ) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitInstanceExpr(this)
+    }
+  }
+
+  data class Sizeof(val name: Token, override val location: Location) : Expr() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitSizeofExpr(this)
     }
   }
 }
