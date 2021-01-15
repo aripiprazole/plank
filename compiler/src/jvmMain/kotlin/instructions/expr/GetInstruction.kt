@@ -1,7 +1,6 @@
 package com.lorenzoog.jplank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.analyzer.getType
-import com.lorenzoog.jplank.analyzer.type.PkStructure
+import com.lorenzoog.jplank.analyzer.type.PkType
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.element.Expr
@@ -17,7 +16,7 @@ class GetInstruction(private val descriptor: Expr.Get) : PlankInstruction() {
       descriptor.member
     ) ?: return context.report("variable is null", descriptor)
 
-    val memberType = context.map(descriptor.getType(context.binding))
+    val memberType = context.map(context.binding.visit(descriptor))
       ?: return context.report("member type is null", descriptor)
 
     return context.builder.createLoad(memberType, memberPtr, "loadtmp")
@@ -36,7 +35,7 @@ class GetInstruction(private val descriptor: Expr.Get) : PlankInstruction() {
         ?: return context.report("invalid receiver", descriptor)
 
       val struct = context.binding.visit(receiverDescriptor)
-        as? PkStructure? ?: return context.report("type is not a struct", descriptor)
+        as? PkType.Struct? ?: return context.report("type is not a struct", descriptor)
 
       val type = context.map(struct) ?: return context.report("type is null", descriptor)
 

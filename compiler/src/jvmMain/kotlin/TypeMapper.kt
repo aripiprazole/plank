@@ -1,10 +1,6 @@
 package com.lorenzoog.jplank.compiler
 
 import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.analyzer.type.PkArray
-import com.lorenzoog.jplank.analyzer.type.PkCallable
-import com.lorenzoog.jplank.analyzer.type.PkPtr
-import com.lorenzoog.jplank.analyzer.type.PkStructure
 import com.lorenzoog.jplank.analyzer.type.PkType
 import io.vexelabs.bitbuilder.llvm.ir.Type
 
@@ -17,26 +13,28 @@ class TypeMapper {
       Builtin.Double -> context.runtime.types.double
       Builtin.Bool -> context.runtime.types.i1
       Builtin.String -> context.runtime.types.string
-      is PkArray -> mapPkArray(context, type)
-      is PkStructure -> mapPkStructure(context, type)
-      is PkCallable -> mapPkCallable(context, type)
-      is PkPtr -> mapPkPtr(context, type)
+      Builtin.Any -> context.runtime.types.any.getPointerType()
+      is PkType.Generic -> context.runtime.types.any.getPointerType()
+      is PkType.Array -> mapPkArray(context, type)
+      is PkType.Struct -> mapPkStructure(context, type)
+      is PkType.Callable -> mapPkCallable(context, type)
+      is PkType.Pointer -> mapPkPtr(context, type)
     }
   }
 
-  private fun mapPkPtr(context: PlankContext, ptr: PkPtr): Type? {
+  private fun mapPkPtr(context: PlankContext, ptr: PkType.Pointer): Type? {
     return map(context, ptr.inner)?.getPointerType()
   }
 
-  private fun mapPkArray(context: PlankContext, array: PkArray): Type? {
+  private fun mapPkArray(context: PlankContext, array: PkType.Array): Type? {
     return map(context, array.inner)?.getPointerType()
   }
 
-  private fun mapPkStructure(context: PlankContext, structure: PkStructure): Type? {
+  private fun mapPkStructure(context: PlankContext, structure: PkType.Struct): Type? {
     return context.findStructure(structure.name)
   }
 
-  private fun mapPkCallable(context: PlankContext, callable: PkCallable): Type? {
+  private fun mapPkCallable(context: PlankContext, callable: PkType.Callable): Type? {
     val returnType =
       context.map(callable.returnType) ?: return context.report("returnType is null {$callable}")
 

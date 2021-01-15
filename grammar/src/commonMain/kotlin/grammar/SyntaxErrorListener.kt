@@ -19,7 +19,7 @@ class SyntaxErrorListener(private val path: String) : BaseErrorListener() {
     e: RecognitionException?
   ) {
     if (e != null) {
-      _violations += SyntaxViolation(msg, e.offendingToken.location(path))
+      _violations += RecognitionViolation(msg, e.offendingToken.location(path))
     }
   }
 }

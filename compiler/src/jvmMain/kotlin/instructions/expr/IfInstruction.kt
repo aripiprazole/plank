@@ -1,6 +1,5 @@
 package com.lorenzoog.jplank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.analyzer.getType
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.element.Expr
@@ -75,7 +74,7 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
     context.builder.setPositionAtEnd(mergeBranch)
 
     if (thenRet != null && elseRet != null) {
-      val phiType = context.map(descriptor.getType(context.binding))
+      val phiType = context.map(context.binding.visit(descriptor))
         ?: return context.report("phiType is null", descriptor)
 
       val phi = context.builder

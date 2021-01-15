@@ -6,6 +6,8 @@ sealed class TypeDef : PkElement {
   interface Visitor<T> {
     fun visit(typeDef: TypeDef): T = typeDef.accept(this)
 
+    fun visitGenericAccess(access: GenericAccess): T
+    fun visitGenericUse(use: GenericUse): T
     fun visitNameTypeDef(name: Name): T
     fun visitPtrTypeDef(ptr: Ptr): T
     fun visitArrayTypeDef(array: Array): T
@@ -13,6 +15,22 @@ sealed class TypeDef : PkElement {
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
+
+  data class GenericAccess(val name: Token, override val location: Location) : TypeDef() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitGenericAccess(this)
+    }
+  }
+
+  data class GenericUse(
+    val receiver: TypeDef,
+    val arguments: List<TypeDef>,
+    override val location: Location
+  ) : TypeDef() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitGenericUse(this)
+    }
+  }
 
   data class Name(val name: Token, override val location: Location) : TypeDef() {
     override fun <T> accept(visitor: Visitor<T>): T {

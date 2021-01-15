@@ -29,6 +29,20 @@ data class AssignImmutableViolation(
   }
 }
 
+data class UnexpectedGenericArgument(
+  val expected: Int,
+  val actual: Int,
+  override val location: Location
+) : BindingViolation() {
+  override fun render(renderer: MessageRenderer) {
+    if (expected == 0) {
+      return renderer.severe("Unexpected generic arguments", location)
+    }
+
+    renderer.severe("Unexpected $actual generic arguments, expected $expected", location)
+  }
+}
+
 data class UnresolvedTypeViolation(
   val type: String,
   override val location: Location

@@ -34,6 +34,8 @@ BANG_EQUAL : '!=' ;
 GREATER_EQUAL : '>=' ;
 LESS_EQUAL : '<=' ;
 
+APOSTROPHE : '\'' ;
+
 ARROW_LEFT : '->' ;
 
 DOT : '.' ;

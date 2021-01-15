@@ -1,8 +1,5 @@
 package com.lorenzoog.jplank.analyzer
 
-import com.lorenzoog.jplank.analyzer.type.PkCallable
-import com.lorenzoog.jplank.analyzer.type.PkPtr
-import com.lorenzoog.jplank.analyzer.type.PkStructure
 import com.lorenzoog.jplank.analyzer.type.PkType
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Decl.FunDecl.Modifier
@@ -191,7 +188,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
   override fun visitSetExpr(set: Expr.Set): PkType = set.bind {
     val member = set.member.text.orEmpty()
-    val structure = visit(set.receiver) as? PkStructure? ?: return@bind Builtin.Any
+    val structure = visit(set.receiver) as? PkType.Struct? ?: return@bind Builtin.Any
     val expected = structure[member] ?: return@bind run {
       _violations += TypeViolation(Builtin.Any, Builtin.Void, set.location)
 
@@ -212,7 +209,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
   override fun visitGetExpr(get: Expr.Get): PkType = get.bind {
     val member = get.member.text.orEmpty()
-    val structure = visit(get.receiver) as? PkStructure? ?: return@bind Builtin.Any
+    val structure = visit(get.receiver) as? PkType.Struct? ?: return@bind Builtin.Any
 
     structure[member]?.type ?: run {
       _violations += TypeViolation(Builtin.Any, Builtin.Void, get.location)
@@ -253,18 +250,33 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
   }
 
   override fun visitReferenceExpr(reference: Expr.Reference): PkType = reference.bind {
-    PkType.createPtr(visit(reference.expr))
+    PkType.Pointer(visit(reference.expr))
   }
 
   override fun visitValueExpr(value: Expr.Value): PkType = value.bind {
     val ptr = visit(value.expr)
-    if (ptr !is PkPtr) {
+    if (ptr !is PkType.Pointer) {
       _violations += TypeViolation("ptr", ptr, value.location)
 
       return@bind Builtin.Any
     }
 
     ptr.inner
+  }
+
+  override fun visitGenericAccess(access: TypeDef.GenericAccess): PkType = access.bind {
+    Builtin.Any
+  }
+
+  override fun visitGenericUse(use: TypeDef.GenericUse): PkType = use.bind {
+    val receiver = visit(use.receiver)
+    val arguments = visit(use.arguments)
+
+    if (receiver.genericArity > arguments.size) {
+      _violations += UnexpectedGenericArgument(receiver.genericArity, arguments.size, use.location)
+    }
+
+    PkType.Generic(receiver, arguments)
   }
 
   override fun visitExprStmt(exprStmt: Stmt.ExprStmt): PkType = exprStmt.bind {
@@ -280,10 +292,10 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
     scopes.peekLast().create(
       name,
-      PkType.createStructure(
+      PkType.Struct(
         name,
         classDecl.fields.map {
-          PkStructure.Field(it.mutable, it.name.text.orEmpty(), visit(it.type))
+          PkType.Struct.Field(it.mutable, it.name.text.orEmpty(), visit(it.type))
         }
       )
     )
@@ -297,7 +309,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
     scopes.peekLast().declare(
       name,
-      PkType.createCallable(
+      PkType.Callable(
         parameters = funDecl.parameters.map { visit(it) },
         returnType = funDecl.returnType?.let { visit(it) } ?: Builtin.Void
       )
@@ -348,15 +360,15 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
   }
 
   override fun visitPtrTypeDef(ptr: TypeDef.Ptr): PkType = ptr.bind {
-    PkType.createPtr(visit(ptr.type))
+    PkType.Pointer(visit(ptr.type))
   }
 
   override fun visitArrayTypeDef(array: TypeDef.Array): PkType = array.bind {
-    PkType.createArray(visit(array.type))
+    PkType.Array(visit(array.type))
   }
 
   override fun visitFunctionTypeDef(function: TypeDef.Function): PkType = function.bind {
-    PkType.createCallable(
+    PkType.Callable(
       parameters = function.parameters.map { visit(it) },
       returnType = function.returnType?.let { visit(it) } ?: Builtin.Void
     )
@@ -417,7 +429,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
     return result
   }
 
-  override fun findCallee(expr: Expr): PkCallable? {
+  override fun findCallee(expr: Expr): PkType.Callable? {
     return when (expr) {
       is Expr.Access -> scopes.peekLast().findFunction(expr.name.text.orEmpty()).also {
         if (it == null) {
@@ -428,7 +440,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
       }
       else -> {
         val actual = expr.bind { visit(expr) }
-        if (actual is PkCallable) {
+        if (actual is PkType.Callable) {
           actual
         } else {
           _violations += TypeViolation("PkCallable", actual, expr.location)
@@ -439,7 +451,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
     }
   }
 
-  override fun findStructure(expr: Expr): PkStructure? {
+  override fun findStructure(expr: Expr): PkType.Struct? {
     return when (expr) {
       is Expr.Access -> scopes.peekLast().findStructure(expr.name.text.orEmpty()).also {
         if (it == null) {
@@ -450,7 +462,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
       }
       else -> {
         val value = expr.bind { visit(expr) }
-        if (value is PkStructure) {
+        if (value is PkType.Struct) {
           value
         } else {
           _violations += TypeViolation("PkStructure", value, expr.location)

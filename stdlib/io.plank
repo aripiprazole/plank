@@ -1,7 +1,5 @@
-native fun println(message: String): Void;
+native fun println(message: 'a): Void;
 
-native fun print(message: String): Void;
-
-native fun toString(int: Int): String;
+native fun print(message: 'a): Void;
 
 native fun toStringPtr(int: *Int): String;

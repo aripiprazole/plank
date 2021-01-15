@@ -1,7 +1,5 @@
 package com.lorenzoog.jplank.analyzer
 
-import com.lorenzoog.jplank.analyzer.type.PkCallable
-import com.lorenzoog.jplank.analyzer.type.PkStructure
 import com.lorenzoog.jplank.analyzer.type.PkType
 import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.ImportDirective
@@ -21,6 +19,6 @@ interface BindingContext :
 
   fun getScope(expr: Expr): Scope?
 
-  fun findCallee(expr: Expr): PkCallable?
-  fun findStructure(expr: Expr): PkStructure?
+  fun findCallee(expr: Expr): PkType.Callable?
+  fun findStructure(expr: Expr): PkType.Struct?
 }

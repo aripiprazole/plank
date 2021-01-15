@@ -17,10 +17,18 @@ import org.antlr.v4.kotlinruntime.tree.ParseTree
 
 class DescriptorMapper(
   private val path: String,
-  private val violations: List<SyntaxViolation>,
+  violations: List<SyntaxViolation>,
 ) : PlankParserBaseVisitor<PkElement>() {
+  private val violations = violations.toMutableList()
+
   override fun visit(tree: ParseTree): PkElement {
-    return super.visit(tree)!!
+    try {
+      return super.visit(tree)!!
+    } catch (violation: SyntaxViolation) {
+      violations += violation
+    }
+
+    return PkFile(imports = emptyList(), program = emptyList(), violations = violations)
   }
 
   // program
@@ -51,9 +59,24 @@ class DescriptorMapper(
       ?: ctx.findFunType()
       ?: ctx.findNameType()
       ?: ctx.findPtrType()
-      ?: error("Unsupported typedef")
+      ?: ctx.findGenericAccess()
+      ?: ctx.findGenericUse()
+      ?: throw ExpectingViolation("type definition", ctx.toString(), ctx.start.location)
 
     return visit(declContext) as TypeDef
+  }
+
+  override fun visitGenericAccess(ctx: PlankParser.GenericAccessContext): PkElement {
+    return TypeDef.GenericAccess(ctx.name!!, ctx.start.location)
+  }
+
+  override fun visitGenericUse(ctx: PlankParser.GenericUseContext): PkElement {
+    val arguments = ctx.findTypeDef().map { visitTypeDef(it) }
+    return TypeDef.GenericUse(
+      TypeDef.Name(ctx.name!!, ctx.name.location),
+      arguments,
+      ctx.GREATER()?.symbol.location
+    )
   }
 
   override fun visitPtrType(ctx: PlankParser.PtrTypeContext): PkElement {
@@ -86,7 +109,7 @@ class DescriptorMapper(
       ctx.findLetDecl()
         ?: ctx.findFunDecl()
         ?: ctx.findClassDecl()
-        ?: error("Unsupported decl")
+        ?: throw ExpectingViolation("declaration", ctx.toString(), ctx.start.location)
     ) as Decl
   }
 
@@ -140,7 +163,7 @@ class DescriptorMapper(
         ?: ctx.findExprStmt()
         ?: ctx.findIfExpr()
         ?: ctx.findReturnStmt()
-        ?: error("Unsupported stmt: ${ctx.start} ${ctx.stop} ${ctx.children}")
+        ?: throw ExpectingViolation("statement", ctx.toString(), ctx.start.location)
     )
 
     return when (stmt) {
@@ -170,7 +193,7 @@ class DescriptorMapper(
         ?: ctx.findAssignExpr()
         ?: ctx.findInstanceExpr()
         ?: ctx.findSizeofExpr()
-        ?: error("Unsupported expr")
+        ?: throw ExpectingViolation("expression", ctx.toString(), ctx.start.location)
     ) as Expr
   }
 
@@ -243,7 +266,9 @@ class DescriptorMapper(
         ">" -> Expr.Logical.Operation.Greater
         "==" -> Expr.Logical.Operation.Equals
         "!=" -> Expr.Logical.Operation.NotEquals
-        else -> error("Unsupported binary op")
+        else -> {
+          throw ExpectingViolation("logical operator", ctx.toString(), ctx.start.location)
+        }
       },
       rhs = visitLogicalExpr(ctx.lhs!!),
       location = ctx.op.location
@@ -260,7 +285,9 @@ class DescriptorMapper(
         "-" -> Expr.Binary.Operation.Sub
         "*" -> Expr.Binary.Operation.Mul
         "/" -> Expr.Binary.Operation.Div
-        else -> error("Unsupported binary op")
+        else -> {
+          throw ExpectingViolation("binary operator", ctx.toString(), ctx.start.location)
+        }
       },
       rhs = visitBinaryExpr(ctx.rhs!!),
       location = ctx.op.location
@@ -274,7 +301,9 @@ class DescriptorMapper(
       op = when (ctx.op?.text) {
         "!" -> Expr.Unary.Operation.Bang
         "-" -> Expr.Unary.Operation.Neg
-        else -> error("Unsupported unary op")
+        else -> {
+          throw ExpectingViolation("unary operator", ctx.toString(), ctx.start.location)
+        }
       },
       rhs = visitUnaryExpr(ctx.rhs!!),
       location = ctx.op.location
@@ -293,7 +322,9 @@ class DescriptorMapper(
         is PlankParser.ArgumentsContext -> {
           Expr.Call(acc, next.findExpr().map { visitExpr(it) }, next.LPAREN()?.symbol.location)
         }
-        else -> error("Unsupported call argument")
+        else -> {
+          throw ExpectingViolation("call arguments", ctx.toString(), ctx.start.location)
+        }
       }
     }
   }
@@ -305,8 +336,10 @@ class DescriptorMapper(
   override fun visitBooleanExpr(ctx: PlankParser.BooleanExprContext): Expr {
     val value = when {
       ctx.TRUE() != null -> true
-      ctx.FALSE() != null -> true
-      else -> error("Unsupported boolean")
+      ctx.FALSE() != null -> false
+      else -> {
+        throw ExpectingViolation("boolean", ctx.toString(), ctx.start.location)
+      }
     }
 
     return Expr.Const(value, ctx.start.location)

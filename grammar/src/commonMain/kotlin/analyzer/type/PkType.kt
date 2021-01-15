@@ -3,67 +3,67 @@ package com.lorenzoog.jplank.analyzer.type
 import com.lorenzoog.jplank.analyzer.Builtin
 
 sealed class PkType : TypeCompanion {
+  open val genericArity: Int = 0
+  open val fields: List<Struct.Field> = emptyList()
   open val inherits: List<PkType> = emptyList()
+  open val isPrimitive = false
 
   val isVoid get() = this == Builtin.Void
+  val isGeneric get() = genericArity != 0
 
   override fun isAssignableBy(another: PkType): Boolean {
     return this == Builtin.Any || this in another.inherits || this == another
   }
 
-  companion object {
-    fun createArray(inner: PkType): PkArray {
-      return PkArray(inner)
-    }
-
-    fun createPtr(inner: PkType): PkPtr {
-      return PkPtr(inner)
-    }
-
-    fun createStructure(
-      name: String,
-      fields: List<PkStructure.Field> = emptyList(),
-      inherits: List<PkType> = emptyList()
-    ): PkStructure {
-      return PkStructure(name, fields, inherits)
-    }
-
-    fun createCallable(parameters: List<PkType>, returnType: PkType): PkCallable {
-      return PkCallable(parameters, returnType)
+  data class Generic(val receiver: PkType, val arguments: List<PkType>) : PkType() {
+    override fun toString(): String {
+      return "$receiver<${arguments.joinToString()}>"
     }
   }
-}
 
-data class PkPtr(val inner: PkType) : PkType() {
-  override fun toString(): String {
-    return "*$inner"
-  }
-}
+  data class Pointer(val inner: PkType) : PkType() {
+    override val isPrimitive: Boolean = true
 
-data class PkArray(val inner: PkType) : PkType() {
-  override fun toString(): String {
-    return "[$inner]"
-  }
-}
-
-data class PkStructure(
-  val name: String = "null",
-  val fields: List<Field>,
-  override val inherits: List<PkType>,
-) : PkType() {
-  data class Field(val mutable: Boolean, val name: String, val type: PkType)
-
-  operator fun get(name: String): Field? {
-    return fields.find { it.name == name }
+    override fun toString(): String {
+      return "*$inner"
+    }
   }
 
-  override fun toString(): String {
-    return name
-  }
-}
+  data class Array(val inner: PkType) : PkType() {
+    override val isPrimitive: Boolean = true
 
-data class PkCallable(val parameters: List<PkType>, val returnType: PkType) : PkType() {
-  override fun toString(): String {
-    return "${parameters.joinToString(prefix = "(", postfix = ")")} -> $returnType"
+    override val fields: List<Struct.Field> = listOf(
+      Struct.Field(mutable = false, name = "size", type = Builtin.Int)
+    )
+
+    override fun toString(): String {
+      return "[$inner]"
+    }
+  }
+
+  data class Struct(
+    val name: String = "null",
+    override val fields: List<Field> = emptyList(),
+    override val inherits: List<PkType> = emptyList(),
+    override val genericArity: Int = 0,
+    override val isPrimitive: Boolean = false,
+  ) : PkType() {
+    data class Field(val mutable: Boolean, val name: String, val type: PkType)
+
+    operator fun get(name: String): Field? {
+      return fields.find { it.name == name }
+    }
+
+    override fun toString(): String {
+      return name
+    }
+  }
+
+  data class Callable(val parameters: List<PkType>, val returnType: PkType) : PkType() {
+    override val isPrimitive: Boolean = true
+
+    override fun toString(): String {
+      return "(${parameters.joinToString()}) -> $returnType"
+    }
   }
 }

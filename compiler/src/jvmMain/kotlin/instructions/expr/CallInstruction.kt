@@ -1,6 +1,5 @@
 package com.lorenzoog.jplank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.analyzer.getType
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.compiler.utils.FunctionUtils
@@ -10,7 +9,7 @@ import io.vexelabs.bitbuilder.llvm.ir.values.FunctionValue
 
 class CallInstruction(private val descriptor: Expr.Call) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
-    val type = descriptor.getType(context.binding)
+    val type = context.binding.visit(descriptor)
 
     val callee = when (val callee = descriptor.callee) {
       is Expr.Access -> {
@@ -32,7 +31,7 @@ class CallInstruction(private val descriptor: Expr.Call) : PlankInstruction() {
 
     val arguments = descriptor.arguments
       .map {
-        context.map(it).codegen(context)
+        context.runtime.createObject(context, it)
           ?: return context.report("failed to handle argument", it)
       }
 
