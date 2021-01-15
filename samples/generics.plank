@@ -1,0 +1,11 @@
+import io;
+
+fun main(argv: Int, argc: *String): Void {
+  let i = 5;
+  let r = &i;
+
+  println(r);
+  println(*r);
+  println(true);
+  println(false);
+}

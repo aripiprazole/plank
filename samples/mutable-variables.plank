@@ -2,7 +2,7 @@ import io;
 
 type Person = {mutable name: String};
 
-fun main(argc: Int, argv: [String]): Void {
+fun main(argc: Int, argv: *String): Void {
   let person = Person{name: "some name"};
 
   println(person.name);

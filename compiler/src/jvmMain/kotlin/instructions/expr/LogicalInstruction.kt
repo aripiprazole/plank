@@ -1,7 +1,6 @@
 package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.analyzer.getType
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.element.Expr
@@ -19,7 +18,7 @@ class LogicalInstruction(private val descriptor: Expr.Logical) : PlankInstructio
 
     return when (descriptor.op) {
       Operation.Equals -> {
-        if (Builtin.Numeric.isAssignableBy(descriptor.rhs.getType(context.binding))) {
+        if (Builtin.Numeric.isAssignableBy(context.binding.visit(descriptor.rhs))) {
           context.builder.createFCmp(lhs, RealPredicate.OEQ, rhs, "fcmptmp")
         } else {
           val function = context.runtime.eqFunction
@@ -29,7 +28,7 @@ class LogicalInstruction(private val descriptor: Expr.Logical) : PlankInstructio
         }
       }
       Operation.NotEquals -> {
-        if (Builtin.Numeric.isAssignableBy(descriptor.rhs.getType(context.binding))) {
+        if (Builtin.Numeric.isAssignableBy(context.binding.visit(descriptor.rhs))) {
           context.builder.createFCmp(lhs, RealPredicate.ONE, rhs, "fcmptmp")
         } else {
           val function = context.runtime.neqFunction

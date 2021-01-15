@@ -1,7 +1,6 @@
 package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.analyzer.getType
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.element.Expr
@@ -20,7 +19,7 @@ class BinaryInstruction(val descriptor: Expr.Binary) : PlankInstruction() {
       Operation.Sub -> context.builder.createFSub(lhs, rhs, "subtmp")
       Operation.Mul -> context.builder.createFMul(lhs, rhs, "multmp")
       Operation.Div -> context.builder.createFDiv(lhs, rhs, "divtmp")
-      Operation.Add -> if (Builtin.String.isAssignableBy(descriptor.getType(context.binding))) {
+      Operation.Add -> if (Builtin.String.isAssignableBy(context.binding.visit(descriptor))) {
         val concatFunction = context.runtime.concatFunction
           ?: return context.report("concat function is null", descriptor)
 

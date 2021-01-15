@@ -84,12 +84,13 @@ data class PlankContext(
       bindingContext: BindingContext,
       module: LLVMModule
     ): PlankContext {
+      val builder = module.getContext().createBuilder()
       return PlankContext(
         binding = bindingContext,
         llvm = module.getContext(),
         module = module,
-        builder = module.getContext().createBuilder(),
-        runtime = PlankRuntime(module),
+        builder = builder,
+        runtime = PlankRuntime(builder, module),
         currentFile = currentFile,
         enclosing = null,
         values = mutableMapOf(),

@@ -10,7 +10,7 @@ imports : importDirective* ;
 importDirective : IMPORT module=IDENTIFIER SEMICOLON ;
 
 // types
-funType : LPAREN RPAREN ( typeDef ( COMMA typeDef)* )? ARROW_LEFT returnType=typeDef ;
+funType : LPAREN RPAREN ( typeDef ( COMMA typeDef )* )? ARROW_LEFT returnType=typeDef ;
 
 arrayType : LBRACKET type=typeDef RBRACKET ;
 
@@ -18,7 +18,11 @@ nameType : name=IDENTIFIER ;
 
 ptrType : STAR type=typeDef ;
 
-typeDef : nameType | funType | arrayType | ptrType ;
+genericAccess : APOSTROPHE name=IDENTIFIER ;
+
+genericUse : name=IDENTIFIER LESS typeDef* GREATER ;
+
+typeDef : nameType | funType | arrayType | ptrType | genericAccess | genericUse ;
 
 parameter : name=IDENTIFIER COLON type=typeDef;
 
@@ -82,10 +86,7 @@ thenBranch : LBRACE stmt* RBRACE
            | expr
            ;
 
-ifExpr : IF LPAREN cond=expr RPAREN thenBranch elseBranch?
-       | IF LPAREN cond=expr RPAREN thenBranch elseBranch?
-       | IF LPAREN cond=expr RPAREN thenBranch elseBranch?
-       ;
+ifExpr : IF LPAREN cond=expr RPAREN thenBranch elseBranch? ;
 
 assignExpr : (callExpr DOT) ? name=IDENTIFIER EQUAL value=assignExpr
            | logicalExpr
@@ -111,7 +112,7 @@ arguments :  LPAREN ( expr (COMMA expr)* )? RPAREN ;
 
 callExpr : access=ptr ( arguments | get )* ;
 
-groupExpr : LPAREN (value=expr) RPAREN ;
+groupExpr : LPAREN value=expr RPAREN ;
 
 booleanExpr : TRUE
             | FALSE
