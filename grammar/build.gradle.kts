@@ -3,6 +3,10 @@
 import com.lorenzoog.jplank.build.Dependencies
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
 
+plugins {
+  id("org.jetbrains.kotlin.multiplatform")
+}
+
 group = "com.lorenzoog"
 version = "1.0-SNAPSHOT"
 
