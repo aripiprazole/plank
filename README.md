@@ -1,9 +1,8 @@
 # PLANK
 
-![GitHub Repo stars](https://img.shields.io/github/stars/devwckd/mc-libraries?color=orange&style=for-the-badge)
-![GitHub issues](https://img.shields.io/github/issues/devwckd/mc-libraries?color=orange&style=for-the-badge)
-![GitHub last commit](https://img.shields.io/github/last-commit/devwckd/mc-libraries?color=orange&style=for-the-badge)
-![JitPack](https://img.shields.io/jitpack/v/github/devwckd/mc-libraries?color=orange&style=for-the-badge)
+![GitHub Repo stars](https://img.shields.io/github/stars/LorenzooG/jplank?color=orange&style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/LorenzooG/jplank?color=orange&style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/LorenzooG/jplank?color=orange&style=for-the-badge)
 
 Plank is a simple language made with LLVM and ANTLR in Kotlin. Need help? contact me
 on [twitter](https://twitter.com/lorenzoo_g) or message me on discord **LorenzooG#9722**.
@@ -26,7 +25,7 @@ Hello world in plank:
 ```kotlin
 import io;
 
-fun main(argc: Int, argv: [String]) {
+fun main(argc: Int, argv: *String) {
   println("Hello, world");
 }
 ```
@@ -43,14 +42,17 @@ You can find more examples [here](samples)
 | [compiler](compiler)                 | Implements the LLVM core that compiles to IR representation          |
 | [runtime](runtime)                   | Implements the engine runtime functions                              |
 | [stdlib](stdlib)                     | Implements the language stdlib                                       |
+| [intellij-plugin](stdlib)            | Implements the intellij tooling plugin                               |
 
 ## Dependencies
 
-| Name       | Link                              | Version  |
-| ---------- | --------------------------------- | -------- |
-| clang++    | https://clang.llvm.org            | v10.0.0  |
-| cmake      | https://cmake.org                 | v3.16    |
-| make       | https://www.gnu.org/software/make | v4.3     |
+| Name       | Link                              | Version    |
+| ---------- | --------------------------------- | ---------- |
+| kotlin     | https://kotlinlang.org            | v1.4.30-M1 |
+| java       | https://openjdk.java.net/         | v11        |
+| clang++    | https://clang.llvm.org            | v10.0.0    |
+| cmake      | https://cmake.org                 | v3.16      |
+| make       | https://www.gnu.org/software/make | v4.3       |
 
 ## CLI
 

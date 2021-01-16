@@ -8,8 +8,8 @@ plugins {
   java
 }
 
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_11
+java.targetCompatibility = JavaVersion.VERSION_11
 
 group = "com.lorenzoog.jplank"
 version = "1.0-SNAPSHOT"
@@ -36,7 +36,7 @@ grammarKit {
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
   }
 
   val generatePlankGrammar = register<GenerateLexer>("generatePlankGrammar") {
