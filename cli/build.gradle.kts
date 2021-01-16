@@ -1,6 +1,7 @@
 import com.lorenzoog.jplank.build.Dependencies
 
 plugins {
+  id("org.jetbrains.kotlin.multiplatform")
   id("com.github.johnrengelman.shadow") version "6.1.0"
   java
 }

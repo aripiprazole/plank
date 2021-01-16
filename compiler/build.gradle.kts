@@ -1,5 +1,9 @@
 import com.lorenzoog.jplank.build.Dependencies
 
+plugins {
+  id("org.jetbrains.kotlin.multiplatform")
+}
+
 group = "com.lorenzoog"
 version = "1.0-SNAPSHOT"
 

@@ -1,0 +1,21 @@
+<idea-plugin>
+  <id>com.lorenzoog.jplank.intellij-plugin</id>
+  <name>Plank</name>
+  <vendor email="contact@lorenzoog.com" url="http://lorenzoog.com">LorenzooG</vendor>
+
+  <description><![CDATA[
+    Supports plank programming language in intellij ide (http://github.com/lorenzoog/jplank)
+    ]]></description>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileTypeFactory implementation="com.lorenzoog.jplank.intellijplugin.PlankFileTypeFactory" />
+    <lang.syntaxHighlighterFactory
+      language="plank"
+      implementationClass="com.lorenzoog.jplank.intellijplugin.PlankLanguageHighlighterFactory"
+    />
+  </extensions>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+</idea-plugin>

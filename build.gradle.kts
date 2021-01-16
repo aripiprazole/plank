@@ -11,16 +11,16 @@ buildscript {
 }
 
 plugins {
-  kotlin("multiplatform") version "1.4.30-M1"
+  kotlin("multiplatform") version "1.4.30-M1" apply false
   id("org.jlleitschuh.gradle.ktlint") version "9.4.1"
+
   id("composite-build")
 }
 
 group = "com.lorenzoog"
 version = "1.0-SNAPSHOT"
 
-allprojects {
-  apply(plugin = "org.jetbrains.kotlin.multiplatform")
+subprojects {
   apply(plugin = "org.jlleitschuh.gradle.ktlint")
   apply(plugin = "composite-build")
 
@@ -39,17 +39,5 @@ allprojects {
 
   tasks.withType<KotlinJvmCompile> {
     kotlinOptions.jvmTarget = "11"
-  }
-}
-
-kotlin {
-  jvm()
-
-  sourceSets {
-    val commonMain by getting
-    val commonTest by getting
-
-    val jvmMain by getting
-    val jvmTest by getting
   }
 }
