@@ -2,8 +2,10 @@ package com.lorenzoog.jplank.intellijplugin
 
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
+import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
+import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 
 class PlankLanguageHighlighter : SyntaxHighlighterBase() {
@@ -21,6 +23,9 @@ class PlankLanguageHighlighter : SyntaxHighlighterBase() {
       PlankElementType.NATIVE,
       PlankElementType.TYPE,
       PlankElementType.IMPORT,
+      PlankElementType.SIZEOF,
+      PlankElementType.TRUE,
+      PlankElementType.FALSE,
       PlankElementType.SEMI -> arrayOf(KEYWORD)
 
       PlankElementType.VOID_TYPE,
@@ -55,6 +60,8 @@ class PlankLanguageHighlighter : SyntaxHighlighterBase() {
       PlankElementType.LESS_EQUALS,
       PlankElementType.AMPERSAND -> arrayOf(OPERATOR)
 
+      TokenType.BAD_CHARACTER -> arrayOf(BAD_CHARACTER)
+
       else -> emptyArray()
     }
   }
@@ -68,5 +75,6 @@ class PlankLanguageHighlighter : SyntaxHighlighterBase() {
     val VARIABLE by attributesKey(DefaultLanguageHighlighterColors.LOCAL_VARIABLE)
     val FUNCTION_CALL by attributesKey(DefaultLanguageHighlighterColors.FUNCTION_CALL)
     val TYPE by attributesKey(DefaultLanguageHighlighterColors.CLASS_REFERENCE)
+    val BAD_CHARACTER by attributesKey(HighlighterColors.BAD_CHARACTER)
   }
 }
