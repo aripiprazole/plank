@@ -20,7 +20,7 @@ WS = [ \t\f]+
 STRING = \" ([^\"\\\n\r]|\\[^\n\r])* \"
 INT = [0-9]+
 DOUBLE = {INT} . {INT}
-IDENTIFIER = [_a-zA-Z][_a-zA-Z0-9]+
+IDENTIFIER = [_a-zA-Z][_a-zA-Z0-9]*
 
 %state EOF
 
