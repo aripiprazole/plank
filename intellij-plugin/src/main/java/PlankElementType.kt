@@ -72,6 +72,9 @@ class PlankElementType(private val name: String) : IElementType(name, Plank.INST
     val FALSE = PlankElementType("PLANK_FALSE")
 
     @JvmField
+    val RETURN = PlankElementType("PLANK_RETURN")
+
+    @JvmField
     val INT = PlankElementType("PLANK_INT")
 
     @JvmField

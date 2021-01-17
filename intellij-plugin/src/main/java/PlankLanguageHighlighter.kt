@@ -26,6 +26,7 @@ class PlankLanguageHighlighter : SyntaxHighlighterBase() {
       PlankElementType.SIZEOF,
       PlankElementType.TRUE,
       PlankElementType.FALSE,
+      PlankElementType.RETURN,
       PlankElementType.SEMI -> arrayOf(KEYWORD)
 
       PlankElementType.VOID_TYPE,

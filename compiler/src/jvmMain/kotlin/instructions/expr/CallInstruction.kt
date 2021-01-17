@@ -11,14 +11,27 @@ class CallInstruction(private val descriptor: Expr.Call) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
     val type = context.binding.visit(descriptor)
 
+    val calleeDescriptor = context.binding.findCallee(descriptor.callee)
+      ?: return context.report("could not find callee descriptor", descriptor)
+
     val callee = when (val callee = descriptor.callee) {
       is Expr.Access -> {
-        val name = callee.name.text ?: return context.report("name is null", descriptor)
-        val scope = context.binding.getScope(callee)
-          ?: return context.report("scope is null", descriptor)
+        val name = callee.name.text
+          ?: return context.report("name is null", descriptor)
+
+        val scope = context.binding.findScope(descriptor.callee)
+          ?: return context.report("scope is null", descriptor.callee)
+
+        val scopeName = if (scope.name == "Global") { // fixme
+          context.currentFile.moduleName
+        } else {
+          scope.name
+        }
 
         context.module.getFunction(
-          FunctionUtils.generateName(name, scope.name)
+          FunctionUtils.generateName(name, scopeName).also {
+            println("CALLING MANGLED NAME $it")
+          }
         )
       }
 
@@ -30,9 +43,14 @@ class CallInstruction(private val descriptor: Expr.Call) : PlankInstruction() {
     }
 
     val arguments = descriptor.arguments
-      .map {
-        context.runtime.createObject(context, it)
-          ?: return context.report("failed to handle argument", it)
+      .mapIndexed { i, expr ->
+        val realExpr = if (calleeDescriptor.parameters[i].isAny) {
+          context.runtime.createObject(context, expr)
+        } else {
+          context.map(expr).codegen(context)
+        }
+
+        realExpr ?: return context.report("failed to handle argument", expr)
       }
 
     val variable = if (type.isVoid) "" else "calltmp"
