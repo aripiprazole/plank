@@ -28,7 +28,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
   private val bindings = mutableMapOf<PkElement, PkType>()
 
   private val scopes = Stack<Scope>().also { stack ->
-    stack.pushLast(Scope("Global", null))
+    stack.pushLast(Scope("Global", false, null))
   }
 
   private val _violations = mutableListOf<BindingViolation>()
@@ -306,14 +306,12 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
   override fun visitFunDecl(funDecl: Decl.FunDecl): PkType = funDecl.bind {
     val name = funDecl.name.text.orEmpty()
     val returnType = funDecl.returnType?.let { visit(it) } ?: Builtin.Void
-
-    scopes.peekLast().declare(
-      name,
-      PkType.Callable(
-        parameters = funDecl.parameters.map { visit(it) },
-        returnType = funDecl.returnType?.let { visit(it) } ?: Builtin.Void
-      )
+    val type = PkType.Callable(
+      parameters = funDecl.parameters.map { visit(it) },
+      returnType = funDecl.returnType?.let { visit(it) } ?: Builtin.Void
     )
+
+    scopes.peekLast().declare(name, type)
 
     scoped(name) { scope ->
       funDecl.realParameters
@@ -333,7 +331,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
           }
       }
 
-      Builtin.Void
+      type
     }
   }
 
@@ -376,7 +374,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
   override fun visitModuleImportDirective(module: ImportDirective.Module): PkType = module.bind {
     val name = module.name.text.orEmpty()
-    val file = path.find { it.moduleName == name } ?: return@bind run {
+    val file = path.find { it.module == name } ?: return@bind run {
       _violations += UnresolvedModuleViolation(name, module.location)
 
       Builtin.Void
@@ -384,7 +382,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
     val fileScope = scopes.peekLast()
 
-    scoped(name, null) { moduleScope ->
+    scoped(name, false, null) { moduleScope ->
       // adds definition to module scope
       analyze(file)
 
@@ -418,10 +416,11 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
 
   private inline fun <T> scoped(
     name: String = "anonymous",
+    nested: Boolean = true,
     enclosing: Scope? = scopes.peekLast(),
     body: (Scope) -> T
   ): T {
-    val scope = Scope(name, enclosing)
+    val scope = Scope(name, nested, enclosing)
     scopes.pushLast(scope)
     val result = body(scope)
     scopes.popLast()

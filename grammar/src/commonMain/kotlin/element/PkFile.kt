@@ -14,30 +14,32 @@ import pw.binom.io.readText
 import pw.binom.io.utf8Reader
 
 data class PkFile(
-  val moduleName: String = "Anonymous",
-  val imports: List<ImportDirective>,
-  val program: List<Decl>,
-  val violations: List<SyntaxViolation> = emptyList()
+  val module: String = "Anonymous",
+  val path: String = "Anonymous",
+  val imports: List<ImportDirective> = emptyList(),
+  val program: List<Decl> = emptyList(),
+  val violations: List<SyntaxViolation> = emptyList(),
 ) : PkElement {
   val isValid get() = violations.isEmpty()
 
-  override val location: Location = Location(-1, -1, moduleName)
+  override val location: Location = Location(-1, -1, this)
 
   companion object {
     fun of(file: File): PkFile {
-      return of(file.read().utf8Reader().readText(), file.path)
-        .copy(moduleName = file.nameWithoutExtension)
+      return of(file.read().utf8Reader().readText(), file.nameWithoutExtension, file.path)
+        .copy(path = file.path, module = file.nameWithoutExtension)
     }
 
-    fun of(text: String, path: String = "anonymous"): PkFile {
+    fun of(text: String, module: String = "anonymous", path: String = module): PkFile {
+      val file = PkFile(module = module, path = path)
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
       val parser = PlankParser(CommonTokenStream(lexer))
-      val listener = SyntaxErrorListener(path).also {
+      val listener = SyntaxErrorListener(file).also {
         parser.addErrorListener(it)
       }
 
-      return DescriptorMapper(path, listener.violations).visitProgram(parser.program())
+      return DescriptorMapper(file, listener.violations).visitProgram(parser.program())
     }
   }
 }
