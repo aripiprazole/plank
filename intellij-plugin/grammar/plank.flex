@@ -50,6 +50,8 @@ IDENTIFIER = [_a-zA-Z][_a-zA-Z0-9]*
 
 <YYINITIAL> "false" { return PlankElementType.FALSE; }
 
+<YYINITIAL> "return" { return PlankElementType.RETURN; }
+
 <YYINITIAL> "Void" { return PlankElementType.VOID_TYPE; }
 
 <YYINITIAL> "Int" { return PlankElementType.INT_TYPE; }

@@ -17,7 +17,7 @@ interface BindingContext :
 
   fun analyze(file: PkFile): Boolean
 
-  fun getScope(expr: Expr): Scope?
+  fun findScope(expr: Expr): Scope?
 
   fun findCallee(expr: Expr): PkType.Callable?
   fun findStructure(expr: Expr): PkType.Struct?

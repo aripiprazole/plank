@@ -49,7 +49,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
     return isValid
   }
 
-  override fun getScope(expr: Expr): Scope? {
+  override fun findScope(expr: Expr): Scope? {
     return when (expr) {
       is Expr.Access -> scopes.peekLast().getScope(expr.name.text.orEmpty())
       else -> null
