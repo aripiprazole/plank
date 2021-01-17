@@ -2,7 +2,11 @@ package com.lorenzoog.jplank.analyzer
 
 import com.lorenzoog.jplank.analyzer.type.PkType
 
-class Scope(val name: String, private val enclosing: Scope?) {
+class Scope(
+  val name: String,
+  private val nested: Boolean,
+  private val enclosing: Scope?
+) {
   private val types = mutableMapOf<String, PkType.Struct>()
   private val variables = mutableMapOf<String, Variable>()
   private val expanded = mutableListOf<Scope>()

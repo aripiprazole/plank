@@ -7,8 +7,6 @@ import io.vexelabs.bitbuilder.llvm.ir.Value
 
 class NativeFunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
-    return with(FunDeclInstruction) {
-      descriptor.genFunction(context)
-    }
+    return context.addFunction(descriptor)
   }
 }

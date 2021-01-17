@@ -16,7 +16,7 @@ import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.ParseTree
 
 class DescriptorMapper(
-  private val path: String,
+  private val file: PkFile,
   violations: List<SyntaxViolation>,
 ) : PlankParserBaseVisitor<PkElement>() {
   private val violations = violations.toMutableList()
@@ -28,16 +28,24 @@ class DescriptorMapper(
       violations += violation
     }
 
-    return PkFile(imports = emptyList(), program = emptyList(), violations = violations)
+    return file.copy(
+      imports = emptyList(),
+      program = emptyList(),
+      violations = violations
+    )
   }
 
   // program
   override fun visitProgram(ctx: PlankParser.ProgramContext): PkFile {
     if (violations.isNotEmpty()) {
-      return PkFile(imports = emptyList(), program = emptyList(), violations = violations)
+      return file.copy(
+        imports = emptyList(),
+        program = emptyList(),
+        violations = violations
+      )
     }
 
-    return PkFile(
+    return file.copy(
       imports = ctx.findImports()?.findImportDirective().orEmpty().map {
         visitImportDirective(it)
       },
@@ -394,7 +402,7 @@ class DescriptorMapper(
   }
 
   // utils
-  private val Token?.location get() = location(path)
+  private val Token?.location get() = location(file)
 
   private fun PlankParser.FunHeaderContext.findFunctionType(): TypeDef.Function {
     val parameters = findParameter().map { visitTypeDef(it.type!!) }

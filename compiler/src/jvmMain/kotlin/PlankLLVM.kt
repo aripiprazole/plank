@@ -29,7 +29,7 @@ class PlankLLVM(
     LLVMInitializeNativeDisassembler()
     LLVMInitializeNativeTarget()
 
-    val module = Module(LLVM.LLVMModuleCreateWithName(file.moduleName))
+    val module = Module(LLVM.LLVMModuleCreateWithName(file.module))
 
     context = PlankContext.of(file, instructionMapper, bindingContext, module)
   }

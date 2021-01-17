@@ -87,7 +87,7 @@ class PlankCompiler(
     }
 
     compiler.context.module.getIR().writeToFile(target.asJFile)
-    renderer.info("Successfully compiled ${pkFile.moduleName}")
+    renderer.info("Successfully compiled ${pkFile.module}")
 
     return true
   }
