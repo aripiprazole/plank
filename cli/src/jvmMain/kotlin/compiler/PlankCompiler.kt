@@ -79,7 +79,7 @@ class PlankCompiler(
     compiler.context.module.getIR().writeToFile(target.asJFile)
     if (compiler.context.errors.isNotEmpty()) {
       compiler.context.errors.forEach { (element, message) ->
-        renderer.severe("$message -> $element", element?.location)
+        renderer.severe(message, element?.location)
       }
 
       renderer.severe("Internal errors occurred")

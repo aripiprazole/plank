@@ -11,8 +11,9 @@ class TypeMapper {
       Builtin.Void -> context.runtime.types.void
       Builtin.Int -> context.runtime.types.int
       Builtin.Double -> context.runtime.types.double
+      Builtin.Numeric -> context.runtime.types.double
       Builtin.Bool -> context.runtime.types.i1
-      Builtin.String -> context.runtime.types.string
+      Builtin.Char.pointer -> context.runtime.types.string
       Builtin.Any -> context.runtime.types.any.getPointerType()
       is PkType.Generic -> context.runtime.types.any.getPointerType()
       is PkType.Array -> mapPkArray(context, type)

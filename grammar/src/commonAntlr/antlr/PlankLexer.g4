@@ -29,6 +29,8 @@ EQUAL : '=' ;
 GREATER : '>' ;
 LESS : '<' ;
 
+PLUS_PLUS : '++' ;
+
 EQUAL_EQUAL : '==' ;
 BANG_EQUAL : '!=' ;
 GREATER_EQUAL : '>=' ;

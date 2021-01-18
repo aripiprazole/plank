@@ -1,8 +1,8 @@
 import io;
 
-type Person = {mutable name: String};
+type Person = {mutable name: *Char};
 
-fun main(argc: Int, argv: *String): Void {
+fun main(argc: Int, argv: **Char): Void {
   let person = Person{name: "some name"};
 
   println(person.name);

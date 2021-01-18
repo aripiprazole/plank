@@ -1,5 +1,6 @@
 package com.lorenzoog.jplank.compiler
 
+import com.lorenzoog.jplank.analyzer.BindingContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.ClassDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.FunDeclInstruction
@@ -10,6 +11,7 @@ import com.lorenzoog.jplank.compiler.instructions.expr.AssignInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.BinaryInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.CallInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.ConstInstruction
+import com.lorenzoog.jplank.compiler.instructions.expr.FBinaryInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.GetInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.GroupInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.IfInstruction
@@ -26,7 +28,10 @@ import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.Stmt
 
-class InstructionMapper(val typeMapper: TypeMapper) :
+class InstructionMapper(
+  val typeMapper: TypeMapper,
+  val binding: BindingContext
+) :
   Expr.Visitor<PlankInstruction>,
   Stmt.Visitor<PlankInstruction> {
   override fun visitIfExpr(anIf: Expr.If): PlankInstruction {
@@ -42,6 +47,10 @@ class InstructionMapper(val typeMapper: TypeMapper) :
   }
 
   override fun visitBinaryExpr(binary: Expr.Binary): PlankInstruction {
+    if (binding.visit(binary).isFP) {
+      return FBinaryInstruction(binary)
+    }
+
     return BinaryInstruction(binary)
   }
 

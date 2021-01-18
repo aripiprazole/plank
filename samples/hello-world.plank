@@ -1,5 +1,5 @@
 import io;
 
-fun main(argc: Int, argv: *String): Void {
+fun main(argc: Int, argv: **Char): Void {
   println("Hello, world!");
 }

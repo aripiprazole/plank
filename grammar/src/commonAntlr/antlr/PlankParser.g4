@@ -98,7 +98,7 @@ logicalExpr : lhs=logicalExpr op=(EQUAL_EQUAL | BANG_EQUAL) rhs=logicalExpr
             ;
 
 binaryExpr : lhs=binaryExpr op=(STAR | SLASH) rhs=binaryExpr
-           | lhs=binaryExpr op=(PLUS | MINUS) rhs=binaryExpr
+           | lhs=binaryExpr op=(PLUS | PLUS_PLUS | MINUS) rhs=binaryExpr
            | unaryExpr
            ;
 
@@ -126,6 +126,7 @@ ptr : AMPERSTAND expr
     ;
 
 primary : INT
+        | DECIMAL
         | IDENTIFIER
         | stringExpr
         | booleanExpr

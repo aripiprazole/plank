@@ -13,6 +13,10 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstru
 
   companion object {
     fun getReference(context: PlankContext, descriptor: Expr): Value? {
+      val type = context.binding.visit(descriptor)
+
+      println("TYPE :: $type")
+
       return when {
         descriptor is Expr.Access -> {
           val name = descriptor.name.text
@@ -21,24 +25,27 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstru
           context.findVariable(name)
             ?: return context.report("variable does not exists", descriptor)
         }
-        Builtin.Numeric.isAssignableBy(context.binding.visit(descriptor)) ||
-          Builtin.Bool.isAssignableBy(context.binding.visit(descriptor)) -> {
-          val type = context.map(context.binding.visit(descriptor))
+        Builtin.Numeric.isAssignableBy(type) || Builtin.Bool.isAssignableBy(type) -> {
+          val mappedType = context.map(type)
             ?: return context.report("type is null", descriptor)
 
           val value = context.map(descriptor).codegen(context)
             ?: return context.report("value is null", descriptor)
 
-          context.builder.createIntToPtr(value, type.getPointerType(), "reftmp")
+          val reference = context.builder.createAlloca(mappedType, "refallocatmp")
+
+          context.builder.createStore(value, reference)
+
+          reference
         }
         else -> {
-          val type = context.map(context.binding.visit(descriptor))
+          val mappedType = context.map(type)
             ?: return context.report("type is null", descriptor)
 
           val value = context.map(descriptor).codegen(context)
             ?: return context.report("value is null", descriptor)
 
-          context.builder.createLoad(type, value, "reftmp")
+          context.builder.createLoad(mappedType, value, "reftmp")
         }
       }
     }

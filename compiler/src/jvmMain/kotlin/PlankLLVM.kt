@@ -20,7 +20,7 @@ class PlankLLVM(
   lateinit var context: PlankContext
     private set
 
-  private val instructionMapper = InstructionMapper(TypeMapper())
+  private val instructionMapper = InstructionMapper(TypeMapper(), bindingContext)
 
   fun initialize(file: PkFile) {
     LLVMLinkInMCJIT()

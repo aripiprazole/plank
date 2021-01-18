@@ -10,7 +10,7 @@ void io_println(plank::Object *message) {
 }
 
 void io_print(plank::Object *message) {
-  std::cout << std::string(message->toString(message));
+  std::cout << message->toString(message);
 }
 
 }
