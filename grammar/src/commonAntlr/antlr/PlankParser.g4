@@ -10,7 +10,7 @@ imports : importDirective* ;
 importDirective : IMPORT module=IDENTIFIER SEMICOLON ;
 
 // types
-funType : LPAREN RPAREN ( typeDef ( COMMA typeDef )* )? ARROW_LEFT returnType=typeDef ;
+funType : LPAREN RPAREN ( typeDef ( COMMA typeDef ) * ) ? ARROW_LEFT returnType=typeDef ;
 
 arrayType : LBRACKET type=typeDef RBRACKET ;
 
@@ -24,12 +24,12 @@ genericUse : name=IDENTIFIER LESS typeDef* GREATER ;
 
 typeDef : nameType | funType | arrayType | ptrType | genericAccess | genericUse ;
 
-parameter : name=IDENTIFIER COLON type=typeDef;
+parameter : name=IDENTIFIER COLON type=typeDef ;
 
 // classes
 classField : MUTABLE? parameter;
 
-classDecl : TYPE name=IDENTIFIER EQUAL LBRACE (classField (COMMA classField)*)? RBRACE SEMICOLON;
+classDecl : TYPE name=IDENTIFIER EQUAL LBRACE ( classField ( COMMA classField ) * ) ? RBRACE SEMICOLON ;
 
 // decls
 decl : letDecl WS*
@@ -38,10 +38,10 @@ decl : letDecl WS*
      ;
 
 letDecl : LET MUTABLE? name=IDENTIFIER EQUAL value=expr SEMICOLON
-        | LET MUTABLE? name=IDENTIFIER (COLON type=typeDef) EQUAL value=expr SEMICOLON
+        | LET MUTABLE? name=IDENTIFIER COLON type=typeDef EQUAL value=expr SEMICOLON
         ;
 
-funHeader : FUN name=IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN COLON returnType=typeDef ;
+funHeader : FUN name=IDENTIFIER LPAREN ( parameter ( COMMA parameter ) * ) ? RPAREN COLON returnType=typeDef ;
 
 funDecl : funHeader LBRACE stmt* RBRACE
         | nativeFunDecl
@@ -71,7 +71,7 @@ sizeofExpr : SIZEOF type=IDENTIFIER;
 
 instanceArgument : IDENTIFIER COLON expr ;
 
-instanceExpr : name=IDENTIFIER LBRACE ( instanceArgument (COMMA instanceArgument) )* RBRACE
+instanceExpr : name=IDENTIFIER LBRACE ( instanceArgument ( COMMA instanceArgument ) )* RBRACE
              | name=IDENTIFIER LBRACE instanceArgument RBRACE
              | name=IDENTIFIER LBRACE RBRACE
              ;
@@ -106,7 +106,7 @@ unaryExpr : op=(BANG | MINUS) rhs=unaryExpr
           | callExpr
           ;
 
-get : DOT IDENTIFIER;
+get : DOT IDENTIFIER ;
 
 arguments :  LPAREN ( expr (COMMA expr)* )? RPAREN ;
 

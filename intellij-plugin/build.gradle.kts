@@ -1,4 +1,5 @@
 import org.jetbrains.grammarkit.tasks.GenerateLexer
+import org.jetbrains.grammarkit.tasks.GenerateParser
 import org.jetbrains.intellij.tasks.PatchPluginXmlTask
 
 plugins {
@@ -39,15 +40,23 @@ tasks {
     kotlinOptions.jvmTarget = "11"
   }
 
-  val generatePlankGrammar = register<GenerateLexer>("generatePlankGrammar") {
+  val generatePlankParser = register<GenerateParser>("generatePlankParser") {
+    source = "grammar/plank.bnf"
+    targetRoot = "src/main/gen"
+    pathToParser = "com/lorenzoog/jplank/intellijplugin/parser/PlankParser.java"
+    pathToPsiRoot = "com/lorenzoog/jplank/intellijplugin/psi"
+    purgeOldFiles = true
+  }
+
+  val generatePlankLexer = register<GenerateLexer>("generatePlankLexer") {
     source = "grammar/plank.flex"
-    targetDir = "src/main/gen/com/lorenzoog/jplank/intellijplugin"
+    targetDir = "src/main/gen/com/lorenzoog/jplank/intellijplugin/lexer"
     targetClass = "IdeaPlankLexer"
     purgeOldFiles = true
   }
 
-  build {
-    dependsOn(generatePlankGrammar)
+  compileKotlin {
+    dependsOn(generatePlankLexer)
   }
 
   getByName<PatchPluginXmlTask>("patchPluginXml") {

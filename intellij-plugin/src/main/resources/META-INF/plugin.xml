@@ -8,7 +8,14 @@
     ]]></description>
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileTypeFactory implementation="com.lorenzoog.jplank.intellijplugin.PlankFileTypeFactory" />
+    <fileTypeFactory implementation="com.lorenzoog.jplank.intellijplugin.PlankFileTypeFactory"/>
+    <completion.contributor
+      implementationClass="com.lorenzoog.jplank.intellijplugin.contributors.PlankCompletionContributor"
+    />
+    <lang.parserDefinition
+      language="plank"
+      implementationClass="com.lorenzoog.jplank.intellijplugin.parser.PlankParserDefinition"
+    />
     <lang.syntaxHighlighterFactory
       language="plank"
       implementationClass="com.lorenzoog.jplank.intellijplugin.PlankLanguageHighlighterFactory"

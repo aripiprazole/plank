@@ -1,9 +1,9 @@
-package com.lorenzoog.jplank.intellijplugin;
+package com.lorenzoog.jplank.intellijplugin.lexer;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
-import com.lorenzoog.jplank.intellijplugin.PlankElementType;
+import com.lorenzoog.jplank.intellijplugin.psi.PlankTypes;
 
 %%
 
@@ -21,104 +21,53 @@ STRING = \" ([^\"\\\n\r]|\\[^\n\r])* \"
 INT = [0-9]+
 DOUBLE = {INT} . {INT}
 IDENTIFIER = [_a-zA-Z][_a-zA-Z0-9]*
+GENERIC = \' {IDENTIFIER}
 
 %state EOF
 
 %%
 
-<YYINITIAL> "fun" { return PlankElementType.FUN; }
-
-<YYINITIAL> "import" { return PlankElementType.IMPORT; }
-
-<YYINITIAL> "let" { return PlankElementType.LET; }
-
-<YYINITIAL> "mutable" { return PlankElementType.MUTABLE; }
-
-<YYINITIAL> "type" { return PlankElementType.TYPE; }
-
-<YYINITIAL> "type" { return PlankElementType.TYPE; }
-
-<YYINITIAL> "native" { return PlankElementType.NATIVE; }
-
-<YYINITIAL> "if" { return PlankElementType.IF; }
-
-<YYINITIAL> "else" { return PlankElementType.ELSE; }
-
-<YYINITIAL> "sizeof" { return PlankElementType.SIZEOF; }
-
-<YYINITIAL> "true" { return PlankElementType.TRUE; }
-
-<YYINITIAL> "false" { return PlankElementType.FALSE; }
-
-<YYINITIAL> "return" { return PlankElementType.RETURN; }
-
-<YYINITIAL> "Void" { return PlankElementType.VOID_TYPE; }
-
-<YYINITIAL> "Int" { return PlankElementType.INT_TYPE; }
-
-<YYINITIAL> "Double" { return PlankElementType.DOUBLE_TYPE; }
-
-<YYINITIAL> "Bool" { return PlankElementType.BOOL_TYPE; }
-
-<YYINITIAL> "String" { return PlankElementType.STRING_TYPE; }
-
-<YYINITIAL> "println" { return PlankElementType.PRINTLN_FUNCTION; }
-
-<YYINITIAL> "print" { return PlankElementType.PRINT_FUNCTION; }
-
-<YYINITIAL> "(" { return PlankElementType.RPAREN; }
-
-<YYINITIAL> ")" { return PlankElementType.LPAREN; }
-
-<YYINITIAL> "{" { return PlankElementType.LBRACE; }
-
-<YYINITIAL> "}" { return PlankElementType.RBRACE; }
-
-<YYINITIAL> ">" { return PlankElementType.GREATER; }
-
-<YYINITIAL> ">=" { return PlankElementType.GREATER_EQUALS; }
-
-<YYINITIAL> "<" { return PlankElementType.LESS; }
-
-<YYINITIAL> "<=" { return PlankElementType.LESS_EQUALS; }
-
-<YYINITIAL> "*" { return PlankElementType.STAR; }
-
-<YYINITIAL> "-" { return PlankElementType.MINUS; }
-
-<YYINITIAL> "+" { return PlankElementType.PLUS; }
-
-<YYINITIAL> "/" { return PlankElementType.SLASH; }
-
-<YYINITIAL> "&" { return PlankElementType.AMPERSAND; }
-
-<YYINITIAL> "=" { return PlankElementType.EQUALS; }
-
-<YYINITIAL> "==" { return PlankElementType.EQUALS_EQUALS; }
-
-<YYINITIAL> "!=" { return PlankElementType.BANG_EQUALS; }
-
-<YYINITIAL> "." { return PlankElementType.DOT; }
-
-<YYINITIAL> "->" { return PlankElementType.ARROW_LEFT; }
-
-<YYINITIAL> "," { return PlankElementType.COMMA; }
-
-<YYINITIAL> ":" { return PlankElementType.COLON; }
-
-<YYINITIAL> ";" { return PlankElementType.SEMI; }
-
-<YYINITIAL> {IDENTIFIER} { return PlankElementType.IDENTIFIER; }
-
-<YYINITIAL> {STRING} { return PlankElementType.STRING; }
-
-<YYINITIAL> {INT} { return PlankElementType.INT; }
-
-<YYINITIAL> {DOUBLE} { return PlankElementType.DOUBLE; }
-
-<YYINITIAL> <<EOF>> { yybegin(EOF); return PlankElementType.EOF; }
-
-({NEWLINE}|{WS})+  { return PlankElementType.WS; }
+<YYINITIAL> "fun" { return PlankTypes.FUN; }
+<YYINITIAL> "import" { return PlankTypes.IMPORT; }
+<YYINITIAL> "let" { return PlankTypes.LET; }
+<YYINITIAL> "mutable" { return PlankTypes.MUTABLE; }
+<YYINITIAL> "type" { return PlankTypes.TYPE; }
+<YYINITIAL> "native" { return PlankTypes.NATIVE; }
+<YYINITIAL> "if" { return PlankTypes.IF; }
+<YYINITIAL> "else" { return PlankTypes.ELSE; }
+<YYINITIAL> "sizeof" { return PlankTypes.SIZEOF; }
+<YYINITIAL> "true" { return PlankTypes.TRUE; }
+<YYINITIAL> "false" { return PlankTypes.FALSE; }
+<YYINITIAL> "return" { return PlankTypes.RETURN; }
+<YYINITIAL> "(" { return PlankTypes.LPAREN; }
+<YYINITIAL> ")" { return PlankTypes.RPAREN; }
+<YYINITIAL> "{" { return PlankTypes.LBRACE; }
+<YYINITIAL> "}" { return PlankTypes.RBRACE; }
+<YYINITIAL> ">" { return PlankTypes.GREATER; }
+<YYINITIAL> ">=" { return PlankTypes.GREATER_EQUAL; }
+<YYINITIAL> "<" { return PlankTypes.LESS; }
+<YYINITIAL> "<=" { return PlankTypes.LESS_EQUAL; }
+<YYINITIAL> "*" { return PlankTypes.STAR; }
+<YYINITIAL> "++" { return PlankTypes.CONCAT; }
+<YYINITIAL> "-" { return PlankTypes.MINUS; }
+<YYINITIAL> "+" { return PlankTypes.PLUS; }
+<YYINITIAL> "/" { return PlankTypes.SLASH; }
+<YYINITIAL> "&" { return PlankTypes.AMPERSAND; }
+<YYINITIAL> "=" { return PlankTypes.EQUAL; }
+<YYINITIAL> "==" { return PlankTypes.EQUAL_EQUAL; }
+<YYINITIAL> "!=" { return PlankTypes.BANG_EQUAL; }
+<YYINITIAL> "." { return  PlankTypes.DOT; }
+<YYINITIAL> "->" { return PlankTypes.ARROW_LEFT; }
+<YYINITIAL> "," { return PlankTypes.COMMA; }
+<YYINITIAL> ":" { return PlankTypes.COLON; }
+<YYINITIAL> ";" { return PlankTypes.SEMICOLON; }
+<YYINITIAL> {IDENTIFIER} { return PlankTypes.IDENTIFIER; }
+<YYINITIAL> {STRING} { return PlankTypes.STRING; }
+<YYINITIAL> {INT} { return PlankTypes.INT; }
+<YYINITIAL> {DOUBLE} { return PlankTypes.DECIMAL; }
+<YYINITIAL> {GENERIC} { return PlankTypes.IDENTIFIER; }
+<YYINITIAL> <<EOF>> { yybegin(EOF); return PlankTypes.EOF; }
+({NEWLINE}|{WS})+  { return PlankTypes.WS; }
 
 [^] { return TokenType.BAD_CHARACTER; }
 
