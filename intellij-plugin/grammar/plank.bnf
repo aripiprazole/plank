@@ -1,0 +1,123 @@
+{
+  parserClass="com.lorenzoog.jplank.intellijplugin.parser.PlankParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Plank"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.lorenzoog.jplank.intellijplugin.psi"
+  psiImplPackage="com.lorenzoog.jplank.intellijplugin.psi.impl"
+
+  elementTypeHolderClass="com.lorenzoog.jplank.intellijplugin.psi.PlankTypes"
+  elementTypeClass="com.lorenzoog.jplank.intellijplugin.psi.PlankElementType"
+  tokenTypeClass="com.lorenzoog.jplank.intellijplugin.psi.PlankTokenType"
+
+  psiImplUtilClass="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankPsiImplUtil"
+}
+
+program ::= imports ? decl * EOF ;
+
+imports ::= importDirective * ;
+importDirective ::= IMPORT IDENTIFIER SEMICOLON ;
+
+// typedef
+
+parameter ::= IDENTIFIER COLON typeDef ;
+
+callableTypeDef ::= LPAREN ( typeDef ( COMMA typeDef ) * ) ? RPAREN ARROW_LEFT typeDef ;
+nameTypeDef ::= IDENTIFIER ;
+pointerTypeDef ::= STAR typeDef ;
+arrayTypeDef ::= LBRACKET typeDef RBRACKET ;
+genericAccessTypeDef ::= APHOSTROPHE IDENTIFIER ;
+genericTypeDef ::= IDENTIFIER LESS ( typeDef ( COMMA typeDef ) * ) ? GREATER ;
+
+typeDef ::= nameTypeDef
+          | callableTypeDef
+          | arrayTypeDef
+          | genericAccessTypeDef
+          | genericTypeDef
+          | pointerTypeDef
+          ;
+
+// declarations
+decl ::= letDecl WS *
+       | funDecl WS *
+       | nativeFunDecl WS *
+       | classDecl WS *
+       ;
+
+// class
+field ::= MUTABLE ? parameter ;
+
+classDecl ::= TYPE IDENTIFIER EQUAL LBRACE ( field ( COMMA field ) * ) ? RBRACE SEMICOLON ;
+
+// let decl
+letDecl ::= LET MUTABLE? IDENTIFIER EQUAL expr SEMICOLON
+          | LET MUTABLE? IDENTIFIER COLON typeDef EQUAL expr SEMICOLON
+          ;
+
+funHeader ::= FUN IDENTIFIER LPAREN ( parameter ( COMMA parameter ) * ) ? RPAREN COLON typeDef ;
+
+// functions
+nativeFunDecl ::= NATIVE funHeader SEMICOLON ;
+funDecl ::= funHeader LBRACE stmt * RBRACE ;
+
+// statements
+exprStmt ::= expr SEMICOLON ;
+returnStmt ::= RETURN expr ? SEMICOLON ;
+
+stmt ::= decl
+       | ifExpr WS *
+       | exprStmt WS *
+       | returnStmt WS *
+       ;
+
+// if expression
+thenBranch ::= LBRACE ( stmt * ) ? RBRACE;
+
+elseBranch ::= ELSE expr
+             | ELSE LBRACE ( stmt * ) ? RBRACE
+             ;
+
+ifExpr ::= IF LPAREN expr RPAREN thenBranch elseBranch? ;
+
+// assign expression
+assignExpr ::= ( callExpr DOT ) ? IDENTIFIER EQUAL assignExpr
+             | equality
+             ;
+
+equality ::= comparison ( ( EQUAL_EQUAL | BANG_EQUAL ) comparison ) * ;
+comparison ::= term ( ( GREATER | GREATER_EQUAL | LESS | LESS_EQUAL ) term ) * ;
+term ::= factor ( ( MINUS | PLUS | CONCAT ) factor ) * ;
+factor ::= unary ( ( STAR | SLASH ) unary ) * ;
+unary ::= ( BANG | MINUS ) unary | callExpr ;
+
+// call expression
+arguments ::= LPAREN ( expr ( COMMA expr ) * ) ? RPAREN ;
+get ::= DOT IDENTIFIER ;
+callExpr ::= pointer ( arguments | get ) * ;
+
+// primary expression
+pointer ::= STAR expr
+          | AMPERSAND expr
+          | primary
+          ;
+
+primary ::= STRING
+          | INT
+          | DECIMAL
+          | TRUE
+          | FALSE
+          | LPAREN expr RPAREN
+          | IDENTIFIER
+          ;
+
+// expressions
+sizeofExpr ::= SIZEOF IDENTIFIER ;
+instanceExpr ::= IDENTIFIER LBRACE ( argument ( COMMA argument ) * ) ? RBRACE ;
+
+expr ::= assignExpr
+       | ifExpr
+       | instanceExpr
+       | sizeofExpr
+       ;
+

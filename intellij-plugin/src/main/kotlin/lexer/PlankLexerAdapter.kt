@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.intellijplugin
+package com.lorenzoog.jplank.intellijplugin.lexer
 
 import com.intellij.lexer.FlexAdapter
 
