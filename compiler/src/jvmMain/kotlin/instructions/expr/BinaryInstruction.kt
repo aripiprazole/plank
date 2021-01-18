@@ -1,6 +1,5 @@
 package com.lorenzoog.jplank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.element.Expr
@@ -16,16 +15,20 @@ class BinaryInstruction(val descriptor: Expr.Binary) : PlankInstruction() {
       ?: return context.report("rhs is null", descriptor)
 
     return when (descriptor.op) {
-      Operation.Sub -> context.builder.createFSub(lhs, rhs, "subtmp")
-      Operation.Mul -> context.builder.createFMul(lhs, rhs, "multmp")
-      Operation.Div -> context.builder.createFDiv(lhs, rhs, "divtmp")
-      Operation.Add -> if (Builtin.String.isAssignableBy(context.binding.visit(descriptor))) {
+      Operation.Sub -> context.builder.createSub(rhs, lhs, "subtmp")
+      Operation.Mul -> context.builder.createMul(lhs, rhs, "multmp")
+      Operation.Div -> {
+        val frhs = context.dataTypeConverter.convertToFloat(context, rhs)
+        val flhs = context.dataTypeConverter.convertToFloat(context, lhs)
+
+        context.builder.createFDiv(flhs, frhs, "divtmp")
+      }
+      Operation.Add -> context.builder.createAdd(lhs, rhs, "addtmp")
+      Operation.Concat -> {
         val concatFunction = context.runtime.concatFunction
           ?: return context.report("concat function is null", descriptor)
 
-        context.builder.createCall(concatFunction, listOf(lhs, rhs))
-      } else {
-        context.builder.createFAdd(lhs, rhs, "addtmp")
+        return context.builder.createCall(concatFunction, listOf(lhs, rhs))
       }
     }
   }

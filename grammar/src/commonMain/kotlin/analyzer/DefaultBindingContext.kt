@@ -5,6 +5,7 @@ import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Decl.FunDecl.Modifier
 import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.Expr.Binary.Operation.Add
+import com.lorenzoog.jplank.element.Expr.Binary.Operation.Concat
 import com.lorenzoog.jplank.element.Expr.Binary.Operation.Div
 import com.lorenzoog.jplank.element.Expr.Binary.Operation.Mul
 import com.lorenzoog.jplank.element.Expr.Binary.Operation.Sub
@@ -77,7 +78,7 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
     when (const.value) {
       is Boolean -> Builtin.Bool
       is Unit -> Builtin.Void
-      is String -> Builtin.String
+      is String -> Builtin.Char.pointer
       is Int,
       is Short,
       is Byte -> Builtin.Int
@@ -118,13 +119,9 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
       Sub -> Builtin.Numeric
       Mul -> Builtin.Numeric
       Div -> Builtin.Numeric
+      Concat -> Builtin.Char.pointer
     }
     val rhs = visit(binary.rhs)
-
-    // string concatenation
-    if (Builtin.String.isAssignableBy(lhs)) {
-      return@bind lhs
-    }
 
     if (!op.isAssignableBy(lhs)) {
       _violations += TypeViolation(op, lhs, binary.lhs.location)
@@ -134,7 +131,11 @@ class DefaultBindingContext(private val path: List<PkFile> = emptyList()) : Bind
       _violations += TypeViolation(op, rhs, binary.rhs.location)
     }
 
-    Builtin.Numeric
+    when {
+      Builtin.Int.isAssignableBy(lhs) && Builtin.Int.isAssignableBy(rhs) -> Builtin.Int
+      Builtin.Char.pointer.isAssignableBy(rhs) -> Builtin.Char.pointer
+      else -> Builtin.Double
+    }
   }
 
   override fun visitUnaryExpr(unary: Expr.Unary): PkType = unary.bind {

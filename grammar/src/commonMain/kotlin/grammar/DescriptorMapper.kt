@@ -293,6 +293,7 @@ class DescriptorMapper(
         "-" -> Expr.Binary.Operation.Sub
         "*" -> Expr.Binary.Operation.Mul
         "/" -> Expr.Binary.Operation.Div
+        "++" -> Expr.Binary.Operation.Concat
         else -> {
           throw ExpectingViolation("binary operator", ctx.toString(), ctx.start.location)
         }
@@ -385,7 +386,7 @@ class DescriptorMapper(
       return Expr.Access(identifier.symbol!!, identifier.symbol.location)
     }
 
-    val node = ctx.INT() ?: error("Invalid primary")
+    val node = ctx.INT() ?: ctx.DECIMAL() ?: error("Invalid primary")
     val value =
       node.text.toIntOrNull()
         ?: node.text.toDoubleOrNull()

@@ -2,6 +2,8 @@ package com.lorenzoog.jplank.compiler
 
 import com.lorenzoog.jplank.analyzer.BindingContext
 import com.lorenzoog.jplank.analyzer.type.PkType
+import com.lorenzoog.jplank.compiler.converter.DataTypeConverter
+import com.lorenzoog.jplank.compiler.converter.DefaultDataTypeConverter
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.compiler.instructions.element.IRFunction
 import com.lorenzoog.jplank.compiler.instructions.element.IRNamedFunction
@@ -29,6 +31,7 @@ data class PlankContext(
   val runtime: PlankRuntime,
   val currentFile: PkFile,
   val mangler: Mangler,
+  val dataTypeConverter: DataTypeConverter,
   private val enclosing: PlankContext?,
   private val values: MutableMap<String, AllocaInstruction>,
   private val types: MutableMap<String, StructType>,
@@ -123,6 +126,7 @@ data class PlankContext(
         runtime = PlankRuntime(builder, module),
         currentFile = currentFile,
         mangler = SimpleMangler(),
+        dataTypeConverter = DefaultDataTypeConverter(),
         enclosing = null,
         values = mutableMapOf(),
         functions = mutableMapOf(),

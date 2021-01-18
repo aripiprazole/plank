@@ -1,6 +1,6 @@
 import io;
 
-fun main(argv: Int, argc: *String): Void {
+fun main(argv: Int, argc: **Char): Void {
   let i = 5;
   let r = &i;
 

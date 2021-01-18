@@ -42,6 +42,8 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstructio
       }
 
       if (!function.verify(VerifierFailureAction.PrintMessage)) {
+        context.report<Nothing>(function.getIR().toString())
+
         return context.report("invalid function", descriptor)
       }
 

@@ -1,6 +1,5 @@
 #include <string>
-#include <cstring>
-#include <functional>
+#include <iostream>
 
 #include "plank/object.h"
 
@@ -17,15 +16,19 @@ plank::Object::Object(const char *type, void *value) : type(type), value(value) 
 
 extern "C" {
 
-plank::Object *Plank_Create_Object(const char *type, void *value) {
-  if (strcmp(type, "String") == 0) {
+plank::Object *Plank_Create_Object(const char *type_, void *value) {
+  std::string type(type_);
+
+  if (type == "*Char") {
     return Plank_Create_String(reinterpret_cast<char *>(value));
-  } else if (strcmp(type, "Int") == 0 || strcmp(type, "Double") == 0) {
+  } else if (type == "Double") {
+    return Plank_Create_Double(reinterpret_cast<double *>(value));
+  } else if (type == "Int") {
     return Plank_Create_Num(reinterpret_cast<int *>(value));
-  } else if (strcmp(type, "Bool") == 0) {
+  } else if (type == "Bool") {
     return Plank_Create_Bool(reinterpret_cast<bool *>(value));
   } else {
-    return new plank::Object(type, value);
+    return new plank::Object(type.c_str(), value);
   }
 }
 
@@ -39,11 +42,25 @@ plank::Object *Plank_Create_String(char *s) {
   return o;
 }
 
+plank::Object *Plank_Create_Double(double *i) {
+  auto *o = new plank::Object("Double", i);
+
+  o->toString = [](plank::Object *o) {
+    auto *v = (double *) o->value;
+
+    return (new std::string(std::to_string(*v)))->c_str();
+  };
+
+  return o;
+}
+
 plank::Object *Plank_Create_Num(int *i) {
   auto *o = new plank::Object("Int", i);
 
   o->toString = [](plank::Object *o) {
-    return (new std::string(std::to_string(reinterpret_cast<unsigned long>(o->value))))->c_str();
+    auto *v = (int *) o->value;
+
+    return (new std::string(std::to_string(*v)))->c_str();
   };
 
   return o;

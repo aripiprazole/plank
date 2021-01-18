@@ -1,0 +1,11 @@
+import io;
+import string;
+
+type Struct = { a: Int, b: *Char };
+
+fun main(argc: Int, argv: **Char): Void {
+  println("SUM DOUBLE + DOUBLE " ++ string(4.4 + 4.31));
+  println("SUM DOUBLE + INT " ++ string(4.4 + 4));
+  println("SUM INT + INT " ++ string(4 + 4));
+  println("SUM INT + DOUBLE " ++ string(1 + 1.5));
+}

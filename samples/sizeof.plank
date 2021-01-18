@@ -1,7 +1,7 @@
 import io;
 
-type Person = { name: String, age: Int };
+type Person = { name: *Char, age: Int };
 
-fun main(argc: Int, argv: *String): Void {
+fun main(argc: Int, argv: **String): Void {
   println(sizeof Person);
 }

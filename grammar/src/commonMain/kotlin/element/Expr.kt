@@ -69,7 +69,7 @@ sealed class Expr : PkElement {
     val rhs: Expr,
     override val location: Location
   ) : Expr() {
-    enum class Operation { Add, Sub, Mul, Div }
+    enum class Operation { Add, Sub, Mul, Div, Concat }
 
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitBinaryExpr(this)

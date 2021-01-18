@@ -8,6 +8,9 @@ sealed class PkType : TypeCompanion {
   open val inherits: List<PkType> = emptyList()
   open val isPrimitive = false
 
+  val pointer by lazy { Pointer(this) }
+
+  val isFP get() = this == Builtin.Double
   val isAny get() = this == Builtin.Any || this is Generic
   val isVoid get() = this == Builtin.Void
   val isGeneric get() = genericArity != 0

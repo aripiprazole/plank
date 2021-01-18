@@ -1,5 +1,6 @@
 package com.lorenzoog.jplank.compiler.runtime
 
+import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.expr.ReferenceInstruction
 import com.lorenzoog.jplank.element.Expr
@@ -51,13 +52,19 @@ class PlankRuntime(
     val value = context.map(descriptor).codegen(context) ?: return null
     val type = context.binding.visit(descriptor)
 
-    val v = if (type.isPrimitive) {
-      val ref = ReferenceInstruction.getReference(context, descriptor)
-        ?: return context.report("failed to get reference of descriptor", descriptor)
+    val v = when {
+      Builtin.Char.pointer.isAssignableBy(type) -> {
+        value
+      }
+      type.isPrimitive -> {
+        val ref = ReferenceInstruction.getReference(context, descriptor)
+          ?: return context.report("failed to get reference of descriptor", descriptor)
 
-      context.builder.createBitCast(ref, types.voidPtr, "bitcasttmp")
-    } else {
-      value
+        context.builder.createBitCast(ref, types.voidPtr, "bitcasttmp")
+      }
+      else -> {
+        value
+      }
     }
 
     return builder.createCall(
@@ -88,8 +95,8 @@ class PlankRuntime(
   }
 
   companion object {
-    const val EQ_CALL = "Plank_Builtin_eq"
-    const val NEQ_CALL = "Plank_Builtin_neq"
-    const val CONCAT_CALL = "Plank_Builtin_concat"
+    const val EQ_CALL = "Plank_Internal_eq"
+    const val NEQ_CALL = "Plank_Internal_neq"
+    const val CONCAT_CALL = "internal_Plank_Internal_concat"
   }
 }

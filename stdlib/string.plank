@@ -1,0 +1,1 @@
+native fun string(any: 'a): *Char;

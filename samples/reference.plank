@@ -1,6 +1,6 @@
 import io;
 
-fun main(argc: Int, argv: *String): Void {
+fun main(argc: Int, argv: **Char): Void {
   let var = 4;
   let ref = &var;
 

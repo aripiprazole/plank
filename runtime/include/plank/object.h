@@ -21,6 +21,8 @@ plank::Object *Plank_Create_Object(const char *type, void *value);
 
 plank::Object *Plank_Create_String(char *s);
 
+plank::Object *Plank_Create_Double(double *i);
+
 plank::Object *Plank_Create_Num(int *i);
 
 plank::Object *Plank_Create_Bool(bool *b);
