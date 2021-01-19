@@ -25,7 +25,7 @@ Hello world in plank:
 ```kotlin
 import io;
 
-fun main(argc: Int, argv: *String) {
+fun main(argc: Int, argv: **Char): Void {
   println("Hello, world");
 }
 ```
