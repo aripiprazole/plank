@@ -2,6 +2,6 @@ import io;
 
 type Person = { name: *Char, age: Int };
 
-fun main(argc: Int, argv: **String): Void {
+fun main(argc: Int, argv: **Char): Void {
   println(sizeof Person);
 }
