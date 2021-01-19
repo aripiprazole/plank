@@ -1,11 +1,11 @@
 package com.lorenzoog.jplank.compiler
 
 import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.analyzer.type.PkType
+import com.lorenzoog.jplank.analyzer.type.PlankType
 import io.vexelabs.bitbuilder.llvm.ir.Type
 
 class TypeMapper {
-  fun map(context: PlankContext, type: PkType?): Type? {
+  fun map(context: PlankContext, type: PlankType?): Type? {
     return when (type) {
       null -> context.runtime.types.void
       Builtin.Void -> context.runtime.types.void
@@ -15,27 +15,27 @@ class TypeMapper {
       Builtin.Bool -> context.runtime.types.i1
       Builtin.Char.pointer -> context.runtime.types.string
       Builtin.Any -> context.runtime.types.any.getPointerType()
-      is PkType.Generic -> context.runtime.types.any.getPointerType()
-      is PkType.Array -> mapPkArray(context, type)
-      is PkType.Struct -> mapPkStructure(context, type)
-      is PkType.Callable -> mapPkCallable(context, type)
-      is PkType.Pointer -> mapPkPtr(context, type)
+      is PlankType.Generic -> context.runtime.types.any.getPointerType()
+      is PlankType.Array -> mapPkArray(context, type)
+      is PlankType.Struct -> mapPkStructure(context, type)
+      is PlankType.Callable -> mapPkCallable(context, type)
+      is PlankType.Pointer -> mapPkPtr(context, type)
     }
   }
 
-  private fun mapPkPtr(context: PlankContext, ptr: PkType.Pointer): Type? {
+  private fun mapPkPtr(context: PlankContext, ptr: PlankType.Pointer): Type? {
     return map(context, ptr.inner)?.getPointerType()
   }
 
-  private fun mapPkArray(context: PlankContext, array: PkType.Array): Type? {
+  private fun mapPkArray(context: PlankContext, array: PlankType.Array): Type? {
     return map(context, array.inner)?.getPointerType()
   }
 
-  private fun mapPkStructure(context: PlankContext, structure: PkType.Struct): Type? {
+  private fun mapPkStructure(context: PlankContext, structure: PlankType.Struct): Type? {
     return context.findStructure(structure.name)
   }
 
-  private fun mapPkCallable(context: PlankContext, callable: PkType.Callable): Type? {
+  private fun mapPkCallable(context: PlankContext, callable: PlankType.Callable): Type? {
     val returnType =
       context.map(callable.returnType) ?: return context.report("returnType is null {$callable}")
 

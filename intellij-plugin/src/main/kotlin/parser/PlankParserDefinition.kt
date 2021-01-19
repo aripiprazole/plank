@@ -12,7 +12,7 @@ import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 import com.lorenzoog.jplank.intellijplugin.Plank
 import com.lorenzoog.jplank.intellijplugin.lexer.PlankLexerAdapter
-import com.lorenzoog.jplank.intellijplugin.psi.PlankFile
+import com.lorenzoog.jplank.intellijplugin.psi.PlankPsiFile
 import com.lorenzoog.jplank.intellijplugin.psi.PlankTypes
 
 class PlankParserDefinition : ParserDefinition {
@@ -25,7 +25,7 @@ class PlankParserDefinition : ParserDefinition {
   }
 
   override fun getFileNodeType(): IFileElementType {
-    return IFileElementType(Plank.INSTANCE)
+    return IFileElementType(Plank)
   }
 
   override fun getWhitespaceTokens(): TokenSet {
@@ -45,7 +45,7 @@ class PlankParserDefinition : ParserDefinition {
   }
 
   override fun createFile(viewProvider: FileViewProvider): PsiFile {
-    return PlankFile(viewProvider)
+    return PlankPsiFile(viewProvider)
   }
 
   companion object {

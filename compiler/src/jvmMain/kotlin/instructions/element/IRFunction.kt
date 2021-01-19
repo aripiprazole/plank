@@ -1,6 +1,6 @@
 package com.lorenzoog.jplank.compiler.instructions.element
 
-import com.lorenzoog.jplank.analyzer.type.PkType
+import com.lorenzoog.jplank.analyzer.type.PlankType
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Expr
@@ -13,7 +13,7 @@ abstract class IRFunction : IRElement() {
   abstract val descriptor: Decl
 
   fun call(context: PlankContext, arguments: List<Expr>): Value? {
-    val type = context.binding.visit(descriptor) as? PkType.Callable
+    val type = context.binding.visit(descriptor) as? PlankType.Callable
       ?: return context.report("callable type is null", descriptor)
 
     val valueArguments = arguments

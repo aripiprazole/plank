@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+  implementation(project(":grammar"))
   testImplementation("junit", "junit", "4.12")
 }
 

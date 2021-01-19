@@ -1,16 +1,16 @@
 package com.lorenzoog.jplank.analyzer
 
-import com.lorenzoog.jplank.analyzer.type.PkType
+import com.lorenzoog.jplank.analyzer.type.PlankType
 
 object Builtin {
-  val Void: PkType = PkType.Struct("Void")
-  val Numeric: PkType = PkType.Struct("Numeric", isPrimitive = true)
-  val Int: PkType = PkType.Struct("Int", inherits = listOf(Numeric), isPrimitive = true)
-  val Double: PkType = PkType.Struct("Double", inherits = listOf(Numeric), isPrimitive = true)
-  val Bool: PkType = PkType.Struct("Bool", isPrimitive = true)
-  val Any: PkType = PkType.Struct("Any")
-  val String: PkType = PkType.Struct("String")
-  val Char: PkType = PkType.Struct("Char")
+  val Void: PlankType = PlankType.Struct("Void")
+  val Numeric: PlankType = PlankType.Struct("Numeric", isPrimitive = true)
+  val Int: PlankType = PlankType.Struct("Int", inherits = listOf(Numeric), isPrimitive = true)
+  val Double: PlankType = PlankType.Struct("Double", inherits = listOf(Numeric), isPrimitive = true)
+  val Bool: PlankType = PlankType.Struct("Bool", isPrimitive = true)
+  val Any: PlankType = PlankType.Struct("Any")
+  val String: PlankType = PlankType.Struct("String")
+  val Char: PlankType = PlankType.Struct("Char")
 
   val values = mapOf(
     "Void" to Void,

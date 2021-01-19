@@ -10,7 +10,12 @@
   <extensions defaultExtensionNs="com.intellij">
     <fileTypeFactory implementation="com.lorenzoog.jplank.intellijplugin.PlankFileTypeFactory"/>
     <completion.contributor
+      language="plank"
       implementationClass="com.lorenzoog.jplank.intellijplugin.contributors.PlankCompletionContributor"
+    />
+    <externalAnnotator
+      language="plank"
+      implementationClass="com.lorenzoog.jplank.intellijplugin.annotator.PlankAnnotator"
     />
     <lang.parserDefinition
       language="plank"

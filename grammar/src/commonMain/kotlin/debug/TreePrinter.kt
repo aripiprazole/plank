@@ -1,6 +1,6 @@
 package com.lorenzoog.jplank.debug
 
-import com.lorenzoog.jplank.element.PkElement
+import com.lorenzoog.jplank.element.PlankElement
 
 object TreePrinter {
   fun print(any: Any): String {
@@ -22,7 +22,7 @@ object TreePrinter {
         is List<*> -> {
           print(value.asMap(), "$childrenPrefix├── $name: ", "$childrenPrefix│   ", "List<Expr>")
         }
-        is PkElement -> {
+        is PlankElement -> {
           val typeName = value::class.simpleName!!
 
           print(value.asMap(), "$childrenPrefix├── $name: ", "$childrenPrefix│   ", typeName)

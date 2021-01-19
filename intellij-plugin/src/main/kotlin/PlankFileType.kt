@@ -3,10 +3,10 @@ package com.lorenzoog.jplank.intellijplugin
 import com.intellij.openapi.fileTypes.LanguageFileType
 import javax.swing.Icon
 
-class PlankFileType : LanguageFileType(Plank.INSTANCE) {
-  private val name = "Plank"
-  private val description = "Plank programming language file"
-  private val defaultExtension = "plank"
+object PlankFileType : LanguageFileType(Plank) {
+  private const val name = "Plank"
+  private const val description = "Plank programming language file"
+  private const val defaultExtension = "plank"
 
   override fun getName(): String {
     return name
@@ -22,9 +22,5 @@ class PlankFileType : LanguageFileType(Plank.INSTANCE) {
 
   override fun getIcon(): Icon? {
     return null
-  }
-
-  companion object {
-    val INSTANCE = PlankFileType()
   }
 }

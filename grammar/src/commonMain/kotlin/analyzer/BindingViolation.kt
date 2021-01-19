@@ -1,6 +1,6 @@
 package com.lorenzoog.jplank.analyzer
 
-import com.lorenzoog.jplank.analyzer.type.PkType
+import com.lorenzoog.jplank.analyzer.type.PlankType
 import com.lorenzoog.jplank.element.Location
 import com.lorenzoog.jplank.message.MessageRenderer
 
@@ -12,7 +12,7 @@ sealed class BindingViolation {
 
 data class TypeViolation(
   val expected: Any,
-  val actual: PkType,
+  val actual: PlankType,
   override val location: Location
 ) : BindingViolation() {
   override fun render(renderer: MessageRenderer) {

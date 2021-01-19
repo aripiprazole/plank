@@ -1,10 +1,10 @@
 package com.lorenzoog.jplank
 
-import com.lorenzoog.jplank.element.PkFile
+import com.lorenzoog.jplank.element.PlankFile
 
 class JPlank {
   fun compile(code: String) {
-    PkFile.of(code)
+    PlankFile.of(code)
 
     TODO("Compile")
   }

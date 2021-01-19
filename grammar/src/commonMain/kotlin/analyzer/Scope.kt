@@ -1,13 +1,13 @@
 package com.lorenzoog.jplank.analyzer
 
-import com.lorenzoog.jplank.analyzer.type.PkType
+import com.lorenzoog.jplank.analyzer.type.PlankType
 
 class Scope(
   val name: String,
   private val nested: Boolean,
   private val enclosing: Scope?
 ) {
-  private val types = mutableMapOf<String, PkType.Struct>()
+  private val types = mutableMapOf<String, PlankType.Struct>()
   private val variables = mutableMapOf<String, Variable>()
   private val expanded = mutableListOf<Scope>()
 
@@ -28,25 +28,25 @@ class Scope(
     return enclosing?.getScope(name)
   }
 
-  fun declare(name: String, type: PkType, mutable: Boolean = false) {
+  fun declare(name: String, type: PlankType, mutable: Boolean = false) {
     variables[name] = Variable(mutable, type)
   }
 
-  fun getOrCreate(name: String): PkType {
+  fun getOrCreate(name: String): PlankType {
     return types.getOrPut(name) {
-      PkType.Struct(name)
+      PlankType.Struct(name)
     }
   }
 
-  fun create(name: String, type: PkType.Struct) {
+  fun create(name: String, type: PlankType.Struct) {
     types[name] = type
   }
 
-  fun findType(name: String): PkType? {
+  fun findType(name: String): PlankType? {
     return Builtin.values[name] ?: findStructure(name)
   }
 
-  fun findStructure(name: String): PkType.Struct? {
+  fun findStructure(name: String): PlankType.Struct? {
     return types[name]
       ?: enclosing?.findStructure(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findStructure(name) }.firstOrNull()
@@ -58,7 +58,7 @@ class Scope(
       ?: expanded.filter { it != this }.mapNotNull { it.findVariable(name) }.firstOrNull()
   }
 
-  fun findFunction(name: String): PkType.Callable? {
-    return findVariable(name)?.type as? PkType.Callable
+  fun findFunction(name: String): PlankType.Callable? {
+    return findVariable(name)?.type as? PlankType.Callable
   }
 }

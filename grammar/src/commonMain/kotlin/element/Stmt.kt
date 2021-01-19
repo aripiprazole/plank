@@ -1,6 +1,6 @@
 package com.lorenzoog.jplank.element
 
-abstract class Stmt internal constructor() : PkElement {
+abstract class Stmt internal constructor() : PlankElement {
   interface Visitor<T> {
     fun visit(stmt: Stmt): T = stmt.accept(this)
 

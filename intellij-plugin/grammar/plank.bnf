@@ -21,14 +21,24 @@ importDirective ::= IMPORT IDENTIFIER SEMICOLON ;
 
 // typedef
 
-parameter ::= IDENTIFIER COLON typeDef ;
+parameter ::= IDENTIFIER COLON typeDef {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PlankNamedElement"
+  mixin="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankNamedElementImpl"
+  methods=[getName setName]
+};
 
 callableTypeDef ::= LPAREN ( typeDef ( COMMA typeDef ) * ) ? RPAREN ARROW_LEFT typeDef ;
-nameTypeDef ::= IDENTIFIER ;
+nameTypeDef ::= IDENTIFIER {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PlankNamedElement"
+  mixin="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankNamedElementImpl"
+  methods=[getName setName]
+};
 pointerTypeDef ::= STAR typeDef ;
 arrayTypeDef ::= LBRACKET typeDef RBRACKET ;
 genericAccessTypeDef ::= APHOSTROPHE IDENTIFIER ;
-genericTypeDef ::= IDENTIFIER LESS ( typeDef ( COMMA typeDef ) * ) ? GREATER ;
+genericTypeDef ::= IDENTIFIER LESS ( typeDef ( COMMA typeDef ) * ) ? GREATER {
+  methods=[getReceiver]
+};
 
 typeDef ::= nameTypeDef
           | callableTypeDef
@@ -46,20 +56,43 @@ decl ::= letDecl WS *
        ;
 
 // class
-field ::= MUTABLE ? parameter ;
+field ::= MUTABLE ? parameter {
+  methods=[getMutable]
+};
 
-classDecl ::= TYPE IDENTIFIER EQUAL LBRACE ( field ( COMMA field ) * ) ? RBRACE SEMICOLON ;
+classDecl ::= TYPE IDENTIFIER EQUAL LBRACE ( field ( COMMA field ) * ) ? RBRACE SEMICOLON {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PlankNamedElement"
+  methods=[getName setName getFields]
+};
 
 // let decl
 letDecl ::= LET MUTABLE? IDENTIFIER EQUAL expr SEMICOLON
-          | LET MUTABLE? IDENTIFIER COLON typeDef EQUAL expr SEMICOLON
+          | LET MUTABLE? IDENTIFIER COLON typeDef EQUAL expr SEMICOLON {
+            methods=[getName getMutable]
+          }
           ;
 
-funHeader ::= FUN IDENTIFIER LPAREN ( parameter ( COMMA parameter ) * ) ? RPAREN COLON typeDef ;
+funHeader ::= FUN IDENTIFIER LPAREN ( parameter ( COMMA parameter ) * ) ? RPAREN COLON typeDef {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PlankNamedElement"
+  methods=[getName setName]
+};
 
 // functions
 nativeFunDecl ::= NATIVE funHeader SEMICOLON ;
-funDecl ::= funHeader LBRACE stmt * RBRACE ;
+funDecl ::= funHeader LBRACE stmt * RBRACE  {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PsiScope"
+  mixin="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankDelegateScopedImpl"
+  methods=[
+    declare
+    define
+    expand
+    findFunction
+    findStruct
+    findType
+    findVariable
+    lookup
+  ]
+} ;
 
 // statements
 exprStmt ::= expr SEMICOLON ;
@@ -72,29 +105,86 @@ stmt ::= decl
        ;
 
 // if expression
-thenBranch ::= LBRACE ( stmt * ) ? RBRACE;
+thenBranch ::= LBRACE ( stmt * ) ? RBRACE {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PsiScope"
+  mixin="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankDelegateScopedImpl"
+  methods=[
+    declare
+    define
+    expand
+    findFunction
+    findStruct
+    findType
+    findVariable
+    lookup
+  ]
+} ;
 
 elseBranch ::= ELSE expr
-             | ELSE LBRACE ( stmt * ) ? RBRACE
-             ;
+             | ELSE LBRACE ( stmt * ) ? RBRACE {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PsiScope"
+  mixin="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankDelegateScopedImpl"
+  methods=[
+    declare
+    define
+    expand
+    findFunction
+    findStruct
+    findType
+    findVariable
+    lookup
+  ]
+} ;
 
 ifExpr ::= IF LPAREN expr RPAREN thenBranch elseBranch? ;
 
 // assign expression
-assignExpr ::= ( callExpr DOT ) ? IDENTIFIER EQUAL assignExpr
-             | equality
-             ;
+assign ::= IDENTIFIER EQUAL assignExpr {
+  methods=[getReceiver getValue]
+}
 
-equality ::= comparison ( ( EQUAL_EQUAL | BANG_EQUAL ) comparison ) * ;
-comparison ::= term ( ( GREATER | GREATER_EQUAL | LESS | LESS_EQUAL ) term ) * ;
-term ::= factor ( ( MINUS | PLUS | CONCAT ) factor ) * ;
-factor ::= unary ( ( STAR | SLASH ) unary ) * ;
-unary ::= ( BANG | MINUS ) unary | callExpr ;
+set ::= ( callExpr DOT ) ? IDENTIFIER EQUAL assignExpr {
+  methods=[getReceiver getValue]
+}
+
+assignExpr ::= assign | set | equality {
+  methods=[getValue]
+};
+
+equality ::= comparison ( ( EQUAL_EQUAL | BANG_EQUAL ) comparison ) * {
+  methods=[getLhs getRightmostOperands]
+};
+
+comparison ::= term ( ( GREATER | GREATER_EQUAL | LESS | LESS_EQUAL ) term ) * {
+  methods=[getLhs getRightmostOperands]
+};
+
+term ::= factor ( ( MINUS | PLUS | CONCAT ) factor ) * {
+  methods=[getLhs getRightmostOperands]
+};
+
+factor ::= unary ( ( STAR | SLASH ) unary ) * {
+  methods=[getLhs getRightmostOperands]
+};
+
+unary ::= ( BANG | MINUS ) unary | callExpr {
+  methods=[getOperator]
+};
 
 // call expression
+argument ::= IDENTIFIER COLON expr ;
+instanceArguments ::= LBRACE ( argument ( COMMA argument ) * ) ? RBRACE {
+  methods=[getArguments]
+};
+
 arguments ::= LPAREN ( expr ( COMMA expr ) * ) ? RPAREN ;
-get ::= DOT IDENTIFIER ;
-callExpr ::= pointer ( arguments | get ) * ;
+get ::= DOT IDENTIFIER {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PlankNamedElement"
+  mixin="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankNamedElementImpl"
+  methods=[getName setName]
+};
+
+callExpr ::= pointer ( instanceArguments | ( arguments | get ) *  ) ;
 
 // primary expression
 pointer ::= STAR expr
@@ -102,22 +192,26 @@ pointer ::= STAR expr
           | primary
           ;
 
+identifierExpr ::= IDENTIFIER {
+  implements="com.lorenzoog.jplank.intellijplugin.psi.PlankNamedElement"
+  mixin="com.lorenzoog.jplank.intellijplugin.psi.impl.PlankNamedElementImpl"
+  methods=[getName setName]
+};
+
 primary ::= STRING
           | INT
           | DECIMAL
           | TRUE
           | FALSE
           | LPAREN expr RPAREN
-          | IDENTIFIER
+          | identifierExpr
           ;
 
 // expressions
-sizeofExpr ::= SIZEOF IDENTIFIER ;
-instanceExpr ::= IDENTIFIER LBRACE ( argument ( COMMA argument ) * ) ? RBRACE ;
+sizeofExpr ::= SIZEOF typeDef ;
 
 expr ::= assignExpr
        | ifExpr
-       | instanceExpr
        | sizeofExpr
        ;
 

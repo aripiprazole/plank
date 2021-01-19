@@ -40,6 +40,12 @@ class PlankLanguageHighlighter : SyntaxHighlighterBase() {
 
       PlankTypes.EQUAL -> arrayOf(ASSIGN)
 
+      PlankTypes.RPAREN,
+      PlankTypes.LPAREN -> arrayOf(PARENTHESES)
+
+      PlankTypes.LBRACE,
+      PlankTypes.RBRACE -> arrayOf(BRACES)
+
       PlankTypes.DOT,
       PlankTypes.STAR,
       PlankTypes.SLASH,
@@ -68,5 +74,10 @@ class PlankLanguageHighlighter : SyntaxHighlighterBase() {
     val STRING by attributesKey(DefaultLanguageHighlighterColors.STRING)
     val VARIABLE by attributesKey(DefaultLanguageHighlighterColors.LOCAL_VARIABLE)
     val BAD_CHARACTER by attributesKey(HighlighterColors.BAD_CHARACTER)
+    val FUNCTION_NAME by attributesKey(DefaultLanguageHighlighterColors.FUNCTION_DECLARATION)
+    val STRUCT_NAME by attributesKey(DefaultLanguageHighlighterColors.CLASS_NAME)
+    val TYPE_REF by attributesKey(DefaultLanguageHighlighterColors.CLASS_REFERENCE)
+    val PARENTHESES by attributesKey(DefaultLanguageHighlighterColors.PARENTHESES)
+    val BRACES by attributesKey(DefaultLanguageHighlighterColors.BRACES)
   }
 }
