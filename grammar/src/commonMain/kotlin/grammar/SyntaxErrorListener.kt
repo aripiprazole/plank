@@ -1,12 +1,12 @@
 package com.lorenzoog.jplank.grammar
 
-import com.lorenzoog.jplank.element.PkFile
+import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.utils.location
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Recognizer
 
-class SyntaxErrorListener(private val file: PkFile) : BaseErrorListener() {
+class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
   private val _violations = mutableListOf<SyntaxViolation>()
 
   val violations: List<SyntaxViolation> get() = _violations

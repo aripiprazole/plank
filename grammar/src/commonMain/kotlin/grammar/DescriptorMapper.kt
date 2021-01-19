@@ -4,8 +4,8 @@ import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Decl.FunDecl.Modifier
 import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.ImportDirective
-import com.lorenzoog.jplank.element.PkElement
-import com.lorenzoog.jplank.element.PkFile
+import com.lorenzoog.jplank.element.PlankElement
+import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
 import com.lorenzoog.jplank.element.TypeDef
 import com.lorenzoog.jplank.grammar.generated.PlankParser
@@ -16,12 +16,12 @@ import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.ParseTree
 
 class DescriptorMapper(
-  private val file: PkFile,
-  violations: List<SyntaxViolation>,
-) : PlankParserBaseVisitor<PkElement>() {
+    private val file: PlankFile,
+    violations: List<SyntaxViolation>,
+) : PlankParserBaseVisitor<PlankElement>() {
   private val violations = violations.toMutableList()
 
-  override fun visit(tree: ParseTree): PkElement {
+  override fun visit(tree: ParseTree): PlankElement {
     try {
       return super.visit(tree)!!
     } catch (violation: SyntaxViolation) {
@@ -36,7 +36,7 @@ class DescriptorMapper(
   }
 
   // program
-  override fun visitProgram(ctx: PlankParser.ProgramContext): PkFile {
+  override fun visitProgram(ctx: PlankParser.ProgramContext): PlankFile {
     if (violations.isNotEmpty()) {
       return file.copy(
         imports = emptyList(),
@@ -74,11 +74,11 @@ class DescriptorMapper(
     return visit(declContext) as TypeDef
   }
 
-  override fun visitGenericAccess(ctx: PlankParser.GenericAccessContext): PkElement {
+  override fun visitGenericAccess(ctx: PlankParser.GenericAccessContext): PlankElement {
     return TypeDef.GenericAccess(ctx.name!!, ctx.start.location)
   }
 
-  override fun visitGenericUse(ctx: PlankParser.GenericUseContext): PkElement {
+  override fun visitGenericUse(ctx: PlankParser.GenericUseContext): PlankElement {
     val arguments = ctx.findTypeDef().map { visitTypeDef(it) }
     return TypeDef.GenericUse(
       TypeDef.Name(ctx.name!!, ctx.name.location),
@@ -87,7 +87,7 @@ class DescriptorMapper(
     )
   }
 
-  override fun visitPtrType(ctx: PlankParser.PtrTypeContext): PkElement {
+  override fun visitPtrType(ctx: PlankParser.PtrTypeContext): PlankElement {
     return TypeDef.Ptr(visitTypeDef(ctx.findTypeDef()!!), ctx.start.location)
   }
 
@@ -187,7 +187,7 @@ class DescriptorMapper(
     return Stmt.ExprStmt(value, location)
   }
 
-  override fun visitReturnStmt(ctx: PlankParser.ReturnStmtContext): PkElement {
+  override fun visitReturnStmt(ctx: PlankParser.ReturnStmtContext): PlankElement {
     val value = visitExpr(ctx.value!!)
     val location = ctx.RETURN()?.symbol.location
 
@@ -205,11 +205,11 @@ class DescriptorMapper(
     ) as Expr
   }
 
-  override fun visitSizeofExpr(ctx: PlankParser.SizeofExprContext): PkElement {
+  override fun visitSizeofExpr(ctx: PlankParser.SizeofExprContext): PlankElement {
     return Expr.Sizeof(ctx.type!!, ctx.SIZEOF()?.symbol.location)
   }
 
-  override fun visitInstanceExpr(ctx: PlankParser.InstanceExprContext): PkElement {
+  override fun visitInstanceExpr(ctx: PlankParser.InstanceExprContext): PlankElement {
     return Expr.Instance(
       ctx.name!!,
       ctx.findInstanceArgument().associate { argument ->
@@ -360,7 +360,7 @@ class DescriptorMapper(
     return Expr.Const(value, ctx.start.location)
   }
 
-  override fun visitPtr(ctx: PlankParser.PtrContext): PkElement {
+  override fun visitPtr(ctx: PlankParser.PtrContext): PlankElement {
     val reference = ctx.AMPERSTAND()
     val value = ctx.STAR()
     val expr = ctx.findExpr()
@@ -395,7 +395,7 @@ class DescriptorMapper(
     return Expr.Const(value, node.symbol.location)
   }
 
-  override fun visitErrorNode(node: ErrorNode): PkElement? {
+  override fun visitErrorNode(node: ErrorNode): PlankElement? {
     println(node)
     println(node.payload)
 

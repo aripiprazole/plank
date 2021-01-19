@@ -2,7 +2,7 @@ package com.lorenzoog.jplank.compiler
 
 import com.lorenzoog.jplank.analyzer.BindingContext
 import com.lorenzoog.jplank.analyzer.render
-import com.lorenzoog.jplank.element.PkFile
+import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.grammar.render
 import com.lorenzoog.jplank.linker.Linker
 import com.lorenzoog.jplank.message.MessageRenderer
@@ -68,7 +68,7 @@ class PlankCompiler(
   }
 
   private fun generateIR(file: File, target: File): Boolean {
-    val pkFile = PkFile.of(file)
+    val pkFile = PlankFile.of(file)
     if (!validate(pkFile)) {
       return false
     }
@@ -92,15 +92,15 @@ class PlankCompiler(
     return true
   }
 
-  private fun validate(pkFile: PkFile): Boolean {
-    if (!pkFile.isValid) {
-      pkFile.violations.render(renderer)
+  private fun validate(plankFile: PlankFile): Boolean {
+    if (!plankFile.isValid) {
+      plankFile.violations.render(renderer)
 
       renderer.severe("Resolve the syntax issues above before compile")
       return false
     }
 
-    context.analyze(pkFile)
+    context.analyze(plankFile)
     context.violations.render(renderer)
 
     if (!context.isValid) {

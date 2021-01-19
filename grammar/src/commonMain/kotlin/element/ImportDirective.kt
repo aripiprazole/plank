@@ -2,7 +2,7 @@ package com.lorenzoog.jplank.element
 
 import org.antlr.v4.kotlinruntime.Token
 
-sealed class ImportDirective : PkElement {
+sealed class ImportDirective : PlankElement {
   interface Visitor<T> {
     fun visit(importDirective: ImportDirective): T = importDirective.accept(this)
 

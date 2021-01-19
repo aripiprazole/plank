@@ -1,15 +1,15 @@
 package com.lorenzoog.jplank.stdlib
 
-import com.lorenzoog.jplank.element.PkFile
+import com.lorenzoog.jplank.element.PlankFile
 import pw.binom.io.file.asBFile
 import java.io.File
 
 class Stdlib {
   val path: String? = System.getenv("PLANK_HOME")
 
-  fun readStdlib(): List<PkFile> {
+  fun readStdlib(): List<PlankFile> {
     return File(path, "stdlib").listFiles().orEmpty().map {
-      PkFile.of(it.asBFile)
+      PlankFile.of(it.asBFile)
     }
   }
 }

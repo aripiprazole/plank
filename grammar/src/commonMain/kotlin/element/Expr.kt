@@ -2,7 +2,7 @@ package com.lorenzoog.jplank.element
 
 import org.antlr.v4.kotlinruntime.Token
 
-sealed class Expr : PkElement {
+sealed class Expr : PlankElement {
   interface Visitor<T> {
     fun visit(expr: Expr): T = expr.accept(this)
 
