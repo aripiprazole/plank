@@ -5,6 +5,7 @@ import org.jetbrains.intellij.tasks.PatchPluginXmlTask
 plugins {
   id("org.jetbrains.intellij") version "0.6.5"
   id("org.jetbrains.grammarkit") version "2020.3.2"
+  id("com.github.johnrengelman.shadow") version "6.1.0"
   kotlin("jvm")
   java
 }
