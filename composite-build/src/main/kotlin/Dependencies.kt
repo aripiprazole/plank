@@ -1,6 +1,16 @@
 package com.lorenzoog.jplank.build
 
 object Dependencies {
+  object Kotlin {
+    const val Coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
+    const val CoroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.2"
+  }
+
+  object Eclipse4J {
+    const val Eclipse4J = "org.eclipse.lsp4j:org.eclipse.lsp4j:0.10.0"
+    const val JsonRPC = "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.10.0"
+  }
+
   object Binom {
     const val File = "pw.binom.io:file:0.1.19"
   }
