@@ -1,7 +1,10 @@
 package com.lorenzoog.jplank.compiler.instructions
 
 import com.lorenzoog.jplank.compiler.PlankContext
-import io.vexelabs.bitbuilder.llvm.ir.Value
+import com.lorenzoog.jplank.compiler.llvm.buildCall
+import com.lorenzoog.jplank.compiler.llvm.buildRet
+import com.lorenzoog.jplank.compiler.llvm.setPositionAtEnd
+import org.llvm4j.llvm4j.Value
 
 class EntryPoint : PlankInstruction() {
   override fun codegen(context: PlankContext): Value {
@@ -10,23 +13,24 @@ class EntryPoint : PlankInstruction() {
     val mainFunctionType = context.llvm.getFunctionType(
       context.runtime.types.int,
       context.runtime.types.int,
-      context.runtime.types.string.getPointerType(),
-      variadic = false
+      context.llvm.getPointerType(context.runtime.types.string).unwrap(),
+      isVariadic = false
     )
 
-    val mainFunction = context.module.createFunction("main", mainFunctionType)
-    mainFunction.createBlock("entry").also {
-      context.builder.setPositionAtEnd(it)
-    }
+    val mainFunction = context.module.addFunction("main", mainFunctionType)
 
     if (function != null) {
-      val argc = mainFunction.getParameter(0)
-      val argv = mainFunction.getParameter(1)
+      context.llvm.newBasicBlock("entry")
+        .also(mainFunction::addBasicBlock)
+        .also(context.builder::setPositionAtEnd)
 
-      context.builder.createCall(function, listOf(argc, argv))
+      val argc = mainFunction.getParameter(0).unwrap()
+      val argv = mainFunction.getParameter(1).unwrap()
+
+      context.builder.buildCall(function, listOf(argc, argv))
     }
 
-    context.builder.createRet(context.runtime.types.int.getConstant(0))
+    context.builder.buildRet(context.runtime.types.int.getConstant(0))
 
     return mainFunction
   }

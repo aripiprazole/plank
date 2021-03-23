@@ -11,6 +11,7 @@ import pw.binom.io.file.asBFile
 import pw.binom.io.file.asJFile
 import pw.binom.io.file.name
 import pw.binom.io.file.nameWithoutExtension
+import pw.binom.io.file.write
 
 class PlankCompiler(
   private val linker: Linker,
@@ -76,7 +77,7 @@ class PlankCompiler(
     compiler.initialize(pkFile)
     compiler.compile(pkFile)
 
-    compiler.context.module.getIR().writeToFile(target.asJFile)
+    target.asJFile.writeText(compiler.context.module.getAsString())
     if (compiler.context.errors.isNotEmpty()) {
       compiler.context.errors.forEach { (element, message) ->
         renderer.severe(message, element?.location)
@@ -86,7 +87,6 @@ class PlankCompiler(
       return false
     }
 
-    compiler.context.module.getIR().writeToFile(target.asJFile)
     renderer.info("Successfully compiled ${pkFile.module}")
 
     return true

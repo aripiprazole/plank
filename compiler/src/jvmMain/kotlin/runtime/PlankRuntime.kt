@@ -4,13 +4,11 @@ import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.expr.ReferenceInstruction
 import com.lorenzoog.jplank.element.Expr
-import io.vexelabs.bitbuilder.llvm.ir.Builder
-import io.vexelabs.bitbuilder.llvm.ir.Context
-import io.vexelabs.bitbuilder.llvm.ir.Module
-import io.vexelabs.bitbuilder.llvm.ir.TypeKind
-import io.vexelabs.bitbuilder.llvm.ir.Value
-import io.vexelabs.bitbuilder.llvm.ir.types.StructType
-import io.vexelabs.bitbuilder.llvm.ir.values.FunctionValue
+import org.llvm4j.llvm4j.Builder
+import org.llvm4j.llvm4j.Context
+import org.llvm4j.llvm4j.Function
+import org.llvm4j.llvm4j.Module
+import org.llvm4j.llvm4j.Value
 
 class PlankRuntime(
   private val builder: Builder,
@@ -21,77 +19,31 @@ class PlankRuntime(
   val trueConstant: Value = types.i1.getConstant(1)
   val falseConstant: Value = types.i1.getConstant(0)
 
-  val concatFunction: FunctionValue?
+  val concatFunction: Function?
     get() {
-      return module.getFunction(CONCAT_CALL)
+      return module.getFunction(CONCAT_CALL).toNullable()
     }
 
-  val eqFunction: FunctionValue?
+  val eqFunction: Function?
     get() {
-      return module.getFunction(EQ_CALL)
+      return module.getFunction(EQ_CALL).toNullable()
     }
 
-  val neqFunction: FunctionValue?
+  val neqFunction: Function?
     get() {
-      return module.getFunction(NEQ_CALL)
+      return module.getFunction(NEQ_CALL).toNullable()
     }
-
-  private val plankCreateObjectFunction by lazy {
-    val context = module.getContext()
-    val type = context.getFunctionType(
-      types.any.getPointerType(),
-      types.string,
-      types.voidPtr,
-      variadic = false
-    )
-
-    module.createFunction("Plank_Create_Object", type)
-  }
-
-  fun createObject(context: PlankContext, descriptor: Expr): Value? {
-    val value = context.map(descriptor).codegen(context) ?: return null
-    val type = context.binding.visit(descriptor)
-
-    val v = when {
-      Builtin.Char.pointer.isAssignableBy(type) -> {
-        value
-      }
-      type.isPrimitive -> {
-        val ref = ReferenceInstruction.getReference(context, descriptor)
-          ?: return context.report("failed to get reference of descriptor", descriptor)
-
-        context.builder.createBitCast(ref, types.voidPtr, "bitcasttmp")
-      }
-      else -> {
-        value
-      }
-    }
-
-    return builder.createCall(
-      plankCreateObjectFunction,
-      listOf(builder.buildGlobalString(type.toString(), "objtmptype", true), v),
-    )
-  }
 
   class Types(context: Context) {
-    val i1 = context.getIntType(1)
-    val i8 = context.getIntType(8)
-    val i16 = context.getIntType(16)
-    val int = context.getIntType(64)
-    val double = context.getFloatType(TypeKind.Double)
-    val float = context.getFloatType(TypeKind.Float)
-    val string = i8.getPointerType()
+    val i1 = context.getInt1Type()
+    val i8 = context.getInt8Type()
+    val i16 = context.getInt16Type()
+    val int = context.getInt32Type()
+    val double = context.getDoubleType()
+    val float = context.getFloatType()
+    val string = context.getPointerType(i8).unwrap()
     val void = context.getVoidType()
-    val voidPtr = i8.getPointerType()
-
-    val any: StructType = context.getOpaqueStructType("Object").also { struct ->
-      context.getFunctionType(string, struct.getPointerType(), variadic = false).also { toString ->
-        struct.setBody(
-          types = listOf(string, int, voidPtr, toString.getPointerType()),
-          packed = false
-        )
-      }
-    }
+    val voidPtr = context.getPointerType(i8).unwrap()
   }
 
   companion object {

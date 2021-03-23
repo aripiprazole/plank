@@ -2,11 +2,16 @@ package com.lorenzoog.jplank.compiler.instructions.decl
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.buildAlloca
+import com.lorenzoog.jplank.compiler.llvm.buildRet
+import com.lorenzoog.jplank.compiler.llvm.buildStore
+import com.lorenzoog.jplank.compiler.llvm.setPositionAtEnd
+import com.lorenzoog.jplank.compiler.llvm.verify
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Stmt
 import com.lorenzoog.jplank.element.visit
-import io.vexelabs.bitbuilder.llvm.ir.Value
-import io.vexelabs.bitbuilder.llvm.support.VerifierFailureAction
+import org.bytedeco.llvm.global.LLVM
+import org.llvm4j.llvm4j.Value
 
 class FunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -15,7 +20,7 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstructio
       ?: return context.report("failed to create function", descriptor)
 
     return context.createScope().let { functionContext ->
-      val body = function.createBlock("entry")
+      val body = context.llvm.newBasicBlock("entry").also(function::addBasicBlock)
       functionContext.builder.setPositionAtEnd(body)
 
       function.getParameters().forEachIndexed { index, parameter ->
@@ -28,8 +33,8 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstructio
         val name = entry.key.text
           ?: return context.report("parameter with index $index name is null", descriptor)
 
-        val variable = functionContext.builder.createAlloca(type, name)
-        functionContext.builder.createStore(parameter, variable)
+        val variable = functionContext.builder.buildAlloca(type, name)
+        functionContext.builder.buildStore(parameter, variable)
         functionContext.addVariable(name, variable)
       }
 
@@ -38,11 +43,11 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstructio
       }
 
       if (returnType.isVoid && descriptor.body.filterIsInstance<Stmt.ReturnStmt>().isEmpty()) {
-        context.builder.createRetVoid()
+        context.builder.buildRet()
       }
 
-      if (!function.verify(VerifierFailureAction.PrintMessage)) {
-        context.report<Nothing>(function.getIR().toString())
+      if (!function.verify(LLVM.LLVMReturnStatusAction)) {
+        context.report<Nothing>(function.getAsString())
 
         return context.report("invalid function", descriptor)
       }

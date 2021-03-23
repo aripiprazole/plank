@@ -3,9 +3,11 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 import com.lorenzoog.jplank.analyzer.type.PlankType
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.buildInBoundsGEP
+import com.lorenzoog.jplank.compiler.llvm.buildLoad
 import com.lorenzoog.jplank.element.Expr
-import io.vexelabs.bitbuilder.llvm.ir.Value
 import org.antlr.v4.kotlinruntime.Token
+import org.llvm4j.llvm4j.Value
 
 class GetInstruction(private val descriptor: Expr.Get) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -19,7 +21,7 @@ class GetInstruction(private val descriptor: Expr.Get) : PlankInstruction() {
     val memberType = context.map(context.binding.visit(descriptor))
       ?: return context.report("member type is null", descriptor)
 
-    return context.builder.createLoad(memberType, memberPtr, "loadtmp")
+    return context.builder.buildLoad(memberPtr, memberType, "loadtmp")
   }
 
   companion object {
@@ -45,7 +47,7 @@ class GetInstruction(private val descriptor: Expr.Get) : PlankInstruction() {
         context.runtime.types.int.getConstant(index),
       )
 
-      return context.builder.createGEP(receiver, type, indices, true, "geptmp")
+      return context.builder.buildInBoundsGEP(receiver, type, indices, "geptmp")
     }
   }
 }

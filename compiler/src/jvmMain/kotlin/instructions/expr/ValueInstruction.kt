@@ -2,8 +2,9 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.buildLoad
 import com.lorenzoog.jplank.element.Expr
-import io.vexelabs.bitbuilder.llvm.ir.Value
+import org.llvm4j.llvm4j.Value
 
 class ValueInstruction(private val descriptor: Expr.Value) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -13,6 +14,6 @@ class ValueInstruction(private val descriptor: Expr.Value) : PlankInstruction() 
     val type = context.map(context.binding.visit(descriptor))
       ?: return context.report("type is null", descriptor)
 
-    return context.builder.createLoad(type, value, "valuetmp")
+    return context.builder.buildLoad(value, type, "valuetmp")
   }
 }

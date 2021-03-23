@@ -1,16 +1,15 @@
 #include "plank/io.h"
-#include "plank/object.h"
-
+s
 #include <iostream>
 
 extern "C" {
 
-void io_println(plank::Object *message) {
-  std::cout << message->toString(message) << std::endl;
+void io_println(char *message) {
+  std::cout << message << std::endl;
 }
 
-void io_print(plank::Object *message) {
-  std::cout << message->toString(message);
+void io_print(char *message) {
+  std::cout << message;
 }
 
 }

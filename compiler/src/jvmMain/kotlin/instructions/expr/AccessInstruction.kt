@@ -2,8 +2,9 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.buildLoad
 import com.lorenzoog.jplank.element.Expr
-import io.vexelabs.bitbuilder.llvm.ir.Value
+import org.llvm4j.llvm4j.Value
 
 class AccessInstruction(private val descriptor: Expr.Access) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -16,6 +17,6 @@ class AccessInstruction(private val descriptor: Expr.Access) : PlankInstruction(
     val value = context.findVariable(name)
       ?: return context.report("variable does not exists", descriptor)
 
-    return context.builder.createLoad(type, value, name)
+    return context.builder.buildLoad(value, type, name)
   }
 }

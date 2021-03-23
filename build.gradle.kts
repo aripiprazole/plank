@@ -31,6 +31,8 @@ subprojects {
     maven("https://repo.binom.pw/releases")
     maven("https://jitpack.io")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
   }
 
   ktlint {
