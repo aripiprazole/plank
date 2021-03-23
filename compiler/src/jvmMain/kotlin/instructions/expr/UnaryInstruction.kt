@@ -2,9 +2,10 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.buildFloatNeg
 import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.Expr.Unary.Operation
-import io.vexelabs.bitbuilder.llvm.ir.Value
+import org.llvm4j.llvm4j.Value
 
 class UnaryInstruction(private val descriptor: Expr.Unary) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -12,8 +13,8 @@ class UnaryInstruction(private val descriptor: Expr.Unary) : PlankInstruction() 
       ?: return context.report("rhs is null", descriptor)
 
     return when (descriptor.op) {
-      Operation.Neg -> context.builder.buildNeg(rhs, "negtmp")
-      Operation.Bang -> context.builder.createNot(rhs, "nottmp")
+      Operation.Neg -> context.builder.buildFloatNeg(rhs, "negtmp")
+      Operation.Bang -> context.builder.buildFloatNeg(rhs, "nottmp")
     }
   }
 }

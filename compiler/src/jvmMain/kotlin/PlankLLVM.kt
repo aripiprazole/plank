@@ -3,14 +3,14 @@ package com.lorenzoog.jplank.compiler
 import com.lorenzoog.jplank.analyzer.BindingContext
 import com.lorenzoog.jplank.compiler.instructions.EntryPoint
 import com.lorenzoog.jplank.element.PlankFile
-import io.vexelabs.bitbuilder.llvm.ir.Module
-import io.vexelabs.bitbuilder.llvm.ir.Value
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeAsmParser
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeAsmPrinter
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeDisassembler
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget
 import org.bytedeco.llvm.global.LLVM.LLVMLinkInMCJIT
+import org.llvm4j.llvm4j.Module
+import org.llvm4j.llvm4j.Value
 import pw.binom.io.Closeable
 
 class PlankLLVM(

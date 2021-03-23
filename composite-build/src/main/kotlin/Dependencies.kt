@@ -20,8 +20,8 @@ object Dependencies {
     const val AntlrKotlinTarget = "com.strumenta.antlr-kotlin:antlr-kotlin-target:0ad2c42952"
   }
 
-  object BitBuilder {
-    const val BitBuilder = "io.vexelabs:bitbuilder:0.1.0-SNAPSHOT"
+  object LLVM4J {
+    const val LLVM4J = "org.llvm4j:llvm4j:0.1.0-SNAPSHOT"
   }
 
   object ByteDeco {

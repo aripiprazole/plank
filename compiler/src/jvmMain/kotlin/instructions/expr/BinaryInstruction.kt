@@ -2,9 +2,14 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.buildAdd
+import com.lorenzoog.jplank.compiler.llvm.buildCall
+import com.lorenzoog.jplank.compiler.llvm.buildFDiv
+import com.lorenzoog.jplank.compiler.llvm.buildMul
+import com.lorenzoog.jplank.compiler.llvm.buildSub
 import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.Expr.Binary.Operation
-import io.vexelabs.bitbuilder.llvm.ir.Value
+import org.llvm4j.llvm4j.Value
 
 class BinaryInstruction(val descriptor: Expr.Binary) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -15,20 +20,20 @@ class BinaryInstruction(val descriptor: Expr.Binary) : PlankInstruction() {
       ?: return context.report("rhs is null", descriptor)
 
     return when (descriptor.op) {
-      Operation.Sub -> context.builder.createSub(rhs, lhs, "subtmp")
-      Operation.Mul -> context.builder.createMul(lhs, rhs, "multmp")
+      Operation.Sub -> context.builder.buildSub(rhs, lhs, "subtmp")
+      Operation.Mul -> context.builder.buildMul(lhs, rhs, "multmp")
       Operation.Div -> {
         val frhs = context.dataTypeConverter.convertToFloat(context, rhs)
         val flhs = context.dataTypeConverter.convertToFloat(context, lhs)
 
-        context.builder.createFDiv(flhs, frhs, "divtmp")
+        context.builder.buildFDiv(flhs, frhs, "divtmp")
       }
-      Operation.Add -> context.builder.createAdd(lhs, rhs, "addtmp")
+      Operation.Add -> context.builder.buildAdd(lhs, rhs, "addtmp")
       Operation.Concat -> {
         val concatFunction = context.runtime.concatFunction
           ?: return context.report("concat function is null", descriptor)
 
-        return context.builder.createCall(concatFunction, listOf(lhs, rhs))
+        return context.builder.buildCall(concatFunction, listOf(lhs, rhs))
       }
     }
   }

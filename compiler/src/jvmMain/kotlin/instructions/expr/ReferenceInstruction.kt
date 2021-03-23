@@ -3,8 +3,11 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.buildAlloca
+import com.lorenzoog.jplank.compiler.llvm.buildLoad
+import com.lorenzoog.jplank.compiler.llvm.buildStore
 import com.lorenzoog.jplank.element.Expr
-import io.vexelabs.bitbuilder.llvm.ir.Value
+import org.llvm4j.llvm4j.Value
 
 class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -14,8 +17,6 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstru
   companion object {
     fun getReference(context: PlankContext, descriptor: Expr): Value? {
       val type = context.binding.visit(descriptor)
-
-      println("TYPE :: $type")
 
       return when {
         descriptor is Expr.Access -> {
@@ -32,9 +33,9 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstru
           val value = context.map(descriptor).codegen(context)
             ?: return context.report("value is null", descriptor)
 
-          val reference = context.builder.createAlloca(mappedType, "refallocatmp")
+          val reference = context.builder.buildAlloca(mappedType, "refallocatmp")
 
-          context.builder.createStore(value, reference)
+          context.builder.buildStore(value, reference)
 
           reference
         }
@@ -45,7 +46,7 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstru
           val value = context.map(descriptor).codegen(context)
             ?: return context.report("value is null", descriptor)
 
-          context.builder.createLoad(mappedType, value, "reftmp")
+          context.builder.buildLoad(value, mappedType, "reftmp")
         }
       }
     }

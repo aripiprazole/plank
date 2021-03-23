@@ -2,8 +2,10 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
+import com.lorenzoog.jplank.compiler.llvm.orNull
 import com.lorenzoog.jplank.element.Expr
-import io.vexelabs.bitbuilder.llvm.ir.Value
+import org.llvm4j.llvm4j.Constant
+import org.llvm4j.llvm4j.Value
 
 class InstanceInstruction(private val descriptor: Expr.Instance) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -24,6 +26,9 @@ class InstanceInstruction(private val descriptor: Expr.Instance) : PlankInstruct
         ?: return context.report("failed to handle argument", value)
     }
 
-    return llvmStructure.getConstant(*arguments.toTypedArray())
+    return llvmStructure.getConstant(
+      *arguments.map { it as Constant }.toTypedArray(),
+      isPacked = false
+    ).orNull()
   }
 }

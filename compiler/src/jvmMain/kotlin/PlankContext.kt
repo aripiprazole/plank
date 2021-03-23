@@ -7,6 +7,7 @@ import com.lorenzoog.jplank.compiler.converter.DefaultDataTypeConverter
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.compiler.instructions.element.IRFunction
 import com.lorenzoog.jplank.compiler.instructions.element.IRNamedFunction
+import com.lorenzoog.jplank.compiler.llvm.newBuilder
 import com.lorenzoog.jplank.compiler.mangler.Mangler
 import com.lorenzoog.jplank.compiler.mangler.SimpleMangler
 import com.lorenzoog.jplank.compiler.runtime.PlankRuntime
@@ -15,38 +16,38 @@ import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.PlankElement
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
-import io.vexelabs.bitbuilder.llvm.ir.Builder
-import io.vexelabs.bitbuilder.llvm.ir.Context as LLVMContext
-import io.vexelabs.bitbuilder.llvm.ir.Module as LLVMModule
-import io.vexelabs.bitbuilder.llvm.ir.Type
-import io.vexelabs.bitbuilder.llvm.ir.instructions.AllocaInstruction
-import io.vexelabs.bitbuilder.llvm.ir.types.StructType
-import io.vexelabs.bitbuilder.llvm.ir.values.FunctionValue
+import org.llvm4j.llvm4j.AllocaInstruction
+import org.llvm4j.llvm4j.Builder
+import org.llvm4j.llvm4j.Function
+import org.llvm4j.llvm4j.NamedStructType
+import org.llvm4j.llvm4j.Type
+import org.llvm4j.llvm4j.Context as LLVMContext
+import org.llvm4j.llvm4j.Module as LLVMModule
 
 data class PlankContext(
-    val binding: BindingContext,
-    val llvm: LLVMContext,
-    val module: LLVMModule,
-    val builder: Builder,
-    val runtime: PlankRuntime,
-    val currentFile: PlankFile,
-    val mangler: Mangler,
-    val dataTypeConverter: DataTypeConverter,
-    private val enclosing: PlankContext?,
-    private val values: MutableMap<String, AllocaInstruction>,
-    private val types: MutableMap<String, StructType>,
-    private val functions: MutableMap<String, IRFunction>,
-    private val mapper: InstructionMapper,
-    private val _errors: MutableMap<PlankElement?, String>
+  val binding: BindingContext,
+  val llvm: LLVMContext,
+  val module: LLVMModule,
+  val builder: Builder,
+  val runtime: PlankRuntime,
+  val currentFile: PlankFile,
+  val mangler: Mangler,
+  val dataTypeConverter: DataTypeConverter,
+  private val enclosing: PlankContext?,
+  private val values: MutableMap<String, AllocaInstruction>,
+  private val types: MutableMap<String, NamedStructType>,
+  private val functions: MutableMap<String, IRFunction>,
+  private val mapper: InstructionMapper,
+  private val _errors: MutableMap<PlankElement?, String>
 ) {
-  val main: FunctionValue?
+  val main: Function?
     get() {
       val main = currentFile.program
         .filterIsInstance<Decl.FunDecl>()
         .find { it.name.text == "main" }
         ?: return report("could not find entry point")
 
-      return module.getFunction(mangler.mangle(this, main))
+      return module.getFunction(mangler.mangle(this, main)).toNullable()
     }
 
   val errors: Map<PlankElement?, String>
@@ -76,7 +77,7 @@ data class PlankContext(
     return null
   }
 
-  fun addFunction(decl: Decl.FunDecl): FunctionValue? {
+  fun addFunction(decl: Decl.FunDecl): Function? {
     val name = decl.name.text ?: return report("name is null", decl)
     val mangledName = mangler.mangle(this, decl)
     val irFunction = IRNamedFunction(name, mangledName, decl)
@@ -86,7 +87,7 @@ data class PlankContext(
     return irFunction.codegen(this)
   }
 
-  fun addStructure(name: String, struct: StructType) {
+  fun addStructure(name: String, struct: NamedStructType) {
     types[name] = struct
   }
 
@@ -98,7 +99,7 @@ data class PlankContext(
     return functions[name] ?: return enclosing?.findFunction(name)
   }
 
-  fun findStructure(name: String): StructType? {
+  fun findStructure(name: String): NamedStructType? {
     return types[name] ?: return enclosing?.findStructure(name)
   }
 
@@ -117,7 +118,8 @@ data class PlankContext(
         bindingContext: BindingContext,
         module: LLVMModule
     ): PlankContext {
-      val builder = module.getContext().createBuilder()
+      val builder = module.getContext().newBuilder()
+
       return PlankContext(
         binding = bindingContext,
         llvm = module.getContext(),

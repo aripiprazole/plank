@@ -1,15 +1,24 @@
 import com.lorenzoog.jplank.build.Dependencies
 
 plugins {
-  id("org.jetbrains.kotlin.multiplatform")
+  kotlin("multiplatform")
 }
 
 group = "com.lorenzoog"
 version = "1.0-SNAPSHOT"
 
+repositories {
+  mavenCentral()
+}
+
 kotlin {
   jvm()
 
+  /*
+   * Targets configuration omitted.
+   * To find out how to configure the targets, please follow the link:
+   * https://kotlinlang.org/docs/reference/building-mpp-with-gradle.html#setting-up-targets
+   */
   sourceSets {
     val commonMain by getting {
       dependencies {
@@ -27,10 +36,7 @@ kotlin {
       dependencies {
         implementation(Dependencies.ByteDeco.LLVMPlatform)
         implementation(Dependencies.LLVM4J.LLVM4J)
-        implementation(project(":llvm"))
-        implementation(project(":grammar"))
       }
     }
-    val jvmTest by getting
   }
 }
