@@ -15,6 +15,12 @@ sealed class Decl : Stmt() {
     }
   }
 
+  data class ImportDecl(val module: Token, override val location: Location) : Decl() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitImportDecl(this)
+    }
+  }
+
   data class ModuleDecl(
     val name: Token,
     val content: List<Decl>,

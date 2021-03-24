@@ -105,8 +105,15 @@ class DescriptorMapper(
         ?: ctx.findFunDecl()
         ?: ctx.findStructDecl()
         ?: ctx.findModuleDecl()
+        ?: ctx.findImportDecl()
         ?: throw ExpectingViolation("declaration", ctx.toString(), ctx.start.location)
     ) as Decl
+  }
+
+  override fun visitImportDecl(ctx: PlankParser.ImportDeclContext): PlankElement {
+    val name = ctx.name!!
+
+    return Decl.ImportDecl(name, ctx.start.location)
   }
 
   override fun visitModuleDecl(ctx: PlankParser.ModuleDeclContext): PlankElement {

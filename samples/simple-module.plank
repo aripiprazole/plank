@@ -12,8 +12,13 @@ module Show {
   }
 }
 
+import Batata;
+
 fun main(argc: Int, argv: **Char): Void {
   import Show;
 
+  module Batata {}
+
   show_boolean(true);
+  Show.show_boolean(true);
 }

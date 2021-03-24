@@ -35,11 +35,14 @@ decl : letDecl WS*
      | structDecl WS*
      | funDecl WS*
      | moduleDecl WS*
+     | importDecl WS*
      ;
 
 letDecl : LET MUTABLE? name=IDENTIFIER EQUAL value=expr SEMICOLON
         | LET MUTABLE? name=IDENTIFIER COLON type=typeDef EQUAL value=expr SEMICOLON
         ;
+
+importDecl : IMPORT name=IDENTIFIER SEMICOLON ;
 
 funHeader : FUN name=IDENTIFIER LPAREN ( parameter ( COMMA parameter ) * ) ? RPAREN COLON returnType=typeDef ;
 

@@ -1,16 +1,15 @@
 package com.lorenzoog.jplank.analyzer
 
 import com.lorenzoog.jplank.element.Decl
-import com.lorenzoog.jplank.element.Location
 import com.lorenzoog.jplank.element.PlankFile
 
-data class Module(
-  val name: String,
-  val scope: Scope,
-  val content: List<Decl>
-)
+data class Module(val name: String, val content: List<Decl>) {
+  lateinit var scope: Scope
 
-class ModuleTree(files: List<PlankFile>) {
+  override fun toString(): String = "Module($name, ${scope::class.simpleName})"
+}
+
+class ModuleTree(files: List<PlankFile> = emptyList()) {
   private val modules = mutableMapOf<String, Module>()
 
   val dependencies = Graph<String>().apply {
@@ -21,9 +20,15 @@ class ModuleTree(files: List<PlankFile>) {
     dependencies.addEdge(scope.name, on.name)
   }
 
-  fun createModule(name: String, scope: Scope, content: List<Decl>): Module {
-    val module = Module(name, scope, content)
+  fun createModule(name: String, enclosing: Scope, content: List<Decl>): Module {
+    dependencies.addVertex(name)
+
+    val module = Module(name, content).apply {
+      scope = ModuleScope(this, enclosing, ModuleTree())
+    }
+
     modules[name] = module
+
     return module
   }
 

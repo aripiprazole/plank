@@ -9,7 +9,8 @@ import com.lorenzoog.jplank.element.TypeDef
 interface BindingContext :
   Stmt.Visitor<PlankType>,
   Expr.Visitor<PlankType>,
-  TypeDef.Visitor<PlankType> {
+  TypeDef.Visitor<PlankType>,
+  PlankFile.Visitor<PlankType> {
   val violations: List<BindingViolation>
   val isValid: Boolean
 

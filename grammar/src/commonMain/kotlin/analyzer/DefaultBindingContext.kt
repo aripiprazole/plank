@@ -17,6 +17,7 @@ import com.lorenzoog.jplank.element.Expr.Logical.Operation.LessEquals
 import com.lorenzoog.jplank.element.Expr.Logical.Operation.NotEquals
 import com.lorenzoog.jplank.element.Expr.Unary.Operation.Bang
 import com.lorenzoog.jplank.element.Expr.Unary.Operation.Neg
+import com.lorenzoog.jplank.element.Location
 import com.lorenzoog.jplank.element.PlankElement
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
@@ -24,28 +25,52 @@ import com.lorenzoog.jplank.element.TypeDef
 import com.lorenzoog.jplank.element.visit
 import pw.binom.Stack
 
-class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
+class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   private val bindings = mutableMapOf<PlankElement, PlankType>()
 
   private val scopes = Stack<Scope>().also { stack ->
-    stack.pushLast(Scope("Global", false, null))
+    stack.pushLast(GlobalScope(moduleTree))
   }
 
-  private val _violations = mutableListOf<BindingViolation>()
+  private val _violations = mutableSetOf<BindingViolation>()
   override val violations: List<BindingViolation>
-    get() = _violations
+    get() = _violations.toList()
 
-  override var isValid: Boolean = true
-    private set
+  override val isValid: Boolean get() = violations.isEmpty()
 
   override fun analyze(file: PlankFile): Boolean {
-    moduleTree.dependencies
-      .depthFirstSearch(file.module)
-      .mapNotNull(moduleTree::findModule)
-      .map(Module::content)
+    val globalScope = scopes.peekLast()
+    val fileModule = currentModuleTree.createModule(file.module, globalScope, file.program).apply {
+      scope = FileScope(file, globalScope)
+    }
+
+    file.searchDependencies(file.module)
+      .also { scopes.pushLast(fileModule.scope) }
+      .map(Module::scope)
+      .filterIsInstance<FileScope>()
+      .map(FileScope::file)
       .forEach(this::visit)
 
     return isValid
+  }
+
+  private fun PlankElement.searchDependencies(name: String): List<Module> {
+    fun Graph<String>.searchExternalDependencies() {
+      addVertex(name)
+
+      val dependencyTreeWalker = object : TreeWalker() {
+        override fun visitImportDecl(importDecl: Decl.ImportDecl) {
+          addEdge(name, importDecl.module.text ?: return)
+        }
+      }
+
+      dependencyTreeWalker.walk(this@searchDependencies)
+    }
+
+    return currentModuleTree.dependencies
+      .apply { searchExternalDependencies() }
+      .depthFirstSearch(name)
+      .mapNotNull(currentModuleTree::findModule)
   }
 
   override fun findScope(expr: Expr): Scope? {
@@ -208,15 +233,18 @@ class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
 
   override fun visitGetExpr(get: Expr.Get): PlankType = get.bind {
     val member = get.member.text.orEmpty()
+    val structure = when (val expr = get.receiver) {
+      is Expr.Access -> currentScope.findVariable(expr.name.text.orEmpty())?.type
+        ?: return@bind run {
+          val module = findModule(get.receiver) ?: return@run Builtin.Any
 
-    val structure = visit(get.receiver) as? PlankType.Struct? ?: return@bind run {
-      val module = findModule(get.receiver) ?: return@run Builtin.Any
+          module.scope.findVariable(member)?.type ?: run {
+            _violations += TypeViolation(Builtin.Any, Builtin.Void, get.location)
 
-      return@bind module.scope.findVariable(member)?.type ?: run {
-        _violations += TypeViolation(Builtin.Any, Builtin.Void, get.location)
-
-        Builtin.Any
-      }
+            Builtin.Any
+          }
+        }
+      else -> visit(expr)
     }
 
     structure[member]?.type ?: run {
@@ -296,11 +324,8 @@ class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankType {
-    val module = moduleTree.createModule(
-      moduleDecl.name.text.orEmpty(),
-      scopes.peekLast(),
-      moduleDecl.content
-    )
+    val module = currentModuleTree
+      .createModule(moduleDecl.name.text.orEmpty(), scopes.peekLast(), moduleDecl.content)
 
     scoped(module.scope) {
       visit(moduleDecl.content)
@@ -335,7 +360,7 @@ class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
 
     scopes.peekLast().declare(name, type)
 
-    scoped(name) { scope ->
+    scoped(name, FunctionScope(name, scopes.peekLast(), type)) { scope ->
       funDecl.realParameters
         .mapKeys { it.key.text.orEmpty() }
         .forEach { (name, type) ->
@@ -394,13 +419,22 @@ class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
     )
   }
 
-  override fun visitImportStmt(importStmt: Stmt.ImportStmt): PlankType = importStmt.bind {
-    val name = importStmt.module.text.orEmpty()
+  override fun visitPlankFile(file: PlankFile): PlankType {
+    visit(file.program)
 
+    return Builtin.Void
+  }
 
-    val fileScope = scopes.peekLast()
+  override fun visitImportDecl(importDecl: Decl.ImportDecl): PlankType = importDecl.bind {
+    val name = importDecl.module.text.orEmpty()
 
-    scoped(name, false, null, fileScope::expand)
+    val module = findModule(name, importDecl.location) ?: return@bind run {
+      _violations += UnresolvedModuleViolation(name, importDecl.location)
+
+      Builtin.Void
+    }
+
+    scopes.peekLast().expand(module.scope)
 
     Builtin.Void
   }
@@ -416,6 +450,9 @@ class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
   }
 
   // utils
+  private val currentScope get() = scopes.peekLast()
+  private val currentModuleTree get() = scopes.peekLast().moduleTree
+
   private fun PlankElement.bind(genType: () -> PlankType): PlankType {
     val current = bindings[this]
     if (current != null) {
@@ -440,11 +477,9 @@ class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
 
   private inline fun <T> scoped(
     name: String = "anonymous",
-    nested: Boolean = true,
-    enclosing: Scope? = scopes.peekLast(),
+    scope: Scope = ClosureScope(name, scopes.peekLast()),
     body: (Scope) -> T
   ): T {
-    val scope = Scope(name, nested, enclosing)
     scopes.pushLast(scope)
     val result = body(scope)
     scopes.popLast()
@@ -496,12 +531,18 @@ class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
     }
   }
 
-  private fun findModule(expr: Expr): Module? = when (expr) {
-    is Expr.Access -> moduleTree.findModule(expr.name.text.orEmpty()) ?: run {
-      _violations += UnresolvedModuleViolation(expr.name.text.orEmpty(), expr.location)
+  private fun findModule(name: String, location: Location): Module? {
+    return currentScope.findModule(name) ?: run {
+      _violations += UnresolvedModuleViolation(name, location)
 
       null
     }
-    else -> null
+  }
+
+  private fun findModule(expr: Expr): Module? {
+    return when (expr) {
+      is Expr.Access -> findModule(expr.name.text.orEmpty(), expr.location)
+      else -> null
+    }
   }
 }

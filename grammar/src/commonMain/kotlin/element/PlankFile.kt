@@ -19,6 +19,12 @@ data class PlankFile(
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
 ) : PlankElement {
+  interface Visitor<T> {
+    fun visit(file: PlankFile): T = visitPlankFile(file)
+
+    fun visitPlankFile(file: PlankFile): T
+  }
+
   val isValid get() = violations.isEmpty()
 
   override val location: Location = Location(-1, -1, this)
