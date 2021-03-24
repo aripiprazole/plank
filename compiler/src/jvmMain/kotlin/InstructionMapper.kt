@@ -126,7 +126,7 @@ class InstructionMapper(
     TODO("Not yet implemented")
   }
 
-  override fun visitImportStmt(importStmt: Stmt.ImportStmt): PlankInstruction {
+  override fun visitImportDecl(importDecl: Decl.ImportDecl): PlankInstruction {
     TODO("Not yet implemented")
   }
 }
