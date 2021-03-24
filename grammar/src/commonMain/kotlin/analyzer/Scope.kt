@@ -2,6 +2,8 @@ package com.lorenzoog.jplank.analyzer
 
 import com.lorenzoog.jplank.analyzer.type.PlankType
 
+data class Variable(val mutable: Boolean, val type: PlankType)
+
 class Scope(
   val name: String,
   private val nested: Boolean,
@@ -57,6 +59,7 @@ class Scope(
       ?: enclosing?.findVariable(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findVariable(name) }.firstOrNull()
   }
+
 
   fun findFunction(name: String): PlankType.Callable? {
     return findVariable(name)?.type as? PlankType.Callable

@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.lorenzoog.jplank.analyzer.DefaultBindingContext
+import com.lorenzoog.jplank.analyzer.ModuleTree
 import com.lorenzoog.jplank.compiler.PlankCompiler
 import com.lorenzoog.jplank.compiler.PlankLLVM
 import com.lorenzoog.jplank.linker.LinkerOpts
@@ -24,7 +25,7 @@ class Plank : CliktCommand() {
   private val stdlib = Stdlib()
   private val stdlibFiles = stdlib.readStdlib()
 
-  private val context = DefaultBindingContext(stdlibFiles)
+  private val context = DefaultBindingContext(ModuleTree(stdlibFiles))
   private val renderer = ColoredMessageRenderer(flush = true)
   private val compiler = PlankLLVM(stdlibFiles, context)
 
