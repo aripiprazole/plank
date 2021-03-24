@@ -86,8 +86,8 @@ class InstructionMapper(
     return ReturnInstruction(returnStmt)
   }
 
-  override fun visitClassDecl(classDecl: Decl.ClassDecl): PlankInstruction {
-    return ClassDeclInstruction(classDecl)
+  override fun visitClassDecl(structDecl: Decl.StructDecl): PlankInstruction {
+    return ClassDeclInstruction(structDecl)
   }
 
   override fun visitFunDecl(funDecl: Decl.FunDecl): PlankInstruction {
@@ -120,5 +120,13 @@ class InstructionMapper(
 
   override fun visitValueExpr(value: Expr.Value): PlankInstruction {
     return ValueInstruction(value)
+  }
+
+  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankInstruction {
+    TODO("Not yet implemented")
+  }
+
+  override fun visitImportStmt(importStmt: Stmt.ImportStmt): PlankInstruction {
+    TODO("Not yet implemented")
   }
 }

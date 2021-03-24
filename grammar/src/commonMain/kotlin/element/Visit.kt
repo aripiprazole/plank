@@ -13,9 +13,6 @@ fun <T> Expr.Visitor<T>.visit(many: List<Expr>): List<T> = many.map(::visit)
 @JvmName("visitTypeDefs")
 fun <T> TypeDef.Visitor<T>.visit(many: List<TypeDef>): List<T> = many.map(::visit)
 
-@JvmName("visitImports")
-fun <T> ImportDirective.Visitor<T>.visit(many: List<ImportDirective>): List<T> = many.map(::visit)
-
 @JvmName("visitPkTypeTypeDefNullable")
 inline fun TypeDef.Visitor<PlankType>.visit(
   typeDef: TypeDef?,

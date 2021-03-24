@@ -2,7 +2,6 @@ package com.lorenzoog.jplank.analyzer
 
 import com.lorenzoog.jplank.analyzer.type.PlankType
 import com.lorenzoog.jplank.element.Expr
-import com.lorenzoog.jplank.element.ImportDirective
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
 import com.lorenzoog.jplank.element.TypeDef
@@ -10,8 +9,7 @@ import com.lorenzoog.jplank.element.TypeDef
 interface BindingContext :
   Stmt.Visitor<PlankType>,
   Expr.Visitor<PlankType>,
-  TypeDef.Visitor<PlankType>,
-  ImportDirective.Visitor<PlankType> {
+  TypeDef.Visitor<PlankType> {
   val violations: List<BindingViolation>
   val isValid: Boolean
 

@@ -3,7 +3,7 @@ package com.lorenzoog.jplank.element
 import org.antlr.v4.kotlinruntime.Token
 
 sealed class Decl : Stmt() {
-  data class ClassDecl(
+  data class StructDecl(
     val name: Token,
     val fields: List<Field>,
     override val location: Location
@@ -12,6 +12,16 @@ sealed class Decl : Stmt() {
 
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitClassDecl(this)
+    }
+  }
+
+  data class ModuleDecl(
+    val name: Token,
+    val content: List<Decl>,
+    override val location: Location
+  ) : Decl() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitModuleDecl(this)
     }
   }
 

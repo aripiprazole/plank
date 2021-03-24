@@ -17,7 +17,6 @@ import com.lorenzoog.jplank.element.Expr.Logical.Operation.LessEquals
 import com.lorenzoog.jplank.element.Expr.Logical.Operation.NotEquals
 import com.lorenzoog.jplank.element.Expr.Unary.Operation.Bang
 import com.lorenzoog.jplank.element.Expr.Unary.Operation.Neg
-import com.lorenzoog.jplank.element.ImportDirective
 import com.lorenzoog.jplank.element.PlankElement
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
@@ -25,7 +24,7 @@ import com.lorenzoog.jplank.element.TypeDef
 import com.lorenzoog.jplank.element.visit
 import pw.binom.Stack
 
-class DefaultBindingContext(private val path: List<PlankFile> = emptyList()) : BindingContext {
+class DefaultBindingContext(val moduleTree: ModuleTree) : BindingContext {
   private val bindings = mutableMapOf<PlankElement, PlankType>()
 
   private val scopes = Stack<Scope>().also { stack ->
@@ -40,12 +39,11 @@ class DefaultBindingContext(private val path: List<PlankFile> = emptyList()) : B
     private set
 
   override fun analyze(file: PlankFile): Boolean {
-    visit(file.imports)
-    visit(file.program)
-
-    if (violations.isNotEmpty()) {
-      isValid = false
-    }
+    moduleTree.dependencies
+      .depthFirstSearch(file.module)
+      .mapNotNull(moduleTree::findModule)
+      .map(Module::content)
+      .forEach(this::visit)
 
     return isValid
   }
@@ -210,7 +208,16 @@ class DefaultBindingContext(private val path: List<PlankFile> = emptyList()) : B
 
   override fun visitGetExpr(get: Expr.Get): PlankType = get.bind {
     val member = get.member.text.orEmpty()
-    val structure = visit(get.receiver) as? PlankType.Struct? ?: return@bind Builtin.Any
+
+    val structure = visit(get.receiver) as? PlankType.Struct? ?: return@bind run {
+      val module = findModule(get.receiver) ?: return@run Builtin.Any
+
+      return@bind module.scope.findVariable(member)?.type ?: run {
+        _violations += TypeViolation(Builtin.Any, Builtin.Void, get.location)
+
+        Builtin.Any
+      }
+    }
 
     structure[member]?.type ?: run {
       _violations += TypeViolation(Builtin.Any, Builtin.Void, get.location)
@@ -288,14 +295,28 @@ class DefaultBindingContext(private val path: List<PlankFile> = emptyList()) : B
     visit(returnStmt.value ?: return@bind Builtin.Void)
   }
 
-  override fun visitClassDecl(classDecl: Decl.ClassDecl): PlankType = classDecl.bind {
-    val name = classDecl.name.text.orEmpty()
+  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankType {
+    val module = moduleTree.createModule(
+      moduleDecl.name.text.orEmpty(),
+      scopes.peekLast(),
+      moduleDecl.content
+    )
+
+    scoped(module.scope) {
+      visit(moduleDecl.content)
+    }
+
+    return Builtin.Void
+  }
+
+  override fun visitClassDecl(structDecl: Decl.StructDecl): PlankType = structDecl.bind {
+    val name = structDecl.name.text.orEmpty()
 
     scopes.peekLast().create(
       name,
       PlankType.Struct(
         name,
-        classDecl.fields.map {
+        structDecl.fields.map {
           PlankType.Struct.Field(it.mutable, it.name.text.orEmpty(), visit(it.type))
         }
       )
@@ -373,22 +394,13 @@ class DefaultBindingContext(private val path: List<PlankFile> = emptyList()) : B
     )
   }
 
-  override fun visitModuleImportDirective(module: ImportDirective.Module): PlankType = module.bind {
-    val name = module.name.text.orEmpty()
-    val file = path.find { it.module == name } ?: return@bind run {
-      _violations += UnresolvedModuleViolation(name, module.location)
+  override fun visitImportStmt(importStmt: Stmt.ImportStmt): PlankType = importStmt.bind {
+    val name = importStmt.module.text.orEmpty()
 
-      Builtin.Void
-    }
 
     val fileScope = scopes.peekLast()
 
-    scoped(name, false, null) { moduleScope ->
-      // adds definition to module scope
-      analyze(file)
-
-      fileScope.expand(moduleScope)
-    }
+    scoped(name, false, null, fileScope::expand)
 
     Builtin.Void
   }
@@ -413,6 +425,17 @@ class DefaultBindingContext(private val path: List<PlankFile> = emptyList()) : B
     val type = genType()
     bindings[this] = type
     return type
+  }
+
+  private inline fun <T> scoped(
+    scope: Scope,
+    body: (Scope) -> T
+  ): T {
+    scopes.pushLast(scope)
+    val result = body(scope)
+    scopes.popLast()
+
+    return result
   }
 
   private inline fun <T> scoped(
@@ -471,5 +494,14 @@ class DefaultBindingContext(private val path: List<PlankFile> = emptyList()) : B
         }
       }
     }
+  }
+
+  private fun findModule(expr: Expr): Module? = when (expr) {
+    is Expr.Access -> moduleTree.findModule(expr.name.text.orEmpty()) ?: run {
+      _violations += UnresolvedModuleViolation(expr.name.text.orEmpty(), expr.location)
+
+      null
+    }
+    else -> null
   }
 }

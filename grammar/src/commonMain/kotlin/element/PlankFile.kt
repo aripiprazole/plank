@@ -16,7 +16,6 @@ import pw.binom.io.utf8Reader
 data class PlankFile(
   val module: String = "Anonymous",
   val path: String = "Anonymous",
-  val imports: List<ImportDirective> = emptyList(),
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
 ) : PlankElement {

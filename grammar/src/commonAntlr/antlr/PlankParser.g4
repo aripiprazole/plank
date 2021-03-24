@@ -3,11 +3,7 @@ parser grammar PlankParser;
 options {tokenVocab=PlankLexer;}
 
 // file
-program : imports? decl* EOF;
-
-imports : importDirective* ;
-
-importDirective : IMPORT module=IDENTIFIER SEMICOLON ;
+program : decl* EOF;
 
 // types
 funType : LPAREN RPAREN ( typeDef ( COMMA typeDef ) * ) ? ARROW_LEFT returnType=typeDef ;
@@ -26,15 +22,19 @@ typeDef : nameType | funType | arrayType | ptrType | genericAccess | genericUse 
 
 parameter : name=IDENTIFIER COLON type=typeDef ;
 
-// classes
-classField : MUTABLE? parameter;
+// modules
+moduleDecl : MODULE name=IDENTIFIER LBRACE decl* RBRACE;
 
-classDecl : TYPE name=IDENTIFIER EQUAL LBRACE ( classField ( COMMA classField ) * ) ? RBRACE SEMICOLON ;
+// classes
+structField : MUTABLE? parameter;
+
+structDecl : TYPE name=IDENTIFIER EQUAL LBRACE ( structField ( COMMA structField ) * ) ? RBRACE SEMICOLON ;
 
 // decls
 decl : letDecl WS*
-     | classDecl WS*
+     | structDecl WS*
      | funDecl WS*
+     | moduleDecl WS*
      ;
 
 letDecl : LET MUTABLE? name=IDENTIFIER EQUAL value=expr SEMICOLON

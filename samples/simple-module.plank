@@ -1,0 +1,19 @@
+module Show {
+  fun show_boolean(bool: Bool): Void {
+
+  }
+
+  fun show_int(int: Int): Void {
+
+  }
+
+  fun show_double(double: Double): Void {
+
+  }
+}
+
+fun main(argc: Int, argv: **Char): Void {
+  import Show;
+
+  show_boolean(true);
+}

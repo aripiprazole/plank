@@ -5,7 +5,7 @@ import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.element.Decl
 import org.llvm4j.llvm4j.Value
 
-class ClassDeclInstruction(private val descriptor: Decl.ClassDecl) : PlankInstruction() {
+class ClassDeclInstruction(private val descriptor: Decl.StructDecl) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
     val name = descriptor.name.text ?: return context.report("name is null", descriptor)
 
