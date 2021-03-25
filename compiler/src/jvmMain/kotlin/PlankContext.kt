@@ -7,7 +7,6 @@ import com.lorenzoog.jplank.compiler.converter.DefaultDataTypeConverter
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.compiler.instructions.element.IRFunction
 import com.lorenzoog.jplank.compiler.instructions.element.IRNamedFunction
-import com.lorenzoog.jplank.compiler.llvm.newBuilder
 import com.lorenzoog.jplank.compiler.mangler.Mangler
 import com.lorenzoog.jplank.compiler.mangler.SimpleMangler
 import com.lorenzoog.jplank.compiler.runtime.PlankRuntime
@@ -17,18 +16,18 @@ import com.lorenzoog.jplank.element.PlankElement
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
 import org.llvm4j.llvm4j.AllocaInstruction
-import org.llvm4j.llvm4j.Builder
+import org.llvm4j.llvm4j.Context as LLVMContext
 import org.llvm4j.llvm4j.Function
+import org.llvm4j.llvm4j.IRBuilder
+import org.llvm4j.llvm4j.Module as LLVMModule
 import org.llvm4j.llvm4j.NamedStructType
 import org.llvm4j.llvm4j.Type
-import org.llvm4j.llvm4j.Context as LLVMContext
-import org.llvm4j.llvm4j.Module as LLVMModule
 
 data class PlankContext(
   val binding: BindingContext,
   val llvm: LLVMContext,
   val module: LLVMModule,
-  val builder: Builder,
+  val builder: IRBuilder,
   val runtime: PlankRuntime,
   val currentFile: PlankFile,
   val mangler: Mangler,
@@ -113,19 +112,19 @@ data class PlankContext(
 
   companion object {
     fun of(
-        currentFile: PlankFile,
-        instructionMapper: InstructionMapper,
-        bindingContext: BindingContext,
-        module: LLVMModule
+      currentFile: PlankFile,
+      instructionMapper: InstructionMapper,
+      bindingContext: BindingContext,
+      module: LLVMModule
     ): PlankContext {
-      val builder = module.getContext().newBuilder()
+      val builder = module.getContext().newIRBuilder()
 
       return PlankContext(
         binding = bindingContext,
         llvm = module.getContext(),
         module = module,
         builder = builder,
-        runtime = PlankRuntime(builder, module),
+        runtime = PlankRuntime(module),
         currentFile = currentFile,
         mangler = SimpleMangler(),
         dataTypeConverter = DefaultDataTypeConverter(),
