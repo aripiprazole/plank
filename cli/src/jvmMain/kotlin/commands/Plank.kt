@@ -12,8 +12,8 @@ import com.lorenzoog.jplank.analyzer.DefaultBindingContext
 import com.lorenzoog.jplank.analyzer.ModuleTree
 import com.lorenzoog.jplank.compiler.PlankCompiler
 import com.lorenzoog.jplank.compiler.PlankLLVM
-import com.lorenzoog.jplank.linker.LinkerOpts
-import com.lorenzoog.jplank.linker.PlankLinker
+import com.lorenzoog.jplank.compiler.Linker
+import com.lorenzoog.jplank.compiler.LinkerOpts
 import com.lorenzoog.jplank.message.ColoredMessageRenderer
 import com.lorenzoog.jplank.stdlib.Stdlib
 import pw.binom.io.file.File
@@ -70,28 +70,20 @@ class Plank : CliktCommand() {
 
   override fun run() {
     val srcDir = File(srcDirPath)
-    val binDir = File(binDirPath).also { it.mkdirs() }
-    val buildDir = File(buildDirPath).also { it.mkdirs() }
-    val objectsDir = File(objectsDirPath).also { it.mkdirs() }
-    val cmakeBuildDir = File(cmakeBuildDirPath).also { it.mkdirs() }
-    val bytecodeDir = File(bytecodeDirPath).also { it.mkdirs() }
-
-    buildDir.delete()
-    buildDir.mkdir()
 
     val opts = LinkerOpts(srcDir).apply {
       linkerPath = this@Plank.linkerPath
       cmakePath = this@Plank.cmakePath
       makePath = this@Plank.makePath
       debug = this@Plank.debug
-      this.bytecodeDir = bytecodeDir
-      this.buildDir = buildDir
-      this.binDir = binDir
-      this.objectsDir = objectsDir
-      this.cmakeBuildDir = cmakeBuildDir
+      cmakeBuildDir = File(cmakeBuildDirPath).also(File::mkdirs)
+      binDir = File(binDirPath).also(File::mkdirs)
+      objectsDir = File(objectsDirPath).also(File::mkdirs)
+      bytecodeDir =  File(bytecodeDirPath).also(File::mkdirs)
+      buildDir =  File(buildDirPath).also(File::delete).also(File::mkdirs)
     }
 
-    val linker = PlankLinker(opts, renderer)
+    val linker = Linker(opts, renderer)
     val compiler = PlankCompiler(linker, context, compiler, renderer)
     val src = target.map { File(srcDir, it) }
 
