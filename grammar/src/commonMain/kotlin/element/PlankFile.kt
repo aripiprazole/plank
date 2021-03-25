@@ -25,6 +25,7 @@ data class PlankFile(
     fun visitPlankFile(file: PlankFile): T
   }
 
+  val realFile get() = File(path)
   val isValid get() = violations.isEmpty()
 
   override val location: Location = Location(-1, -1, this)

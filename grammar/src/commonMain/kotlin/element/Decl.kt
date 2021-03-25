@@ -1,6 +1,7 @@
 package com.lorenzoog.jplank.element
 
 import org.antlr.v4.kotlinruntime.Token
+import org.antlr.v4.kotlinruntime.tree.RuleNode
 
 sealed class Decl : Stmt() {
   data class StructDecl(
@@ -15,7 +16,7 @@ sealed class Decl : Stmt() {
     }
   }
 
-  data class ImportDecl(val module: Token, override val location: Location) : Decl() {
+  data class ImportDecl(val module: RuleNode, override val location: Location) : Decl() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitImportDecl(this)
     }

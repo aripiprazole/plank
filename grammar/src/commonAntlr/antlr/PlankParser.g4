@@ -42,7 +42,9 @@ letDecl : LET MUTABLE? name=IDENTIFIER EQUAL value=expr SEMICOLON
         | LET MUTABLE? name=IDENTIFIER COLON type=typeDef EQUAL value=expr SEMICOLON
         ;
 
-importDecl : IMPORT name=IDENTIFIER SEMICOLON ;
+moduleName : IDENTIFIER ( DOT IDENTIFIER ) * ;
+
+importDecl : IMPORT name=moduleName SEMICOLON ;
 
 funHeader : FUN name=IDENTIFIER LPAREN ( parameter ( COMMA parameter ) * ) ? RPAREN COLON returnType=typeDef ;
 
