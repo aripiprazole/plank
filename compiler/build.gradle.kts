@@ -27,7 +27,6 @@ kotlin {
       dependencies {
         implementation(Dependencies.ByteDeco.LLVMPlatform)
         implementation(Dependencies.LLVM4J.LLVM4J)
-        implementation(project(":llvm"))
         implementation(project(":grammar"))
       }
     }

@@ -3,11 +3,9 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.compiler.llvm.buildAlloca
-import com.lorenzoog.jplank.compiler.llvm.buildLoad
-import com.lorenzoog.jplank.compiler.llvm.buildStore
 import com.lorenzoog.jplank.element.Expr
 import org.llvm4j.llvm4j.Value
+import org.llvm4j.optional.Some
 
 class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -33,20 +31,17 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstru
           val value = context.map(descriptor).codegen(context)
             ?: return context.report("value is null", descriptor)
 
-          val reference = context.builder.buildAlloca(mappedType, "refallocatmp")
+          val reference = context.builder.buildAlloca(mappedType, name = Some("refallocatmp"))
 
           context.builder.buildStore(value, reference)
 
           reference
         }
         else -> {
-          val mappedType = context.map(type)
-            ?: return context.report("type is null", descriptor)
-
           val value = context.map(descriptor).codegen(context)
             ?: return context.report("value is null", descriptor)
 
-          context.builder.buildLoad(value, mappedType, "reftmp")
+          context.builder.buildLoad(value, Some("reftmp"))
         }
       }
     }

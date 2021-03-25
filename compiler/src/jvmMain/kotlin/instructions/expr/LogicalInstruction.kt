@@ -3,12 +3,11 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.compiler.llvm.buildCall
-import com.lorenzoog.jplank.compiler.llvm.buildFCmp
 import com.lorenzoog.jplank.element.Expr
 import com.lorenzoog.jplank.element.Expr.Logical.Operation
-import org.bytedeco.llvm.global.LLVM
+import org.llvm4j.llvm4j.FloatPredicate
 import org.llvm4j.llvm4j.Value
+import org.llvm4j.optional.Some
 
 class LogicalInstruction(private val descriptor: Expr.Logical) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -21,28 +20,47 @@ class LogicalInstruction(private val descriptor: Expr.Logical) : PlankInstructio
     return when (descriptor.op) {
       Operation.Equals -> {
         if (Builtin.Numeric.isAssignableBy(context.binding.visit(descriptor.rhs))) {
-          context.builder.buildFCmp(LLVM.LLVMRealOEQ, lhs, rhs, "fcmptmp")
+          context.builder
+            .buildFloatCompare(FloatPredicate.OrderedEqual, lhs, rhs, Some("fcmptmp"))
         } else {
           val function = context.runtime.eqFunction
             ?: return context.report("eq function is null", descriptor)
 
-          context.builder.buildCall(function, listOf(lhs, rhs), "eqtmp")
+          context.builder.buildCall(function, lhs, rhs, name = Some("eqtmp"))
         }
       }
+
       Operation.NotEquals -> {
         if (Builtin.Numeric.isAssignableBy(context.binding.visit(descriptor.rhs))) {
-          context.builder.buildFCmp(LLVM.LLVMRealONE, lhs, rhs, "fcmptmp")
+          context.builder
+            .buildFloatCompare(FloatPredicate.OrderedNotEqual, lhs, rhs, Some("fcmptmp"))
         } else {
           val function = context.runtime.neqFunction
             ?: return context.report("neq function is null", descriptor)
 
-          context.builder.buildCall(function, listOf(lhs, rhs), "neqtmp")
+          context.builder.buildCall(function, lhs, rhs, name = Some("neqtmp"))
         }
       }
-      Operation.Greater -> context.builder.buildFCmp(LLVM.LLVMRealOGT, lhs, rhs, "fcmptmp")
-      Operation.GreaterEquals -> context.builder.buildFCmp(LLVM.LLVMRealOGE, lhs, rhs, "fcmptmp")
-      Operation.Less -> context.builder.buildFCmp(LLVM.LLVMRealOLT, lhs, rhs, "fcmptmp")
-      Operation.LessEquals -> context.builder.buildFCmp(LLVM.LLVMRealOLE, lhs, rhs, "fcmptmp")
+
+      Operation.Greater -> {
+        context.builder
+          .buildFloatCompare(FloatPredicate.OrderedGreaterThan, lhs, rhs, Some("fcmptmp"))
+      }
+
+      Operation.GreaterEquals -> {
+        context.builder
+          .buildFloatCompare(FloatPredicate.OrderedGreaterEqual, lhs, rhs, Some("fcmptmp"))
+      }
+
+      Operation.Less -> {
+        context.builder
+          .buildFloatCompare(FloatPredicate.OrderedLessThan, lhs, rhs, Some("fcmptmp"))
+      }
+
+      Operation.LessEquals -> {
+        context.builder
+          .buildFloatCompare(FloatPredicate.OrderedLessEqual, lhs, rhs, Some("fcmptmp"))
+      }
     }
   }
 }

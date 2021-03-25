@@ -1,19 +1,11 @@
 package com.lorenzoog.jplank.compiler.runtime
 
-import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.expr.ReferenceInstruction
-import com.lorenzoog.jplank.element.Expr
-import org.llvm4j.llvm4j.Builder
 import org.llvm4j.llvm4j.Context
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.Module
 import org.llvm4j.llvm4j.Value
 
-class PlankRuntime(
-  private val builder: Builder,
-  private val module: Module
-) {
+class PlankRuntime(private val module: Module) {
   val types = Types(module.getContext())
 
   val trueConstant: Value = types.i1.getConstant(1)

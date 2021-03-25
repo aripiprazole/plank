@@ -2,8 +2,9 @@ package com.lorenzoog.jplank.compiler
 
 import com.lorenzoog.jplank.analyzer.Builtin
 import com.lorenzoog.jplank.analyzer.type.PlankType
-import com.lorenzoog.jplank.compiler.llvm.orNull
 import org.llvm4j.llvm4j.Type
+import org.llvm4j.optional.Err
+import org.llvm4j.optional.Ok
 
 class TypeMapper {
   fun map(context: PlankContext, type: PlankType?): Type? {
@@ -15,7 +16,11 @@ class TypeMapper {
       Builtin.Bool -> context.runtime.types.i1
       Builtin.Char -> context.runtime.types.i8
       is PlankType.Array -> {
-        map(context, type.inner)?.let(context.llvm::getPointerType)?.orNull()
+        when (val result = map(context, type.inner)?.let(context.llvm::getPointerType)) {
+          is Ok -> result.unwrap()
+          is Err -> null
+          null -> null
+        }
       }
       is PlankType.Struct -> {
         context.findStructure(type.name)
@@ -36,7 +41,11 @@ class TypeMapper {
         )
       }
       is PlankType.Pointer -> {
-        map(context, type.inner)?.let(context.llvm::getPointerType)?.orNull()
+        when (val result = map(context, type.inner)?.let(context.llvm::getPointerType)) {
+          is Ok -> result.unwrap()
+          is Err -> null
+          null -> null
+        }
       }
       else -> context.runtime.types.void
     }

@@ -2,8 +2,6 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.compiler.llvm.buildGEP
-import com.lorenzoog.jplank.compiler.llvm.buildInBoundsGEP
 import com.lorenzoog.jplank.element.Expr
 import org.bytedeco.llvm.global.LLVM
 import org.llvm4j.llvm4j.Value
