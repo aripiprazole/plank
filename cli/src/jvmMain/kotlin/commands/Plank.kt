@@ -1,110 +1,144 @@
 package com.lorenzoog.jplank.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.help
-import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.file
 import com.lorenzoog.jplank.analyzer.DefaultBindingContext
 import com.lorenzoog.jplank.analyzer.ModuleTree
+import com.lorenzoog.jplank.analyzer.render
+import com.lorenzoog.jplank.compiler.CompileError
+import com.lorenzoog.jplank.compiler.CompilerOptions
 import com.lorenzoog.jplank.compiler.PlankCompiler
 import com.lorenzoog.jplank.compiler.PlankLLVM
-import com.lorenzoog.jplank.compiler.Linker
-import com.lorenzoog.jplank.compiler.LinkerOpts
+import com.lorenzoog.jplank.compiler.Target
+import com.lorenzoog.jplank.grammar.render
 import com.lorenzoog.jplank.message.ColoredMessageRenderer
-import com.lorenzoog.jplank.stdlib.Stdlib
+import com.lorenzoog.jplank.pkg.Package
+import com.lorenzoog.jplank.utils.asFile
+import com.lorenzoog.jplank.utils.currentFile
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createTempDirectory
 import pw.binom.io.file.File
-import pw.binom.io.file.mkdirs
-import java.nio.file.Paths
-import kotlin.system.exitProcess
+import pw.binom.io.file.asBFile
 
 class Plank : CliktCommand() {
-  private val stdlib = Stdlib()
-  private val stdlibFiles = stdlib.readStdlib()
+  private val target by option("target")
+    .convert { target ->
+      when (target) {
+        "llvm" -> Target.Llvm
+        else -> fail("Unreconized target $target")
+      }
+    }
+    .default(Target.Llvm)
 
-  private val context = DefaultBindingContext(ModuleTree(stdlibFiles))
-  private val renderer = ColoredMessageRenderer(flush = true)
-  private val compiler = PlankLLVM(stdlibFiles, context)
+  private val pkgName by option("pkg-name")
+    .help("The package name")
+    .default("Main")
 
-  private val target by argument("target")
-    .help("The target files that will be compiled").multiple()
+  private val pkgMain by option("pkg-main")
+    .help("The package main")
+    .default("Main")
 
-  private val outputName by option("-o", "--output")
-    .help("The output name").default("main")
+  private val pkgRoot by option("pkg-root")
+    .help("The package source root")
+    .convert { path -> File(path) }
+    .default(currentFile)
 
-  private val emitLLVM by option("--emit-llvm")
-    .help("Emits the LLVM IR and exit").flag()
+  private val pkgKind by option("pkg-kind")
+    .help("The package kind")
+    .convert { type ->
+      when (type) {
+        "lib" -> Package.Kind.Library
+        "bin" -> Package.Kind.Binary
+        else -> fail("Invalid package kind: $type")
+      }
+    }
+    .default(Package.Kind.Binary)
 
-  private val debug by option("-v", "--verbose")
-    .help("Enables the debug mode").flag()
+  private val pkgPrefix by option("pkg-prefix").help("The package prefix")
 
-  private val cmakePath by option("--cmake")
-    .help("The path to cmake bin").default("/usr/bin/cmake")
+  private val output by option("output", "O")
+    .help("Output file")
+    .file()
+    .convert { it.asBFile }
 
-  private val makePath by option("--make")
-    .help("The path to make binary").default("/usr/bin/make")
+  private val debug by option("debug", "D")
+    .help("Sets the compiler on debug mode")
+    .flag()
 
-  private val linkerPath by option("-l", "--linker")
-    .help("The path to linker binary").default("/usr/bin/clang++")
+  private val emitIR by option("emit-ir")
+    .help("Emits the ir code when compiling")
+    .flag()
 
-  private val srcDirPath by option("-s", "--src")
-    .help("The path to src dir").default(Paths.get("").toAbsolutePath().toString())
-
-  private val cmakeBuildDirPath by option("-cmbd", "--cmake-build-dir")
-    .help("The path to compile stdlib").default("dist/cmake")
-
-  private val objectsDirPath by option("-od", "--objects-dir")
-    .help("The path to compile stdlib").default("dist/objects")
-
-  private val bytecodeDirPath by option("--bytecode-dir")
-    .help("The path to emit bytecode").default("dist/bytecode")
-
-  private val binDirPath by option("-bd", "--bin-dir")
-    .help("The path to binaries").default("bin")
-
-  private val buildDirPath by option("-dd", "--dist-dir")
-    .help("The path to build").default("dist")
-
+  @ExperimentalPathApi
   override fun run() {
-    val srcDir = File(srcDirPath)
+    val renderer = ColoredMessageRenderer(flush = true)
 
-    val opts = LinkerOpts(srcDir).apply {
-      linkerPath = this@Plank.linkerPath
-      cmakePath = this@Plank.cmakePath
-      makePath = this@Plank.makePath
-      debug = this@Plank.debug
-      cmakeBuildDir = File(cmakeBuildDirPath).also(File::mkdirs)
-      binDir = File(binDirPath).also(File::mkdirs)
-      objectsDir = File(objectsDirPath).also(File::mkdirs)
-      bytecodeDir =  File(bytecodeDirPath).also(File::mkdirs)
-      buildDir =  File(buildDirPath).also(File::delete).also(File::mkdirs)
+    val plankHome = System.getenv("PLANK_HOME")
+      ?.let { File(it) }
+      ?: return renderer.severe("Define the PLANK_HOME before compile")
+
+    val pkg = Package(
+      name = pkgName,
+      prefix = pkgPrefix,
+      root = pkgRoot,
+      options = CompilerOptions(pkgRoot, plankHome).apply {
+        debug = this@Plank.debug
+        emitIR = this@Plank.emitIR
+        dist = "build_${pkgName}_${System.currentTimeMillis()}"
+          .let(::createTempDirectory)
+          .asFile()
+
+        if (this@Plank.output != null) {
+          output = this@Plank.output!!
+        }
+      },
+      kind = when (pkgKind) {
+        Package.Kind.Binary -> pkgKind
+        Package.Kind.Library -> TODO("unsupported library kind yet")
+      },
+      main = pkgMain
+    )
+
+    val tree = ModuleTree()
+    val context = DefaultBindingContext(pkg.tree)
+    val llvm = PlankLLVM(emptyList(), context) // TODO fix me
+
+    val compiler = PlankCompiler(pkg, context, llvm, renderer)
+    try {
+      compiler.compile()
+
+      renderer.info("Successfully compiled $output")
+    } catch (error: Throwable) {
+      when (error) {
+        is CompileError.BindingViolations -> {
+          renderer.severe("Please resolve the following issues before compile:")
+          error.violations.render(renderer)
+        }
+
+        is CompileError.IRViolations -> {
+          renderer.severe("Internal compiler error, please open an issue.")
+          error.violations.forEach { (element, message) ->
+            renderer.severe(message, element?.location)
+          }
+        }
+
+        is CompileError.SyntaxViolations -> {
+          renderer.severe("Please resolve the following issues before compile:")
+          error.violations.render(renderer)
+        }
+
+        is CompileError.FailedCommand -> {
+          renderer.severe("Could not execute ${error.command}. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
+        }
+        else -> {
+          renderer.severe("Unexpected error: ${error.message}")
+        }
+      }
     }
-
-    val linker = Linker(opts, renderer)
-    val compiler = PlankCompiler(linker, context, compiler, renderer)
-    val src = target.map { File(srcDir, it) }
-
-    if (stdlib.path == null) {
-      return renderer.severe("Define the PLANK_HOME before compile")
-    }
-
-    if (!compiler.generateIR(src)) {
-      renderer.severe("Aborting")
-      exitProcess(1)
-    }
-
-    if (emitLLVM) {
-      renderer.info("Issued llvm ir of ${target.joinToString(prefix = "[", postfix = "]")}")
-    }
-
-    if (!compiler.generateBinary(outputName)) {
-      renderer.severe("Aborting")
-      exitProcess(1)
-    }
-
-    renderer.info("Successfully linked $outputName")
   }
 }
