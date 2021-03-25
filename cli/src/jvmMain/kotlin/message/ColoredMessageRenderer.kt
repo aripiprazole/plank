@@ -36,11 +36,6 @@ class ColoredMessageRenderer(
     if (flush) writer.flush()
   }
 
-  fun flush() {
-    writer.flush()
-    writer.close()
-  }
-
   override fun close() {
     errWriter.flush()
     errWriter.close()

@@ -20,7 +20,7 @@ class PlankCompiler(
   private val renderer: MessageRenderer
 ) {
   fun generateIR(files: List<File>): Boolean {
-    files.map {
+    files.forEach {
       val srcFile = File(it.path)
       val irFile = File(linker.opts.bytecodeDir, "${srcFile.nameWithoutExtension}.ll")
 

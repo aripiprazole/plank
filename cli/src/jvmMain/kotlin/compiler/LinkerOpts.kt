@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.linker
+package com.lorenzoog.jplank.compiler
 
 import pw.binom.io.file.File
 import pw.binom.io.file.asJFile
