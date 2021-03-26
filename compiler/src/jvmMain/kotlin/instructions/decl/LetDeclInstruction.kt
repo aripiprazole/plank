@@ -2,11 +2,10 @@ package com.lorenzoog.jplank.compiler.instructions.decl
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.compiler.llvm.buildAlloca
-import com.lorenzoog.jplank.compiler.llvm.buildStore
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.visit
 import org.llvm4j.llvm4j.Value
+import org.llvm4j.optional.Some
 
 class LetDeclInstruction(private val descriptor: Decl.LetDecl) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -17,7 +16,7 @@ class LetDeclInstruction(private val descriptor: Decl.LetDecl) : PlankInstructio
 
     val type = context.map(pkType) ?: return context.report("type is null", descriptor)
 
-    val variable = context.builder.buildAlloca(type, name).also {
+    val variable = context.builder.buildAlloca(type, Some(name)).also {
       context.addVariable(name, it)
     }
 

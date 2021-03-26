@@ -11,7 +11,7 @@ object TreePrinter {
     expr: Map<String, Any?> = mapOf(),
     prefix: String = "",
     childrenPrefix: String = "",
-    name: Any = "Expr",
+    name: Any = "Element",
   ): String = buildString {
     append(prefix)
     append(name)

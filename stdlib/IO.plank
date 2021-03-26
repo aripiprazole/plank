@@ -1,3 +1,5 @@
+module Std.IO
+
 native fun println(message: *Char): Void;
 
 native fun print(message: *Char): Void;

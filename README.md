@@ -60,25 +60,20 @@ You should define the environment variable `PLANK_HOME` to
 the project folder.
 
 ```
-Usage: plank [OPTIONS] [target]...
+Usage: plank [OPTIONS] file
 
 Options:
-  -o, --output TEXT              The output name
-  --emit-llvm                    Emits the LLVM IR and exit
-  -v, --verbose                  Enables the debug mode
-  --cmake TEXT                   The path to cmake bin
-  --make TEXT                    The path to make binary
-  -l, --linker TEXT              The path to linker binary
-  -s, --src TEXT                 The path to src dir
-  -cmbd, --cmake-build-dir TEXT  The path to compile stdlib
-  -od, --objects-dir TEXT        The path to compile stdlib
-  --bytecode-dir TEXT            The path to emit bytecode
-  -bd, --bin-dir TEXT            The path to binaries
-  -dd, --dist-dir TEXT           The path to build
-  -h, --help                     Show this message and exit
+  --target VALUE
+  --pkg-name TEXT      The package name
+  --pkg-kind VALUE     The package kind
+  -O, --output VALUE   Output file
+  -D, --debug          Sets the compiler on debug mode
+  --emit-ir            Emits the ir code when compiling
+  -I, --include VALUE  Include files
+  -h, --help           Show this message and exit
 
 Arguments:
-  target  The target files that will be compiled
+  file  The target file
 ```
 
 ## Building

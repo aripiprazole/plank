@@ -2,11 +2,11 @@ package com.lorenzoog.jplank.compiler.instructions.element
 
 import com.lorenzoog.jplank.analyzer.type.PlankType
 import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.llvm.buildCall
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Expr
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.Value
+import org.llvm4j.optional.None
 
 abstract class IRFunction : IRElement() {
   abstract val name: String
@@ -25,7 +25,7 @@ abstract class IRFunction : IRElement() {
 
     val function = access(context) ?: return context.report("function is null", descriptor)
 
-    return context.builder.buildCall(function, context.map(type)!!, valueArguments)
+    return context.builder.buildCall(function, *valueArguments.toTypedArray(), name = None)
   }
 
   /** Access the function in the [context] */

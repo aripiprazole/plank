@@ -2,19 +2,11 @@ package com.lorenzoog.jplank.compiler.instructions.expr
 
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.compiler.llvm.addIncoming
-import com.lorenzoog.jplank.compiler.llvm.buildAlloca
-import com.lorenzoog.jplank.compiler.llvm.buildBranch
-import com.lorenzoog.jplank.compiler.llvm.buildCondBranch
-import com.lorenzoog.jplank.compiler.llvm.buildICmp
-import com.lorenzoog.jplank.compiler.llvm.buildPhi
-import com.lorenzoog.jplank.compiler.llvm.buildStore
-import com.lorenzoog.jplank.compiler.llvm.insertionBlock
-import com.lorenzoog.jplank.compiler.llvm.setPositionAtEnd
 import com.lorenzoog.jplank.element.Expr
-import org.bytedeco.llvm.global.LLVM
+import org.llvm4j.llvm4j.IntPredicate
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
+import org.llvm4j.optional.Some
 
 class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
@@ -22,9 +14,9 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
       ?: return context.report("condition is null", descriptor)
 
     val realCond = context.builder
-      .buildICmp(LLVM.LLVMIntEQ, cond, context.runtime.trueConstant, "cmptmp")
+      .buildIntCompare(IntPredicate.Equal, cond, context.runtime.trueConstant, Some("cmptmp"))
 
-    val func = context.builder.insertionBlock?.getFunction()?.toNullable()
+    val func = context.builder.getInsertionBlock().toNullable()?.getFunction()?.toNullable()
       ?: return context.report("insertion block is null", descriptor)
 
     val thenBranch = context.llvm.newBasicBlock("then").also(func::addBasicBlock)
@@ -32,7 +24,7 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
 
     val mergeBranch = context.llvm.newBasicBlock("ifcont")
 
-    val condBr = context.builder.buildCondBranch(
+    val condBr = context.builder.buildConditionalBranch(
       realCond,
       thenBranch,
       elseBranch
@@ -42,7 +34,7 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
     val elseRet: Value?
 
     thenBranch.also { br ->
-      context.builder.setPositionAtEnd(br) // emit then
+      context.builder.positionAfter(br) // emit then
 
       val stmts = descriptor.thenBranch.mapIndexed { index, stmt ->
         context.map(stmt).codegen(context)
@@ -53,7 +45,8 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
         ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
         ?.takeIf { it.getType() != context.runtime.types.void }
         ?.also {
-          val variable = context.builder.buildAlloca(it.getType(), "thenv")
+          val variable = context.builder.buildAlloca(it.getType(), Some("thenv"))
+
           context.builder.buildStore(it, variable)
         }
 
@@ -62,7 +55,7 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
 
     elseBranch.also { br ->
       func.addBasicBlock(br)
-      context.builder.setPositionAtEnd(br) // emit else
+      context.builder.positionAfter(br) // emit else
 
       val stmts = descriptor.elseBranch.mapIndexed { index, stmt ->
         context.map(stmt).codegen(context) // fixme failing on expr stmt that returns void
@@ -73,26 +66,26 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
         ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
         ?.takeIf { it.getType() != context.runtime.types.void }
         ?.also {
-          val variable = context.builder.buildAlloca(it.getType(), "elsev")
+          val variable = context.builder.buildAlloca(it.getType(), Some("elsev"))
           context.builder.buildStore(it, variable)
         }
 
       context.builder.buildBranch(mergeBranch)
     }
 
-    elseBranch = context.builder.insertionBlock
+    elseBranch = context.builder.getInsertionBlock().toNullable()
       ?: return context.report("insertion block is null", descriptor)
 
     func.addBasicBlock(mergeBranch)
-    context.builder.setPositionAtEnd(mergeBranch)
+    context.builder.positionAfter(mergeBranch)
 
     if (thenRet != null && elseRet != null) {
       val phiType = context.map(context.binding.visit(descriptor))
         ?: return context.report("phiType is null", descriptor)
 
-      return context.builder.buildPhi(phiType, "iftmp").apply {
-        addIncoming(listOf(thenRet), listOf(thenBranch))
-        addIncoming(listOf(elseRet), listOf(elseBranch))
+      return context.builder.buildPhi(phiType, Some("iftmp")).apply {
+        addIncoming(thenBranch to thenRet)
+        addIncoming(elseBranch to elseRet)
       }
     }
 
