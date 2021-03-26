@@ -14,6 +14,7 @@ module Show {
 
 fun main(argc: Int, argv: **Char): Void {
   import Show;
+  import Std.IO;
 
   module Batata {}
 
