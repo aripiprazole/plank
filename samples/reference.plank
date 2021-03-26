@@ -1,4 +1,4 @@
-import io;
+import Std.IO;
 
 fun main(argc: Int, argv: **Char): Void {
   let var = 4;
