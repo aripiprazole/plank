@@ -1,13 +1,13 @@
 module Show {
-  fun show_boolean(bool: Bool): Void {
+  fun show_boolean(bool: *Bool): Void {
 
   }
 
-  fun show_int(int: Int): Void {
+  fun show_int(int: *Int): Void {
 
   }
 
-  fun show_double(double: Double): Void {
+  fun show_double(double: *Double): Void {
 
   }
 }
@@ -18,6 +18,6 @@ fun main(argc: Int, argv: **Char): Void {
 
   module Batata {}
 
-  show_boolean(true);
-  Show.show_boolean(true);
+  show_boolean(&true);
+  Show.show_boolean(&true);
 }

@@ -1,5 +1,4 @@
-import io;
-import string;
+import Std.IO;
 
 type Struct = { a: Int, b: *Char };
 
