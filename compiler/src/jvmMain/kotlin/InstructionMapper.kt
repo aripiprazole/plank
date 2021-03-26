@@ -4,7 +4,9 @@ import com.lorenzoog.jplank.analyzer.BindingContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.ClassDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.FunDeclInstruction
+import com.lorenzoog.jplank.compiler.instructions.decl.ImportDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.LetDeclInstruction
+import com.lorenzoog.jplank.compiler.instructions.decl.ModuleDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.NativeFunDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.AccessInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.AssignInstruction
@@ -86,8 +88,8 @@ class InstructionMapper(
     return ReturnInstruction(returnStmt)
   }
 
-  override fun visitClassDecl(classDecl: Decl.ClassDecl): PlankInstruction {
-    return ClassDeclInstruction(classDecl)
+  override fun visitClassDecl(structDecl: Decl.StructDecl): PlankInstruction {
+    return ClassDeclInstruction(structDecl)
   }
 
   override fun visitFunDecl(funDecl: Decl.FunDecl): PlankInstruction {
@@ -120,5 +122,13 @@ class InstructionMapper(
 
   override fun visitValueExpr(value: Expr.Value): PlankInstruction {
     return ValueInstruction(value)
+  }
+
+  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankInstruction {
+    return ModuleDeclInstruction(moduleDecl)
+  }
+
+  override fun visitImportDecl(importDecl: Decl.ImportDecl): PlankInstruction {
+    return ImportDeclInstruction(importDecl)
   }
 }

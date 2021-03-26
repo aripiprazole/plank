@@ -1,113 +1,132 @@
 package com.lorenzoog.jplank.compiler
 
 import com.lorenzoog.jplank.analyzer.BindingContext
-import com.lorenzoog.jplank.analyzer.render
+import com.lorenzoog.jplank.analyzer.FileScope
+import com.lorenzoog.jplank.analyzer.Module
+import com.lorenzoog.jplank.analyzer.depthFirstSearch
 import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.grammar.render
-import com.lorenzoog.jplank.linker.Linker
 import com.lorenzoog.jplank.message.MessageRenderer
+import com.lorenzoog.jplank.pkg.Package
+import com.lorenzoog.jplank.utils.child
+import com.lorenzoog.jplank.utils.children
+import com.lorenzoog.jplank.utils.printOutput
+import kotlin.io.path.ExperimentalPathApi
 import pw.binom.io.file.File
-import pw.binom.io.file.asBFile
 import pw.binom.io.file.asJFile
-import pw.binom.io.file.name
 import pw.binom.io.file.nameWithoutExtension
 import pw.binom.io.file.write
+import pw.binom.io.utf8Appendable
 
+@ExperimentalPathApi
 class PlankCompiler(
-  private val linker: Linker,
+  private val pkg: Package,
   private val context: BindingContext,
   private val compiler: PlankLLVM,
   private val renderer: MessageRenderer
 ) {
-  fun generateIR(files: List<File>): Boolean {
-    files.map {
-      val srcFile = File(it.path)
-      val irFile = File(linker.opts.bytecodeDir, "${srcFile.nameWithoutExtension}.ll")
+  private val options = pkg.options
 
-      if (!generateIR(srcFile, irFile)) {
-        renderer.warning("Could not generate IR File for $it")
-        return false
-      }
-    }
+  fun compile() {
+    generateStdlibObjects()
 
-    return true
+    pkg.tree.dependencies
+      .depthFirstSearch(pkg.main.module)
+      .asSequence()
+      .mapNotNull(pkg.tree::findModule)
+      .map(Module::scope)
+      .filterIsInstance<FileScope>()
+      .map(FileScope::file)
+      .onEach(::validate)
+      .map(::generateIR)
+      .toList()
+
+    generateObject(pkg.main.realFile)
+
+    exec(compileCommand(options.objects.children.map(File::path), options.output.path))
   }
 
-  fun generateBinary(name: String): Boolean {
-    if (!linker.generateStdlibObjects()) {
-      renderer.warning("Failed to generate stdlib objects")
-      return false
+  private fun validate(file: PlankFile) {
+    if (!file.isValid) {
+      throw CompileError.SyntaxViolations(file.violations)
     }
 
-    linker.opts.bytecodeDir.asJFile.listFiles().orEmpty()
-      .map { it.asBFile }
-      .forEach { file ->
-        val (exitCode, generatedFile) = linker.generateObject(file)
-
-        if (exitCode == 0) {
-          File(linker.opts.objectsDir, generatedFile.name).also {
-            generatedFile.renameTo(it)
-          }
-        } else {
-          renderer.warning("Failed tom generate ${generatedFile.name} with exit code $exitCode")
-          return false
-        }
-      }
-
-    val objects = linker.opts.objectsDir.asJFile
-      .listFiles()
-      .orEmpty()
-      .map { it.asBFile }
-
-    val exitCode = linker.linkObjects(objects, name)
-    if (exitCode != 0) {
-      renderer.warning("Failed to link $name with exit code $exitCode")
-      return false
-    }
-
-    return true
-  }
-
-  private fun generateIR(file: File, target: File): Boolean {
-    val pkFile = PlankFile.of(file)
-    if (!validate(pkFile)) {
-      return false
-    }
-
-    compiler.initialize(pkFile)
-    compiler.compile(pkFile)
-
-    target.asJFile.writeText(compiler.context.module.getAsString())
-    if (compiler.context.errors.isNotEmpty()) {
-      compiler.context.errors.forEach { (element, message) ->
-        renderer.severe(message, element?.location)
-      }
-
-      renderer.severe("Internal errors occurred")
-      return false
-    }
-
-    renderer.info("Successfully compiled ${pkFile.module}")
-
-    return true
-  }
-
-  private fun validate(plankFile: PlankFile): Boolean {
-    if (!plankFile.isValid) {
-      plankFile.violations.render(renderer)
-
-      renderer.severe("Resolve the syntax issues above before compile")
-      return false
-    }
-
-    context.analyze(plankFile)
-    context.violations.render(renderer)
+    context.analyze(file)
 
     if (!context.isValid) {
-      renderer.severe("Resolve the binding issues above before compile")
-      return false
+      throw CompileError.BindingViolations(context.violations)
+    }
+  }
+
+  private fun generateObject(file: File): File {
+    val obj = options.objects.child("${file.nameWithoutExtension}.o")
+
+    exec(linkCommand(file, obj))
+
+    renderer.info("Generated ${file.nameWithoutExtension}.o")
+
+    return obj
+  }
+
+  private fun generateIR(file: PlankFile): File {
+    val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
+
+    compiler.initialize(file)
+    compiler.compile(file)
+
+    target.write()
+      .utf8Appendable()
+      .append(compiler.context.module.getAsString())
+
+    if (compiler.context.errors.isNotEmpty()) {
+      throw CompileError.IRViolations(compiler.module, compiler.context.errors)
     }
 
-    return true
+    return target
+  }
+
+  private fun generateStdlibObjects() {
+    exec(compileStdlibCommand())
+
+    ProcessBuilder(options.make)
+      .directory(options.runtimeTarget.asJFile)
+
+    renderer.info("Successfully generated stdlib objects")
+  }
+
+  private fun exec(command: String) {
+    val process = Runtime.getRuntime().exec(command)
+    if (options.debug) {
+      process.printOutput()
+    }
+
+    val exitCode = process.waitFor()
+    if (exitCode != 0) {
+      throw CompileError.FailedCommand(command, exitCode)
+    }
+  }
+
+  private fun compileStdlibCommand(): String {
+    return listOf(
+      options.cmake,
+      "-S ${options.runtime.path}",
+      "-B ${options.runtimeTarget.path}",
+      "-DTARGET_OBJECTS_DIR=${options.objects.path}",
+    ).joinToString(" ")
+  }
+
+  private fun linkCommand(file: File, target: File): String {
+    return listOf(
+      options.linker,
+      "-c ${file.path}",
+      "-o ${target.path}"
+    ).joinToString(" ")
+  }
+
+  private fun compileCommand(files: List<String>, name: String): String {
+    return listOf(
+      options.linker,
+      "-o $name",
+      "-v ${files.joinToString(" ")}"
+    ).joinToString(" ")
   }
 }

@@ -2,7 +2,7 @@ package com.lorenzoog.jplank.analyzer.type
 
 import com.lorenzoog.jplank.analyzer.Builtin
 
-sealed class PlankType : TypeCompanion {
+sealed class PlankType {
   open val genericArity: Int = 0
   open val fields: List<Struct.Field> = emptyList()
   open val inherits: List<PlankType> = emptyList()
@@ -19,7 +19,7 @@ sealed class PlankType : TypeCompanion {
     return fields.find { it.name == name }
   }
 
-  override fun isAssignableBy(another: PlankType): Boolean {
+  fun isAssignableBy(another: PlankType): Boolean {
     return this == Builtin.Any || this in another.inherits || this == another
   }
 
@@ -29,7 +29,19 @@ sealed class PlankType : TypeCompanion {
     }
   }
 
-  data class Pointer(val inner: PlankType) : PlankType() {
+  data class Module(
+    val name: String,
+    override val fields: List<Struct.Field> = emptyList(),
+  ) : PlankType() {
+    override fun toString(): String {
+      return "module $name"
+    }
+  }
+
+  data class Pointer(
+    val inner: PlankType,
+    override val fields: List<Struct.Field> = emptyList(),
+  ) : PlankType() {
     override val isPrimitive: Boolean = true
 
     override fun toString(): String {
@@ -59,7 +71,7 @@ sealed class PlankType : TypeCompanion {
     data class Field(val mutable: Boolean, val name: String, val type: PlankType)
 
     override fun toString(): String {
-      return name
+      return "struct $name"
     }
   }
 

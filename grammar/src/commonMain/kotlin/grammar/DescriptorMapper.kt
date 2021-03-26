@@ -3,7 +3,6 @@ package com.lorenzoog.jplank.grammar
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Decl.FunDecl.Modifier
 import com.lorenzoog.jplank.element.Expr
-import com.lorenzoog.jplank.element.ImportDirective
 import com.lorenzoog.jplank.element.PlankElement
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
@@ -16,8 +15,8 @@ import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.ParseTree
 
 class DescriptorMapper(
-    private val file: PlankFile,
-    violations: List<SyntaxViolation>,
+  private val file: PlankFile,
+  violations: List<SyntaxViolation>,
 ) : PlankParserBaseVisitor<PlankElement>() {
   private val violations = violations.toMutableList()
 
@@ -29,7 +28,6 @@ class DescriptorMapper(
     }
 
     return file.copy(
-      imports = emptyList(),
       program = emptyList(),
       violations = violations
     )
@@ -37,28 +35,21 @@ class DescriptorMapper(
 
   // program
   override fun visitProgram(ctx: PlankParser.ProgramContext): PlankFile {
+    val moduleName = ctx.findFileModule()?.findModuleName()?.text
+
     if (violations.isNotEmpty()) {
       return file.copy(
-        imports = emptyList(),
+        moduleName = moduleName,
         program = emptyList(),
         violations = violations
       )
     }
 
     return file.copy(
-      imports = ctx.findImports()?.findImportDirective().orEmpty().map {
-        visitImportDirective(it)
-      },
+      moduleName = moduleName,
       program = ctx.findDecl().map { visitDecl(it) },
       violations = violations,
     )
-  }
-
-  override fun visitImportDirective(ctx: PlankParser.ImportDirectiveContext): ImportDirective {
-    val module = ctx.module!!
-    val location = ctx.IMPORT()?.symbol.location
-
-    return ImportDirective.Module(module, location)
   }
 
   // typedef
@@ -116,9 +107,24 @@ class DescriptorMapper(
     return visit(
       ctx.findLetDecl()
         ?: ctx.findFunDecl()
-        ?: ctx.findClassDecl()
+        ?: ctx.findStructDecl()
+        ?: ctx.findModuleDecl()
+        ?: ctx.findImportDecl()
         ?: throw ExpectingViolation("declaration", ctx.toString(), ctx.start.location)
     ) as Decl
+  }
+
+  override fun visitImportDecl(ctx: PlankParser.ImportDeclContext): PlankElement {
+    val name = ctx.name!!
+
+    return Decl.ImportDecl(name, ctx.start.location)
+  }
+
+  override fun visitModuleDecl(ctx: PlankParser.ModuleDeclContext): PlankElement {
+    val name = ctx.name!!
+    val body = ctx.findDecl().map { visitDecl(it) }
+
+    return Decl.ModuleDecl(name, body, ctx.start.location)
   }
 
   override fun visitLetDecl(ctx: PlankParser.LetDeclContext): Decl {
@@ -151,17 +157,17 @@ class DescriptorMapper(
     return Decl.FunDecl(emptyList(), name, type, body, parameters, type.location)
   }
 
-  override fun visitClassDecl(ctx: PlankParser.ClassDeclContext): Decl {
+  override fun visitStructDecl(ctx: PlankParser.StructDeclContext): Decl {
     val name = ctx.name!!
-    val fields = ctx.findClassField().map { field ->
+    val fields = ctx.findStructField().map { field ->
       val fieldMutable = field.MUTABLE() != null
       val fieldName = field.findParameter()!!.name!!
       val fieldType = visitTypeDef(field.findParameter()!!.type!!)
 
-      Decl.ClassDecl.Field(fieldMutable, fieldName, fieldType)
+      Decl.StructDecl.Field(fieldMutable, fieldName, fieldType)
     }
 
-    return Decl.ClassDecl(name, fields, ctx.start.location)
+    return Decl.StructDecl(name, fields, ctx.start.location)
   }
 
   // statements

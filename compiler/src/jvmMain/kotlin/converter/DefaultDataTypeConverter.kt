@@ -1,10 +1,9 @@
 package com.lorenzoog.jplank.compiler.converter
 
 import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.llvm.buildFPToUI
-import com.lorenzoog.jplank.compiler.llvm.buildUIToFP
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
+import org.llvm4j.optional.Some
 
 class DefaultDataTypeConverter : DataTypeConverter {
   override fun convertToFloat(context: PlankContext, value: Value): Value {
@@ -15,7 +14,8 @@ class DefaultDataTypeConverter : DataTypeConverter {
 
     return when (type) {
       TypeKind.Integer -> {
-        context.builder.buildUIToFP(value, context.runtime.types.double, "conv.tmp")
+        context.builder
+          .buildUnsignedToFloat(value, context.runtime.types.double, Some("conv.tmp"))
       }
       else -> throw IllegalArgumentException("could not convert $type to float")
     }
@@ -31,7 +31,10 @@ class DefaultDataTypeConverter : DataTypeConverter {
       TypeKind.Float,
       TypeKind.Double,
       TypeKind.FP128,
-      TypeKind.BFloat -> context.builder.buildFPToUI(value, context.runtime.types.int, "conv.tmp")
+      TypeKind.BFloat -> {
+        context.builder
+          .buildFloatToUnsigned(value, context.runtime.types.int, Some("conv.tmp"))
+      }
       else -> throw IllegalArgumentException("could not convert $type to float")
     }
   }
