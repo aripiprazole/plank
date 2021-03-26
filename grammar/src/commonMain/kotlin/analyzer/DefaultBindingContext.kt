@@ -51,6 +51,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
       .map(Module::scope)
       .filterIsInstance<FileScope>()
       .map(FileScope::file)
+      .asReversed()
       .forEach(this::visit)
 
     return isValid

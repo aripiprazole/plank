@@ -10,12 +10,14 @@ import com.lorenzoog.jplank.pkg.Package
 import com.lorenzoog.jplank.utils.child
 import com.lorenzoog.jplank.utils.children
 import com.lorenzoog.jplank.utils.printOutput
+import kotlin.io.path.ExperimentalPathApi
 import pw.binom.io.file.File
 import pw.binom.io.file.asJFile
 import pw.binom.io.file.nameWithoutExtension
 import pw.binom.io.file.write
 import pw.binom.io.utf8Appendable
 
+@ExperimentalPathApi
 class PlankCompiler(
   private val pkg: Package,
   private val context: BindingContext,
@@ -25,19 +27,22 @@ class PlankCompiler(
   private val options = pkg.options
 
   fun compile() {
+    generateStdlibObjects()
+
     pkg.tree.dependencies
       .depthFirstSearch(pkg.main.module)
+      .asSequence()
       .mapNotNull(pkg.tree::findModule)
       .map(Module::scope)
       .filterIsInstance<FileScope>()
       .map(FileScope::file)
-      .onEach(this::validate)
-      .onEach(this::generateIR)
-      .onEach(this::generateObject)
+      .onEach(::validate)
+      .map(::generateIR)
       .toList()
 
-    compileCommand(options.objects.children.map(File::path), options.output.path)
-      .exec()
+    generateObject(pkg.main.realFile)
+
+    exec(compileCommand(options.objects.children.map(File::path), options.output.path))
   }
 
   private fun validate(file: PlankFile) {
@@ -52,16 +57,17 @@ class PlankCompiler(
     }
   }
 
-  private fun generateObject(file: PlankFile) {
-    val realFile = file.realFile
-    val obj = realFile.child("${realFile.nameWithoutExtension}.o")
+  private fun generateObject(file: File): File {
+    val obj = options.objects.child("${file.nameWithoutExtension}.o")
 
-    linkCommand(realFile, obj).exec()
+    exec(linkCommand(file, obj))
 
-    renderer.info("Generated ${realFile.nameWithoutExtension}.o")
+    renderer.info("Generated ${file.nameWithoutExtension}.o")
+
+    return obj
   }
 
-  private fun generateIR(file: PlankFile) {
+  private fun generateIR(file: PlankFile): File {
     val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
     compiler.initialize(file)
@@ -74,53 +80,53 @@ class PlankCompiler(
     if (compiler.context.errors.isNotEmpty()) {
       throw CompileError.IRViolations(compiler.module, compiler.context.errors)
     }
+
+    return target
   }
 
   private fun generateStdlibObjects() {
-    compileStdlibCommand().exec()
+    exec(compileStdlibCommand())
 
     ProcessBuilder(options.make)
-      .directory(options.stdlibTarget.asJFile)
-      .exec()
+      .directory(options.runtimeTarget.asJFile)
 
     renderer.info("Successfully generated stdlib objects")
   }
 
-  private fun ProcessBuilder.exec() {
-    val process = start()
+  private fun exec(command: String) {
+    val process = Runtime.getRuntime().exec(command)
     if (options.debug) {
       process.printOutput()
     }
 
     val exitCode = process.waitFor()
     if (exitCode != 0) {
-      throw CompileError.FailedCommand(command().joinToString(" "), exitCode)
+      throw CompileError.FailedCommand(command, exitCode)
     }
   }
 
-  private fun compileStdlibCommand(): ProcessBuilder {
-    return ProcessBuilder(
+  private fun compileStdlibCommand(): String {
+    return listOf(
       options.cmake,
-      "-S ${options.stdlib.path}",
-      "-B ${options.stdlibTarget.path}",
+      "-S ${options.runtime.path}",
+      "-B ${options.runtimeTarget.path}",
       "-DTARGET_OBJECTS_DIR=${options.objects.path}",
-      "-DCMAKE_BUILDTYPE=${if (options.debug) "Debug" else "Release"}"
-    )
+    ).joinToString(" ")
   }
 
-  private fun linkCommand(file: File, target: File): ProcessBuilder {
-    return ProcessBuilder(
+  private fun linkCommand(file: File, target: File): String {
+    return listOf(
       options.linker,
       "-c ${file.path}",
-      "-o ./bin/main"
-    )
+      "-o ${target.path}"
+    ).joinToString(" ")
   }
 
-  private fun compileCommand(files: List<String>, name: String): ProcessBuilder {
-    return ProcessBuilder(
+  private fun compileCommand(files: List<String>, name: String): String {
+    return listOf(
       options.linker,
       "-o $name",
       "-v ${files.joinToString(" ")}"
-    )
+    ).joinToString(" ")
   }
 }

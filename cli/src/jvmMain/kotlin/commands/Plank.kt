@@ -24,12 +24,12 @@ import com.lorenzoog.jplank.grammar.render
 import com.lorenzoog.jplank.message.ColoredMessageRenderer
 import com.lorenzoog.jplank.pkg.Package
 import com.lorenzoog.jplank.utils.asFile
-import com.lorenzoog.jplank.utils.currentFile
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
 import pw.binom.io.file.File
 import pw.binom.io.file.asBFile
 
+@ExperimentalPathApi
 class Plank : CliktCommand() {
   private val file by argument("file")
     .help("The target file")
@@ -47,11 +47,6 @@ class Plank : CliktCommand() {
   private val pkgName by option("--pkg-name")
     .help("The package name")
     .default("Main")
-
-  private val pkgRoot by option("--pkg-root")
-    .help("The package source root")
-    .convert { path -> File(path) }
-    .default(currentFile)
 
   private val pkgKind by option("--pkg-kind")
     .help("The package kind")
@@ -83,7 +78,6 @@ class Plank : CliktCommand() {
     .convert { path -> PlankFile.of(File(path)) }
     .multiple()
 
-  @ExperimentalPathApi
   override fun run() {
     val renderer = ColoredMessageRenderer(flush = true)
 
@@ -91,24 +85,25 @@ class Plank : CliktCommand() {
       ?.let { File(it) }
       ?: return renderer.severe("Define the PLANK_HOME before compile")
 
+    val options = CompilerOptions(plankHome).apply {
+      debug = this@Plank.debug
+      emitIR = this@Plank.emitIR
+      dist = "build_${pkgName}_${System.currentTimeMillis()}"
+        .let(::createTempDirectory)
+        .asFile()
+
+      output = this@Plank.output
+    }
+
     val pkg = Package(
       name = pkgName,
-      root = pkgRoot,
-      options = CompilerOptions(pkgRoot, plankHome).apply {
-        debug = this@Plank.debug
-        emitIR = this@Plank.emitIR
-        dist = "build_${pkgName}_${System.currentTimeMillis()}"
-          .let(::createTempDirectory)
-          .asFile()
-
-        output = this@Plank.output
-      },
+      options = options,
       kind = when (pkgKind) {
         Package.Kind.Binary -> pkgKind
         Package.Kind.Library -> TODO("unsupported library kind yet")
       },
       main = PlankFile.of(file),
-      include = include
+      include = include + options.stdlib
     )
 
     val context = DefaultBindingContext(pkg.tree)
