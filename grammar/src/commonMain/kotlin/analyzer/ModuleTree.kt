@@ -1,10 +1,20 @@
 package com.lorenzoog.jplank.analyzer
 
+import com.lorenzoog.jplank.analyzer.type.PlankType
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.PlankFile
 
 data class Module(val name: String, val content: List<Decl>) {
   lateinit var scope: Scope
+
+  val type: PlankType.Module
+    get() {
+      val variables = scope.variables.map { (name, variable) ->
+        PlankType.Struct.Field(variable.mutable, name, variable.type)
+      }
+
+      return PlankType.Module(name, variables)
+    }
 
   override fun toString(): String = "Module($name, ${scope::class.simpleName})"
 }

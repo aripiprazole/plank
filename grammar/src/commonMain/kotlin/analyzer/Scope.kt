@@ -49,8 +49,9 @@ sealed class Scope {
   abstract val moduleTree: ModuleTree
   open val nested: Boolean get() = enclosing != null
 
+  val variables = mutableMapOf<String, Variable>()
+
   private val types = mutableMapOf<String, PlankType.Struct>()
-  private val variables = mutableMapOf<String, Variable>()
   private val expanded = mutableListOf<Scope>()
 
   fun expand(another: Scope): Scope {
