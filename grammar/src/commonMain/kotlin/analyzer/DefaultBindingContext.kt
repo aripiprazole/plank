@@ -211,12 +211,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
 
   override fun visitSetExpr(set: Expr.Set): PlankType = set.bind {
     val member = set.member.text.orEmpty()
-    val structure = findReceiverOrVariable(set.receiver, member)
-
-    if (structure !is PlankType.Struct) {
-      return@bind structure
-    }
-
+    val structure = findReceiver(set.receiver)
     val expected = structure[member] ?: return@bind run {
       _violations += TypeViolation(Builtin.Any, Builtin.Void, set.location)
 
@@ -237,11 +232,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
 
   override fun visitGetExpr(get: Expr.Get): PlankType = get.bind {
     val member = get.member.text.orEmpty()
-    val structure = findReceiverOrVariable(get.receiver, member)
-
-    if (structure !is PlankType.Struct) {
-      return@bind structure
-    }
+    val structure = findReceiver(get.receiver)
 
     structure[member]?.type ?: run {
       _violations += TypeViolation(Builtin.Any, Builtin.Void, get.location)
@@ -250,16 +241,16 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
     }
   }
 
-  private fun findReceiverOrVariable(expr: Expr, name: String): PlankType = when (expr) {
+  private fun findReceiver(expr: Expr): PlankType = when (expr) {
     is Expr.Access -> currentScope.findVariable(expr.name.text.orEmpty())?.type
       ?: run {
-        val module = findModule(expr) ?: return@run Builtin.Any
-
-        module.scope.findVariableOn(currentScope, name)?.type ?: run {
-          _violations += TypeViolation(Builtin.Any, Builtin.Void, expr.location)
+        val module = findModule(expr) ?: return@run run {
+          _violations += UnresolvedModuleViolation(expr.name.text.orEmpty(), expr.location)
 
           Builtin.Any
         }
+
+        module.type
       }
     else -> visit(expr)
   }

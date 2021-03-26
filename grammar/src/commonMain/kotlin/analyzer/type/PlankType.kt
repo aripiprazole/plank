@@ -29,7 +29,19 @@ sealed class PlankType {
     }
   }
 
-  data class Pointer(val inner: PlankType) : PlankType() {
+  data class Module(
+    val name: String,
+    override val fields: List<Struct.Field> = emptyList(),
+  ) : PlankType() {
+    override fun toString(): String {
+      return "module $name"
+    }
+  }
+
+  data class Pointer(
+    val inner: PlankType,
+    override val fields: List<Struct.Field> = emptyList(),
+  ) : PlankType() {
     override val isPrimitive: Boolean = true
 
     override fun toString(): String {
@@ -59,7 +71,7 @@ sealed class PlankType {
     data class Field(val mutable: Boolean, val name: String, val type: PlankType)
 
     override fun toString(): String {
-      return name
+      return "struct $name"
     }
   }
 
