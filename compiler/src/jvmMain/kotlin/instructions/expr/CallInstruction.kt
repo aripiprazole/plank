@@ -13,6 +13,11 @@ class CallInstruction(private val descriptor: Expr.Call) : PlankInstruction() {
 
         context.findFunction(name)
       }
+      is Expr.Get -> {
+        val name = callee.member.text ?: return context.report("member is null", descriptor)
+
+        context.findFunction(name)
+      }
       else -> context.report("unsupported function", descriptor)
     } ?: return context.report("callee is null", descriptor)
 

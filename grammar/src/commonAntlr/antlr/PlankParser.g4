@@ -3,7 +3,9 @@ parser grammar PlankParser;
 options {tokenVocab=PlankLexer;}
 
 // file
-program : decl* EOF;
+fileModule : MODULE moduleName SEMICOLON ;
+
+program : fileModule? decl* EOF;
 
 // types
 funType : LPAREN RPAREN ( typeDef ( COMMA typeDef ) * ) ? ARROW_LEFT returnType=typeDef ;

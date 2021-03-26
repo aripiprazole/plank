@@ -12,8 +12,6 @@ module Show {
   }
 }
 
-import Batata;
-
 fun main(argc: Int, argv: **Char): Void {
   import Show;
 

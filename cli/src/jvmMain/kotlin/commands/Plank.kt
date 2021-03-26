@@ -1,20 +1,25 @@
 package com.lorenzoog.jplank.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.convert
+import com.github.ajalt.clikt.parameters.arguments.help
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import com.lorenzoog.jplank.analyzer.DefaultBindingContext
-import com.lorenzoog.jplank.analyzer.ModuleTree
 import com.lorenzoog.jplank.analyzer.render
 import com.lorenzoog.jplank.compiler.CompileError
 import com.lorenzoog.jplank.compiler.CompilerOptions
 import com.lorenzoog.jplank.compiler.PlankCompiler
 import com.lorenzoog.jplank.compiler.PlankLLVM
 import com.lorenzoog.jplank.compiler.Target
+import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.grammar.render
 import com.lorenzoog.jplank.message.ColoredMessageRenderer
 import com.lorenzoog.jplank.pkg.Package
@@ -26,7 +31,11 @@ import pw.binom.io.file.File
 import pw.binom.io.file.asBFile
 
 class Plank : CliktCommand() {
-  private val target by option("target")
+  private val file by argument("file")
+    .help("The target file")
+    .convert { File(it) }
+
+  private val target by option("--target")
     .convert { target ->
       when (target) {
         "llvm" -> Target.Llvm
@@ -35,20 +44,16 @@ class Plank : CliktCommand() {
     }
     .default(Target.Llvm)
 
-  private val pkgName by option("pkg-name")
+  private val pkgName by option("--pkg-name")
     .help("The package name")
     .default("Main")
 
-  private val pkgMain by option("pkg-main")
-    .help("The package main")
-    .default("Main")
-
-  private val pkgRoot by option("pkg-root")
+  private val pkgRoot by option("--pkg-root")
     .help("The package source root")
     .convert { path -> File(path) }
     .default(currentFile)
 
-  private val pkgKind by option("pkg-kind")
+  private val pkgKind by option("--pkg-kind")
     .help("The package kind")
     .convert { type ->
       when (type) {
@@ -59,20 +64,26 @@ class Plank : CliktCommand() {
     }
     .default(Package.Kind.Binary)
 
-  private val pkgPrefix by option("pkg-prefix").help("The package prefix")
+  private val pkgPrefix by option("--pkg-prefix").help("The package prefix")
 
-  private val output by option("output", "O")
+  private val output by option("--output", "-O")
     .help("Output file")
     .file()
     .convert { it.asBFile }
+    .required()
 
-  private val debug by option("debug", "D")
+  private val debug by option("--debug", "-D")
     .help("Sets the compiler on debug mode")
     .flag()
 
-  private val emitIR by option("emit-ir")
+  private val emitIR by option("--emit-ir")
     .help("Emits the ir code when compiling")
     .flag()
+
+  private val include by option("--include", "-I")
+    .help("Include files")
+    .convert { path -> PlankFile.of(File(path)) }
+    .multiple()
 
   @ExperimentalPathApi
   override fun run() {
@@ -93,25 +104,22 @@ class Plank : CliktCommand() {
           .let(::createTempDirectory)
           .asFile()
 
-        if (this@Plank.output != null) {
-          output = this@Plank.output!!
-        }
+        output = this@Plank.output
       },
       kind = when (pkgKind) {
         Package.Kind.Binary -> pkgKind
         Package.Kind.Library -> TODO("unsupported library kind yet")
       },
-      main = pkgMain
+      main = PlankFile.of(file),
+      include = include
     )
 
-    val tree = ModuleTree()
     val context = DefaultBindingContext(pkg.tree)
-    val llvm = PlankLLVM(emptyList(), context) // TODO fix me
+    val llvm = PlankLLVM(pkg.tree, context)
 
     val compiler = PlankCompiler(pkg, context, llvm, renderer)
     try {
       compiler.compile()
-
       renderer.info("Successfully compiled $output")
     } catch (error: Throwable) {
       when (error) {
@@ -125,6 +133,10 @@ class Plank : CliktCommand() {
           error.violations.forEach { (element, message) ->
             renderer.severe(message, element?.location)
           }
+          if (debug) {
+            renderer.info("LLVM Module:")
+            println(error.module.getAsString())
+          }
         }
 
         is CompileError.SyntaxViolations -> {
@@ -133,10 +145,10 @@ class Plank : CliktCommand() {
         }
 
         is CompileError.FailedCommand -> {
-          renderer.severe("Could not execute ${error.command}. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
+          renderer.severe("Could not execute '${error.command}'. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
         }
         else -> {
-          renderer.severe("Unexpected error: ${error.message}")
+          renderer.severe("${error::class.simpleName}: ${error.message}")
         }
       }
     }

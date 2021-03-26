@@ -12,7 +12,7 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
 
 data class FileScope(
   val file: PlankFile,
-  override val enclosing: Scope,
+  override val enclosing: Scope? = null,
   override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
   override val name: String = file.module
@@ -22,7 +22,7 @@ data class FileScope(
 data class ModuleScope(
   val module: Module,
   override val enclosing: Scope,
-  override val moduleTree: ModuleTree
+  override val moduleTree: ModuleTree = ModuleTree()
 ) : Scope() {
   override val name: String = "${enclosing.name}.${module.name}"
 }
@@ -99,12 +99,16 @@ sealed class Scope {
       ?: expanded.filter { it != this }.mapNotNull { it.findStructure(name) }.firstOrNull()
   }
 
+  // todo add usage tracker
+  fun findVariableOn(scope: Scope, name: String): Variable? {
+    return variables[name]
+  }
+
   fun findVariable(name: String): Variable? {
     return variables[name]
       ?: enclosing?.findVariable(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findVariable(name) }.firstOrNull()
   }
-
 
   fun findFunction(name: String): PlankType.Callable? {
     return findVariable(name)?.type as? PlankType.Callable

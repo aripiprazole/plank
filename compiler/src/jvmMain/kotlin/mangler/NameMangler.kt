@@ -3,9 +3,10 @@ package com.lorenzoog.jplank.compiler.mangler
 import com.lorenzoog.jplank.compiler.PlankContext
 import com.lorenzoog.jplank.element.Decl
 
-class SimpleMangler : Mangler {
-  override fun mangle(context: PlankContext, function: Decl.FunDecl): String {
+class NameMangler {
+  fun mangle(context: PlankContext, function: Decl.FunDecl): String {
     if (function.isNative) {
+      // todo add export tag to avoid it
       return buildString {
         append(function.location.file.module)
         append("_")
@@ -14,11 +15,11 @@ class SimpleMangler : Mangler {
     }
 
     return buildString {
-      append(function.location.file.module)
+      append(context.moduleName.hashCode())
+      append(context.moduleName)
       append("::")
       append(function.name.text)
-      append("@")
-      append(function.parameters.size)
+      append(function.name.hashCode())
     }
   }
 }
