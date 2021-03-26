@@ -36,7 +36,14 @@ data class PlankFile(
   companion object {
     fun of(file: File): PlankFile {
       return of(file.read().utf8Reader().readText(), file.nameWithoutExtension, file.path)
-        .copy(path = file.path, moduleName = file.nameWithoutExtension)
+        .copy(path = file.path)
+        .let {
+          if (it.moduleName == null) {
+            it.copy(moduleName = file.nameWithoutExtension)
+          } else {
+            it
+          }
+        }
     }
 
     fun of(text: String, module: String = "anonymous", path: String = module): PlankFile {

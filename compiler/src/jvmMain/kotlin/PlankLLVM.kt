@@ -1,7 +1,9 @@
 package com.lorenzoog.jplank.compiler
 
 import com.lorenzoog.jplank.analyzer.BindingContext
+import com.lorenzoog.jplank.analyzer.FileScope
 import com.lorenzoog.jplank.analyzer.ModuleTree
+import com.lorenzoog.jplank.analyzer.depthFirstSearch
 import com.lorenzoog.jplank.compiler.instructions.EntryPoint
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.visit
@@ -36,17 +38,26 @@ class PlankLLVM(
 
     module = Module(LLVM.LLVMModuleCreateWithName(file.module))
 
-    context = PlankContext.of(file, instructionMapper, bindingContext, module)
+    context = PlankContext
+      .of(file, instructionMapper, bindingContext, module)
       .copy(moduleName = "Global")
   }
 
-  fun compile(): List<Value> {
-    return tree.findFiles()
+  fun compile(main: PlankFile): List<Value> {
+    return tree.dependencies
+      .depthFirstSearch(main.module)
+      .mapNotNull(tree::findModule)
+      .map(com.lorenzoog.jplank.analyzer.Module::scope)
+      .filterIsInstance<FileScope>()
+      .map(FileScope::file)
+      .asReversed() // reverse order
       .flatMap { module ->
-        val context = context.createFileScope(module)
+        val fileContext = context
+          .createFileScope(module)
+          .also(context::addModule)
 
         instructionMapper.visit(module.program).map {
-          it.codegen(context)
+          it.codegen(fileContext)
         }
       }
       .filterNotNull()

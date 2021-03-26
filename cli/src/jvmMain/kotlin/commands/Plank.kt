@@ -64,8 +64,6 @@ class Plank : CliktCommand() {
     }
     .default(Package.Kind.Binary)
 
-  private val pkgPrefix by option("--pkg-prefix").help("The package prefix")
-
   private val output by option("--output", "-O")
     .help("Output file")
     .file()
@@ -95,7 +93,6 @@ class Plank : CliktCommand() {
 
     val pkg = Package(
       name = pkgName,
-      prefix = pkgPrefix,
       root = pkgRoot,
       options = CompilerOptions(pkgRoot, plankHome).apply {
         debug = this@Plank.debug

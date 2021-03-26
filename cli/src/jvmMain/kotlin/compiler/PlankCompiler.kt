@@ -65,7 +65,7 @@ class PlankCompiler(
     val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
     compiler.initialize(file)
-    compiler.compile()
+    compiler.compile(file)
 
     target.write()
       .utf8Appendable()
