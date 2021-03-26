@@ -4,7 +4,6 @@ import com.lorenzoog.jplank.analyzer.BindingContext
 import com.lorenzoog.jplank.analyzer.FileScope
 import com.lorenzoog.jplank.analyzer.Module
 import com.lorenzoog.jplank.analyzer.depthFirstSearch
-import com.lorenzoog.jplank.analyzer.render
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.message.MessageRenderer
 import com.lorenzoog.jplank.pkg.Package
@@ -13,7 +12,6 @@ import com.lorenzoog.jplank.utils.children
 import com.lorenzoog.jplank.utils.printOutput
 import pw.binom.io.file.File
 import pw.binom.io.file.asJFile
-import pw.binom.io.file.name
 import pw.binom.io.file.nameWithoutExtension
 import pw.binom.io.file.write
 import pw.binom.io.utf8Appendable
@@ -27,11 +25,8 @@ class PlankCompiler(
   private val options = pkg.options
 
   fun compile() {
-    generateStdlibObjects()
-
     pkg.tree.dependencies
-      .depthFirstSearch(pkg.main)
-      .asSequence()
+      .depthFirstSearch(pkg.main.module)
       .mapNotNull(pkg.tree::findModule)
       .map(Module::scope)
       .filterIsInstance<FileScope>()
@@ -51,7 +46,6 @@ class PlankCompiler(
     }
 
     context.analyze(file)
-    context.violations.render(renderer)
 
     if (!context.isValid) {
       throw CompileError.BindingViolations(context.violations)
@@ -71,14 +65,14 @@ class PlankCompiler(
     val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
     compiler.initialize(file)
-    compiler.compile(file)
+    compiler.compile()
 
     target.write()
       .utf8Appendable()
       .append(compiler.context.module.getAsString())
 
     if (compiler.context.errors.isNotEmpty()) {
-      throw CompileError.IRViolations(compiler.context.errors)
+      throw CompileError.IRViolations(compiler.module, compiler.context.errors)
     }
   }
 
@@ -105,7 +99,8 @@ class PlankCompiler(
   }
 
   private fun compileStdlibCommand(): ProcessBuilder {
-    return ProcessBuilder(options.cmake).command(
+    return ProcessBuilder(
+      options.cmake,
       "-S ${options.stdlib.path}",
       "-B ${options.stdlibTarget.path}",
       "-DTARGET_OBJECTS_DIR=${options.objects.path}",
@@ -114,14 +109,16 @@ class PlankCompiler(
   }
 
   private fun linkCommand(file: File, target: File): ProcessBuilder {
-    return ProcessBuilder(options.linker).command(
+    return ProcessBuilder(
+      options.linker,
       "-c ${file.path}",
-      "-o ${target.path}"
+      "-o ./bin/main"
     )
   }
 
   private fun compileCommand(files: List<String>, name: String): ProcessBuilder {
-    return ProcessBuilder(options.linker).command(
+    return ProcessBuilder(
+      options.linker,
       "-o $name",
       "-v ${files.joinToString(" ")}"
     )

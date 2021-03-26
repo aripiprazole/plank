@@ -4,7 +4,9 @@ import com.lorenzoog.jplank.analyzer.BindingContext
 import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.ClassDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.FunDeclInstruction
+import com.lorenzoog.jplank.compiler.instructions.decl.ImportDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.LetDeclInstruction
+import com.lorenzoog.jplank.compiler.instructions.decl.ModuleDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.decl.NativeFunDeclInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.AccessInstruction
 import com.lorenzoog.jplank.compiler.instructions.expr.AssignInstruction
@@ -123,10 +125,10 @@ class InstructionMapper(
   }
 
   override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankInstruction {
-    TODO("Not yet implemented")
+    return ModuleDeclInstruction(moduleDecl)
   }
 
   override fun visitImportDecl(importDecl: Decl.ImportDecl): PlankInstruction {
-    TODO("Not yet implemented")
+    return ImportDeclInstruction(importDecl)
   }
 }

@@ -35,14 +35,18 @@ class DescriptorMapper(
 
   // program
   override fun visitProgram(ctx: PlankParser.ProgramContext): PlankFile {
+    val moduleName = ctx.findFileModule()?.findModuleName()?.text
+
     if (violations.isNotEmpty()) {
       return file.copy(
+        moduleName = moduleName,
         program = emptyList(),
         violations = violations
       )
     }
 
     return file.copy(
+      moduleName = moduleName,
       program = ctx.findDecl().map { visitDecl(it) },
       violations = violations,
     )

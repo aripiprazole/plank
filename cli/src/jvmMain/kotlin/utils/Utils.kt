@@ -33,7 +33,7 @@ fun Path.asFile(): File {
 }
 
 fun File.getRelativePath(child: File): String {
-  return asJFile.toRelativeString(child.asJFile)
+  return asJFile.toRelativeString(child.asJFile.absoluteFile)
 }
 
 fun Process.printOutput() {

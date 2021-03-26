@@ -12,8 +12,23 @@ data class Module(val name: String, val content: List<Decl>) {
 class ModuleTree(files: List<PlankFile> = emptyList()) {
   private val modules = mutableMapOf<String, Module>()
 
+  init {
+    files.forEach { file ->
+      modules[file.module] = Module(file.module, file.program).apply {
+        scope = FileScope(file)
+      }
+    }
+  }
+
   val dependencies = Graph<String>().apply {
     files.map(PlankFile::module).forEach(this::addVertex)
+  }
+
+  fun findFiles(): List<PlankFile> {
+    return modules.values
+      .map(Module::scope)
+      .filterIsInstance<FileScope>()
+      .map(FileScope::file)
   }
 
   fun addDependency(scope: Scope, on: Scope) {
@@ -35,5 +50,4 @@ class ModuleTree(files: List<PlankFile> = emptyList()) {
   fun findModule(name: String): Module? {
     return dependencies.depthFirstSearch(name).firstOrNull()?.let(modules::get)
   }
-
 }
