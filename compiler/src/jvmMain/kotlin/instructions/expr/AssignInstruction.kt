@@ -1,20 +1,20 @@
 package com.lorenzoog.plank.compiler.instructions.expr
 
 import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.buildStore
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.PlankInstruction
 import com.lorenzoog.plank.grammar.element.Expr
-import org.llvm4j.llvm4j.Value
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
 class AssignInstruction(private val descriptor: Expr.Assign) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val name = descriptor.name.text
+  override fun PlankContext.codegen(): CodegenResult = either {
+    val value = !descriptor.value.toInstruction().codegen()
+    val variable = findVariable(descriptor.name.text)
+      ?: return Left("Variable don't exist")
 
-    val value = context.map(descriptor.value).codegen(context)
-      ?: return context.report("variable value is null", descriptor)
-
-    val variable = context.findVariable(name)
-      ?: return context.report("variable is null", descriptor)
-
-    return context.builder.buildStore(variable, value)
+    Right(buildStore(variable, value))
   }
 }

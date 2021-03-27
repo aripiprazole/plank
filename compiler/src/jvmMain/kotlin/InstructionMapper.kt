@@ -31,11 +31,8 @@ import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.grammar.element.Stmt
 
 class InstructionMapper(
-  val typeMapper: TypeMapper,
   val binding: BindingContext
-) :
-  Expr.Visitor<PlankInstruction>,
-  Stmt.Visitor<PlankInstruction> {
+) : Expr.Visitor<PlankInstruction>, Stmt.Visitor<PlankInstruction> {
   override fun visitIfExpr(anIf: Expr.If): PlankInstruction {
     return IfInstruction(anIf)
   }

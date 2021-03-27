@@ -2,27 +2,26 @@ package com.lorenzoog.plank.compiler.instructions.decl
 
 import com.lorenzoog.plank.analyzer.visit
 import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.buildAlloca
+import com.lorenzoog.plank.compiler.buildStore
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.PlankInstruction
 import com.lorenzoog.plank.grammar.element.Decl
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
 class LetDeclInstruction(private val descriptor: Decl.LetDecl) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
+  override fun PlankContext.codegen(): CodegenResult = either {
     val name = descriptor.name.text
-    val pkType = context.binding.visit(descriptor.type) {
-      context.binding.visit(descriptor.value)
+    val type = !binding.visit(descriptor.type) { binding.visit(descriptor.value) }
+      .toType()
+
+    val variable = buildAlloca(type, name).also {
+      addVariable(name, it)
     }
 
-    val type = context.map(pkType) ?: return context.report("type is null", descriptor)
+    val value = !descriptor.toInstruction().codegen()
 
-    val variable = context.builder.buildAlloca(type, Some(name)).also {
-      context.addVariable(name, it)
-    }
-
-    val value = context.map(descriptor.value).codegen(context)
-      ?: return context.report("variable value is null", descriptor)
-
-    return context.builder.buildStore(value, variable)
+    Right(buildStore(variable, value))
   }
 }

@@ -1,48 +1,37 @@
 package com.lorenzoog.plank.compiler.instructions.expr
 
 import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.buildCall
+import com.lorenzoog.plank.compiler.buildFDiv
+import com.lorenzoog.plank.compiler.buildIAdd
+import com.lorenzoog.plank.compiler.buildIMul
+import com.lorenzoog.plank.compiler.buildISub
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.PlankInstruction
 import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.llvm4j.WrapSemantics
-import org.llvm4j.optional.None
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
 class BinaryInstruction(val descriptor: Expr.Binary) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val lhs = context.map(descriptor.lhs).codegen(context)
-      ?: return context.report("lhs is null", descriptor)
+  override fun PlankContext.codegen(): CodegenResult = either {
+    val lhs = !descriptor.lhs.toInstruction().codegen()
+    val rhs = !descriptor.rhs.toInstruction().codegen()
 
-    val rhs = context.map(descriptor.rhs).codegen(context)
-      ?: return context.report("rhs is null", descriptor)
+    Right(
+      when (descriptor.op) {
+        Operation.Add -> buildIAdd(rhs, lhs, "add.tmp")
+        Operation.Sub -> buildISub(rhs, lhs, "sub.tmp")
+        Operation.Mul -> buildIMul(rhs, lhs, "mul.tmp")
+        Operation.Div -> buildFDiv(rhs.toFloat(), lhs.toFloat(), "div.tmp")
+        Operation.Concat -> {
+          val concatFunction = runtime.concatFunction
+            ?: return Left("concat function is null")
 
-    return when (descriptor.op) {
-      Operation.Sub -> {
-        context.builder.buildIntSub(rhs, lhs, WrapSemantics.Unspecified, Some("subtmp"))
+          buildCall(concatFunction, listOf(rhs, lhs))
+        }
       }
-
-      Operation.Mul -> {
-        context.builder.buildIntMul(lhs, rhs, WrapSemantics.Unspecified, Some("multmp"))
-      }
-
-      Operation.Div -> {
-        val frhs = context.dataTypeConverter.convertToFloat(context, rhs)
-        val flhs = context.dataTypeConverter.convertToFloat(context, lhs)
-
-        context.builder.buildFloatDiv(flhs, frhs, Some("divtmp"))
-      }
-
-      Operation.Add -> {
-        context.builder.buildIntAdd(lhs, rhs, WrapSemantics.Unspecified, Some("addtmp"))
-      }
-
-      Operation.Concat -> {
-        val concatFunction = context.runtime.concatFunction
-          ?: return context.report("concat function is null", descriptor)
-
-        return context.builder.buildCall(concatFunction, lhs, rhs, name = None)
-      }
-    }
+    )
   }
 }

@@ -1,18 +1,19 @@
 package com.lorenzoog.plank.compiler.instructions.expr
 
 import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.buildLoad
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.PlankInstruction
 import com.lorenzoog.plank.grammar.element.Expr
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.None
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
 class AccessInstruction(private val descriptor: Expr.Access) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val name = descriptor.name.text
+  override fun PlankContext.codegen(): CodegenResult = either {
+    val value = findVariable(descriptor.name.text)
+      ?: return Left("Variable don't exist")
 
-    val value = context.findVariable(name)
-      ?: return context.report("variable does not exists", descriptor)
-
-    return context.builder.buildLoad(value, None)
+    Right(buildLoad(value))
   }
 }

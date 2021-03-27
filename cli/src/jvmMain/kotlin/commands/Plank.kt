@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import com.lorenzoog.plank.analyzer.DefaultBindingContext
+import com.lorenzoog.plank.analyzer.BindingContext
 import com.lorenzoog.plank.analyzer.render
 import com.lorenzoog.plank.cli.compiler.CompileError
 import com.lorenzoog.plank.cli.compiler.CompilerOptions
@@ -106,7 +106,7 @@ class Plank : CliktCommand() {
       include = include + options.stdlib
     )
 
-    val context = DefaultBindingContext(pkg.tree)
+    val context = BindingContext(pkg.tree)
     val llvm = PlankLLVM(pkg.tree, context)
 
     val compiler = PlankCompiler(pkg, context, llvm, renderer)
@@ -122,9 +122,11 @@ class Plank : CliktCommand() {
 
         is CompileError.IRViolations -> {
           renderer.severe("Internal compiler error, please open an issue.")
-          error.violations.forEach { (element, message) ->
-            renderer.severe(message, element?.location)
+
+          error.violations.forEach { message ->
+            renderer.severe(message)
           }
+
           if (debug) {
             renderer.info("LLVM Module:")
             println(error.module.getAsString())
