@@ -3,7 +3,7 @@ package com.lorenzoog.jplank.intellijplugin.analyzer
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
-import com.lorenzoog.jplank.analyzer.type.PlankType
+import com.lorenzoog.jplank.analyzer.PlankType
 import com.lorenzoog.jplank.intellijplugin.psi.PlankPsiFile
 
 data class TypeViolation(

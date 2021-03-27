@@ -3,7 +3,7 @@ package com.lorenzoog.jplank.intellijplugin.analyzer
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.PlatformIcons
-import com.lorenzoog.jplank.analyzer.type.PlankType
+import com.lorenzoog.jplank.analyzer.PlankType
 import javax.swing.Icon
 
 data class LookupResult(

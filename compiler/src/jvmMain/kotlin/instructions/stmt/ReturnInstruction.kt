@@ -1,9 +1,9 @@
-package com.lorenzoog.jplank.compiler.instructions.stmt
+package com.lorenzoog.plank.compiler.instructions.stmt
 
-import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Stmt
+import com.lorenzoog.plank.analyzer.Builtin
+import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.grammar.element.Stmt
 import org.llvm4j.llvm4j.Value
 import org.llvm4j.optional.None
 import org.llvm4j.optional.Some

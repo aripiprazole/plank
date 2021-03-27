@@ -1,6 +1,6 @@
-package com.lorenzoog.jplank
+package com.lorenzoog.plank.cli
 
-import com.lorenzoog.jplank.commands.Plank
+import com.lorenzoog.plank.cli.commands.Plank
 import kotlin.io.path.ExperimentalPathApi
 
 @ExperimentalPathApi

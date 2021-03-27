@@ -8,7 +8,7 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.lorenzoog.jplank.intellijplugin.lexer.PlankLexerAdapter
-import com.lorenzoog.jplank.intellijplugin.psi.PlankTypes
+import com.lorenzoog.plank.intellijplugin.psi.PlankTypes
 
 class PlankLanguageHighlighter : SyntaxHighlighterBase() {
   override fun getHighlightingLexer(): Lexer {

@@ -1,8 +1,8 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.cli.compiler
 
-import com.lorenzoog.jplank.analyzer.BindingViolation
-import com.lorenzoog.jplank.element.PlankElement
-import com.lorenzoog.jplank.grammar.SyntaxViolation
+import com.lorenzoog.plank.analyzer.BindingViolation
+import com.lorenzoog.plank.grammar.element.PlankElement
+import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
 import org.llvm4j.llvm4j.Module
 
 sealed class CompileError : Throwable() {

@@ -1,10 +1,10 @@
-package com.lorenzoog.jplank.element
+package com.lorenzoog.plank.grammar.element
 
-import com.lorenzoog.jplank.grammar.DescriptorMapper
-import com.lorenzoog.jplank.grammar.SyntaxErrorListener
-import com.lorenzoog.jplank.grammar.SyntaxViolation
-import com.lorenzoog.jplank.grammar.generated.PlankLexer
-import com.lorenzoog.jplank.grammar.generated.PlankParser
+import com.lorenzoog.plank.grammar.mapper.DescriptorMapper
+import com.lorenzoog.plank.grammar.mapper.SyntaxErrorListener
+import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
+import com.lorenzoog.plank.grammar.generated.PlankLexer
+import com.lorenzoog.plank.grammar.generated.PlankParser
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import pw.binom.io.file.File

@@ -22,6 +22,8 @@ repositories {
 
 dependencies {
   implementation(project(":grammar"))
+  implementation(project(":analyzer"))
+  implementation(project(":shared"))
   testImplementation("junit", "junit", "4.12")
 }
 
@@ -45,14 +47,14 @@ tasks {
   val generatePlankParser = register<GenerateParser>("generatePlankParser") {
     source = "grammar/plank.bnf"
     targetRoot = "src/main/gen"
-    pathToParser = "com/lorenzoog/jplank/intellijplugin/parser/PlankParser.java"
-    pathToPsiRoot = "com/lorenzoog/jplank/intellijplugin/psi"
+    pathToParser = "com/lorenzoog/plank/intellijplugin/parser/PlankParser.java"
+    pathToPsiRoot = "com/lorenzoog/plank/intellijplugin/psi"
     purgeOldFiles = true
   }
 
   val generatePlankLexer = register<GenerateLexer>("generatePlankLexer") {
     source = "grammar/plank.flex"
-    targetDir = "src/main/gen/com/lorenzoog/jplank/intellijplugin/lexer"
+    targetDir = "src/main/gen/com/lorenzoog/plank/intellijplugin/lexer"
     targetClass = "IdeaPlankLexer"
     purgeOldFiles = true
   }

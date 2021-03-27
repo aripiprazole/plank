@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.utils
+package com.lorenzoog.plank.cli.utils
 
 import java.nio.file.Path
 import java.nio.file.Paths

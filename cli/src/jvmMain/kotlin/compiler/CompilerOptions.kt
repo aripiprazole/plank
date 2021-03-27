@@ -1,8 +1,8 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.cli.compiler
 
-import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.utils.child
-import com.lorenzoog.jplank.utils.children
+import com.lorenzoog.plank.cli.utils.child
+import com.lorenzoog.plank.cli.utils.children
+import com.lorenzoog.plank.grammar.element.PlankFile
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
 import pw.binom.io.file.File

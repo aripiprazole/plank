@@ -1,7 +1,7 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.compiler
 
-import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.analyzer.type.PlankType
+import com.lorenzoog.plank.analyzer.Builtin
+import com.lorenzoog.plank.analyzer.PlankType
 import org.llvm4j.llvm4j.Type
 import org.llvm4j.optional.Err
 import org.llvm4j.optional.Ok

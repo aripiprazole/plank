@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.build
+package com.lorenzoog.plank.build
 
 object Dependencies {
   object Kotlin {

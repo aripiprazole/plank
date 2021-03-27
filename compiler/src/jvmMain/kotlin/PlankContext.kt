@@ -1,19 +1,19 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.compiler
 
-import com.lorenzoog.jplank.analyzer.BindingContext
-import com.lorenzoog.jplank.analyzer.type.PlankType
-import com.lorenzoog.jplank.compiler.converter.DataTypeConverter
-import com.lorenzoog.jplank.compiler.converter.DefaultDataTypeConverter
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.compiler.instructions.element.IRFunction
-import com.lorenzoog.jplank.compiler.instructions.element.IRNamedFunction
-import com.lorenzoog.jplank.compiler.mangler.NameMangler
-import com.lorenzoog.jplank.compiler.runtime.PlankRuntime
-import com.lorenzoog.jplank.element.Decl
-import com.lorenzoog.jplank.element.Expr
-import com.lorenzoog.jplank.element.PlankElement
-import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.element.Stmt
+import com.lorenzoog.plank.analyzer.BindingContext
+import com.lorenzoog.plank.analyzer.PlankType
+import com.lorenzoog.plank.compiler.converter.DataTypeConverter
+import com.lorenzoog.plank.compiler.converter.DefaultDataTypeConverter
+import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.compiler.instructions.element.IRFunction
+import com.lorenzoog.plank.compiler.instructions.element.IRNamedFunction
+import com.lorenzoog.plank.compiler.mangler.NameMangler
+import com.lorenzoog.plank.compiler.runtime.PlankRuntime
+import com.lorenzoog.plank.grammar.element.Decl
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.grammar.element.PlankElement
+import com.lorenzoog.plank.grammar.element.PlankFile
+import com.lorenzoog.plank.grammar.element.Stmt
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Context as LLVMContext
 import org.llvm4j.llvm4j.Function

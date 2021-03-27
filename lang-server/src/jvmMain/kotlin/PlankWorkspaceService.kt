@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.tooling.langserver
+package com.lorenzoog.plank.tooling.langserver
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams

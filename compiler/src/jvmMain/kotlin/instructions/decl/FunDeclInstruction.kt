@@ -1,10 +1,10 @@
-package com.lorenzoog.jplank.compiler.instructions.decl
+package com.lorenzoog.plank.compiler.instructions.decl
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Decl
-import com.lorenzoog.jplank.element.Stmt
-import com.lorenzoog.jplank.element.visit
+import com.lorenzoog.plank.analyzer.visit
+import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.grammar.element.Decl
+import com.lorenzoog.plank.grammar.element.Stmt
 import org.bytedeco.llvm.global.LLVM
 import org.llvm4j.llvm4j.Value
 import org.llvm4j.optional.None

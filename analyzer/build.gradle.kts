@@ -20,8 +20,11 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
+        implementation(project(":grammar"))
+        implementation(project(":shared"))
       }
     }
+
     val commonTest by getting {
       dependencies {
         implementation(kotlin("test-common"))

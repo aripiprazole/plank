@@ -1,8 +1,8 @@
-package com.lorenzoog.jplank.compiler.instructions.decl
+package com.lorenzoog.plank.compiler.instructions.decl
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Decl
+import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.grammar.element.Decl
 import org.llvm4j.llvm4j.Value
 
 class ImportDeclInstruction(private val descriptor: Decl.ImportDecl) : PlankInstruction() {

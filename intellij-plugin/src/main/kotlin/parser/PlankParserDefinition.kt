@@ -13,7 +13,8 @@ import com.intellij.psi.tree.TokenSet
 import com.lorenzoog.jplank.intellijplugin.Plank
 import com.lorenzoog.jplank.intellijplugin.lexer.PlankLexerAdapter
 import com.lorenzoog.jplank.intellijplugin.psi.PlankPsiFile
-import com.lorenzoog.jplank.intellijplugin.psi.PlankTypes
+import com.lorenzoog.plank.intellijplugin.parser.PlankParser
+import com.lorenzoog.plank.intellijplugin.psi.PlankTypes
 
 class PlankParserDefinition : ParserDefinition {
   override fun createLexer(project: Project?): Lexer {

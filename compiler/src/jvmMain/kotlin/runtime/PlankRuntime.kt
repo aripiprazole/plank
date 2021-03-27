@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.compiler.runtime
+package com.lorenzoog.plank.compiler.runtime
 
 import org.llvm4j.llvm4j.Context
 import org.llvm4j.llvm4j.Function
