@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.tooling.langserver
+package com.lorenzoog.plank.tooling.langserver
 
 class PlankWorkspace {
   fun findModule(module: String) {

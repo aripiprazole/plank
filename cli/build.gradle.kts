@@ -1,4 +1,4 @@
-import com.lorenzoog.jplank.build.Dependencies
+import com.lorenzoog.plank.build.Dependencies
 
 plugins {
   id("org.jetbrains.kotlin.multiplatform")
@@ -31,6 +31,8 @@ kotlin {
         implementation(Dependencies.LLVM4J.LLVM4J)
         implementation(project(":grammar"))
         implementation(project(":compiler"))
+        implementation(project(":shared"))
+        implementation(project(":analyzer"))
       }
     }
   }
@@ -41,7 +43,7 @@ tasks.shadowJar {
 
   from(jvmMain.output)
   manifest {
-    attributes["Main-Class"] = "com.lorenzoog.jplank.MainKt"
+    attributes["Main-Class"] = "com.lorenzoog.jplank.cli.MainKt"
   }
 
   configurations = mutableListOf(jvmMain.compileDependencyFiles as Configuration)

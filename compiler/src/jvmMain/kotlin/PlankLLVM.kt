@@ -1,12 +1,12 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.compiler
 
-import com.lorenzoog.jplank.analyzer.BindingContext
-import com.lorenzoog.jplank.analyzer.FileScope
-import com.lorenzoog.jplank.analyzer.ModuleTree
-import com.lorenzoog.jplank.analyzer.depthFirstSearch
-import com.lorenzoog.jplank.compiler.instructions.EntryPoint
-import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.element.visit
+import com.lorenzoog.plank.analyzer.BindingContext
+import com.lorenzoog.plank.analyzer.FileScope
+import com.lorenzoog.plank.analyzer.ModuleTree
+import com.lorenzoog.plank.compiler.instructions.EntryPoint
+import com.lorenzoog.plank.grammar.element.PlankFile
+import com.lorenzoog.plank.grammar.element.visit
+import com.lorenzoog.plank.shared.depthFirstSearch
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeAsmParser
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeAsmPrinter
@@ -46,10 +46,12 @@ class PlankLLVM(
   fun compile(main: PlankFile): List<Value> {
     return tree.dependencies
       .depthFirstSearch(main.module)
+      .asSequence()
       .mapNotNull(tree::findModule)
-      .map(com.lorenzoog.jplank.analyzer.Module::scope)
+      .map(com.lorenzoog.plank.analyzer.Module::scope)
       .filterIsInstance<FileScope>()
       .map(FileScope::file)
+      .toList()
       .asReversed() // reverse order
       .flatMap { module ->
         val fileContext = context

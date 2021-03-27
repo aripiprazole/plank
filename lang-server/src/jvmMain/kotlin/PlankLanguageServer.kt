@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.tooling.langserver
+package com.lorenzoog.plank.tooling.langserver
 
 import java.util.concurrent.CompletableFuture
 import org.eclipse.lsp4j.CompletionOptions

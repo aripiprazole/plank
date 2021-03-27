@@ -1,8 +1,8 @@
-package com.lorenzoog.jplank.pkg
+package com.lorenzoog.plank.cli.pkg
 
-import com.lorenzoog.jplank.analyzer.ModuleTree
-import com.lorenzoog.jplank.compiler.CompilerOptions
-import com.lorenzoog.jplank.element.PlankFile
+import com.lorenzoog.plank.analyzer.ModuleTree
+import com.lorenzoog.plank.cli.compiler.CompilerOptions
+import com.lorenzoog.plank.grammar.element.PlankFile
 import kotlin.io.path.ExperimentalPathApi
 
 @ExperimentalPathApi

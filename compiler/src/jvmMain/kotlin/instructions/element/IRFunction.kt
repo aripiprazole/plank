@@ -1,9 +1,9 @@
-package com.lorenzoog.jplank.compiler.instructions.element
+package com.lorenzoog.plank.compiler.instructions.element
 
-import com.lorenzoog.jplank.analyzer.type.PlankType
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.element.Decl
-import com.lorenzoog.jplank.element.Expr
+import com.lorenzoog.plank.analyzer.PlankType
+import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.grammar.element.Decl
+import com.lorenzoog.plank.grammar.element.Expr
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.Value
 import org.llvm4j.optional.None
@@ -14,9 +14,6 @@ abstract class IRFunction : IRElement() {
   abstract val descriptor: Decl
 
   fun call(context: PlankContext, arguments: List<Expr>): Value? {
-    val type = context.binding.visit(descriptor) as? PlankType.Callable
-      ?: return context.report("callable type is null", descriptor)
-
     val valueArguments = arguments
       .map { expr ->
         context.map(expr).codegen(context)

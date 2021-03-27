@@ -1,8 +1,8 @@
-package com.lorenzoog.jplank.compiler.instructions.element
+package com.lorenzoog.plank.compiler.instructions.element
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.element.Decl
-import com.lorenzoog.jplank.element.visit
+import com.lorenzoog.plank.analyzer.visit
+import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.grammar.element.Decl
 import org.llvm4j.llvm4j.Function
 
 class IRNamedFunction(

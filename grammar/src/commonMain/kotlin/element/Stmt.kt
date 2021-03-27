@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.element
+package com.lorenzoog.plank.grammar.element
 
 abstract class Stmt internal constructor() : PlankElement {
   interface Visitor<T> {

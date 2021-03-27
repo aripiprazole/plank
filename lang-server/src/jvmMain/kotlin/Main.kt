@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.tooling.langserver
+package com.lorenzoog.plank.tooling.langserver
 
 import java.util.concurrent.Executors
 import org.eclipse.lsp4j.jsonrpc.Launcher

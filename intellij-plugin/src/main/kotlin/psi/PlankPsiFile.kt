@@ -4,13 +4,15 @@ import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 import com.lorenzoog.jplank.analyzer.Variable
-import com.lorenzoog.jplank.analyzer.type.PlankType
+import com.lorenzoog.jplank.analyzer.PlankType
 import com.lorenzoog.jplank.intellijplugin.Plank
 import com.lorenzoog.jplank.intellijplugin.PlankFileType
 import com.lorenzoog.jplank.intellijplugin.analyzer.CodeAnnotation
 import com.lorenzoog.jplank.intellijplugin.analyzer.LookupResult
 import com.lorenzoog.jplank.intellijplugin.analyzer.PsiBindingContext
 import com.lorenzoog.jplank.intellijplugin.analyzer.Scope
+import com.lorenzoog.plank.intellijplugin.psi.PlankDecl
+import com.lorenzoog.plank.intellijplugin.psi.PlankImports
 
 class PlankPsiFile(viewProvider: FileViewProvider) :
   PsiFileBase(viewProvider, Plank),

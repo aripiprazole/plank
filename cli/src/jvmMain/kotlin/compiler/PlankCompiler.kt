@@ -1,15 +1,16 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.cli.compiler
 
-import com.lorenzoog.jplank.analyzer.BindingContext
-import com.lorenzoog.jplank.analyzer.FileScope
-import com.lorenzoog.jplank.analyzer.Module
-import com.lorenzoog.jplank.analyzer.depthFirstSearch
-import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.message.MessageRenderer
-import com.lorenzoog.jplank.pkg.Package
-import com.lorenzoog.jplank.utils.child
-import com.lorenzoog.jplank.utils.children
-import com.lorenzoog.jplank.utils.printOutput
+import com.lorenzoog.plank.analyzer.BindingContext
+import com.lorenzoog.plank.analyzer.FileScope
+import com.lorenzoog.plank.analyzer.Module
+import com.lorenzoog.plank.cli.pkg.Package
+import com.lorenzoog.plank.cli.utils.child
+import com.lorenzoog.plank.cli.utils.children
+import com.lorenzoog.plank.cli.utils.printOutput
+import com.lorenzoog.plank.compiler.PlankLLVM
+import com.lorenzoog.plank.grammar.element.PlankFile
+import com.lorenzoog.plank.grammar.message.MessageRenderer
+import com.lorenzoog.plank.shared.depthFirstSearch
 import kotlin.io.path.ExperimentalPathApi
 import pw.binom.io.file.File
 import pw.binom.io.file.asJFile

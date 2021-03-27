@@ -1,4 +1,4 @@
-import com.lorenzoog.jplank.build.Dependencies
+import com.lorenzoog.plank.build.Dependencies
 
 plugins {
   kotlin("multiplatform")
@@ -34,6 +34,7 @@ kotlin {
     val jvmMain by getting {
       dependencies {
         implementation(project(":grammar"))
+        implementation(project(":shared"))
         implementation(project(":analyzer"))
         implementation(Dependencies.Kotlin.Coroutines)
         implementation(Dependencies.Kotlin.CoroutinesJdk8)
@@ -51,7 +52,7 @@ tasks.shadowJar {
 
   from(jvmMain.output)
   manifest {
-    attributes["Main-Class"] = "com.lorenzoog.jplank.tooling.langserver.MainKt"
+    attributes["Main-Class"] = "com.lorenzoog.plank.tooling.langserver.MainKt"
   }
 
   configurations = mutableListOf(jvmMain.compileDependencyFiles as Configuration)

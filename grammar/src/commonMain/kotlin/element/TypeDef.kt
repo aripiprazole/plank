@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.element
+package com.lorenzoog.plank.grammar.element
 
 sealed class TypeDef : PlankElement {
   interface Visitor<T> {

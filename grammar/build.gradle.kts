@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.lorenzoog.jplank.build.Dependencies
+import com.lorenzoog.plank.build.Dependencies
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
 
 plugins {
@@ -31,7 +31,7 @@ kotlin {
       dependsOn(commonAntlr)
 
       dependencies {
-        api(Dependencies.Binom.File)
+        implementation(project(":shared"))
       }
     }
     val commonTest by getting
@@ -52,7 +52,7 @@ tasks {
       project.dependencies.create(Dependencies.Antlr.AntlrKotlinTarget)
     )
     maxHeapSize = "64m"
-    packageName = "com.lorenzoog.jplank.grammar.generated"
+    packageName = "com.lorenzoog.plank.grammar.generated"
     arguments = listOf("-visitor")
     source = project.objects
       .sourceDirectorySet("commonAntlr", "commonAntlr")

@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.commands
+package com.lorenzoog.plank.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -12,18 +12,18 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import com.lorenzoog.jplank.analyzer.DefaultBindingContext
-import com.lorenzoog.jplank.analyzer.render
-import com.lorenzoog.jplank.compiler.CompileError
-import com.lorenzoog.jplank.compiler.CompilerOptions
-import com.lorenzoog.jplank.compiler.PlankCompiler
-import com.lorenzoog.jplank.compiler.PlankLLVM
-import com.lorenzoog.jplank.compiler.Target
-import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.grammar.render
-import com.lorenzoog.jplank.message.ColoredMessageRenderer
-import com.lorenzoog.jplank.pkg.Package
-import com.lorenzoog.jplank.utils.asFile
+import com.lorenzoog.plank.analyzer.DefaultBindingContext
+import com.lorenzoog.plank.analyzer.render
+import com.lorenzoog.plank.cli.compiler.CompileError
+import com.lorenzoog.plank.cli.compiler.CompilerOptions
+import com.lorenzoog.plank.cli.compiler.PlankCompiler
+import com.lorenzoog.plank.cli.compiler.Target.Llvm
+import com.lorenzoog.plank.cli.message.ColoredMessageRenderer
+import com.lorenzoog.plank.cli.pkg.Package
+import com.lorenzoog.plank.cli.utils.asFile
+import com.lorenzoog.plank.compiler.PlankLLVM
+import com.lorenzoog.plank.grammar.element.PlankFile
+import com.lorenzoog.plank.grammar.mapper.render
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
 import pw.binom.io.file.File
@@ -38,11 +38,11 @@ class Plank : CliktCommand() {
   private val target by option("--target")
     .convert { target ->
       when (target) {
-        "llvm" -> Target.Llvm
+        "llvm" -> Llvm
         else -> fail("Unreconized target $target")
       }
     }
-    .default(Target.Llvm)
+    .default(Llvm)
 
   private val pkgName by option("--pkg-name")
     .help("The package name")

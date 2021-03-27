@@ -5,7 +5,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.lorenzoog.jplank.intellijplugin.psi.PlankNamedElement
-import com.lorenzoog.jplank.intellijplugin.psi.PlankTypes
+import com.lorenzoog.plank.intellijplugin.psi.PlankTypes
 
 open class PlankNamedElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), PlankNamedElement {
   private val primary by lazy {

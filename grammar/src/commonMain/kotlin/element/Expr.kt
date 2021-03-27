@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.element
+package com.lorenzoog.plank.grammar.element
 
 import org.antlr.v4.kotlinruntime.Token
 

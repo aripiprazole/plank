@@ -1,6 +1,6 @@
-package com.lorenzoog.jplank.compiler.converter
+package com.lorenzoog.plank.compiler.converter
 
-import com.lorenzoog.jplank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.PlankContext
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
 import org.llvm4j.optional.Some

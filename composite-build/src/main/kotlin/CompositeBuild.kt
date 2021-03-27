@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.build
+package com.lorenzoog.plank.build
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

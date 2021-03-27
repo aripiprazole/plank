@@ -1,10 +1,10 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
-import com.lorenzoog.jplank.element.Expr.Logical.Operation
+import com.lorenzoog.plank.analyzer.Builtin
+import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation
 import org.llvm4j.llvm4j.FloatPredicate
 import org.llvm4j.llvm4j.Value
 import org.llvm4j.optional.Some
