@@ -2,52 +2,51 @@ package com.lorenzoog.plank.compiler
 
 import com.lorenzoog.plank.analyzer.Builtin
 import com.lorenzoog.plank.analyzer.PlankType
+import com.lorenzoog.plank.compiler.instructions.CodegenError
+import com.lorenzoog.plank.shared.Either
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 import org.llvm4j.llvm4j.Type
 import org.llvm4j.optional.Err
 import org.llvm4j.optional.Ok
 
-class TypeMapper {
-  fun map(context: PlankContext, type: PlankType?): Type? {
-    return when (type) {
-      Builtin.Void -> context.runtime.types.void
-      Builtin.Int -> context.runtime.types.int
-      Builtin.Double -> context.runtime.types.double
-      Builtin.Numeric -> context.runtime.types.double
-      Builtin.Bool -> context.runtime.types.i1
-      Builtin.Char -> context.runtime.types.i8
-      is PlankType.Array -> {
-        when (val result = map(context, type.inner)?.let(context.llvm::getPointerType)) {
-          is Ok -> result.unwrap()
-          is Err -> null
-          null -> null
-        }
-      }
+typealias TypegenResult = Either<out CodegenError, out Type>
+
+fun PlankContext.toType(type: PlankType?): TypegenResult = either {
+  Right(
+    when (type) {
+      Builtin.Void -> runtime.types.void
+      Builtin.Int -> runtime.types.int
+      Builtin.Double -> runtime.types.double
+      Builtin.Numeric -> runtime.types.double
+      Builtin.Bool -> runtime.types.i1
+      Builtin.Char -> runtime.types.i8
       is PlankType.Struct -> {
-        context.findStructure(type.name)
+        findStruct(type.name)
+          ?: return Left("can't find struct ${type.name}")
       }
       is PlankType.Callable -> {
-        val returnType =
-          context.map(type.returnType)
-            ?: return context.report("returnType is null {$type}")
+        val returnType = !type.returnType.toType()
 
-        context.llvm.getFunctionType(
+        context.getFunctionType(
           returnType,
-          *type.parameters
-            .mapIndexed { index, type ->
-              context.map(type)
-                ?: return context.report("failed to handle argument with index $index {$type}")
-            }
-            .toTypedArray()
+          *type.parameters.map { !it.toType() }.toTypedArray()
         )
       }
       is PlankType.Pointer -> {
-        when (val result = map(context, type.inner)?.let(context.llvm::getPointerType)) {
-          is Ok -> result.unwrap()
-          is Err -> null
-          null -> null
+        when (val result = toType(type.inner).bind().let(context::getPointerType)) {
+          is Ok -> result.value
+          is Err -> return Left("can't convert type $type to llvm type")
         }
       }
-      else -> context.runtime.types.void
+      is PlankType.Array -> {
+        when (val result = toType(type.inner).bind().let(context::getPointerType)) {
+          is Ok -> result.value
+          is Err -> return Left("can't convert type $type to llvm type")
+        }
+      }
+      else -> runtime.types.void
     }
-  }
+  )
 }

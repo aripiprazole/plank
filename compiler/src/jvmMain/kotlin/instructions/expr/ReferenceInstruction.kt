@@ -2,47 +2,47 @@ package com.lorenzoog.plank.compiler.instructions.expr
 
 import com.lorenzoog.plank.analyzer.Builtin
 import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.buildAlloca
+import com.lorenzoog.plank.compiler.buildLoad
+import com.lorenzoog.plank.compiler.buildStore
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.PlankInstruction
 import com.lorenzoog.plank.grammar.element.Expr
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
 class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    return getReference(context, descriptor.expr)
+  override fun PlankContext.codegen(): CodegenResult {
+    return findReference(descriptor.expr)
   }
 
   companion object {
-    fun getReference(context: PlankContext, descriptor: Expr): Value? {
-      val type = context.binding.visit(descriptor)
+    fun PlankContext.findReference(descriptor: Expr): CodegenResult = either {
+      val plankType = binding.visit(descriptor)
 
-      return when {
-        descriptor is Expr.Access -> {
-          val name = descriptor.name.text
+      Right(
+        when {
+          descriptor is Expr.Access -> {
+            val name = descriptor.name.text
 
-          context.findVariable(name)
-            ?: return context.report("variable does not exists", descriptor)
+            findVariable(name) ?: return Left("variable is null")
+          }
+          Builtin.Numeric.isAssignableBy(plankType) || Builtin.Bool.isAssignableBy(plankType) -> {
+            val type = !plankType.toType()
+            val value = !descriptor.toInstruction().codegen()
+
+            val reference = buildAlloca(type, "ref.alloca.tmp")
+
+            buildStore(value, reference)
+          }
+          else -> {
+            val value = !descriptor.toInstruction().codegen()
+
+            buildLoad(value, "reftmp")
+          }
         }
-        Builtin.Numeric.isAssignableBy(type) || Builtin.Bool.isAssignableBy(type) -> {
-          val mappedType = context.map(type)
-            ?: return context.report("type is null", descriptor)
-
-          val value = context.map(descriptor).codegen(context)
-            ?: return context.report("value is null", descriptor)
-
-          val reference = context.builder.buildAlloca(mappedType, name = Some("refallocatmp"))
-
-          context.builder.buildStore(value, reference)
-
-          reference
-        }
-        else -> {
-          val value = context.map(descriptor).codegen(context)
-            ?: return context.report("value is null", descriptor)
-
-          context.builder.buildLoad(value, Some("reftmp"))
-        }
-      }
+      )
     }
   }
 }

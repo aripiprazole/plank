@@ -8,8 +8,10 @@ import com.lorenzoog.plank.cli.utils.child
 import com.lorenzoog.plank.cli.utils.children
 import com.lorenzoog.plank.cli.utils.printOutput
 import com.lorenzoog.plank.compiler.PlankLLVM
+import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.message.MessageRenderer
+import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.depthFirstSearch
 import kotlin.io.path.ExperimentalPathApi
 import pw.binom.io.file.File
@@ -72,14 +74,16 @@ class PlankCompiler(
     val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
     compiler.initialize(file)
-    compiler.compile(file)
+
+    val results = compiler.compile(file)
+    val errors = results.filterIsInstance<Left<CodegenError>>().map { it.a }
 
     target.write()
       .utf8Appendable()
       .append(compiler.context.module.getAsString())
 
-    if (compiler.context.errors.isNotEmpty()) {
-      throw CompileError.IRViolations(compiler.module, compiler.context.errors)
+    if (errors.isNotEmpty()) {
+      throw CompileError.IRViolations(compiler.module, errors)
     }
 
     return target

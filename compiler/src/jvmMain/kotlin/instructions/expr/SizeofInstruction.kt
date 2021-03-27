@@ -1,18 +1,19 @@
 package com.lorenzoog.plank.compiler.instructions.expr
 
 import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.getSize
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.PlankInstruction
 import com.lorenzoog.plank.grammar.element.Expr
-import org.bytedeco.llvm.global.LLVM
-import org.llvm4j.llvm4j.Value
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
 class SizeofInstruction(private val descriptor: Expr.Sizeof) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val name = descriptor.name.text
+  override fun PlankContext.codegen(): CodegenResult = either {
+    val struct = findStruct(descriptor.name.text)
+      ?: return Left("struct is null")
 
-    val struct = context.findStructure(name)
-      ?: return context.report("llvm structure is null", descriptor)
-
-    return Value(LLVM.LLVMSizeOf(struct.ref))
+    Right(struct.getSize())
   }
 }
