@@ -1,29 +1,28 @@
 package com.lorenzoog.jplank.element
 
 import org.antlr.v4.kotlinruntime.Token
-import org.antlr.v4.kotlinruntime.tree.RuleNode
 
 sealed class Decl : Stmt() {
   data class StructDecl(
-    val name: Token,
+    val name: Identifier,
     val fields: List<Field>,
     override val location: Location
   ) : Decl() {
-    data class Field(val mutable: Boolean, val name: Token, val type: TypeDef)
+    data class Field(val mutable: Boolean, val name: Identifier, val type: TypeDef)
 
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitClassDecl(this)
     }
   }
 
-  data class ImportDecl(val module: RuleNode, override val location: Location) : Decl() {
+  data class ImportDecl(val module: Identifier, override val location: Location) : Decl() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitImportDecl(this)
     }
   }
 
   data class ModuleDecl(
-    val name: Token,
+    val name: Identifier,
     val content: List<Decl>,
     override val location: Location
   ) : Decl() {
@@ -34,7 +33,7 @@ sealed class Decl : Stmt() {
 
   data class FunDecl(
     val modifiers: List<Modifier> = emptyList(),
-    val name: Token,
+    val name: Identifier,
     val type: TypeDef.Function,
     val body: List<Stmt>,
     val realParameters: Map<Token, TypeDef>,
@@ -53,7 +52,7 @@ sealed class Decl : Stmt() {
   }
 
   data class LetDecl(
-    val name: Token,
+    val name: Identifier,
     val mutable: Boolean,
     val type: TypeDef?,
     val value: Expr,

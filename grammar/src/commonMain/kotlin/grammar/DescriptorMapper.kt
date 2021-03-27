@@ -3,6 +3,8 @@ package com.lorenzoog.jplank.grammar
 import com.lorenzoog.jplank.element.Decl
 import com.lorenzoog.jplank.element.Decl.FunDecl.Modifier
 import com.lorenzoog.jplank.element.Expr
+import com.lorenzoog.jplank.element.Identifier
+import com.lorenzoog.jplank.element.Location
 import com.lorenzoog.jplank.element.PlankElement
 import com.lorenzoog.jplank.element.PlankFile
 import com.lorenzoog.jplank.element.Stmt
@@ -13,6 +15,7 @@ import com.lorenzoog.jplank.utils.location
 import org.antlr.v4.kotlinruntime.Token
 import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.ParseTree
+import org.antlr.v4.kotlinruntime.tree.RuleNode
 
 class DescriptorMapper(
   private val file: PlankFile,
@@ -66,13 +69,13 @@ class DescriptorMapper(
   }
 
   override fun visitGenericAccess(ctx: PlankParser.GenericAccessContext): PlankElement {
-    return TypeDef.GenericAccess(ctx.name!!, ctx.start.location)
+    return TypeDef.GenericAccess(ctx.name!!.asIdentifier(), ctx.start.location)
   }
 
   override fun visitGenericUse(ctx: PlankParser.GenericUseContext): PlankElement {
     val arguments = ctx.findTypeDef().map { visitTypeDef(it) }
     return TypeDef.GenericUse(
-      TypeDef.Name(ctx.name!!, ctx.name.location),
+      TypeDef.Name(ctx.name!!.asIdentifier(), ctx.name.location),
       arguments,
       ctx.GREATER()?.symbol.location
     )
@@ -95,7 +98,7 @@ class DescriptorMapper(
   }
 
   override fun visitNameType(ctx: PlankParser.NameTypeContext): TypeDef {
-    return TypeDef.Name(ctx.name!!, ctx.start.location)
+    return TypeDef.Name(ctx.name!!.asIdentifier(), ctx.start.location)
   }
 
   override fun visitArrayType(ctx: PlankParser.ArrayTypeContext): TypeDef {
@@ -115,20 +118,20 @@ class DescriptorMapper(
   }
 
   override fun visitImportDecl(ctx: PlankParser.ImportDeclContext): PlankElement {
-    val name = ctx.name!!
+    val name = ctx.name!!.asIdentifier()
 
     return Decl.ImportDecl(name, ctx.start.location)
   }
 
   override fun visitModuleDecl(ctx: PlankParser.ModuleDeclContext): PlankElement {
-    val name = ctx.name!!
+    val name = ctx.name!!.asIdentifier()
     val body = ctx.findDecl().map { visitDecl(it) }
 
     return Decl.ModuleDecl(name, body, ctx.start.location)
   }
 
   override fun visitLetDecl(ctx: PlankParser.LetDeclContext): Decl {
-    val name = ctx.name!!
+    val name = ctx.name!!.asIdentifier()
     val mutable = ctx.MUTABLE() != null
     val type = ctx.type?.let { visitTypeDef(it) }
     val value = visitExpr(ctx.value!!)
@@ -139,7 +142,7 @@ class DescriptorMapper(
   override fun visitNativeFunDecl(ctx: PlankParser.NativeFunDeclContext): Decl {
     val header = ctx.findFunHeader()!!
     val type = header.findFunctionType()
-    val name = header.name!!
+    val name = header.name!!.asIdentifier()
     val parameters = header.findParameter().associate { it.name!! to visitTypeDef(it.type!!) }
 
     return Decl.FunDecl(listOf(Modifier.Native), name, type, emptyList(), parameters, type.location)
@@ -150,7 +153,7 @@ class DescriptorMapper(
 
     val header = ctx.findFunHeader()!!
     val type = header.findFunctionType()
-    val name = header.name!!
+    val name = header.name!!.asIdentifier()
     val body = ctx.findStmt().map { visitStmt(it) }
     val parameters = header.findParameter().associate { it.name!! to visitTypeDef(it.type!!) }
 
@@ -164,10 +167,10 @@ class DescriptorMapper(
       val fieldName = field.findParameter()!!.name!!
       val fieldType = visitTypeDef(field.findParameter()!!.type!!)
 
-      Decl.StructDecl.Field(fieldMutable, fieldName, fieldType)
+      Decl.StructDecl.Field(fieldMutable, fieldName.asIdentifier(), fieldType)
     }
 
-    return Decl.StructDecl(name, fields, ctx.start.location)
+    return Decl.StructDecl(name.asIdentifier(), fields, ctx.start.location)
   }
 
   // statements
@@ -212,12 +215,12 @@ class DescriptorMapper(
   }
 
   override fun visitSizeofExpr(ctx: PlankParser.SizeofExprContext): PlankElement {
-    return Expr.Sizeof(ctx.type!!, ctx.SIZEOF()?.symbol.location)
+    return Expr.Sizeof(ctx.type!!.asIdentifier(), ctx.SIZEOF()?.symbol.location)
   }
 
   override fun visitInstanceExpr(ctx: PlankParser.InstanceExprContext): PlankElement {
     return Expr.Instance(
-      ctx.name!!,
+      ctx.name!!.asIdentifier(),
       ctx.findInstanceArgument().associate { argument ->
         argument.IDENTIFIER()!!.symbol!! to visitExpr(argument.findExpr()!!)
       },
@@ -256,7 +259,7 @@ class DescriptorMapper(
   override fun visitAssignExpr(ctx: PlankParser.AssignExprContext): Expr {
     ctx.findLogicalExpr()?.let { return visitLogicalExpr(it) }
 
-    val name = ctx.name!!
+    val name = ctx.name!!.asIdentifier()
     val value = visitAssignExpr(ctx.findAssignExpr()!!)
     val location = ctx.EQUAL()?.symbol.location
 
@@ -332,7 +335,7 @@ class DescriptorMapper(
     return tail.fold(head as Expr) { acc, next ->
       when (next) {
         is PlankParser.GetContext -> {
-          Expr.Get(acc, next.IDENTIFIER()?.symbol!!, next.DOT()?.symbol.location)
+          Expr.Get(acc, next.IDENTIFIER()?.symbol!!.asIdentifier(), next.DOT()?.symbol.location)
         }
         is PlankParser.ArgumentsContext -> {
           Expr.Call(acc, next.findExpr().map { visitExpr(it) }, next.LPAREN()?.symbol.location)
@@ -389,7 +392,7 @@ class DescriptorMapper(
 
     val identifier = ctx.IDENTIFIER()
     if (identifier != null) {
-      return Expr.Access(identifier.symbol!!, identifier.symbol.location)
+      return Expr.Access(identifier.symbol!!.asIdentifier(), identifier.symbol.location)
     }
 
     val node = ctx.INT() ?: ctx.DECIMAL() ?: error("Invalid primary")
@@ -410,6 +413,15 @@ class DescriptorMapper(
 
   // utils
   private val Token?.location get() = location(file)
+
+  private fun RuleNode.asIdentifier(): Identifier {
+    val first = getChild(0) as? Token
+    return Identifier(text, Location(first?.line ?: -1, first?.charPositionInLine ?: -1, file))
+  }
+
+  private fun Token.asIdentifier(): Identifier {
+    return Identifier(text!!, Location(line, charPositionInLine, file))
+  }
 
   private fun PlankParser.FunHeaderContext.findFunctionType(): TypeDef.Function {
     val parameters = findParameter().map { visitTypeDef(it.type!!) }

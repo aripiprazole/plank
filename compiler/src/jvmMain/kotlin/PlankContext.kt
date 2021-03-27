@@ -90,7 +90,7 @@ data class PlankContext(
   }
 
   fun addFunction(decl: Decl.FunDecl): Function? {
-    val name = decl.name.text ?: return report("name is null", decl)
+    val name = decl.name.text
     val mangledName = mangler.mangle(this, decl)
     val irFunction = IRNamedFunction(name, mangledName, decl)
 
