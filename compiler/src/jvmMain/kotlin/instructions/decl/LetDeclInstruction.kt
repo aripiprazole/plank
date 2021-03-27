@@ -9,7 +9,7 @@ import org.llvm4j.optional.Some
 
 class LetDeclInstruction(private val descriptor: Decl.LetDecl) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
-    val name = descriptor.name.text ?: return context.report("variable name is null", descriptor)
+    val name = descriptor.name.text
     val pkType = context.binding.visit(descriptor.type) {
       context.binding.visit(descriptor.value)
     }

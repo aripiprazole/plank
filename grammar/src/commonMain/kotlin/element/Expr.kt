@@ -44,7 +44,7 @@ sealed class Expr : PlankElement {
     }
   }
 
-  data class Access(val name: Token, override val location: Location) : Expr() {
+  data class Access(val name: Identifier, override val location: Location) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitAccessExpr(this)
     }
@@ -98,7 +98,7 @@ sealed class Expr : PlankElement {
   }
 
   data class Assign(
-    val name: Token,
+    val name: Identifier,
     val value: Expr,
     override val location: Location
   ) : Expr() {
@@ -110,7 +110,7 @@ sealed class Expr : PlankElement {
 
   data class Set(
     val receiver: Expr,
-    val member: Token,
+    val member: Identifier,
     val value: Expr,
     override val location: Location
   ) : Expr() {
@@ -121,7 +121,7 @@ sealed class Expr : PlankElement {
 
   data class Get(
     val receiver: Expr,
-    val member: Token,
+    val member: Identifier,
     override val location: Location
   ) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
@@ -140,7 +140,7 @@ sealed class Expr : PlankElement {
   }
 
   data class Instance(
-    val name: Token,
+    val name: Identifier,
     val arguments: Map<Token, Expr>,
     override val location: Location,
   ) : Expr() {
@@ -149,7 +149,8 @@ sealed class Expr : PlankElement {
     }
   }
 
-  data class Sizeof(val name: Token, override val location: Location) : Expr() {
+  // todo change to typedef
+  data class Sizeof(val name: Identifier, override val location: Location) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitSizeofExpr(this)
     }

@@ -11,7 +11,6 @@ import org.llvm4j.optional.Ok
 class InstanceInstruction(private val descriptor: Expr.Instance) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
     val name = descriptor.name.text
-      ?: return context.report("name is null", descriptor)
 
     val structure = context.binding.findStructure(Expr.Access(descriptor.name, descriptor.location))
       ?: return context.report("structure is null", descriptor)

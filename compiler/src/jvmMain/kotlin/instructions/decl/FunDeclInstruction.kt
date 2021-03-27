@@ -16,7 +16,7 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstructio
     val function = context.addFunction(descriptor)
       ?: return context.report("failed to create function", descriptor)
 
-    return context.createNestedScope(descriptor.name.text!!).let { functionContext ->
+    return context.createNestedScope(descriptor.name.text).let { functionContext ->
       val body = context.llvm.newBasicBlock("entry").also(function::addBasicBlock)
       functionContext.builder.positionAfter(body)
 

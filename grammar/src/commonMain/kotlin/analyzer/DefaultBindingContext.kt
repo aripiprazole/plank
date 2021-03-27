@@ -191,7 +191,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitAssignExpr(assign: Expr.Assign): PlankType = assign.bind {
-    val name = assign.name.text.orEmpty()
+    val name = assign.name.text
     val variable = scopes.peekLast().findVariable(name) ?: return@bind run {
       _violations += UnresolvedVariableViolation(name, assign.location)
 
@@ -211,7 +211,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitSetExpr(set: Expr.Set): PlankType = set.bind {
-    val member = set.member.text.orEmpty()
+    val member = set.member.text
     val structure = findReceiver(set.receiver)
     val expected = structure[member] ?: return@bind run {
       _violations += TypeViolation(Builtin.Any, Builtin.Void, set.location)
@@ -232,7 +232,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitGetExpr(get: Expr.Get): PlankType = get.bind {
-    val member = get.member.text.orEmpty()
+    val member = get.member.text
     val structure = findReceiver(get.receiver)
 
     structure[member]?.type ?: run {
@@ -243,10 +243,10 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   private fun findReceiver(expr: Expr): PlankType = when (expr) {
-    is Expr.Access -> currentScope.findVariable(expr.name.text.orEmpty())?.type
+    is Expr.Access -> currentScope.findVariable(expr.name.text)?.type
       ?: run {
         val module = findModule(expr) ?: return@run run {
-          _violations += UnresolvedModuleViolation(expr.name.text.orEmpty(), expr.location)
+          _violations += UnresolvedModuleViolation(expr.name.text, expr.location)
 
           Builtin.Any
         }
@@ -327,7 +327,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
 
   override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankType = moduleDecl.bind {
     val module = currentModuleTree
-      .createModule(moduleDecl.name.text.orEmpty(), scopes.peekLast(), moduleDecl.content)
+      .createModule(moduleDecl.name.text, scopes.peekLast(), moduleDecl.content)
 
     scoped(module.scope) {
       visit(moduleDecl.content)
@@ -337,14 +337,14 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitClassDecl(structDecl: Decl.StructDecl): PlankType = structDecl.bind {
-    val name = structDecl.name.text.orEmpty()
+    val name = structDecl.name.text
 
     scopes.peekLast().create(
       name,
       PlankType.Struct(
         name,
         structDecl.fields.map {
-          PlankType.Struct.Field(it.mutable, it.name.text.orEmpty(), visit(it.type))
+          PlankType.Struct.Field(it.mutable, it.name.text, visit(it.type))
         }
       )
     )
@@ -353,7 +353,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitFunDecl(funDecl: Decl.FunDecl): PlankType = funDecl.bind {
-    val name = funDecl.name.text.orEmpty()
+    val name = funDecl.name.text
     val returnType = funDecl.returnType?.let { visit(it) } ?: Builtin.Void
     val type = PlankType.Callable(
       parameters = funDecl.parameters.map { visit(it) },
@@ -385,7 +385,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitLetDecl(letDecl: Decl.LetDecl): PlankType = letDecl.bind {
-    val name = letDecl.name.text.orEmpty()
+    val name = letDecl.name.text
 
     scopes.peekLast().declare(
       name,
@@ -397,7 +397,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitNameTypeDef(name: TypeDef.Name): PlankType = name.bind {
-    val text = name.name.text.orEmpty()
+    val text = name.name.text
 
     scopes.peekLast().findType(text) ?: return@bind run {
       _violations += UnresolvedTypeViolation(text, name.location)
@@ -442,7 +442,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
   }
 
   override fun visitAccessExpr(access: Expr.Access): PlankType = access.bind {
-    val name = access.name.text.orEmpty()
+    val name = access.name.text
 
     scopes.peekLast().findVariable(name)?.type ?: run {
       _violations += UnresolvedVariableViolation(name, access.location)
@@ -486,9 +486,9 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
 
   override fun findCallee(expr: Expr): PlankType.Callable? {
     return when (expr) {
-      is Expr.Access -> scopes.peekLast().findFunction(expr.name.text.orEmpty()).also {
+      is Expr.Access -> scopes.peekLast().findFunction(expr.name.text).also {
         if (it == null) {
-          _violations += UnresolvedVariableViolation(expr.name.text.orEmpty(), expr.location)
+          _violations += UnresolvedVariableViolation(expr.name.text, expr.location)
         } else {
           expr.bind { it }
         }
@@ -508,9 +508,9 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
 
   override fun findStructure(expr: Expr): PlankType.Struct? {
     return when (expr) {
-      is Expr.Access -> scopes.peekLast().findStructure(expr.name.text.orEmpty()).also {
+      is Expr.Access -> scopes.peekLast().findStructure(expr.name.text).also {
         if (it == null) {
-          _violations += UnresolvedTypeViolation(expr.name.text.orEmpty(), expr.location)
+          _violations += UnresolvedTypeViolation(expr.name.text, expr.location)
         } else {
           expr.bind { it }
         }
@@ -538,7 +538,7 @@ class DefaultBindingContext(moduleTree: ModuleTree) : BindingContext {
 
   private fun findModule(expr: Expr): Module? {
     return when (expr) {
-      is Expr.Access -> findModule(expr.name.text.orEmpty(), expr.location)
+      is Expr.Access -> findModule(expr.name.text, expr.location)
       else -> null
     }
   }

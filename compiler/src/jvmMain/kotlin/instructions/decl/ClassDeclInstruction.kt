@@ -7,7 +7,7 @@ import org.llvm4j.llvm4j.Value
 
 class ClassDeclInstruction(private val descriptor: Decl.StructDecl) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
-    val name = descriptor.name.text ?: return context.report("name is null", descriptor)
+    val name = descriptor.name.text
 
     context.addStructure(
       name,

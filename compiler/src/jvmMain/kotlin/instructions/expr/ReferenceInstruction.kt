@@ -19,7 +19,6 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : PlankInstru
       return when {
         descriptor is Expr.Access -> {
           val name = descriptor.name.text
-            ?: return context.report("variable name is null", descriptor)
 
           context.findVariable(name)
             ?: return context.report("variable does not exists", descriptor)

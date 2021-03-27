@@ -9,12 +9,12 @@ class CallInstruction(private val descriptor: Expr.Call) : PlankInstruction() {
   override fun codegen(context: PlankContext): Value? {
     val callee = when (val callee = descriptor.callee) {
       is Expr.Access -> {
-        val name = callee.name.text ?: return context.report("name is null", descriptor)
+        val name = callee.name.text
 
         context.findFunction(name)
       }
       is Expr.Get -> {
-        val name = callee.member.text ?: return context.report("member is null", descriptor)
+        val name = callee.member.text
 
         context.findFunction(name)
       }
