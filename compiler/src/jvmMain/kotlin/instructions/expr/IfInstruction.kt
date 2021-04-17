@@ -1,6 +1,6 @@
 package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.buildAlloca
 import com.lorenzoog.plank.compiler.buildBr
 import com.lorenzoog.plank.compiler.buildCondBr
@@ -8,7 +8,8 @@ import com.lorenzoog.plank.compiler.buildICmp
 import com.lorenzoog.plank.compiler.buildPhi
 import com.lorenzoog.plank.compiler.buildStore
 import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.compiler.instructions.llvmError
 import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.Right
@@ -17,15 +18,15 @@ import org.llvm4j.llvm4j.IntPredicate
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
 
-class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
-  override fun PlankContext.codegen(): CodegenResult = either {
+class IfInstruction(private val descriptor: Expr.If) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
     val cond = !descriptor.cond.toInstruction().codegen()
     val realCond = buildICmp(IntPredicate.Equal, cond, runtime.trueConstant, "cmp.tmp")
 
     val func = builder.getInsertionBlock().toNullable()
       ?.getFunction()
       ?.toNullable()
-      ?: return Left("LLVM Insertion block is null")
+      ?: return Left(llvmError("insertion block is null"))
 
     val thenBranch = context.newBasicBlock("then").also(func::addBasicBlock)
     var elseBranch = context.newBasicBlock("else")
@@ -77,7 +78,7 @@ class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
     }
 
     elseBranch = builder.getInsertionBlock().toNullable()
-      ?: return Left("LLVM Insertion block is null")
+      ?: return Left(llvmError("insertion block is null"))
 
     func.addBasicBlock(mergeBranch)
     builder.positionAfter(mergeBranch)

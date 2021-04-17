@@ -1,5 +1,5 @@
 package com.lorenzoog.plank.compiler.instructions.element
 
-import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
 
-abstract class IRElement : PlankInstruction()
+abstract class IRElement : CompilerInstruction()

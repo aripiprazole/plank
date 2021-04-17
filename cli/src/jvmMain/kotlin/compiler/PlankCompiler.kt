@@ -7,7 +7,7 @@ import com.lorenzoog.plank.cli.pkg.Package
 import com.lorenzoog.plank.cli.utils.child
 import com.lorenzoog.plank.cli.utils.children
 import com.lorenzoog.plank.cli.utils.printOutput
-import com.lorenzoog.plank.compiler.PlankLLVM
+import com.lorenzoog.plank.compiler.LlvmBackend
 import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.message.MessageRenderer
@@ -24,7 +24,7 @@ import pw.binom.io.utf8Appendable
 class PlankCompiler(
   private val pkg: Package,
   private val context: BindingContext,
-  private val compiler: PlankLLVM,
+  private val compiler: LlvmBackend,
   private val renderer: MessageRenderer
 ) {
   private val options = pkg.options

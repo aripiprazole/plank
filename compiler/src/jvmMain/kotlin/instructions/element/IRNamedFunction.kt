@@ -1,7 +1,7 @@
 package com.lorenzoog.plank.compiler.instructions.element
 
 import com.lorenzoog.plank.analyzer.visit
-import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.grammar.element.Decl
 import com.lorenzoog.plank.shared.Either
@@ -14,11 +14,11 @@ class IRNamedFunction(
   override val mangledName: String,
   override val descriptor: Decl.FunDecl
 ) : IRFunction() {
-  override fun accessIn(context: PlankContext): Function? {
+  override fun accessIn(context: CompilerContext): Function? {
     return context.module.getFunction(mangledName).toNullable()
   }
 
-  override fun PlankContext.codegen(): Either<out CodegenError, out Function> = either {
+  override fun CompilerContext.codegen(): Either<CodegenError, Function> = either {
     val parameters = descriptor.parameters
       .map(binding::visit)
       .map { !it.toType() }

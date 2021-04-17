@@ -1,6 +1,6 @@
 package com.lorenzoog.plank.compiler.instructions
 
-import com.lorenzoog.plank.compiler.PlankContext
+import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.buildCall
 import com.lorenzoog.plank.compiler.buildReturn
 import com.lorenzoog.plank.grammar.element.Decl
@@ -8,12 +8,12 @@ import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.Right
 import com.lorenzoog.plank.shared.either
 
-class EntryPoint : PlankInstruction() {
-  override fun PlankContext.codegen(): CodegenResult = either {
+class EntryPoint : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
     val name = currentFile.program
       .filterIsInstance<Decl.FunDecl>()
       .find { it.name.text == "main" }
-      ?: return Left("could not find entry point")
+      ?: return Left(unresolvedVariableError("main"))
 
     val main = module.getFunction(mangler.mangle(this@codegen, name)).toNullable()
 

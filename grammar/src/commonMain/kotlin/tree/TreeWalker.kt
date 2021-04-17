@@ -9,7 +9,7 @@ import com.lorenzoog.plank.grammar.element.TypeDef
 import com.lorenzoog.plank.grammar.element.visit
 
 abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visitor<Unit> {
-  fun walk(element: PlankElement) = when(element) {
+  fun walk(element: PlankElement) = when (element) {
     is Expr -> visit(element)
     is Stmt -> visit(element)
     is TypeDef -> visit(element)
@@ -84,6 +84,11 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
     visit(value.expr)
   }
 
+  override fun visitConcatExpr(concat: Expr.Concat) {
+    visit(concat.lhs)
+    visit(concat.rhs)
+  }
+
   override fun visitImportDecl(importDecl: Decl.ImportDecl) {
   }
 
@@ -137,5 +142,4 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
     function.returnType?.let(this::visit)
     visit(function.parameters)
   }
-
 }

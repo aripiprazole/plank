@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("unused")
 
 package com.lorenzoog.plank.shared
 
@@ -8,7 +8,7 @@ package com.lorenzoog.plank.shared
  * Note: not using arrow-kt for monadic error handling
  * because the project could turn into a mpp one
  */
-sealed class Either<A, B> {
+sealed class Either<out A, out B> {
   companion object {
     fun <B> pure(value: B): Either<*, B> = Right(value)
 
@@ -29,7 +29,7 @@ data class Left<A>(val a: A) : Either<A, Nothing>()
 data class Right<B>(val b: B) : Either<Nothing, B>()
 
 fun <A, B> Either<A, Either<A, B>>.flatten(): Either<A, B> {
-  if (this is Left) return this as Either<A, B>
+  if (this is Left) return this
 
   return (this as Right).b
 }
@@ -99,8 +99,8 @@ fun <A : Throwable, B> Either<A, B>.unwrap(): B = when (this) {
  * @return [Either]
  */
 fun <A, B, R> Either<A, B>.map(map: (B) -> R): Either<A, R> = when (this) {
-  is Left -> this as Either<A, R>
-  is Right -> Right(map(b)) as Either<A, R>
+  is Left -> this
+  is Right -> Right(map(b))
 }
 
 /**
@@ -109,7 +109,7 @@ fun <A, B, R> Either<A, B>.map(map: (B) -> R): Either<A, R> = when (this) {
  * @return [Either]
  */
 fun <A, B, R> Either<A, B>.flatMap(fmap: (B) -> Either<A, R>): Either<A, R> = when (this) {
-  is Left -> this as Either<A, R>
+  is Left -> this
   is Right -> fmap(b)
 }
 
@@ -119,8 +119,8 @@ fun <A, B, R> Either<A, B>.flatMap(fmap: (B) -> Either<A, R>): Either<A, R> = wh
  * @return [Either]
  */
 fun <A, B, R> Either<A, B>.mapLeft(fmap: (A) -> R): Either<R, B> = when (this) {
-  is Left -> Left(fmap(a)) as Either<R, B>
-  is Right -> this as Either<R, B>
+  is Left -> Left(fmap(a))
+  is Right -> this
 }
 
 fun <A, B, R> Either<A, B>.fold(foldLeft: (A) -> R, foldRight: (B) -> R): R = when (this) {

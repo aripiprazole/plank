@@ -25,6 +25,7 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
+        implementation(kotlin("stdlib-common"))
         implementation(Dependencies.Clikt.Clikt)
         implementation(Dependencies.Jansi.Jansi)
         implementation(Dependencies.ByteDeco.LLVMPlatform)

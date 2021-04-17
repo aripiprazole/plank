@@ -4,7 +4,6 @@ import com.lorenzoog.plank.grammar.element.Decl
 import com.lorenzoog.plank.grammar.element.Decl.FunDecl.Modifier
 import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Add
-import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Concat
 import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Div
 import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Mul
 import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Sub
@@ -134,6 +133,17 @@ class BindingContext(moduleTree: ModuleTree) :
     Builtin.Bool
   }
 
+  override fun visitConcatExpr(concat: Expr.Concat): PlankType {
+    val lhs = visit(concat.lhs)
+    val rhs = visit(concat.rhs)
+
+    if (!Builtin.String.isAssignableBy(lhs) || !Builtin.String.isAssignableBy(rhs)) {
+      _violations += TypeViolation(Builtin.String, lhs, concat.location)
+    }
+
+    return Builtin.String
+  }
+
   override fun visitBinaryExpr(binary: Expr.Binary): PlankType = binary.bind {
     val lhs = visit(binary.lhs)
     val op = when (binary.op) {
@@ -141,7 +151,6 @@ class BindingContext(moduleTree: ModuleTree) :
       Sub -> Builtin.Numeric
       Mul -> Builtin.Numeric
       Div -> Builtin.Numeric
-      Concat -> Builtin.Char.pointer
     }
     val rhs = visit(binary.rhs)
 
