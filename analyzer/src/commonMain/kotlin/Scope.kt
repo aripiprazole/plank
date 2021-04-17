@@ -27,10 +27,10 @@ data class ModuleScope(
 }
 
 class FunctionScope(
-    override val name: String,
-    override val enclosing: Scope? = null,
-    val function: PlankType.Callable,
-    override val moduleTree: ModuleTree = ModuleTree(),
+  override val name: String,
+  override val enclosing: Scope? = null,
+  val function: PlankType.Callable,
+  override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
   val parameters = function.parameters
   val returnType = function.returnType

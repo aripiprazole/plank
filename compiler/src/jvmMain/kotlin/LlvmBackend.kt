@@ -16,11 +16,11 @@ import org.bytedeco.llvm.global.LLVM.LLVMLinkInMCJIT
 import org.llvm4j.llvm4j.Module
 import pw.binom.io.Closeable
 
-class PlankLLVM(
+class LlvmBackend(
   private val tree: ModuleTree,
   private val bindingContext: BindingContext
 ) : Closeable {
-  lateinit var context: PlankContext
+  lateinit var context: CompilerContext
     private set
 
   lateinit var module: Module
@@ -35,7 +35,7 @@ class PlankLLVM(
 
     module = Module(LLVM.LLVMModuleCreateWithName(file.module))
 
-    context = PlankContext
+    context = CompilerContext
       .of(file, bindingContext, module)
       .copy(moduleName = "Global")
   }

@@ -21,7 +21,8 @@ import com.lorenzoog.plank.cli.compiler.Target.Llvm
 import com.lorenzoog.plank.cli.message.ColoredMessageRenderer
 import com.lorenzoog.plank.cli.pkg.Package
 import com.lorenzoog.plank.cli.utils.asFile
-import com.lorenzoog.plank.compiler.PlankLLVM
+import com.lorenzoog.plank.compiler.LlvmBackend
+import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.mapper.render
 import kotlin.io.path.ExperimentalPathApi
@@ -107,44 +108,31 @@ class Plank : CliktCommand() {
     )
 
     val context = BindingContext(pkg.tree)
-    val llvm = PlankLLVM(pkg.tree, context)
+    val llvm = LlvmBackend(pkg.tree, context)
 
     val compiler = PlankCompiler(pkg, context, llvm, renderer)
     try {
       compiler.compile()
       renderer.info("Successfully compiled $output")
-    } catch (error: Throwable) {
-      when (error) {
-        is CompileError.BindingViolations -> {
-          renderer.severe("Please resolve the following issues before compile:")
-          error.violations.render(renderer)
-        }
+    } catch (error: CompileError.BindingViolations) {
+      renderer.severe("Please resolve the following issues before compile:")
+      error.violations.render(renderer)
+    } catch (error: CompileError.IRViolations) {
+      renderer.severe("Internal compiler error, please open an issue.")
 
-        is CompileError.IRViolations -> {
-          renderer.severe("Internal compiler error, please open an issue.")
+      error.violations.map(CodegenError::render).forEach(renderer::severe)
 
-          error.violations.forEach { message ->
-            renderer.severe(message)
-          }
-
-          if (debug) {
-            renderer.info("LLVM Module:")
-            println(error.module.getAsString())
-          }
-        }
-
-        is CompileError.SyntaxViolations -> {
-          renderer.severe("Please resolve the following issues before compile:")
-          error.violations.render(renderer)
-        }
-
-        is CompileError.FailedCommand -> {
-          renderer.severe("Could not execute '${error.command}'. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
-        }
-        else -> {
-          renderer.severe("${error::class.simpleName}: ${error.message}")
-        }
+      if (debug) {
+        renderer.info("LLVM Module:")
+        println(error.module.getAsString())
       }
+    } catch (error: CompileError.SyntaxViolations) {
+      renderer.severe("Please resolve the following issues before compile:")
+      error.violations.render(renderer)
+    } catch (error: CompileError.FailedCommand) {
+      renderer.severe("Could not execute '${error.command}'. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
+    } catch (error: Throwable) {
+      renderer.severe("${error::class.simpleName}: ${error.message}")
     }
   }
 }

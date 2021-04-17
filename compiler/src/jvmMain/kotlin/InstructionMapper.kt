@@ -1,7 +1,7 @@
 package com.lorenzoog.plank.compiler
 
 import com.lorenzoog.plank.analyzer.BindingContext
-import com.lorenzoog.plank.compiler.instructions.PlankInstruction
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.ClassDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.FunDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.ImportDeclInstruction
@@ -12,6 +12,7 @@ import com.lorenzoog.plank.compiler.instructions.expr.AccessInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.AssignInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.BinaryInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.CallInstruction
+import com.lorenzoog.plank.compiler.instructions.expr.ConcatInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.ConstInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.FBinaryInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.GetInstruction
@@ -32,20 +33,20 @@ import com.lorenzoog.plank.grammar.element.Stmt
 
 class InstructionMapper(
   val binding: BindingContext
-) : Expr.Visitor<PlankInstruction>, Stmt.Visitor<PlankInstruction> {
-  override fun visitIfExpr(anIf: Expr.If): PlankInstruction {
+) : Expr.Visitor<CompilerInstruction>, Stmt.Visitor<CompilerInstruction> {
+  override fun visitIfExpr(anIf: Expr.If): CompilerInstruction {
     return IfInstruction(anIf)
   }
 
-  override fun visitConstExpr(const: Expr.Const): PlankInstruction {
+  override fun visitConstExpr(const: Expr.Const): CompilerInstruction {
     return ConstInstruction(const)
   }
 
-  override fun visitLogicalExpr(logical: Expr.Logical): PlankInstruction {
+  override fun visitLogicalExpr(logical: Expr.Logical): CompilerInstruction {
     return LogicalInstruction(logical)
   }
 
-  override fun visitBinaryExpr(binary: Expr.Binary): PlankInstruction {
+  override fun visitBinaryExpr(binary: Expr.Binary): CompilerInstruction {
     if (binding.visit(binary).isFP) {
       return FBinaryInstruction(binary)
     }
@@ -53,43 +54,43 @@ class InstructionMapper(
     return BinaryInstruction(binary)
   }
 
-  override fun visitUnaryExpr(unary: Expr.Unary): PlankInstruction {
+  override fun visitUnaryExpr(unary: Expr.Unary): CompilerInstruction {
     return UnaryInstruction(unary)
   }
 
-  override fun visitCallExpr(call: Expr.Call): PlankInstruction {
+  override fun visitCallExpr(call: Expr.Call): CompilerInstruction {
     return CallInstruction(call)
   }
 
-  override fun visitAssignExpr(assign: Expr.Assign): PlankInstruction {
+  override fun visitAssignExpr(assign: Expr.Assign): CompilerInstruction {
     return AssignInstruction(assign)
   }
 
-  override fun visitSetExpr(set: Expr.Set): PlankInstruction {
+  override fun visitSetExpr(set: Expr.Set): CompilerInstruction {
     return SetInstruction(set)
   }
 
-  override fun visitGetExpr(get: Expr.Get): PlankInstruction {
+  override fun visitGetExpr(get: Expr.Get): CompilerInstruction {
     return GetInstruction(get)
   }
 
-  override fun visitGroupExpr(group: Expr.Group): PlankInstruction {
+  override fun visitGroupExpr(group: Expr.Group): CompilerInstruction {
     return GroupInstruction(group)
   }
 
-  override fun visitExprStmt(exprStmt: Stmt.ExprStmt): PlankInstruction {
+  override fun visitExprStmt(exprStmt: Stmt.ExprStmt): CompilerInstruction {
     return ExprStmtInstruction(exprStmt)
   }
 
-  override fun visitReturnStmt(returnStmt: Stmt.ReturnStmt): PlankInstruction {
+  override fun visitReturnStmt(returnStmt: Stmt.ReturnStmt): CompilerInstruction {
     return ReturnInstruction(returnStmt)
   }
 
-  override fun visitClassDecl(structDecl: Decl.StructDecl): PlankInstruction {
+  override fun visitClassDecl(structDecl: Decl.StructDecl): CompilerInstruction {
     return ClassDeclInstruction(structDecl)
   }
 
-  override fun visitFunDecl(funDecl: Decl.FunDecl): PlankInstruction {
+  override fun visitFunDecl(funDecl: Decl.FunDecl): CompilerInstruction {
     if (funDecl.isNative) {
       return NativeFunDeclInstruction(funDecl)
     }
@@ -97,35 +98,39 @@ class InstructionMapper(
     return FunDeclInstruction(funDecl)
   }
 
-  override fun visitLetDecl(letDecl: Decl.LetDecl): PlankInstruction {
+  override fun visitLetDecl(letDecl: Decl.LetDecl): CompilerInstruction {
     return LetDeclInstruction(letDecl)
   }
 
-  override fun visitAccessExpr(access: Expr.Access): PlankInstruction {
+  override fun visitAccessExpr(access: Expr.Access): CompilerInstruction {
     return AccessInstruction(access)
   }
 
-  override fun visitInstanceExpr(instance: Expr.Instance): PlankInstruction {
+  override fun visitInstanceExpr(instance: Expr.Instance): CompilerInstruction {
     return InstanceInstruction(instance)
   }
 
-  override fun visitSizeofExpr(sizeof: Expr.Sizeof): PlankInstruction {
+  override fun visitSizeofExpr(sizeof: Expr.Sizeof): CompilerInstruction {
     return SizeofInstruction(sizeof)
   }
 
-  override fun visitReferenceExpr(reference: Expr.Reference): PlankInstruction {
+  override fun visitReferenceExpr(reference: Expr.Reference): CompilerInstruction {
     return ReferenceInstruction(reference)
   }
 
-  override fun visitValueExpr(value: Expr.Value): PlankInstruction {
+  override fun visitValueExpr(value: Expr.Value): CompilerInstruction {
     return ValueInstruction(value)
   }
 
-  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankInstruction {
+  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): CompilerInstruction {
     return ModuleDeclInstruction(moduleDecl)
   }
 
-  override fun visitImportDecl(importDecl: Decl.ImportDecl): PlankInstruction {
+  override fun visitImportDecl(importDecl: Decl.ImportDecl): CompilerInstruction {
     return ImportDeclInstruction(importDecl)
+  }
+
+  override fun visitConcatExpr(concat: Expr.Concat): CompilerInstruction {
+    return ConcatInstruction()
   }
 }

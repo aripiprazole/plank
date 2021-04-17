@@ -1,4 +1,4 @@
-module Std.IO
+module Std.IO;
 
 native fun println(message: *Char): Void;
 

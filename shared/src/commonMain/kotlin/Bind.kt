@@ -2,27 +2,23 @@
 
 package com.lorenzoog.plank.shared
 
-interface BindScope<A> {
-  fun <B> Either<out A, out B>.bind(): B
+class BindScope<A> @PublishedApi internal constructor() {
+  fun <B> Either<A, B>.bind(): B {
+    return when (this) {
+      is Left -> throw BindException(this)
+      is Right -> b
+    }
+  }
 
-  operator fun <B> Either<out A, out B>.not(): B = bind()
+  operator fun <B> Either<A, B>.not(): B = bind()
 }
 
 @PublishedApi
 internal class BindException(val left: Left<*>) : Exception()
 
-inline fun <A, B> either(builder: BindScope<A>.() -> Either<out A, out B>): Either<A, B> {
+inline fun <A, B> either(builder: BindScope<A>.() -> Either<A, B>): Either<A, B> {
   return try {
-    val scope = object : BindScope<A> {
-      override fun <B> Either<out A, out B>.bind(): B {
-        return when (this) {
-          is Left -> throw BindException(this)
-          is Right -> b
-        }
-      }
-    }
-
-    scope.builder() as Either<A, B>
+    BindScope<A>().builder()
   } catch (exception: BindException) {
     exception.left as Either<A, B>
   }

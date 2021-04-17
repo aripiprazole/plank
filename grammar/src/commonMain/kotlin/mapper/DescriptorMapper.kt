@@ -295,20 +295,24 @@ class DescriptorMapper(
   override fun visitBinaryExpr(ctx: PlankParser.BinaryExprContext): Expr {
     ctx.findUnaryExpr()?.let { return visitUnaryExpr(it) }
 
+    val lhs = visitBinaryExpr(ctx.lhs!!)
+    val rhs = visitBinaryExpr(ctx.rhs!!)
+    val location = ctx.op.location
+
     return Expr.Binary(
-      lhs = visitBinaryExpr(ctx.lhs!!),
+      lhs,
       op = when (ctx.op?.text) {
         "+" -> Expr.Binary.Operation.Add
         "-" -> Expr.Binary.Operation.Sub
         "*" -> Expr.Binary.Operation.Mul
         "/" -> Expr.Binary.Operation.Div
-        "++" -> Expr.Binary.Operation.Concat
+        "++" -> return Expr.Concat(lhs, rhs, location)
         else -> {
           throw ExpectingViolation("binary operator", ctx.toString(), ctx.start.location)
         }
       },
-      rhs = visitBinaryExpr(ctx.rhs!!),
-      location = ctx.op.location
+      rhs,
+      location
     )
   }
 

@@ -21,6 +21,7 @@ sealed class Expr : PlankElement {
     fun visitSizeofExpr(sizeof: Sizeof): T
     fun visitReferenceExpr(reference: Reference): T
     fun visitValueExpr(value: Value): T
+    fun visitConcatExpr(concat: Concat): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -63,13 +64,23 @@ sealed class Expr : PlankElement {
     }
   }
 
+  data class Concat(
+    val lhs: Expr,
+    val rhs: Expr,
+    override val location: Location
+  ) : Expr() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitConcatExpr(this)
+    }
+  }
+
   data class Binary(
     val lhs: Expr,
     val op: Operation,
     val rhs: Expr,
     override val location: Location
   ) : Expr() {
-    enum class Operation { Add, Sub, Mul, Div, Concat }
+    enum class Operation { Add, Sub, Mul, Div }
 
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitBinaryExpr(this)
