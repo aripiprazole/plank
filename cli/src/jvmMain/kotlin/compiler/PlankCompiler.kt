@@ -41,9 +41,8 @@ class PlankCompiler(
       .map(FileScope::file)
       .onEach(::validate)
       .map(::generateIR)
+      .map(::generateObject)
       .toList()
-
-    generateObject(pkg.main.realFile)
 
     exec(compileCommand(options.objects.children.map(File::path), options.output.path))
   }
