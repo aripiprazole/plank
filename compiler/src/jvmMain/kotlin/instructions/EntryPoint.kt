@@ -24,9 +24,9 @@ class EntryPoint : CompilerInstruction() {
       isVariadic = false
     )
 
-    val mainFunction = module.addFunction("main", mainFunctionType)
-
     if (main != null) {
+      val mainFunction = module.addFunction("main", mainFunctionType)
+
       context.newBasicBlock("entry")
         .also(mainFunction::addBasicBlock)
         .also(builder::positionAfter)
@@ -35,9 +35,9 @@ class EntryPoint : CompilerInstruction() {
       val argv = mainFunction.getParameter(1).unwrap()
 
       buildCall(main, listOf(argc, argv))
-    }
 
-    buildReturn(runtime.types.int.getConstant(0))
+      buildReturn(runtime.types.int.getConstant(0))
+    }
 
     Right(runtime.nullConstant)
   }

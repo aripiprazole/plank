@@ -15,7 +15,6 @@ import com.lorenzoog.plank.grammar.element.Stmt
 import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.Right
 import com.lorenzoog.plank.shared.either
-import org.bytedeco.llvm.global.LLVM
 
 class FunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
@@ -37,7 +36,7 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruc
 
         val variable = buildAlloca(type, name)
 
-        buildStore(parameter, variable)
+        buildStore(variable, parameter)
         addVariable(name, variable)
       }
 
@@ -49,7 +48,7 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruc
         buildReturn()
       }
 
-      if (!function.verify(LLVM.LLVMReturnStatusAction)) {
+      if (!function.verify()) {
         return Left(invalidFunctionError(function))
       }
     }

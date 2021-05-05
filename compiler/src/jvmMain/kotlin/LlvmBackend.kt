@@ -55,12 +55,15 @@ class LlvmBackend(
           .createFileScope(module)
           .also(context::addModule)
           .run {
-            module.program.map {
-              it.toInstruction().codegen()
+            val instructions = module.program.map { it.toInstruction().codegen() }
+
+            if (currentFile == main) {
+              instructions + EntryPoint().codegen()
+            } else {
+              instructions
             }
           }
       }
-      .plus(context.run { EntryPoint().codegen() })
   }
 
   override fun close() {
