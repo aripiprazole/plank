@@ -1,11 +1,11 @@
 package com.lorenzoog.plank.cli.utils
 
-import java.nio.file.Path
-import java.nio.file.Paths
 import pw.binom.io.file.File
 import pw.binom.io.file.asBFile
 import pw.binom.io.file.asJFile
 import pw.binom.io.file.mkdirs
+import java.nio.file.Path
+import java.nio.file.Paths
 
 val currentFile: File
   get() = Paths.get("").toAbsolutePath().toFile().asBFile

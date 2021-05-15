@@ -31,7 +31,7 @@ class Graph<T> {
 
   override fun toString(): String =
     values.entries.joinToString(separator = "\n", prefix = "{", postfix = "}") { (vertex, edges) ->
-      if(edges.isEmpty()) {
+      if (edges.isEmpty()) {
         "$vertex -> Empty "
       } else {
         "$vertex -> ${edges.joinToString(" ")} "

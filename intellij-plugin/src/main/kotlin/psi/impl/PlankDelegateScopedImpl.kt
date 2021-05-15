@@ -3,8 +3,8 @@ package com.lorenzoog.jplank.intellijplugin.psi.impl
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import com.lorenzoog.jplank.analyzer.Variable
 import com.lorenzoog.jplank.analyzer.PlankType
+import com.lorenzoog.jplank.analyzer.Variable
 import com.lorenzoog.jplank.intellijplugin.analyzer.LookupResult
 import com.lorenzoog.jplank.intellijplugin.analyzer.PsiBindingContext
 import com.lorenzoog.jplank.intellijplugin.analyzer.Scope
