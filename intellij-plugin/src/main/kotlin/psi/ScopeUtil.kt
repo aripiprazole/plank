@@ -10,4 +10,3 @@ tailrec fun PsiElement.findScope(): Scope? {
 
   return parent?.findScope()
 }
-

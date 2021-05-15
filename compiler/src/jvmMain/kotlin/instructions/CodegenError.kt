@@ -3,8 +3,8 @@ package com.lorenzoog.plank.compiler.instructions
 import com.lorenzoog.plank.analyzer.PlankType
 import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.grammar.element.Expr
-import kotlin.reflect.KClass
 import org.llvm4j.llvm4j.Function
+import kotlin.reflect.KClass
 
 sealed class CodegenError {
   abstract val context: CompilerContext

@@ -3,8 +3,8 @@ package com.lorenzoog.jplank.intellijplugin.psi
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
-import com.lorenzoog.jplank.analyzer.Variable
 import com.lorenzoog.jplank.analyzer.PlankType
+import com.lorenzoog.jplank.analyzer.Variable
 import com.lorenzoog.jplank.intellijplugin.Plank
 import com.lorenzoog.jplank.intellijplugin.PlankFileType
 import com.lorenzoog.jplank.intellijplugin.analyzer.CodeAnnotation

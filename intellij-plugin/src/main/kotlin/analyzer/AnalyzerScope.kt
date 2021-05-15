@@ -1,8 +1,8 @@
 package com.lorenzoog.jplank.intellijplugin.analyzer
 
 import com.lorenzoog.jplank.analyzer.Builtin
-import com.lorenzoog.jplank.analyzer.Variable
 import com.lorenzoog.jplank.analyzer.PlankType
+import com.lorenzoog.jplank.analyzer.Variable
 
 data class AnalyzerScope(
   val name: String? = null,
