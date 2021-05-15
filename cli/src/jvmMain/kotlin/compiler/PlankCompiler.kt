@@ -15,7 +15,7 @@ import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.depthFirstSearch
 import kotlin.io.path.ExperimentalPathApi
 import pw.binom.io.file.File
-import pw.binom.io.file.asJFile
+import pw.binom.io.file.extension
 import pw.binom.io.file.nameWithoutExtension
 import pw.binom.io.file.write
 import pw.binom.io.utf8Appendable
@@ -89,10 +89,13 @@ class PlankCompiler(
   }
 
   private fun generateStdlibObjects() {
-    exec(compileStdlibCommand())
+    options.runtime.children
+      .filter { it.extension == "cpp" }
+      .forEach { file ->
+        val target = options.objects.child("${file.nameWithoutExtension}.o")
 
-    ProcessBuilder(options.make)
-      .directory(options.runtimeTarget.asJFile)
+        exec(compileStdlibFile(file, target))
+      }
 
     renderer.info("Successfully generated stdlib objects")
   }
@@ -109,12 +112,13 @@ class PlankCompiler(
     }
   }
 
-  private fun compileStdlibCommand(): String {
+  private fun compileStdlibFile(file: File, target: File): String {
     return listOf(
-      options.cmake,
-      "-S ${options.runtime.path}",
-      "-B ${options.runtimeTarget.path}",
-      "-DTARGET_OBJECTS_DIR=${options.objects.path}",
+      options.linker,
+      "-g",
+      "-O3",
+      "-c ${file.path}",
+      "-o ${target.path}"
     ).joinToString(" ")
   }
 

@@ -14,7 +14,6 @@ class CompilerOptions(plankHome: File) {
   var emitIR = false
 
   var make = "make"
-  var cmake = "cmake"
   var linker = "clang++"
   var output = File("main")
 
