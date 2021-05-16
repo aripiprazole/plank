@@ -25,8 +25,10 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        implementation(Dependencies.ByteDeco.LLVMPlatform)
-        implementation(Dependencies.LLVM4J.LLVM4J)
+        compileOnly(Dependencies.ByteDeco.LLVMPlatform)
+        compileOnly(Dependencies.LLVM4J.LLVM4J) {
+          exclude(group = "org.bytedeco")
+        }
         implementation(project(":grammar"))
         implementation(project(":shared"))
         implementation(project(":analyzer"))
