@@ -1,9 +1,12 @@
+@file:Suppress("UnstableApiUsage")
+
 import com.lorenzoog.plank.build.Dependencies
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 plugins {
   id("org.jetbrains.kotlin.multiplatform")
-  id("com.github.johnrengelman.shadow") version "6.1.0"
   java
+  distribution
 }
 
 group = "com.lorenzoog"
@@ -39,18 +42,74 @@ kotlin {
   }
 }
 
-tasks.shadowJar {
-  val jvmMain = kotlin.jvm().compilations.getByName("main")
+val jvmMain: KotlinJvmCompilation = kotlin.jvm().compilations.getByName("main")
+val arch: String = System.getProperty("os.arch")
+val hostOs: String = System.getProperty("os.name")
+val isMingwX64: Boolean = hostOs.startsWith("Windows")
 
-  from(jvmMain.output)
-  manifest {
-    attributes["Main-Class"] = "com.lorenzoog.jplank.cli.MainKt"
+fun CopySpec.excludeOsArch(
+  os: String,
+  vararg architectures: String,
+  target: String = os.toLowerCase()
+) {
+  if (!hostOs.startsWith(os)) {
+    architectures.forEach {
+      if (arch != it) {
+        exclude("*-$target-$it.jar")
+      }
+    }
   }
-
-  configurations = mutableListOf(jvmMain.compileDependencyFiles as Configuration)
-  archiveClassifier.set("all")
 }
 
-tasks.build {
-  dependsOn(tasks.shadowJar)
+fun CopySpec.includeLlvm() {
+  excludeOsArch("macosx", "x86_64", "arm64")
+  excludeOsArch("macosx", "arm64", "x86_64", target = "ios")
+
+  excludeOsArch("Linux", "armhf", "arm64", "ppc64le", "x86", "x86_64")
+
+  excludeOsArch("Windows", "x86", "x86_64")
+}
+
+distributions {
+  main {
+    distributionBaseName.set("plank")
+
+    contents {
+      from(rootProject.file("README.md"))
+      from(rootProject.file("LICENSE.txt"))
+
+      from(rootProject.file("licenses")) {
+        into("licenses")
+      }
+
+      from(rootProject.file("stdlib")) {
+        into("stdlib")
+      }
+
+      from(rootProject.file("runtime")) {
+        into("runtime")
+      }
+
+      from(rootProject.file("bin")) {
+        into("bin")
+      }
+
+      from(tasks.jar) {
+        into("libs")
+      }
+
+      from(jvmMain.runtimeDependencyFiles) {
+        includeLlvm()
+
+        into("libs")
+      }
+    }
+  }
+}
+
+tasks.jar {
+  from(jvmMain.output)
+  manifest {
+    attributes["Main-Class"] = "com.lorenzoog.plank.cli.MainKt"
+  }
 }
