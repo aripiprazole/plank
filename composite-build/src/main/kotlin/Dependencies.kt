@@ -11,7 +11,7 @@ object Dependencies {
   }
 
   object Eclipse4J {
-    const val Eclipse4J = "org.eclipse.lsp4j:org.eclipse.lsp4j:0.10.0"
+    const val LSP4J = "org.eclipse.lsp4j:org.eclipse.lsp4j:0.10.0"
     const val JsonRPC = "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.10.0"
   }
 
