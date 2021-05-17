@@ -1,20 +1,23 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
-import com.lorenzoog.jplank.element.Expr.Unary.Operation
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.buildFNeg
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.grammar.element.Expr.Unary.Operation
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
-class UnaryInstruction(private val descriptor: Expr.Unary) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val rhs = context.map(descriptor.rhs).codegen(context)
-      ?: return context.report("rhs is null", descriptor)
+class UnaryInstruction(private val descriptor: Expr.Unary) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
+    val rhs = !descriptor.rhs.toInstruction().codegen()
 
-    return when (descriptor.op) {
-      Operation.Neg -> context.builder.buildFloatNeg(rhs, Some("negtmp"))
-      Operation.Bang -> context.builder.buildFloatNeg(rhs, Some("nottmp"))
-    }
+    Right(
+      when (descriptor.op) {
+        Operation.Neg -> buildFNeg(rhs, "neg.tmp")
+        Operation.Bang -> buildFNeg(rhs, "neg.tmp")
+      }
+    )
   }
 }

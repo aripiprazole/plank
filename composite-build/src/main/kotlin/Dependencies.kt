@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.build
+package com.lorenzoog.plank.build
 
 object Dependencies {
   object Kotlin {
@@ -6,8 +6,12 @@ object Dependencies {
     const val CoroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.4.2"
   }
 
+  object Pinterest {
+    const val Ktlint = "com.pinterest:ktlint:0.40.0"
+  }
+
   object Eclipse4J {
-    const val Eclipse4J = "org.eclipse.lsp4j:org.eclipse.lsp4j:0.10.0"
+    const val LSP4J = "org.eclipse.lsp4j:org.eclipse.lsp4j:0.10.0"
     const val JsonRPC = "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.10.0"
   }
 

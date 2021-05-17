@@ -1,37 +1,29 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
-import com.lorenzoog.jplank.element.Expr.Binary.Operation
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.None
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.buildFAdd
+import com.lorenzoog.plank.compiler.buildFDiv
+import com.lorenzoog.plank.compiler.buildFMul
+import com.lorenzoog.plank.compiler.buildFSub
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
-class FBinaryInstruction(val descriptor: Expr.Binary) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val lhs = context.map(descriptor.lhs).codegen(context)
-      ?: return context.report("lhs is null", descriptor)
+class FBinaryInstruction(val descriptor: Expr.Binary) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
+    val lhs = !descriptor.lhs.toInstruction().codegen().bind().toFloat()
+    val rhs = !descriptor.rhs.toInstruction().codegen().bind().toFloat()
 
-    val rhs = context.map(descriptor.rhs).codegen(context)
-      ?: return context.report("rhs is null", descriptor)
-
-    if (descriptor.op == Operation.Concat) {
-      val concatFunction = context.runtime.concatFunction
-        ?: return context.report("concat function is null", descriptor)
-
-      return context.builder.buildCall(concatFunction, lhs, rhs, name = None)
-    }
-
-    val frhs = context.dataTypeConverter.convertToFloat(context, rhs)
-    val flhs = context.dataTypeConverter.convertToFloat(context, lhs)
-
-    return when (descriptor.op) {
-      Operation.Sub -> context.builder.buildFloatSub(frhs, flhs, Some("subtmp"))
-      Operation.Mul -> context.builder.buildFloatMul(flhs, frhs, Some("multmp"))
-      Operation.Div -> context.builder.buildFloatDiv(flhs, frhs, Some("divtmp"))
-      Operation.Add -> context.builder.buildFloatAdd(flhs, frhs, Some("addtmp"))
-      Operation.Concat -> error("The could should never reach here.")
-    }
+    Right(
+      when (descriptor.op) {
+        Operation.Sub -> buildFSub(lhs, rhs, "sub.tmp")
+        Operation.Mul -> buildFMul(lhs, rhs, "mul.tmp")
+        Operation.Div -> buildFDiv(lhs, rhs, "div.tmp")
+        Operation.Add -> buildFAdd(lhs, rhs, "add.tmp")
+      }
+    )
   }
 }

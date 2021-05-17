@@ -1,12 +1,12 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.cli.compiler
 
-import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.utils.child
-import com.lorenzoog.jplank.utils.children
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.createTempDirectory
+import com.lorenzoog.plank.cli.utils.child
+import com.lorenzoog.plank.cli.utils.children
+import com.lorenzoog.plank.grammar.element.PlankFile
 import pw.binom.io.file.File
 import pw.binom.io.file.asBFile
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createTempDirectory
 
 @ExperimentalPathApi
 class CompilerOptions(plankHome: File) {
@@ -14,7 +14,6 @@ class CompilerOptions(plankHome: File) {
   var emitIR = false
 
   var make = "make"
-  var cmake = "cmake"
   var linker = "clang++"
   var output = File("main")
 

@@ -1,9 +1,10 @@
-package com.lorenzoog.jplank.message
+package com.lorenzoog.plank.cli.message
 
-import com.lorenzoog.jplank.element.Location
-import com.lorenzoog.jplank.utils.blue
-import com.lorenzoog.jplank.utils.red
-import com.lorenzoog.jplank.utils.yellow
+import com.lorenzoog.plank.cli.utils.blue
+import com.lorenzoog.plank.cli.utils.red
+import com.lorenzoog.plank.cli.utils.yellow
+import com.lorenzoog.plank.grammar.element.Location
+import com.lorenzoog.plank.grammar.message.MessageRenderer
 import java.io.PrintWriter
 
 class ColoredMessageRenderer(

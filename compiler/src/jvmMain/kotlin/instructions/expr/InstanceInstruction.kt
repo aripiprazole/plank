@@ -1,38 +1,45 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.compiler.instructions.llvmError
+import com.lorenzoog.plank.compiler.instructions.unresolvedFieldErrror
+import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 import org.llvm4j.llvm4j.Constant
-import org.llvm4j.llvm4j.Value
 import org.llvm4j.optional.Err
 import org.llvm4j.optional.Ok
 
-class InstanceInstruction(private val descriptor: Expr.Instance) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
+class InstanceInstruction(private val descriptor: Expr.Instance) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
     val name = descriptor.name.text
-      ?: return context.report("name is null", descriptor)
 
-    val structure = context.binding.findStructure(Expr.Access(descriptor.name, descriptor.location))
-      ?: return context.report("structure is null", descriptor)
+    // todo fix me finding only global types
+    val struct = binding.findStruct(Expr.Access(descriptor.name, descriptor.location))
+      ?: return Left(unresolvedTypeError(name))
 
-    val llvmStructure = context.findStructure(name)
-      ?: return context.report("llvm structure is null", descriptor)
+    val llvmStruct = findStruct(name)
+      ?: return Left(unresolvedTypeError(name))
 
-    val arguments = structure.fields.mapIndexed { index, field ->
+    val arguments = struct.fields.map { field ->
       val (_, value) = descriptor.arguments.entries.find { it.key.text == field.name }
-        ?: return context.report("failed to handle argument with index $index", descriptor)
+        ?: return Left(unresolvedFieldErrror(field.name, struct))
 
-      context.map(value).codegen(context)
-        ?: return context.report("failed to handle argument", value)
+      !value.toInstruction().codegen()
     }
 
-    val const = llvmStructure
-      .getConstant(*arguments.map { it as Constant }.toTypedArray(), isPacked = false)
+    val const = llvmStruct.getConstant(
+      *arguments.map { it as Constant }.toTypedArray(),
+      isPacked = false
+    )
 
-    return when (const) {
-      is Ok -> const.unwrap()
-      is Err -> null
+    when (const) {
+      is Ok -> Right(const.value)
+      is Err -> Left(llvmError(const.error.message ?: "failed to create struct instance"))
     }
   }
 }

@@ -1,4 +1,4 @@
-rootProject.name = "jplank"
+rootProject.name = "plank"
 
 enableFeaturePreview("GRADLE_METADATA")
 pluginManagement {
@@ -13,7 +13,6 @@ includeBuild("composite-build")
 include("compiler")
 include("grammar")
 include("cli")
-include("intellij-plugin")
 include("lang-server")
-include("vscode-plugin")
 include("analyzer")
+include("shared")

@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.debug
+package com.lorenzoog.plank.grammar.debug
 
 internal expect fun List<*>.asMap(): Map<String, Any?>
 

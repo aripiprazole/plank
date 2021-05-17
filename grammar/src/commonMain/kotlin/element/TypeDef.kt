@@ -1,6 +1,4 @@
-package com.lorenzoog.jplank.element
-
-import org.antlr.v4.kotlinruntime.Token
+package com.lorenzoog.plank.grammar.element
 
 sealed class TypeDef : PlankElement {
   interface Visitor<T> {
@@ -16,7 +14,10 @@ sealed class TypeDef : PlankElement {
 
   abstract fun <T> accept(visitor: Visitor<T>): T
 
-  data class GenericAccess(val name: Token, override val location: Location) : TypeDef() {
+  data class GenericAccess(
+    val name: Identifier,
+    override val location: Location
+  ) : TypeDef() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitGenericAccess(this)
     }
@@ -32,7 +33,7 @@ sealed class TypeDef : PlankElement {
     }
   }
 
-  data class Name(val name: Token, override val location: Location) : TypeDef() {
+  data class Name(val name: Identifier, override val location: Location) : TypeDef() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitNameTypeDef(this)
     }

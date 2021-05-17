@@ -1,26 +1,31 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
-import org.llvm4j.llvm4j.Value
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.buildCall
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.compiler.instructions.unresolvedFunctionError
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
-class CallInstruction(private val descriptor: Expr.Call) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
+class CallInstruction(private val descriptor: Expr.Call) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
     val callee = when (val callee = descriptor.callee) {
-      is Expr.Access -> {
-        val name = callee.name.text ?: return context.report("name is null", descriptor)
+      is Expr.Access -> findFunction(callee.name.text)
+      is Expr.Get -> findFunction(callee.member.text)
+      else -> null
+    }
 
-        context.findFunction(name)
-      }
-      is Expr.Get -> {
-        val name = callee.member.text ?: return context.report("member is null", descriptor)
+    val function = callee
+      ?.accessIn(this@codegen)
+      ?: return Left(unresolvedFunctionError(descriptor.callee))
 
-        context.findFunction(name)
-      }
-      else -> context.report("unsupported function", descriptor)
-    } ?: return context.report("callee is null", descriptor)
+    val arguments = descriptor.arguments
+      .map { it.toInstruction() }
+      .map { !it.codegen() }
 
-    return callee.call(context, descriptor.arguments)
+    Right(buildCall(function, arguments))
   }
 }

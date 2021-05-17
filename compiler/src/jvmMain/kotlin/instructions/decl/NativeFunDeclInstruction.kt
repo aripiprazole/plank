@@ -1,12 +1,13 @@
-package com.lorenzoog.jplank.compiler.instructions.decl
+package com.lorenzoog.plank.compiler.instructions.decl
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Decl
-import org.llvm4j.llvm4j.Value
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.grammar.element.Decl
+import com.lorenzoog.plank.shared.either
 
-class NativeFunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    return context.addFunction(descriptor)
+class NativeFunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
+    addFunction(descriptor)
   }
 }

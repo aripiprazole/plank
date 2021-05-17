@@ -1,12 +1,12 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
-import org.llvm4j.llvm4j.Value
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.grammar.element.Expr
 
-class GroupInstruction(private val descriptor: Expr.Group) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    return context.map(descriptor.expr).codegen(context)
+class GroupInstruction(private val descriptor: Expr.Group) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult {
+    return descriptor.expr.toInstruction().codegen()
   }
 }

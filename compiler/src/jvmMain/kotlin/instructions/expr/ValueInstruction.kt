@@ -1,16 +1,15 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.buildLoad
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
-class ValueInstruction(private val descriptor: Expr.Value) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val value = context.map(descriptor.expr).codegen(context)
-      ?: return context.report("value is null", descriptor)
-
-    return context.builder.buildLoad(value, Some("valuetmp"))
+class ValueInstruction(private val descriptor: Expr.Value) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
+    Right(buildLoad(!descriptor.expr.toInstruction().codegen(), "value.tmp"))
   }
 }

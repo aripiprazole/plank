@@ -1,4 +1,4 @@
-import com.lorenzoog.jplank.build.Dependencies
+import com.lorenzoog.plank.build.Dependencies
 
 plugins {
   id("org.jetbrains.kotlin.multiplatform")
@@ -25,9 +25,13 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        implementation(Dependencies.ByteDeco.LLVMPlatform)
-        implementation(Dependencies.LLVM4J.LLVM4J)
+        compileOnly(Dependencies.ByteDeco.LLVMPlatform)
+        compileOnly(Dependencies.LLVM4J.LLVM4J) {
+          exclude(group = "org.bytedeco")
+        }
         implementation(project(":grammar"))
+        implementation(project(":shared"))
+        implementation(project(":analyzer"))
       }
     }
     val jvmTest by getting

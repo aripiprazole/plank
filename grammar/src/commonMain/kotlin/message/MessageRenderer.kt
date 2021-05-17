@@ -1,6 +1,6 @@
-package com.lorenzoog.jplank.message
+package com.lorenzoog.plank.grammar.message
 
-import com.lorenzoog.jplank.element.Location
+import com.lorenzoog.plank.grammar.element.Location
 import pw.binom.io.Closeable
 
 interface MessageRenderer : Closeable {

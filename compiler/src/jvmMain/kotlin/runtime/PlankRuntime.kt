@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.compiler.runtime
+package com.lorenzoog.plank.compiler.runtime
 
 import org.llvm4j.llvm4j.Context
 import org.llvm4j.llvm4j.Function
@@ -10,6 +10,7 @@ class PlankRuntime(private val module: Module) {
 
   val trueConstant: Value = types.i1.getConstant(1)
   val falseConstant: Value = types.i1.getConstant(0)
+  val nullConstant: Value = types.i1.getConstantNull()
 
   val concatFunction: Function?
     get() {

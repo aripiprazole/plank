@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.element
+package com.lorenzoog.plank.grammar.element
 
 import org.antlr.v4.kotlinruntime.Token
 
@@ -21,6 +21,7 @@ sealed class Expr : PlankElement {
     fun visitSizeofExpr(sizeof: Sizeof): T
     fun visitReferenceExpr(reference: Reference): T
     fun visitValueExpr(value: Value): T
+    fun visitConcatExpr(concat: Concat): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -44,7 +45,7 @@ sealed class Expr : PlankElement {
     }
   }
 
-  data class Access(val name: Token, override val location: Location) : Expr() {
+  data class Access(val name: Identifier, override val location: Location) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitAccessExpr(this)
     }
@@ -63,13 +64,23 @@ sealed class Expr : PlankElement {
     }
   }
 
+  data class Concat(
+    val lhs: Expr,
+    val rhs: Expr,
+    override val location: Location
+  ) : Expr() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitConcatExpr(this)
+    }
+  }
+
   data class Binary(
     val lhs: Expr,
     val op: Operation,
     val rhs: Expr,
     override val location: Location
   ) : Expr() {
-    enum class Operation { Add, Sub, Mul, Div, Concat }
+    enum class Operation { Add, Sub, Mul, Div }
 
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitBinaryExpr(this)
@@ -98,7 +109,7 @@ sealed class Expr : PlankElement {
   }
 
   data class Assign(
-    val name: Token,
+    val name: Identifier,
     val value: Expr,
     override val location: Location
   ) : Expr() {
@@ -110,7 +121,7 @@ sealed class Expr : PlankElement {
 
   data class Set(
     val receiver: Expr,
-    val member: Token,
+    val member: Identifier,
     val value: Expr,
     override val location: Location
   ) : Expr() {
@@ -121,7 +132,7 @@ sealed class Expr : PlankElement {
 
   data class Get(
     val receiver: Expr,
-    val member: Token,
+    val member: Identifier,
     override val location: Location
   ) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
@@ -140,7 +151,7 @@ sealed class Expr : PlankElement {
   }
 
   data class Instance(
-    val name: Token,
+    val name: Identifier,
     val arguments: Map<Token, Expr>,
     override val location: Location,
   ) : Expr() {
@@ -149,7 +160,8 @@ sealed class Expr : PlankElement {
     }
   }
 
-  data class Sizeof(val name: Token, override val location: Location) : Expr() {
+  // todo change to typedef
+  data class Sizeof(val name: Identifier, override val location: Location) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitSizeofExpr(this)
     }
