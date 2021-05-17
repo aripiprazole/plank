@@ -23,7 +23,7 @@ on [twitter](https://twitter.com/lorenzoo_g) or message me on discord **Lorenzoo
 Hello world in plank:
 
 ```kotlin
-import io;
+import Std.IO;
 
 fun main(argc: Int, argv: **Char): Void {
   println("Hello, world");
@@ -51,13 +51,9 @@ You can find more examples [here](samples)
 | kotlin     | https://kotlinlang.org            | v1.4.30-M1 |
 | java       | https://openjdk.java.net/         | v11        |
 | clang++    | https://clang.llvm.org            | v10.0.0    |
-| cmake      | https://cmake.org                 | v3.16      |
 | make       | https://www.gnu.org/software/make | v4.3       |
 
 ## CLI
-
-You should define the environment variable `PLANK_HOME` to
-the project folder.
 
 ```
 Usage: plank [OPTIONS] file
@@ -81,14 +77,27 @@ Arguments:
 You should execute the following commands:
 
 ```shell
-$ git clone git@github.com:LorenzooG/jplank.git
-$ cd jplank
+$ git clone git@github.com:plank-lang/plank.git
+$ cd plank
 # if you are in windows
-# $ gradlew.bat cli:shadowJar
-$ ./gradlew cli:shadowJar
+# PS gradlew.bat cli:assembleDist
+$ ./gradlew cli:assembleDist
 ```
 
-The jar is located in `cli/build/libs`
+The zipped distributions are located in `cli/build/distributions`
+
+## Install
+
+This is the [linux install instructions](#Install Linux) that is tested in ubuntu;
+if you want the distributions for your operational system, you must follow the 
+[Build instructions](#Building).
+
+## Install Linux
+
+You must download a release in [releases](https://github.com/plank-lang/plank/releases/tag/1.0.1-SNAPSHOT)
+or build your one in [Building](#Building). After that you must define the environment variable `PLANK_HOME`
+to the unzipped release folder, and set `PATH` to `$PLANK_HOME/bin`. So the plank is installed, make good use.
+🙂
 
 ## Pull Requests
 
