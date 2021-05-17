@@ -76,10 +76,13 @@ distributions {
 
     contents {
       from(rootProject.file("README.md"))
-      from(rootProject.file("LICENSE.txt"))
 
-      from(rootProject.file("licenses")) {
+      from(rootProject.file("LICENSE.txt")) {
         into("licenses")
+      }
+
+      from(rootProject.file("licenses/third_party")) {
+        into("licenses/third_party")
       }
 
       from(rootProject.file("stdlib")) {

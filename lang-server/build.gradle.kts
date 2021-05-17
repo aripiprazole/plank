@@ -38,7 +38,7 @@ kotlin {
         implementation(project(":analyzer"))
         implementation(Dependencies.Kotlin.Coroutines)
         implementation(Dependencies.Kotlin.CoroutinesJdk8)
-        implementation(Dependencies.Eclipse4J.Eclipse4J)
+        implementation(Dependencies.Eclipse4J.LSP4J)
         implementation(Dependencies.Eclipse4J.JsonRPC)
       }
     }
