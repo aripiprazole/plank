@@ -1,36 +1,18 @@
-package com.lorenzoog.jplank.compiler.instructions.element
+package com.lorenzoog.plank.compiler.instructions.element
 
-import com.lorenzoog.jplank.analyzer.type.PlankType
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.element.Decl
-import com.lorenzoog.jplank.element.Expr
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.grammar.element.Decl
 import org.llvm4j.llvm4j.Function
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.None
 
 abstract class IRFunction : IRElement() {
   abstract val name: String
   abstract val mangledName: String
   abstract val descriptor: Decl
 
-  fun call(context: PlankContext, arguments: List<Expr>): Value? {
-    val type = context.binding.visit(descriptor) as? PlankType.Callable
-      ?: return context.report("callable type is null", descriptor)
-
-    val valueArguments = arguments
-      .map { expr ->
-        context.map(expr).codegen(context)
-          ?: return context.report("failed to handle argument", expr)
-      }
-
-    val function = access(context) ?: return context.report("function is null", descriptor)
-
-    return context.builder.buildCall(function, *valueArguments.toTypedArray(), name = None)
-  }
-
   /** Access the function in the [context] */
-  abstract fun access(context: PlankContext): Function?
+  abstract fun accessIn(context: CompilerContext): Function?
 
-  /** Generates the function in the [context] */
-  abstract override fun codegen(context: PlankContext): Function?
+  /** Generates the function in the [this] */
+  abstract override fun CompilerContext.codegen(): CodegenResult
 }

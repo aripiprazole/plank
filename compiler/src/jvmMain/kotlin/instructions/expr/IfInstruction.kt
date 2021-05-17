@@ -1,94 +1,99 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.buildAlloca
+import com.lorenzoog.plank.compiler.buildBr
+import com.lorenzoog.plank.compiler.buildCondBr
+import com.lorenzoog.plank.compiler.buildICmp
+import com.lorenzoog.plank.compiler.buildPhi
+import com.lorenzoog.plank.compiler.buildStore
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.compiler.instructions.llvmError
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 import org.llvm4j.llvm4j.IntPredicate
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.Some
 
-class IfInstruction(private val descriptor: Expr.If) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val cond = context.map(descriptor.cond).codegen(context)
-      ?: return context.report("condition is null", descriptor)
+class IfInstruction(private val descriptor: Expr.If) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
+    val cond = !descriptor.cond.toInstruction().codegen()
+    val realCond = buildICmp(IntPredicate.Equal, cond, runtime.trueConstant, "cmp.tmp")
 
-    val realCond = context.builder
-      .buildIntCompare(IntPredicate.Equal, cond, context.runtime.trueConstant, Some("cmptmp"))
+    val func = builder.getInsertionBlock().toNullable()
+      ?.getFunction()
+      ?.toNullable()
+      ?: return Left(llvmError("insertion block is null"))
 
-    val func = context.builder.getInsertionBlock().toNullable()?.getFunction()?.toNullable()
-      ?: return context.report("insertion block is null", descriptor)
+    val thenBranch = context.newBasicBlock("then").also(func::addBasicBlock)
+    var elseBranch = context.newBasicBlock("else")
 
-    val thenBranch = context.llvm.newBasicBlock("then").also(func::addBasicBlock)
-    var elseBranch = context.llvm.newBasicBlock("else")
+    val mergeBranch = context.newBasicBlock("if.cont")
 
-    val mergeBranch = context.llvm.newBasicBlock("ifcont")
-
-    val condBr = context.builder.buildConditionalBranch(
-      realCond,
-      thenBranch,
-      elseBranch
-    ) // create condition
+    val condBr = buildCondBr(realCond, thenBranch, elseBranch) // create condition
 
     val thenRet: Value?
     val elseRet: Value?
 
     thenBranch.also { br ->
-      context.builder.positionAfter(br) // emit then
+      builder.positionAfter(br) // emit then
 
-      val stmts = descriptor.thenBranch.mapIndexed { index, stmt ->
-        context.map(stmt).codegen(context)
-          ?: return context.report("failed to handle stmt $index in then branch", descriptor)
+      val stmts = descriptor.thenBranch.map { stmt ->
+        !stmt.toInstruction().codegen()
       }
 
       thenRet = stmts.lastOrNull()
         ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
-        ?.takeIf { it.getType() != context.runtime.types.void }
+        ?.takeIf { it.getType() != runtime.types.void }
         ?.also {
-          val variable = context.builder.buildAlloca(it.getType(), Some("thenv"))
+          val variable = buildAlloca(it.getType(), "then.v")
 
-          context.builder.buildStore(it, variable)
+          buildStore(it, variable)
         }
 
-      context.builder.buildBranch(mergeBranch)
+      buildBr(mergeBranch)
     }
 
     elseBranch.also { br ->
       func.addBasicBlock(br)
-      context.builder.positionAfter(br) // emit else
+      builder.positionAfter(br) // emit else
 
-      val stmts = descriptor.elseBranch.mapIndexed { index, stmt ->
-        context.map(stmt).codegen(context) // fixme failing on expr stmt that returns void
-          ?: return context.report("failed to handle stmt $index in else branch", descriptor)
+      val stmts = descriptor.elseBranch.map { stmt ->
+        !stmt.toInstruction().codegen() // fixme failing on expr stmt that returns void
       }
 
       elseRet = stmts.lastOrNull()
         ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
-        ?.takeIf { it.getType() != context.runtime.types.void }
+        ?.takeIf { it.getType() != runtime.types.void }
         ?.also {
-          val variable = context.builder.buildAlloca(it.getType(), Some("elsev"))
-          context.builder.buildStore(it, variable)
+          val variable = buildAlloca(it.getType(), "else.v")
+
+          buildStore(it, variable)
         }
 
-      context.builder.buildBranch(mergeBranch)
+      buildBr(mergeBranch)
     }
 
-    elseBranch = context.builder.getInsertionBlock().toNullable()
-      ?: return context.report("insertion block is null", descriptor)
+    elseBranch = builder.getInsertionBlock().toNullable()
+      ?: return Left(llvmError("insertion block is null"))
 
     func.addBasicBlock(mergeBranch)
-    context.builder.positionAfter(mergeBranch)
+    builder.positionAfter(mergeBranch)
 
     if (thenRet != null && elseRet != null) {
-      val phiType = context.map(context.binding.visit(descriptor))
-        ?: return context.report("phiType is null", descriptor)
+      val phiType = !binding.visit(descriptor).toType()
 
-      return context.builder.buildPhi(phiType, Some("iftmp")).apply {
-        addIncoming(thenBranch to thenRet)
-        addIncoming(elseBranch to elseRet)
-      }
+      return Right(
+        buildPhi(phiType, "if.tmp").apply {
+          addIncoming(thenBranch to thenRet)
+          addIncoming(elseBranch to elseRet)
+        }
+      )
     }
 
-    return condBr
+    Right(condBr)
   }
 }

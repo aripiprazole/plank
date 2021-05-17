@@ -1,27 +1,30 @@
-package com.lorenzoog.jplank.compiler
+package com.lorenzoog.plank.cli.compiler
 
-import com.lorenzoog.jplank.analyzer.BindingContext
-import com.lorenzoog.jplank.analyzer.FileScope
-import com.lorenzoog.jplank.analyzer.Module
-import com.lorenzoog.jplank.analyzer.depthFirstSearch
-import com.lorenzoog.jplank.element.PlankFile
-import com.lorenzoog.jplank.message.MessageRenderer
-import com.lorenzoog.jplank.pkg.Package
-import com.lorenzoog.jplank.utils.child
-import com.lorenzoog.jplank.utils.children
-import com.lorenzoog.jplank.utils.printOutput
-import kotlin.io.path.ExperimentalPathApi
+import com.lorenzoog.plank.analyzer.BindingContext
+import com.lorenzoog.plank.analyzer.FileScope
+import com.lorenzoog.plank.analyzer.Module
+import com.lorenzoog.plank.cli.pkg.Package
+import com.lorenzoog.plank.cli.utils.child
+import com.lorenzoog.plank.cli.utils.children
+import com.lorenzoog.plank.cli.utils.printOutput
+import com.lorenzoog.plank.compiler.LlvmBackend
+import com.lorenzoog.plank.compiler.instructions.CodegenError
+import com.lorenzoog.plank.grammar.element.PlankFile
+import com.lorenzoog.plank.grammar.message.MessageRenderer
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.depthFirstSearch
 import pw.binom.io.file.File
-import pw.binom.io.file.asJFile
+import pw.binom.io.file.extension
 import pw.binom.io.file.nameWithoutExtension
 import pw.binom.io.file.write
 import pw.binom.io.utf8Appendable
+import kotlin.io.path.ExperimentalPathApi
 
 @ExperimentalPathApi
 class PlankCompiler(
   private val pkg: Package,
   private val context: BindingContext,
-  private val compiler: PlankLLVM,
+  private val compiler: LlvmBackend,
   private val renderer: MessageRenderer
 ) {
   private val options = pkg.options
@@ -38,9 +41,8 @@ class PlankCompiler(
       .map(FileScope::file)
       .onEach(::validate)
       .map(::generateIR)
+      .map(::generateObject)
       .toList()
-
-    generateObject(pkg.main.realFile)
 
     exec(compileCommand(options.objects.children.map(File::path), options.output.path))
   }
@@ -71,24 +73,29 @@ class PlankCompiler(
     val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
     compiler.initialize(file)
-    compiler.compile(file)
+
+    val results = compiler.compile(file)
+    val errors = results.filterIsInstance<Left<CodegenError>>().map { it.a }
 
     target.write()
       .utf8Appendable()
       .append(compiler.context.module.getAsString())
 
-    if (compiler.context.errors.isNotEmpty()) {
-      throw CompileError.IRViolations(compiler.module, compiler.context.errors)
+    if (errors.isNotEmpty()) {
+      throw CompileError.IRViolations(compiler.module, errors)
     }
 
     return target
   }
 
   private fun generateStdlibObjects() {
-    exec(compileStdlibCommand())
+    options.runtime.children
+      .filter { it.extension == "cpp" }
+      .forEach { file ->
+        val target = options.objects.child("${file.nameWithoutExtension}.o")
 
-    ProcessBuilder(options.make)
-      .directory(options.runtimeTarget.asJFile)
+        exec(compileStdlibFile(file, target))
+      }
 
     renderer.info("Successfully generated stdlib objects")
   }
@@ -105,12 +112,13 @@ class PlankCompiler(
     }
   }
 
-  private fun compileStdlibCommand(): String {
+  private fun compileStdlibFile(file: File, target: File): String {
     return listOf(
-      options.cmake,
-      "-S ${options.runtime.path}",
-      "-B ${options.runtimeTarget.path}",
-      "-DTARGET_OBJECTS_DIR=${options.objects.path}",
+      options.linker,
+      "-g",
+      "-O3",
+      "-c ${file.path}",
+      "-o ${target.path}"
     ).joinToString(" ")
   }
 

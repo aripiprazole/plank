@@ -1,6 +1,6 @@
-package com.lorenzoog.jplank.message
+package com.lorenzoog.plank.grammar.message
 
-import com.lorenzoog.jplank.element.Location
+import com.lorenzoog.plank.grammar.element.Location
 
 class SimpleMessageRenderer : MessageRenderer {
   override fun severe(message: String, location: Location?) {

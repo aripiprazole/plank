@@ -1,4 +1,4 @@
-package com.lorenzoog.jplank.element
+package com.lorenzoog.plank.grammar.element
 
 data class Location(
   val line: Int,

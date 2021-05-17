@@ -1,8 +1,8 @@
-package com.lorenzoog.jplank.tooling.langserver
+package com.lorenzoog.plank.tooling.langserver
 
-import java.util.concurrent.Executors
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.services.LanguageClient
+import java.util.concurrent.Executors
 
 fun main() {
   val server = PlankLanguageServer()

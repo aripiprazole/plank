@@ -1,53 +1,40 @@
-package com.lorenzoog.jplank.compiler.instructions.expr
+package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.jplank.analyzer.type.PlankType
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Expr
-import org.antlr.v4.kotlinruntime.Token
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.analyzer.PlankType
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.buildGEP
+import com.lorenzoog.plank.compiler.buildLoad
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.compiler.instructions.expectedTypeError
+import com.lorenzoog.plank.grammar.element.Expr
+import com.lorenzoog.plank.grammar.element.Identifier
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
-class GetInstruction(private val descriptor: Expr.Get) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val memberPtr = getVariable(
-      context,
-      descriptor,
-      descriptor.receiver,
-      descriptor.member
-    ) ?: return context.report("variable is null", descriptor)
+class GetInstruction(private val descriptor: Expr.Get) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
+    val field = !findField(descriptor.receiver, descriptor.member)
 
-    return context.builder.buildLoad(memberPtr, Some("loadtmp"))
+    Right(buildLoad(field, "load.tmp"))
   }
 
   companion object {
-    fun getVariable(
-      context: PlankContext,
-      descriptor: Expr,
-      receiverDescriptor: Expr,
-      name: Token,
-    ): Value? {
-      val member = name.text ?: return context.report("member is null", descriptor)
+    fun CompilerContext.findField(receiver: Expr, name: Identifier): CodegenResult = either {
+      val member = name.text
+      val struct = receiver.toInstruction().codegen().bind()
 
-      val receiver = context.map(receiverDescriptor).codegen(context)
-        ?: return context.report("invalid receiver", descriptor)
+      val type = binding.visit(receiver) as? PlankType.Struct
+        ?: return Left(expectedTypeError(PlankType.Struct::class))
 
-      val struct = context.binding.visit(receiverDescriptor)
-        as? PlankType.Struct? ?: return context.report("type is not a struct", descriptor)
-
-      val type = context.map(struct) ?: return context.report("type is null", descriptor)
-
-      val index = struct.fields.indexOfFirst { it.name == member }
+      val index = type.fields.indexOfFirst { it.name == member }
       val indices = listOf(
-        context.runtime.types.int.getConstant(0),
-        context.runtime.types.int.getConstant(index),
+        runtime.types.int.getConstant(0),
+        runtime.types.int.getConstant(index),
       )
 
-      return context.builder
-        .buildGetElementPtr(
-          receiver, *indices.toTypedArray(),
-          inBounds = true, name = Some("geptmp")
-        )
+      Right(buildGEP(struct, indices, name = "gep.tmp"))
     }
   }
 }

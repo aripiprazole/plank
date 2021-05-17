@@ -1,53 +1,58 @@
-package com.lorenzoog.jplank.compiler.instructions.decl
+package com.lorenzoog.plank.compiler.instructions.decl
 
-import com.lorenzoog.jplank.compiler.PlankContext
-import com.lorenzoog.jplank.compiler.instructions.PlankInstruction
-import com.lorenzoog.jplank.element.Decl
-import com.lorenzoog.jplank.element.Stmt
-import com.lorenzoog.jplank.element.visit
-import org.bytedeco.llvm.global.LLVM
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.optional.None
-import org.llvm4j.optional.Some
+import com.lorenzoog.plank.analyzer.visit
+import com.lorenzoog.plank.compiler.CompilerContext
+import com.lorenzoog.plank.compiler.buildAlloca
+import com.lorenzoog.plank.compiler.buildReturn
+import com.lorenzoog.plank.compiler.buildStore
+import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
+import com.lorenzoog.plank.compiler.instructions.invalidFunctionError
+import com.lorenzoog.plank.compiler.instructions.unresolvedVariableError
+import com.lorenzoog.plank.compiler.verify
+import com.lorenzoog.plank.grammar.element.Decl
+import com.lorenzoog.plank.grammar.element.Stmt
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
+import com.lorenzoog.plank.shared.either
 
-class FunDeclInstruction(private val descriptor: Decl.FunDecl) : PlankInstruction() {
-  override fun codegen(context: PlankContext): Value? {
-    val returnType = context.binding.visit(descriptor.returnType)
-    val function = context.addFunction(descriptor)
-      ?: return context.report("failed to create function", descriptor)
+class FunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either {
+    val returnType = binding.visit(descriptor.returnType)
+    val function = !addFunction(descriptor)
 
-    return context.createNestedScope(descriptor.name.text!!).let { functionContext ->
-      val body = context.llvm.newBasicBlock("entry").also(function::addBasicBlock)
-      functionContext.builder.positionAfter(body)
+    createNestedScope(descriptor.name.text) {
+      val body = context.newBasicBlock("entry").also(function::addBasicBlock)
+      builder.positionAfter(body)
 
       function.getParameters().forEachIndexed { index, parameter ->
         val type = parameter.getType()
 
         val entry = descriptor.realParameters.entries.toList().getOrElse(index) {
-          return context.report("function parameter with index $index is not defined", descriptor)
+          return Left(unresolvedVariableError(parameter.getName()))
         }
 
-        val name = entry.key.text
-          ?: return context.report("parameter with index $index name is null", descriptor)
+        val name = entry.key.text ?: return Left(unresolvedVariableError(parameter.getName()))
 
-        val variable = functionContext.builder.buildAlloca(type, Some(name))
-        functionContext.builder.buildStore(parameter, variable)
-        functionContext.addVariable(name, variable)
+        val variable = buildAlloca(type, name)
+
+        buildStore(variable, parameter)
+        addVariable(name, variable)
       }
 
-      functionContext.map(descriptor.body).map {
-        it.codegen(functionContext)
+      descriptor.body.map {
+        it.toInstruction().codegen()
       }
 
       if (returnType.isVoid && descriptor.body.filterIsInstance<Stmt.ReturnStmt>().isEmpty()) {
-        context.builder.buildReturn(None)
+        buildReturn()
       }
 
-      if (LLVM.LLVMVerifyFunction(function.ref, LLVM.LLVMReturnStatusAction) == 0) {
-        return context.report("invalid function: ${function.getAsString()}", descriptor)
+      if (!function.verify()) {
+        return Left(invalidFunctionError(function))
       }
-
-      function
     }
+
+    Right(function)
   }
 }
