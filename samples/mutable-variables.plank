@@ -1,4 +1,4 @@
-import io;
+import Std.IO;
 
 type Person = {mutable name: *Char};
 
