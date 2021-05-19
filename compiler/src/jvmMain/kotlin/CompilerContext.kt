@@ -81,6 +81,14 @@ data class CompilerContext(
     builder: CompilerContext.() -> Unit
   ): CompilerContext = copy(enclosing = this, moduleName = moduleName).apply(builder)
 
+  fun addFunction(irFunction: IRFunction): Either<CodegenError, Function> {
+    functions[irFunction.name] = irFunction
+
+    return irFunction.run {
+      this@CompilerContext.codegen()
+    }
+  }
+
   fun addFunction(decl: Decl.FunDecl): Either<CodegenError, Function> {
     val name = decl.name.text
     val mangledName = mangler.mangle(this, decl)

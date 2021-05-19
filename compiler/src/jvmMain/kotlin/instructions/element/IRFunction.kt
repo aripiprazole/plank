@@ -1,8 +1,9 @@
 package com.lorenzoog.plank.compiler.instructions.element
 
 import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
+import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.grammar.element.Decl
+import com.lorenzoog.plank.shared.Either
 import org.llvm4j.llvm4j.Function
 
 abstract class IRFunction : IRElement() {
@@ -14,5 +15,5 @@ abstract class IRFunction : IRElement() {
   abstract fun accessIn(context: CompilerContext): Function?
 
   /** Generates the function in the [this] */
-  abstract override fun CompilerContext.codegen(): CodegenResult
+  abstract override fun CompilerContext.codegen(): Either<CodegenError, Function>
 }

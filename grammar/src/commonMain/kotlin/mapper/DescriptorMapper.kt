@@ -110,7 +110,7 @@ class DescriptorMapper(
     return visit(
       ctx.findLetDecl()
         ?: ctx.findFunDecl()
-        ?: ctx.findStructDecl()
+        ?: ctx.findTypeDecl()
         ?: ctx.findModuleDecl()
         ?: ctx.findImportDecl()
         ?: throw ExpectingViolation("declaration", ctx.toString(), ctx.start.location)
@@ -160,17 +160,36 @@ class DescriptorMapper(
     return Decl.FunDecl(emptyList(), name, type, body, parameters, type.location)
   }
 
-  override fun visitStructDecl(ctx: PlankParser.StructDeclContext): Decl {
+  override fun visitTypeDecl(ctx: PlankParser.TypeDeclContext): PlankElement {
     val name = ctx.name!!
-    val fields = ctx.findStructField().map { field ->
-      val fieldMutable = field.MUTABLE() != null
-      val fieldName = field.findParameter()!!.name!!
-      val fieldType = visitTypeDef(field.findParameter()!!.type!!)
 
-      Decl.StructDecl.Field(fieldMutable, fieldName.asIdentifier(), fieldType)
+    fun findEnumDecl(structCtx: PlankParser.EnumDeclContext): Decl.EnumDecl {
+      val members = structCtx.findEnumMember().map { member ->
+        val memberName = member.name!!
+        val memberFields = member.findTypeDef().map { visitTypeDef(it) }
+
+        Decl.EnumDecl.Member(memberName.asIdentifier(), memberFields)
+      }
+
+      return Decl.EnumDecl(name.asIdentifier(), members, ctx.start.location)
     }
 
-    return Decl.StructDecl(name.asIdentifier(), fields, ctx.start.location)
+    fun findStructDecl(structCtx: PlankParser.StructDeclContext): Decl.StructDecl {
+      val fields = structCtx.findStructField().map { field ->
+        val fieldMutable = field.MUTABLE() != null
+        val fieldName = field.findParameter()!!.name!!
+        val fieldType = visitTypeDef(field.findParameter()!!.type!!)
+
+        Decl.StructDecl.Field(fieldMutable, fieldName.asIdentifier(), fieldType)
+      }
+
+      return Decl.StructDecl(name.asIdentifier(), fields, ctx.start.location)
+    }
+
+    ctx.findEnumDecl()?.let { return findEnumDecl(it) }
+    ctx.findStructDecl()?.let { return findStructDecl(it) }
+
+      ?: throw ExpectingViolation("type declaration", ctx.toString(), ctx.start.location)
   }
 
   // statements

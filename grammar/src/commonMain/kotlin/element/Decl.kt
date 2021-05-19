@@ -3,6 +3,18 @@ package com.lorenzoog.plank.grammar.element
 import org.antlr.v4.kotlinruntime.Token
 
 sealed class Decl : Stmt() {
+  data class EnumDecl(
+    val name: Identifier,
+    val members: List<Member>,
+    override val location: Location
+  ) : Decl() {
+    data class Member(val name: Identifier, val fields: List<TypeDef>)
+
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitEnumDecl(this)
+    }
+  }
+
   data class StructDecl(
     val name: Identifier,
     val fields: List<Field>,
@@ -11,7 +23,7 @@ sealed class Decl : Stmt() {
     data class Field(val mutable: Boolean, val name: Identifier, val type: TypeDef)
 
     override fun <T> accept(visitor: Visitor<T>): T {
-      return visitor.visitClassDecl(this)
+      return visitor.visitStructDecl(this)
     }
   }
 

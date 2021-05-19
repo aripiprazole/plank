@@ -9,7 +9,8 @@ abstract class Stmt internal constructor() : PlankElement {
 
     fun visitImportDecl(importDecl: Decl.ImportDecl): T
     fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): T
-    fun visitClassDecl(structDecl: Decl.StructDecl): T
+    fun visitEnumDecl(enumDecl: Decl.EnumDecl): T
+    fun visitStructDecl(structDecl: Decl.StructDecl): T
     fun visitFunDecl(funDecl: Decl.FunDecl): T
     fun visitLetDecl(letDecl: Decl.LetDecl): T
   }

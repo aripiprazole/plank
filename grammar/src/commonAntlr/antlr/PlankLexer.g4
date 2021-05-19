@@ -8,6 +8,8 @@ SEMICOLON : ';'+;
 COMMA : ',' ;
 COLON : ':' ;
 
+BAR : '|' ;
+
 LPAREN : '(' ;
 RPAREN : ')' ;
 

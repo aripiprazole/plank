@@ -6,6 +6,8 @@ sealed class PlankType {
   open val inherits: List<PlankType> = emptyList()
   open val isPrimitive = false
 
+  abstract val size: Int
+
   val pointer by lazy { Pointer(this) }
 
   val isFP get() = this == Builtin.Double
@@ -21,9 +23,34 @@ sealed class PlankType {
     return this == Builtin.Any || this in another.inherits || this == another
   }
 
+  data class Delegate(var delegate: PlankType? = null) : PlankType() {
+    override val inherits = delegate!!.inherits
+    override val size get() = delegate!!.size
+    override val genericArity get() = delegate!!.genericArity
+    override val isPrimitive get() = delegate!!.isPrimitive
+
+    override fun toString() = delegate.toString()
+  }
+
   data class Generic(val receiver: PlankType, val arguments: List<PlankType>) : PlankType() {
+    override val size get() = TODO("add size to generics")
+
     override fun toString(): String {
       return "$receiver<${arguments.joinToString()}>"
+    }
+  }
+
+  data class Set(val name: String, val members: List<Member> = emptyList()) : PlankType() {
+    data class Member(val name: String, val fields: List<PlankType>)
+
+    override val size = 8 + (
+      members
+        .map { member -> member.fields.sumOf { it.size } }
+        .maxOrNull() ?: 0
+      )
+
+    override fun toString(): String {
+      return "set $name"
     }
   }
 
@@ -31,6 +58,8 @@ sealed class PlankType {
     val name: String,
     override val fields: List<Struct.Field> = emptyList(),
   ) : PlankType() {
+    override val size = 0
+
     override fun toString(): String {
       return "module $name"
     }
@@ -41,6 +70,7 @@ sealed class PlankType {
     override val fields: List<Struct.Field> = emptyList(),
   ) : PlankType() {
     override val isPrimitive: Boolean = true
+    override val size = 8
 
     override fun toString(): String {
       return "*$inner"
@@ -49,6 +79,7 @@ sealed class PlankType {
 
   data class Array(val inner: PlankType) : PlankType() {
     override val isPrimitive: Boolean = true
+    override val size get() = TODO("add size to arrays")
 
     override val fields: List<Struct.Field> = listOf(
       Struct.Field(mutable = false, name = "size", type = Builtin.Int)
@@ -68,6 +99,10 @@ sealed class PlankType {
   ) : PlankType() {
     data class Field(val mutable: Boolean, val name: String, val type: PlankType)
 
+    override val size: Int = fields.fold(0) { acc, (_, _, type) ->
+      acc + type.size
+    }
+
     override fun toString(): String {
       return "struct $name"
     }
@@ -75,6 +110,7 @@ sealed class PlankType {
 
   data class Callable(val parameters: List<PlankType>, val returnType: PlankType) : PlankType() {
     override val isPrimitive: Boolean = true
+    override val size = 8
 
     override fun toString(): String {
       return "(${parameters.joinToString()}) -> $returnType"

@@ -50,7 +50,7 @@ sealed class Scope {
 
   val variables = mutableMapOf<String, Variable>()
 
-  private val types = mutableMapOf<String, PlankType.Struct>()
+  private val types = mutableMapOf<String, PlankType>()
   private val expanded = mutableListOf<Scope>()
 
   fun expand(another: Scope): Scope {
@@ -69,7 +69,7 @@ sealed class Scope {
     }
   }
 
-  fun create(name: String, type: PlankType.Struct) {
+  fun create(name: String, type: PlankType) {
     types[name] = type
   }
 
@@ -82,7 +82,7 @@ sealed class Scope {
       ?: enclosing?.findModule(name)
   }
 
-  fun findStructure(name: String): PlankType.Struct? {
+  fun findStructure(name: String): PlankType? {
     return types[name]
       ?: enclosing?.findStructure(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findStructure(name) }.firstOrNull()

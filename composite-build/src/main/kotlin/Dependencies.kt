@@ -30,7 +30,11 @@ object Dependencies {
 
   object ByteDeco {
     const val LLVMPlatform = "org.bytedeco:llvm-platform:11.1.0-1.5.5"
-    const val JavaCPP = "org.bytedeco:javacpp:1.5.5"
+  }
+
+  object JUnit {
+    const val JupiterApi = "org.junit.jupiter:junit-jupiter-api:5.6.0"
+    const val JupiterEngine = "org.junit.jupiter:junit-jupiter-engine:5.6.0"
   }
 
   object Jansi {

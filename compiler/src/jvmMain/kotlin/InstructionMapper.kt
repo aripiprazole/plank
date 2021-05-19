@@ -2,7 +2,8 @@ package com.lorenzoog.plank.compiler
 
 import com.lorenzoog.plank.analyzer.BindingContext
 import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.ClassDeclInstruction
+import com.lorenzoog.plank.compiler.instructions.decl.EnumDeclInstruction
+import com.lorenzoog.plank.compiler.instructions.decl.StructDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.FunDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.ImportDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.LetDeclInstruction
@@ -86,8 +87,8 @@ class InstructionMapper(
     return ReturnInstruction(returnStmt)
   }
 
-  override fun visitClassDecl(structDecl: Decl.StructDecl): CompilerInstruction {
-    return ClassDeclInstruction(structDecl)
+  override fun visitStructDecl(structDecl: Decl.StructDecl): CompilerInstruction {
+    return StructDeclInstruction(structDecl)
   }
 
   override fun visitFunDecl(funDecl: Decl.FunDecl): CompilerInstruction {
@@ -132,5 +133,9 @@ class InstructionMapper(
 
   override fun visitConcatExpr(concat: Expr.Concat): CompilerInstruction {
     return ConcatInstruction()
+  }
+
+  override fun visitEnumDecl(enumDecl: Decl.EnumDecl): CompilerInstruction {
+    return EnumDeclInstruction(enumDecl)
   }
 }

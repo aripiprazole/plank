@@ -3,8 +3,8 @@ package com.lorenzoog.plank.compiler.instructions
 import com.lorenzoog.plank.analyzer.PlankType
 import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.grammar.element.Expr
-import org.llvm4j.llvm4j.Function
 import kotlin.reflect.KClass
+import org.llvm4j.llvm4j.Function
 
 sealed class CodegenError {
   abstract val context: CompilerContext
@@ -80,7 +80,7 @@ sealed class CodegenError {
 
   data class UnresolvedFieldError(
     val field: String,
-    val struct: PlankType.Struct,
+    val struct: PlankType,
     override val context: CompilerContext
   ) : CodegenError() {
     override fun render(): String =
@@ -108,7 +108,7 @@ fun CompilerContext.unresolvedTypeError(name: String): CodegenError {
   return CodegenError.UnresolvedType(name, this)
 }
 
-fun CompilerContext.unresolvedFieldErrror(name: String, struct: PlankType.Struct): CodegenError {
+fun CompilerContext.unresolvedFieldErrror(name: String, struct: PlankType): CodegenError {
   return CodegenError.UnresolvedFieldError(name, struct, this)
 }
 
