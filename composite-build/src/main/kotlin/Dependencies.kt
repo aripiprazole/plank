@@ -29,7 +29,8 @@ object Dependencies {
   }
 
   object ByteDeco {
-    const val LLVMPlatform = "org.bytedeco:llvm-platform:10.0.1-1.5.4"
+    const val LLVMPlatform = "org.bytedeco:llvm-platform:11.1.0-1.5.5"
+    const val JavaCPP = "org.bytedeco:javacpp:1.5.5"
   }
 
   object Jansi {
