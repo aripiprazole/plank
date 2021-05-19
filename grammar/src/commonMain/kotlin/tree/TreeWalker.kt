@@ -104,7 +104,7 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
     visit(moduleDecl.content)
   }
 
-  override fun visitClassDecl(structDecl: Decl.StructDecl) {
+  override fun visitStructDecl(structDecl: Decl.StructDecl) {
     visit(structDecl.fields.map(Decl.StructDecl.Field::type))
   }
 
@@ -141,5 +141,11 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
   override fun visitFunctionTypeDef(function: TypeDef.Function) {
     function.returnType?.let(this::visit)
     visit(function.parameters)
+  }
+
+  override fun visitEnumDecl(enumDecl: Decl.EnumDecl) {
+    enumDecl.members.forEach {
+      visit(it.fields)
+    }
   }
 }

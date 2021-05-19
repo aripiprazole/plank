@@ -7,7 +7,7 @@ import com.lorenzoog.plank.grammar.element.Decl
 import com.lorenzoog.plank.shared.Right
 import com.lorenzoog.plank.shared.either
 
-class ClassDeclInstruction(private val descriptor: Decl.StructDecl) : CompilerInstruction() {
+class StructDeclInstruction(private val descriptor: Decl.StructDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
     val name = descriptor.name.text
     val struct = context.getNamedStructType(name).also { struct ->

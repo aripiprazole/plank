@@ -27,14 +27,22 @@ parameter : name=IDENTIFIER COLON type=typeDef ;
 // modules
 moduleDecl : MODULE name=IDENTIFIER LBRACE decl* RBRACE;
 
-// classes
+// structs
 structField : MUTABLE? parameter;
 
-structDecl : TYPE name=IDENTIFIER EQUAL LBRACE ( structField ( COMMA structField ) * ) ? RBRACE SEMICOLON ;
+structDecl : LBRACE ( structField ( COMMA structField ) * ) ? RBRACE ;
+
+// enums
+enumMember : name=IDENTIFIER ( LPAREN ( typeDef ( COMMA typeDef ) ) ? RPAREN )?;
+
+enumDecl : ( BAR enumMember )* ;
+
+// types
+typeDecl : TYPE name=IDENTIFIER EQUAL ( structDecl | enumDecl ) SEMICOLON ;
 
 // decls
 decl : letDecl WS*
-     | structDecl WS*
+     | typeDecl WS*
      | funDecl WS*
      | moduleDecl WS*
      | importDecl WS*

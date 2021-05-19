@@ -1,3 +1,5 @@
+import com.lorenzoog.plank.build.Dependencies
+
 plugins {
   kotlin("multiplatform")
 }
@@ -10,7 +12,11 @@ repositories {
 }
 
 kotlin {
-  jvm()
+  jvm {
+    testRuns["test"].executionTask.configure {
+      useJUnitPlatform()
+    }
+  }
 
   /* Targets configuration omitted.
    * To find out how to configure the targets, please follow the link:
@@ -29,6 +35,14 @@ kotlin {
       dependencies {
         implementation(kotlin("test-common"))
         implementation(kotlin("test-annotations-common"))
+      }
+    }
+
+    val jvmTest by getting {
+      dependencies {
+        implementation(kotlin("test-junit"))
+        implementation(Dependencies.JUnit.JupiterApi)
+        implementation(Dependencies.JUnit.JupiterEngine)
       }
     }
   }

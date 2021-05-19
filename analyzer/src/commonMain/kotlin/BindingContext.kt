@@ -344,20 +344,36 @@ class BindingContext(moduleTree: ModuleTree) :
     Builtin.Void
   }
 
-  override fun visitClassDecl(structDecl: Decl.StructDecl): PlankType = structDecl.bind {
-    val name = structDecl.name.text
+  override fun visitStructDecl(structDecl: Decl.StructDecl): PlankType = structDecl.bind {
+    val struct = PlankType.Delegate()
 
-    scopes.peekLast().create(
-      name,
-      PlankType.Struct(
-        name,
-        structDecl.fields.map {
-          PlankType.Struct.Field(it.mutable, it.name.text, visit(it.type))
-        }
-      )
+    scopes.peekLast().create(structDecl.name.text, struct)
+
+    struct.delegate = PlankType.Struct(
+      structDecl.name.text,
+      structDecl.fields.map {
+        PlankType.Struct.Field(it.mutable, it.name.text, visit(it.type))
+      }
     )
 
-    Builtin.Void
+    struct
+  }
+
+  override fun visitEnumDecl(enumDecl: Decl.EnumDecl): PlankType = enumDecl.bind {
+    val enum = PlankType.Delegate()
+
+    scopes.peekLast().create(enumDecl.name.text, enum)
+
+    enum.delegate = PlankType.Set(
+      enumDecl.name.text,
+      enumDecl.members.map { (name, fields) ->
+        scopes.peekLast().create(name.text, PlankType.Callable(visit(fields), enum))
+
+        PlankType.Set.Member(name.text, visit(fields))
+      }
+    )
+
+    enum
   }
 
   override fun visitFunDecl(funDecl: Decl.FunDecl): PlankType = funDecl.bind {
@@ -514,7 +530,7 @@ class BindingContext(moduleTree: ModuleTree) :
     }
   }
 
-  fun findStruct(expr: Expr): PlankType.Struct? {
+  fun findStruct(expr: Expr): PlankType? {
     return when (expr) {
       is Expr.Access -> scopes.peekLast().findStructure(expr.name.text).also {
         if (it == null) {
@@ -534,10 +550,6 @@ class BindingContext(moduleTree: ModuleTree) :
         }
       }
     }
-  }
-
-  fun findScope(element: PlankElement): Scope? {
-    return bindings[element]
   }
 
   private fun findModule(name: String, location: Location): Module? {
