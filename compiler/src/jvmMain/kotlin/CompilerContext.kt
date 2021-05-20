@@ -39,7 +39,7 @@ data class CompilerContext(
 ) {
   private val functions = mutableMapOf<String, IRFunction>()
   private val values = mutableMapOf<String, AllocaInstruction>()
-  private val types = mutableMapOf<String, NamedStructType>()
+  private val types = mutableMapOf<String, Pair<PlankType, NamedStructType>>()
 
   private val expanded = mutableListOf<CompilerContext>()
   private val modules = mutableMapOf<String, CompilerContext>()
@@ -101,8 +101,8 @@ data class CompilerContext(
     }
   }
 
-  fun addStruct(name: String, struct: NamedStructType) {
-    types[name] = struct
+  fun addStruct(name: String, type: PlankType, struct: NamedStructType) {
+    types[name] = type to struct
   }
 
   fun addVariable(name: String, variable: AllocaInstruction) {
@@ -129,8 +129,14 @@ data class CompilerContext(
       ?: expanded.filter { it != this }.mapNotNull { it.findFunction(name) }.firstOrNull()
   }
 
+  fun findType(predicate: (Pair<PlankType, NamedStructType>) -> Boolean): PlankType? {
+    return types.values.find(predicate)?.first
+      ?: enclosing?.findType(predicate)
+      ?: expanded.filter { it != this }.mapNotNull { it.findType(predicate) }.firstOrNull()
+  }
+
   fun findStruct(name: String): NamedStructType? {
-    return types[name]
+    return types[name]?.second
       ?: enclosing?.findStruct(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findStruct(name) }.firstOrNull()
   }
