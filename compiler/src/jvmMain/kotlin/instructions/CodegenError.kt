@@ -108,7 +108,7 @@ fun CompilerContext.unresolvedTypeError(name: String): CodegenError {
   return CodegenError.UnresolvedType(name, this)
 }
 
-fun CompilerContext.unresolvedFieldErrror(name: String, struct: PlankType): CodegenError {
+fun CompilerContext.unresolvedFieldError(name: String, struct: PlankType): CodegenError {
   return CodegenError.UnresolvedFieldError(name, struct, this)
 }
 
