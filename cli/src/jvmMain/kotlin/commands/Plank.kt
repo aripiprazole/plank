@@ -25,10 +25,10 @@ import com.lorenzoog.plank.compiler.LlvmBackend
 import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.mapper.render
-import pw.binom.io.file.File
-import pw.binom.io.file.asBFile
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
+import pw.binom.io.file.File
+import pw.binom.io.file.asBFile
 
 @ExperimentalPathApi
 class Plank : CliktCommand() {
@@ -133,6 +133,9 @@ class Plank : CliktCommand() {
       renderer.severe("Could not execute '${error.command}'. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
     } catch (error: Throwable) {
       renderer.severe("${error::class.simpleName}: ${error.message}")
+      if (debug) {
+        error.printStackTrace()
+      }
     }
   }
 }
