@@ -8,7 +8,7 @@ fun showList(list: List): *Char {
 }
 
 fun main(argv: Int, argc: **Char) {
-  let list = Cons("Yes", Cons("This", Cons("is a linked list", Nil));
+  let list = Cons("Yes", Cons("This", Cons("is a linked list", Nil()));
 
   println(showList(list));
 }
