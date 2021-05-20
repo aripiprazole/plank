@@ -10,22 +10,22 @@ import com.lorenzoog.plank.cli.utils.printOutput
 import com.lorenzoog.plank.compiler.LlvmBackend
 import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.grammar.message.MessageRenderer
+import com.lorenzoog.plank.grammar.message.CompilerLogger
 import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.depthFirstSearch
+import kotlin.io.path.ExperimentalPathApi
 import pw.binom.io.file.File
 import pw.binom.io.file.extension
 import pw.binom.io.file.nameWithoutExtension
 import pw.binom.io.file.write
 import pw.binom.io.utf8Appendable
-import kotlin.io.path.ExperimentalPathApi
 
 @ExperimentalPathApi
 class PlankCompiler(
   private val pkg: Package,
   private val context: BindingContext,
   private val compiler: LlvmBackend,
-  private val renderer: MessageRenderer
+  private val renderer: CompilerLogger
 ) {
   private val options = pkg.options
 

@@ -1,12 +1,12 @@
 package com.lorenzoog.plank.analyzer
 
 import com.lorenzoog.plank.grammar.element.Location
-import com.lorenzoog.plank.grammar.message.MessageRenderer
+import com.lorenzoog.plank.grammar.message.CompilerLogger
 
 sealed class BindingViolation {
   abstract val location: Location
 
-  abstract fun render(renderer: MessageRenderer)
+  abstract fun render(renderer: CompilerLogger)
 }
 
 data class TypeViolation(
@@ -14,7 +14,7 @@ data class TypeViolation(
   val actual: PlankType,
   override val location: Location
 ) : BindingViolation() {
-  override fun render(renderer: MessageRenderer) {
+  override fun render(renderer: CompilerLogger) {
     renderer.severe("Expected $expected but got $actual", location)
   }
 }
@@ -23,7 +23,7 @@ data class AssignImmutableViolation(
   val name: String,
   override val location: Location
 ) : BindingViolation() {
-  override fun render(renderer: MessageRenderer) {
+  override fun render(renderer: CompilerLogger) {
     renderer.severe("Variable $name is not mutable", location)
   }
 }
@@ -33,7 +33,7 @@ data class UnexpectedGenericArgument(
   val actual: Int,
   override val location: Location
 ) : BindingViolation() {
-  override fun render(renderer: MessageRenderer) {
+  override fun render(renderer: CompilerLogger) {
     if (expected == 0) {
       return renderer.severe("Unexpected generic arguments", location)
     }
@@ -46,7 +46,7 @@ data class UnresolvedTypeViolation(
   val type: String,
   override val location: Location
 ) : BindingViolation() {
-  override fun render(renderer: MessageRenderer) {
+  override fun render(renderer: CompilerLogger) {
     renderer.severe("Unresolved type $type", location)
   }
 }
@@ -55,7 +55,7 @@ data class UnresolvedVariableViolation(
   val name: String,
   override val location: Location
 ) : BindingViolation() {
-  override fun render(renderer: MessageRenderer) {
+  override fun render(renderer: CompilerLogger) {
     renderer.severe("Unresolved variable $name", location)
   }
 }
@@ -64,11 +64,11 @@ data class UnresolvedModuleViolation(
   val name: String,
   override val location: Location
 ) : BindingViolation() {
-  override fun render(renderer: MessageRenderer) {
+  override fun render(renderer: CompilerLogger) {
     renderer.severe("Unresolved module $name", location)
   }
 }
 
-fun List<BindingViolation>.render(renderer: MessageRenderer) {
+fun List<BindingViolation>.render(renderer: CompilerLogger) {
   forEach { it.render(renderer) }
 }
