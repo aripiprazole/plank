@@ -24,6 +24,12 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either {
       Builtin.Numeric -> runtime.types.double
       Builtin.Bool -> runtime.types.i1
       Builtin.Char -> runtime.types.i8
+      is PlankType.Delegate -> {
+        return toType(type.delegate ?: return Left(unresolvedTypeError("delegate $type")))
+      }
+      is PlankType.Set -> {
+        findStruct(type.name) ?: return Left(unresolvedTypeError(type.name))
+      }
       is PlankType.Struct -> {
         findStruct(type.name) ?: return Left(unresolvedTypeError(type.name))
       }

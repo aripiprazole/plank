@@ -21,7 +21,7 @@ class LetDeclInstruction(private val descriptor: Decl.LetDecl) : CompilerInstruc
       addVariable(name, it)
     }
 
-    val value = !descriptor.toInstruction().codegen()
+    val value = !descriptor.value.toInstruction().codegen()
 
     Right(buildStore(variable, value))
   }
