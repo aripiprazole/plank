@@ -28,6 +28,7 @@ sealed class PlankType {
     override val size get() = delegate!!.size
     override val genericArity get() = delegate!!.genericArity
     override val isPrimitive get() = delegate!!.isPrimitive
+    override val fields get() = delegate!!.fields
 
     override fun toString() = delegate!!.toString()
 

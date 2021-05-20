@@ -356,7 +356,7 @@ class BindingContext(moduleTree: ModuleTree) :
       }
     )
 
-    struct
+    struct.delegate!!
   }
 
   override fun visitEnumDecl(enumDecl: Decl.EnumDecl): PlankType = enumDecl.bind {
