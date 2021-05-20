@@ -3,10 +3,10 @@ package com.lorenzoog.plank.cli.compiler
 import com.lorenzoog.plank.cli.utils.child
 import com.lorenzoog.plank.cli.utils.children
 import com.lorenzoog.plank.grammar.element.PlankFile
-import pw.binom.io.file.File
-import pw.binom.io.file.asBFile
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
+import pw.binom.io.file.File
+import pw.binom.io.file.asBFile
 
 @ExperimentalPathApi
 class CompilerOptions(plankHome: File) {
@@ -29,7 +29,4 @@ class CompilerOptions(plankHome: File) {
 
   /** TODO: remove ffi from stdlib */
   var runtime = plankHome.child("runtime")
-
-  /** TODO: remove ffi from stdlib */
-  val runtimeTarget by lazy { dist.child("cmake", recreate = true, dir = true) }
 }

@@ -2,7 +2,11 @@ package com.lorenzoog.plank.grammar.message
 
 import com.lorenzoog.plank.grammar.element.Location
 
-class SimpleMessageRenderer : MessageRenderer {
+class SimpleCompilerLogger : CompilerLogger {
+  override fun debug(message: String, location: Location?) {
+    println("D: $location: $message")
+  }
+
   override fun severe(message: String, location: Location?) {
     println("E: $location: $message")
   }

@@ -1,17 +1,33 @@
 package com.lorenzoog.plank.cli.message
 
 import com.lorenzoog.plank.cli.utils.blue
+import com.lorenzoog.plank.cli.utils.green
 import com.lorenzoog.plank.cli.utils.red
 import com.lorenzoog.plank.cli.utils.yellow
 import com.lorenzoog.plank.grammar.element.Location
-import com.lorenzoog.plank.grammar.message.MessageRenderer
+import com.lorenzoog.plank.grammar.message.CompilerLogger
 import java.io.PrintWriter
 
-class ColoredMessageRenderer(
+class ColoredLogger(
+  private val debug: Boolean = false,
   private val flush: Boolean = false,
   private val writer: PrintWriter = PrintWriter(System.out),
   private val errWriter: PrintWriter = PrintWriter(System.err)
-) : MessageRenderer {
+) : CompilerLogger {
+  override fun debug(message: String, location: Location?) {
+    if (!debug) {
+      return
+    }
+
+    if (location == null) {
+      errWriter.println("E: $message".green())
+    } else {
+      errWriter.println("E: $location: $message".green())
+    }
+
+    if (flush) errWriter.flush()
+  }
+
   override fun severe(message: String, location: Location?) {
     if (location == null) {
       errWriter.println("E: $message".red())
