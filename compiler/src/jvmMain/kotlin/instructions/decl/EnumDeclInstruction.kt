@@ -15,6 +15,7 @@ import org.llvm4j.optional.Ok
 // enums implements tagged unions
 class EnumDeclInstruction(val descriptor: Decl.EnumDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
+    val type = binding.visit(descriptor)
     val union = context.getNamedStructType(descriptor.name.text).also { enum ->
       val fieldsMembersSize = descriptor.members
         .map { member -> member.fields.sumOf { binding.visit(it).size } }
@@ -34,7 +35,7 @@ class EnumDeclInstruction(val descriptor: Decl.EnumDecl) : CompilerInstruction()
       )
     }
 
-    addStruct(descriptor.name.text, union)
+    addStruct(descriptor.name.text, type, union)
 
     descriptor.members.forEach { member ->
       val mangledName = "${descriptor.name.text}_${member.name.text}"
@@ -47,7 +48,7 @@ class EnumDeclInstruction(val descriptor: Decl.EnumDecl) : CompilerInstruction()
       }
 
       // TODO: mangle name to not clash with another type
-      addStruct(mangledName, struct)
+      addStruct(mangledName, type, struct)
       addFunction(IREnumConstructor(member, descriptor))
     }
 

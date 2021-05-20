@@ -19,11 +19,7 @@ fun CompilerContext.getInstance(
   val instance = buildAlloca(struct, "${struct.getName()}.instance")
 
   arguments.forEachIndexed { index, value ->
-    val indices = listOf(
-      runtime.types.int.getConstant(0),
-      runtime.types.int.getConstant(index),
-    )
-
+    val indices = listOf(runtime.types.int.getConstant(0), runtime.types.int.getConstant(index))
     val field = buildGEP(instance, indices, name = "gep.tmp")
 
     buildStore(field, value)

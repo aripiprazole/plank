@@ -10,6 +10,7 @@ import com.lorenzoog.plank.shared.either
 class StructDeclInstruction(private val descriptor: Decl.StructDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
     val name = descriptor.name.text
+    val type = binding.visit(descriptor)
     val struct = context.getNamedStructType(name).also { struct ->
       struct.setElementTypes(
         *descriptor.fields
@@ -19,7 +20,7 @@ class StructDeclInstruction(private val descriptor: Decl.StructDecl) : CompilerI
       )
     }
 
-    addStruct(name, struct)
+    addStruct(name, type, struct)
 
     Right(runtime.nullConstant)
   }
