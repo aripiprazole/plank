@@ -3,6 +3,7 @@
 package com.lorenzoog.plank.compiler
 
 import org.bytedeco.llvm.global.LLVM
+import org.bytedeco.llvm.global.LLVM.LLVMBuildStructGEP
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.BasicBlock
 import org.llvm4j.llvm4j.BranchInstruction
@@ -80,6 +81,14 @@ fun CompilerContext.buildGEP(
     inBounds = inBounds,
     name = Option.of(name)
   )
+}
+
+fun CompilerContext.buildStructGEP(
+  aggregate: Value,
+  index: Int,
+  name: String? = null
+): Value {
+  return Value(LLVMBuildStructGEP(builder.ref, aggregate.ref, index, name ?: ""))
 }
 
 fun CompilerContext.buildICmp(

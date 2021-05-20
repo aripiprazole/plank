@@ -6,11 +6,13 @@ import com.lorenzoog.plank.compiler.buildLoad
 import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
 import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
+import com.lorenzoog.plank.compiler.instructions.unresolvedVariableError
 import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.grammar.element.Identifier
 import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.Right
 import com.lorenzoog.plank.shared.either
+import org.llvm4j.llvm4j.PointerType
 
 class GetInstruction(private val descriptor: Expr.Get) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
@@ -21,18 +23,26 @@ class GetInstruction(private val descriptor: Expr.Get) : CompilerInstruction() {
 
   companion object {
     fun CompilerContext.findField(receiver: Expr, name: Identifier): CodegenResult = either {
-      val member = name.text
-      val struct = receiver.toInstruction().codegen().bind()
-      val type = findType { it.second == struct.getType() }
-        ?: return Left(unresolvedTypeError("unknown"))
+      val instance = when (receiver) {
+        is Expr.Access -> {
+          findVariable(receiver.name.text)
+            ?: return Left(unresolvedVariableError(receiver.name.text))
+        }
+        else -> !receiver.toInstruction().codegen()
+      }
+      val struct = PointerType(instance.getType().ref).getSubtypes().first().getAsString()
 
-      val index = type.fields.indexOfFirst { it.name == member }
+      val type = findType { (_, type) ->
+        type.getAsString() == struct
+      } ?: return Left(unresolvedTypeError("unknown"))
+
+      val index = type.fields.indexOfFirst { it.name == name.text }
       val indices = listOf(
         runtime.types.int.getConstant(0),
         runtime.types.int.getConstant(index),
       )
 
-      Right(buildGEP(struct, indices, name = "gep.tmp"))
+      Right(buildGEP(instance, indices, name = "struct.gep.tmp"))
     }
   }
 }
