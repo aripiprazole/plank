@@ -4,7 +4,7 @@ import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
 import com.lorenzoog.plank.compiler.instructions.llvmError
-import com.lorenzoog.plank.compiler.instructions.unresolvedFieldErrror
+import com.lorenzoog.plank.compiler.instructions.unresolvedFieldError
 import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
 import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.shared.Left
@@ -27,7 +27,7 @@ class InstanceInstruction(private val descriptor: Expr.Instance) : CompilerInstr
 
     val arguments = struct.fields.map { field ->
       val (_, value) = descriptor.arguments.entries.find { it.key.text == field.name }
-        ?: return Left(unresolvedFieldErrror(field.name, struct))
+        ?: return Left(unresolvedFieldError(field.name, struct))
 
       !value.toInstruction().codegen()
     }

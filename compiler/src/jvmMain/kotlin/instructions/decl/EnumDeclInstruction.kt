@@ -37,7 +37,8 @@ class EnumDeclInstruction(val descriptor: Decl.EnumDecl) : CompilerInstruction()
     addStruct(descriptor.name.text, union)
 
     descriptor.members.forEach { member ->
-      val struct = context.getNamedStructType(descriptor.name.text).also { struct ->
+      val mangledName = "${descriptor.name.text}_${member.name.text}"
+      val struct = context.getNamedStructType(mangledName).also { struct ->
         struct.setElementTypes(
           runtime.types.i8, // type tag
           *member.fields.map { !binding.visit(it).toType() }.toTypedArray(), // enum member's fields
@@ -46,7 +47,7 @@ class EnumDeclInstruction(val descriptor: Decl.EnumDecl) : CompilerInstruction()
       }
 
       // TODO: mangle name to not clash with another type
-      addStruct("${descriptor.name.text}_${member.name.text}", struct)
+      addStruct(mangledName, struct)
       addFunction(IREnumConstructor(member, descriptor))
     }
 

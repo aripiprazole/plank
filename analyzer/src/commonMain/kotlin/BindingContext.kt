@@ -360,7 +360,7 @@ class BindingContext(moduleTree: ModuleTree) :
   }
 
   override fun visitEnumDecl(enumDecl: Decl.EnumDecl): PlankType = enumDecl.bind {
-    val enum = PlankType.Delegate(PlankType.Struct(enumDecl.name.text))
+    val enum = PlankType.Delegate(PlankType.Pointer(PlankType.Set(enumDecl.name.text)))
 
     currentScope.create(enumDecl.name.text, enum)
 

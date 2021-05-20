@@ -132,6 +132,14 @@ fun CompilerContext.buildFPToUI(value: Value, type: IntegerType, name: String? =
   return builder.buildFloatToUnsigned(value, type, Option.of(name))
 }
 
-fun CompilerContext.buildUIToFP(value: Value, type: FloatingPointType, name: String? = null): Value {
+fun CompilerContext.buildUIToFP(
+  value: Value,
+  type: FloatingPointType,
+  name: String? = null
+): Value {
   return builder.buildUnsignedToFloat(value, type, Option.of(name))
+}
+
+fun CompilerContext.buildBitcast(op: Value, type: Type, name: String? = null): Value {
+  return builder.buildBitCast(op, type, Option.of(name))
 }

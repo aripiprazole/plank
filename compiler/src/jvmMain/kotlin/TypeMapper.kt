@@ -28,7 +28,11 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either {
         return toType(type.delegate ?: return Left(unresolvedTypeError("delegate $type")))
       }
       is PlankType.Set -> {
-        findStruct(type.name) ?: return Left(unresolvedTypeError(type.name))
+        when (val result = findStruct(type.name)?.let(context::getPointerType)) {
+          is Ok -> result.value
+          is Err -> return Left(llvmError(result.error.message ?: "AssertionError"))
+          null -> return Left(unresolvedTypeError(type.name))
+        }
       }
       is PlankType.Struct -> {
         findStruct(type.name) ?: return Left(unresolvedTypeError(type.name))

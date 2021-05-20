@@ -14,7 +14,7 @@ class SetInstruction(private val descriptor: Expr.Set) : CompilerInstruction() {
     val value = !descriptor.value.toInstruction().codegen()
     val field = !findField(descriptor.receiver, descriptor.member)
 
-    buildStore(value, field)
+    buildStore(field, value)
 
     Right(field)
   }
