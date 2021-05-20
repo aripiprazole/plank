@@ -36,7 +36,7 @@ sealed class PlankType {
     override val size get() = TODO("add size to generics")
 
     override fun toString(): String {
-      return "$receiver<${arguments.joinToString()}>"
+      return "($receiver (${arguments.joinToString()}))"
     }
   }
 
@@ -50,7 +50,7 @@ sealed class PlankType {
       )
 
     override fun toString(): String {
-      return "set $name"
+      return "(set $name)"
     }
   }
 
@@ -61,7 +61,7 @@ sealed class PlankType {
     override val size = 0
 
     override fun toString(): String {
-      return "module $name"
+      return "(module $name)"
     }
   }
 
@@ -73,7 +73,7 @@ sealed class PlankType {
     override val size = 8
 
     override fun toString(): String {
-      return "*$inner"
+      return "(pointer $inner)"
     }
   }
 
@@ -86,7 +86,7 @@ sealed class PlankType {
     )
 
     override fun toString(): String {
-      return "[$inner]"
+      return "(array $inner)"
     }
   }
 
@@ -104,7 +104,7 @@ sealed class PlankType {
     }
 
     override fun toString(): String {
-      return "struct $name"
+      return "(type $name)"
     }
   }
 
