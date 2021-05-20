@@ -189,7 +189,7 @@ class DescriptorMapper(
     ctx.findEnumDecl()?.let { return findEnumDecl(it) }
     ctx.findStructDecl()?.let { return findStructDecl(it) }
 
-      ?: throw ExpectingViolation("type declaration", ctx.toString(), ctx.start.location)
+    throw ExpectingViolation("type declaration", ctx.toString(), ctx.start.location)
   }
 
   // statements
