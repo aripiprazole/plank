@@ -24,12 +24,34 @@ sealed class PlankType {
   }
 
   data class Delegate(var delegate: PlankType? = null) : PlankType() {
-    override val inherits = delegate!!.inherits
+    override val inherits get() = delegate!!.inherits
     override val size get() = delegate!!.size
     override val genericArity get() = delegate!!.genericArity
     override val isPrimitive get() = delegate!!.isPrimitive
 
-    override fun toString() = delegate.toString()
+    override fun toString() = delegate!!.toString()
+
+    override fun hashCode(): Int {
+      var result = inherits.hashCode()
+      result = 31 * result + size
+      result = 31 * result + genericArity
+      result = 31 * result + isPrimitive.hashCode()
+      return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (other == null || this::class != other::class) return false
+
+      other as Delegate
+
+      if (inherits != other.inherits) return false
+      if (size != other.size) return false
+      if (genericArity != other.genericArity) return false
+      if (isPrimitive != other.isPrimitive) return false
+
+      return true
+    }
   }
 
   data class Generic(val receiver: PlankType, val arguments: List<PlankType>) : PlankType() {
