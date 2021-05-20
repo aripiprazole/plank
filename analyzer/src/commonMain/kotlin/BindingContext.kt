@@ -345,7 +345,7 @@ class BindingContext(moduleTree: ModuleTree) :
   }
 
   override fun visitStructDecl(structDecl: Decl.StructDecl): PlankType = structDecl.bind {
-    val struct = PlankType.Delegate()
+    val struct = PlankType.Delegate(PlankType.Struct(structDecl.name.text))
 
     scopes.peekLast().create(structDecl.name.text, struct)
 
@@ -360,14 +360,14 @@ class BindingContext(moduleTree: ModuleTree) :
   }
 
   override fun visitEnumDecl(enumDecl: Decl.EnumDecl): PlankType = enumDecl.bind {
-    val enum = PlankType.Delegate()
+    val enum = PlankType.Delegate(PlankType.Struct(enumDecl.name.text))
 
-    scopes.peekLast().create(enumDecl.name.text, enum)
+    currentScope.create(enumDecl.name.text, enum)
 
     enum.delegate = PlankType.Set(
       enumDecl.name.text,
       enumDecl.members.map { (name, fields) ->
-        scopes.peekLast().create(name.text, PlankType.Callable(visit(fields), enum))
+        currentScope.declare(name.text, PlankType.Callable(visit(fields), enum))
 
         PlankType.Set.Member(name.text, visit(fields))
       }
