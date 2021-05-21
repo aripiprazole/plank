@@ -16,6 +16,7 @@ import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation.NotEquals
 import com.lorenzoog.plank.grammar.element.Expr.Unary.Operation.Bang
 import com.lorenzoog.plank.grammar.element.Expr.Unary.Operation.Neg
 import com.lorenzoog.plank.grammar.element.Location
+import com.lorenzoog.plank.grammar.element.Pattern
 import com.lorenzoog.plank.grammar.element.PlankElement
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.element.Stmt
@@ -93,6 +94,55 @@ class BindingContext(moduleTree: ModuleTree) :
 
       thenBranch
     }
+  }
+
+  override fun visitMatchExpr(match: Expr.Match): PlankType = match.bind {
+    fun Scope.deconstruct(
+      pattern: Pattern,
+      subject: PlankType = visit(match.subject),
+      type: PlankType = subject
+    ) {
+      when (pattern) {
+        is Pattern.Ident -> {
+          type.cast<PlankType.Set>()
+            ?.findMember(pattern.name.text)
+            ?: return declare(pattern.name.text, subject)
+        }
+        is Pattern.NamedTuple -> {
+          val enum = subject.cast<PlankType.Set>() ?: return run {
+            _violations += TypeViolation("enum", subject, pattern.location)
+          }
+
+          val member = enum.findMember(pattern.type.text) ?: return run {
+            _violations += UnresolvedVariableViolation(pattern.type.text, pattern.location)
+          }
+
+          pattern.fields.forEachIndexed { index, subPattern ->
+            val subType = member.fields.getOrNull(index) ?: return run {
+              _violations += UnresolvedVariableViolation("argument $index", pattern.location)
+            }
+
+            deconstruct(subPattern, subType, enum)
+          }
+        }
+      }
+    }
+
+    match.patterns
+      .map { (pattern, value) ->
+        scoped(ClosureScope("match", currentScope)) {
+          deconstruct(pattern)
+
+          visit(value)
+        }
+      }
+      .reduce { acc, next ->
+        if (!acc.isAssignableBy(next)) {
+          _violations += TypeViolation(acc, next, match.location)
+        }
+
+        acc
+      }
   }
 
   override fun visitConstExpr(const: Expr.Const): PlankType = const.bind {
@@ -386,11 +436,11 @@ class BindingContext(moduleTree: ModuleTree) :
 
     scopes.peekLast().declare(name, type)
 
-    scoped(name, FunctionScope(name, scopes.peekLast(), type)) { scope ->
+    scoped(name, FunctionScope(name, scopes.peekLast(), type)) {
       funDecl.realParameters
         .mapKeys { it.key.text.orEmpty() }
         .forEach { (name, type) ->
-          scope.declare(name, visit(type))
+          declare(name, visit(type))
         }
 
       val body = visit(funDecl.body)
@@ -487,7 +537,7 @@ class BindingContext(moduleTree: ModuleTree) :
 
   private inline fun <T> scoped(
     scope: Scope,
-    body: (Scope) -> T
+    body: Scope.() -> T
   ): T {
     scopes.pushLast(scope)
     val result = body(scope)
@@ -499,7 +549,7 @@ class BindingContext(moduleTree: ModuleTree) :
   private inline fun <T> scoped(
     name: String = "anonymous",
     scope: Scope = ClosureScope(name, scopes.peekLast()),
-    body: (Scope) -> T
+    body: Scope.() -> T
   ): T {
     scopes.pushLast(scope)
     val result = body(scope)

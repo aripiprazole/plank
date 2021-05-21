@@ -5,7 +5,10 @@ type List =
   | Nil;
 
 fun showList(list: List): *Char {
-  return "TODO";
+  return match list {
+    Cons(name, _) => name,
+    Nil => "Nil :/"
+  };
 }
 
 fun main(argv: Int, argc: **Char): Void {

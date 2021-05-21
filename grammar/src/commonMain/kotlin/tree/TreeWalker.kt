@@ -148,4 +148,9 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
       visit(it.fields)
     }
   }
+
+  override fun visitMatchExpr(match: Expr.Match) {
+    visit(match.subject)
+    visit(match.patterns.values.toList())
+  }
 }

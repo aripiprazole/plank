@@ -3,12 +3,12 @@ package com.lorenzoog.plank.compiler
 import com.lorenzoog.plank.analyzer.BindingContext
 import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.EnumDeclInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.StructDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.FunDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.ImportDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.LetDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.ModuleDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.decl.NativeFunDeclInstruction
+import com.lorenzoog.plank.compiler.instructions.decl.StructDeclInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.AccessInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.AssignInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.BinaryInstruction
@@ -137,5 +137,9 @@ class InstructionMapper(
 
   override fun visitEnumDecl(enumDecl: Decl.EnumDecl): CompilerInstruction {
     return EnumDeclInstruction(enumDecl)
+  }
+
+  override fun visitMatchExpr(match: Expr.Match): CompilerInstruction {
+    TODO("Not yet implemented")
   }
 }

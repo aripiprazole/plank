@@ -6,6 +6,7 @@ sealed class Expr : PlankElement {
   interface Visitor<T> {
     fun visit(expr: Expr): T = expr.accept(this)
 
+    fun visitMatchExpr(match: Match): T
     fun visitIfExpr(anIf: If): T
     fun visitConstExpr(const: Const): T
     fun visitAccessExpr(access: Access): T
@@ -25,6 +26,16 @@ sealed class Expr : PlankElement {
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
+
+  data class Match(
+    val subject: Expr,
+    val patterns: Map<Pattern, Expr>,
+    override val location: Location
+  ) : Expr() {
+    override fun <T> accept(visitor: Visitor<T>): T {
+      return visitor.visitMatchExpr(this)
+    }
+  }
 
   data class If(
     val cond: Expr,
