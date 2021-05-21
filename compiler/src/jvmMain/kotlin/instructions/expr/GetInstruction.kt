@@ -3,6 +3,7 @@ package com.lorenzoog.plank.compiler.instructions.expr
 import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.buildGEP
 import com.lorenzoog.plank.compiler.buildLoad
+import com.lorenzoog.plank.compiler.builder.getField
 import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
 import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
@@ -36,13 +37,7 @@ class GetInstruction(private val descriptor: Expr.Get) : CompilerInstruction() {
         type.getAsString() == struct
       } ?: return Left(unresolvedTypeError("unknown"))
 
-      val index = type.fields.indexOfFirst { it.name == name.text }
-      val indices = listOf(
-        runtime.types.int.getConstant(0),
-        runtime.types.int.getConstant(index),
-      )
-
-      Right(buildGEP(instance, indices, name = "struct.gep.tmp"))
+      getField(instance, type.fields.indexOfFirst { it.name == name.text })
     }
   }
 }

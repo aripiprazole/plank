@@ -2,6 +2,11 @@
 
 package com.lorenzoog.plank.compiler
 
+import com.lorenzoog.plank.compiler.instructions.CodegenError
+import com.lorenzoog.plank.compiler.instructions.llvmError
+import com.lorenzoog.plank.shared.Either
+import com.lorenzoog.plank.shared.Left
+import com.lorenzoog.plank.shared.Right
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMBuildStructGEP
 import org.llvm4j.llvm4j.AllocaInstruction
@@ -152,3 +157,21 @@ fun CompilerContext.buildUIToFP(
 fun CompilerContext.buildBitcast(op: Value, type: Type, name: String? = null): Value {
   return builder.buildBitCast(op, type, Option.of(name))
 }
+
+val CompilerContext.insertionBlock: Either<CodegenError, BasicBlock>
+  get() {
+    return builder
+      .getInsertionBlock().toNullable()
+      ?.let { Right(it) }
+      ?: return Left(llvmError("can not reach function in this context"))
+  }
+
+val CompilerContext.currentFunction: Either<CodegenError, Function>
+  get() {
+    return builder
+      .getInsertionBlock().toNullable()
+      ?.getFunction()
+      ?.toNullable()
+      ?.let { Right(it) }
+      ?: return Left(llvmError("can not reach function in this context"))
+  }

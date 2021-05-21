@@ -38,7 +38,7 @@ data class CompilerContext(
   private val enclosing: CompilerContext? = null,
 ) {
   private val functions = mutableMapOf<String, IRFunction>()
-  private val values = mutableMapOf<String, AllocaInstruction>()
+  private val values = mutableMapOf<String, Pair<PlankType, AllocaInstruction>>()
   private val types = mutableMapOf<String, Pair<PlankType, NamedStructType>>()
 
   private val expanded = mutableListOf<CompilerContext>()
@@ -105,8 +105,8 @@ data class CompilerContext(
     types[name] = type to struct
   }
 
-  fun addVariable(name: String, variable: AllocaInstruction) {
-    values[name] = variable
+  fun addVariable(name: String, type: PlankType, variable: AllocaInstruction) {
+    values[name] = type to variable
   }
 
   fun expand(module: CompilerContext) {
@@ -141,8 +141,14 @@ data class CompilerContext(
       ?: expanded.filter { it != this }.mapNotNull { it.findStruct(name) }.firstOrNull()
   }
 
+  fun findVariableType(name: String): PlankType? {
+    return values[name]?.first
+      ?: enclosing?.findVariableType(name)
+      ?: expanded.filter { it != this }.mapNotNull { it.findVariableType(name) }.firstOrNull()
+  }
+
   fun findVariable(name: String): AllocaInstruction? {
-    return values[name]
+    return values[name]?.second
       ?: enclosing?.findVariable(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findVariable(name) }.firstOrNull()
   }

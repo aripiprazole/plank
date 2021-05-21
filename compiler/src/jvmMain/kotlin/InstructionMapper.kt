@@ -21,6 +21,7 @@ import com.lorenzoog.plank.compiler.instructions.expr.GroupInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.IfInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.InstanceInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.LogicalInstruction
+import com.lorenzoog.plank.compiler.instructions.expr.MatchInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.ReferenceInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.SetInstruction
 import com.lorenzoog.plank.compiler.instructions.expr.SizeofInstruction
@@ -140,6 +141,6 @@ class InstructionMapper(
   }
 
   override fun visitMatchExpr(match: Expr.Match): CompilerInstruction {
-    TODO("Not yet implemented")
+    return MatchInstruction(match)
   }
 }

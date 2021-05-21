@@ -4,15 +4,19 @@ type List =
   | Cons(*Char, List)
   | Nil;
 
+fun putStrLn(str: *Char): *Char { println(str); return str; }
+
 fun showList(list: List): *Char {
   return match list {
-    Cons(name, _) => name,
-    Nil => "Nil :/"
+    Nil() => putStrLn("nil"),
+    Cons(a) => putStrLn("cons")
   };
 }
 
 fun main(argv: Int, argc: **Char): Void {
-  let list = Cons("Yes", Cons("This", Cons("is a linked list", Nil()));
+  let nil = Nil();
+  let list = Cons("Yes", Cons("This", Cons("is a linked list", nil)));
 
-  println(showList(list));
+  showList(nil);
+  showList(list);
 }

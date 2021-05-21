@@ -1,5 +1,6 @@
 package com.lorenzoog.plank.compiler.instructions.element
 
+import com.lorenzoog.plank.analyzer.PlankType
 import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.buildAlloca
 import com.lorenzoog.plank.compiler.buildBitcast
@@ -39,8 +40,12 @@ class IREnumConstructor(
       isVariadic = false
     )
 
-    val enum = !binding.visit(descriptor).toType()
-    val struct = findStruct(mangledName) ?: return Left(unresolvedTypeError(name))
+    val enum = binding.visit(descriptor).cast<PlankType.Set>()
+      ?: return Left(unresolvedTypeError(name))
+
+    val struct = findStruct(mangledName)
+      ?: return Left(unresolvedTypeError(name))
+
     val function = module.addFunction(mangledName, functionType)
 
     createNestedScope(descriptor.name.text) {
@@ -50,13 +55,15 @@ class IREnumConstructor(
 
       val arguments = function.getParameters().map { Constant(it.ref) }.toTypedArray()
 
-      val index = runtime.types.i8.getConstant(descriptor.members.indexOf(member))
+      val index = runtime.types.i8.getConstant(
+        enum.members.indexOf(enum.findMember(name) ?: return Left(unresolvedTypeError(name)))
+      )
       val instance = !getInstance(struct, index, *arguments)
 
       val pointer = buildAlloca(instance.getType(), "ptr")
       buildStore(pointer, instance)
 
-      val bitcast = buildBitcast(pointer, enum)
+      val bitcast = buildBitcast(pointer, !enum.toType())
 
       buildReturn(bitcast)
     }

@@ -13,12 +13,10 @@ import com.lorenzoog.plank.shared.either
 class LetDeclInstruction(private val descriptor: Decl.LetDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
     val name = descriptor.name.text
-    val type = !binding
-      .visit(descriptor.type) { binding.visit(descriptor.value) }
-      .toType()
+    val type = binding.visit(descriptor.type) { binding.visit(descriptor.value) }
 
-    val variable = buildAlloca(type, name).also {
-      addVariable(name, it)
+    val variable = buildAlloca(!type.toType(), name).also {
+      addVariable(name, type, it)
     }
 
     val value = !descriptor.value.toInstruction().codegen()
