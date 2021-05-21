@@ -31,7 +31,7 @@ class BindingContext(moduleTree: ModuleTree) :
   Expr.Visitor<PlankType>,
   TypeDef.Visitor<PlankType>,
   PlankFile.Visitor<PlankType> {
-  private val bindings = mutableMapOf<PlankElement, Scope>()
+  private val bindings = mutableMapOf<PlankElement, PlankType>()
 
   private val scopes = Stack<Scope>().also { stack ->
     stack.pushLast(GlobalScope(moduleTree))
@@ -526,12 +526,16 @@ class BindingContext(moduleTree: ModuleTree) :
   }
 
   // utils
+  fun findBound(element: PlankElement): PlankType? {
+    return bindings[element]
+  }
+
   private val currentScope get() = scopes.peekLast()
   private val currentModuleTree get() = scopes.peekLast().moduleTree
 
   private fun PlankElement.bind(genType: () -> PlankType): PlankType {
     val type = genType()
-    bindings[this] = currentScope
+    bindings[this] = type
     return type
   }
 

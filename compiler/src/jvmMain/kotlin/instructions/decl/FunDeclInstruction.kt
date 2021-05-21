@@ -8,6 +8,7 @@ import com.lorenzoog.plank.compiler.buildStore
 import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
 import com.lorenzoog.plank.compiler.instructions.invalidFunctionError
+import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
 import com.lorenzoog.plank.compiler.instructions.unresolvedVariableError
 import com.lorenzoog.plank.compiler.verify
 import com.lorenzoog.plank.grammar.element.Decl
@@ -18,6 +19,7 @@ import com.lorenzoog.plank.shared.either
 
 class FunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
+    val parameters = descriptor.parameters.map { binding.visit(it) }
     val returnType = binding.visit(descriptor.returnType)
     val function = !addFunction(descriptor)
 
@@ -26,6 +28,8 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruc
       builder.positionAfter(body)
 
       function.getParameters().forEachIndexed { index, parameter ->
+        val plankType = parameters.getOrNull(index)
+          ?: return Left(unresolvedTypeError("type of parameter $index"))
         val type = parameter.getType()
 
         val entry = descriptor.realParameters.entries.toList().getOrElse(index) {
@@ -37,11 +41,11 @@ class FunDeclInstruction(private val descriptor: Decl.FunDecl) : CompilerInstruc
         val variable = buildAlloca(type, name)
 
         buildStore(variable, parameter)
-        addVariable(name, variable)
+        addVariable(name, plankType, variable)
       }
 
       descriptor.body.map {
-        it.toInstruction().codegen()
+        !it.toInstruction().codegen()
       }
 
       if (returnType.isVoid && descriptor.body.filterIsInstance<Stmt.ReturnStmt>().isEmpty()) {

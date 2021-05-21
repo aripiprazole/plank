@@ -8,4 +8,10 @@ data class Location(
   override fun toString(): String {
     return "${file.path} ($line, $column)"
   }
+
+  companion object {
+    fun undefined(file: PlankFile): Location {
+      return Location(-1, -1, file)
+    }
+  }
 }
