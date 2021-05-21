@@ -3,7 +3,7 @@ parser grammar PlankParser;
 options {tokenVocab=PlankLexer;}
 
 // file
-fileModule : MODULE moduleName SEMICOLON ;
+fileModule : MODULE qualifiedPath SEMICOLON ;
 
 program : fileModule? decl* EOF;
 
@@ -52,9 +52,9 @@ letDecl : LET MUTABLE? name=IDENTIFIER EQUAL value=expr SEMICOLON
         | LET MUTABLE? name=IDENTIFIER COLON type=typeDef EQUAL value=expr SEMICOLON
         ;
 
-moduleName : IDENTIFIER ( DOT IDENTIFIER ) * ;
+qualifiedPath : IDENTIFIER ( DOT IDENTIFIER ) * ;
 
-importDecl : IMPORT name=moduleName SEMICOLON ;
+importDecl : IMPORT name=qualifiedPath SEMICOLON ;
 
 funHeader : FUN name=IDENTIFIER LPAREN ( parameter ( COMMA parameter ) * ) ? RPAREN COLON returnType=typeDef ;
 
@@ -75,12 +75,23 @@ exprStmt : value=expr SEMICOLON ;
 
 returnStmt : RETURN value=expr? SEMICOLON ;
 
+// patterns
+pattern : namedTuplePattern | identifierPattern ; // todo add more
+
+namedTuplePattern : type=qualifiedPath LPAREN ( pattern ( COMMA pattern )* )? RPAREN;
+identifierPattern : IDENTIFIER ;
+
 // exprs
 expr : assignExpr
      | ifExpr
      | instanceExpr
      | sizeofExpr
+     | matchExpr
      ;
+
+matchPattern : pattern DOUBLE_ARROW_LEFT expr ;
+
+matchExpr : MATCH subject=expr LBRACE ( matchPattern ( COMMA matchPattern )* )? RBRACE ;
 
 sizeofExpr : SIZEOF type=IDENTIFIER;
 

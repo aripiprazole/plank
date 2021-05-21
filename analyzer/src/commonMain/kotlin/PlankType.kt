@@ -15,6 +15,17 @@ sealed class PlankType {
   val isVoid get() = this == Builtin.Void
   val isGeneric get() = genericArity != 0
 
+  inline fun <reified A : PlankType> cast(): A? {
+    return when (this) {
+      is A -> this
+      is Delegate -> when (delegate) {
+        is A -> delegate as A
+        else -> null
+      }
+      else -> null
+    }
+  }
+
   operator fun get(name: String): Struct.Field? {
     return fields.find { it.name == name }
   }
@@ -65,6 +76,10 @@ sealed class PlankType {
 
   data class Set(val name: String, val members: List<Member> = emptyList()) : PlankType() {
     data class Member(val name: String, val fields: List<PlankType>)
+
+    fun findMember(name: String): Member? {
+      return members.find { it.name == name }
+    }
 
     override val size = 8 + (
       members

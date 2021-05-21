@@ -40,6 +40,7 @@ LESS_EQUAL : '<=' ;
 
 APOSTROPHE : '\'' ;
 
+DOUBLE_ARROW_LEFT : '=>' ;
 ARROW_LEFT : '->' ;
 
 DOT : '.' ;
@@ -58,6 +59,8 @@ IMPORT : 'import' ;
 NATIVE : 'native' ;
 SIZEOF : 'sizeof' ;
 MODULE : 'module' ;
+MATCH : 'match' ;
+CASE : 'case' ;
 
 // identifiers
 IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_]*  ;
