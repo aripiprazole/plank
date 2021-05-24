@@ -45,9 +45,9 @@ data class CompilerContext(
   private val expanded = mutableListOf<CompilerContext>()
   private val modules = mutableMapOf<String, CompilerContext>()
 
-  fun debug(action: () -> Unit) {
+  inline fun debug(action: DebugCompilerContext.() -> Unit) {
     if (debug) {
-      action()
+      action(DebugCompilerContext(this))
     }
   }
 
@@ -146,12 +146,6 @@ data class CompilerContext(
     return types[name]?.second
       ?: enclosing?.findStruct(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findStruct(name) }.firstOrNull()
-  }
-
-  fun findVariableType(name: String): PlankType? {
-    return values[name]?.first
-      ?: enclosing?.findVariableType(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findVariableType(name) }.firstOrNull()
   }
 
   fun findVariable(name: String): AllocaInstruction? {
