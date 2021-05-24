@@ -1,9 +1,7 @@
 package com.lorenzoog.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.analyzer.Builtin
 import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.buildAlloca
-import com.lorenzoog.plank.compiler.buildLoad
 import com.lorenzoog.plank.compiler.buildStore
 import com.lorenzoog.plank.compiler.instructions.CodegenResult
 import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
@@ -23,20 +21,21 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : CompilerIns
       val plankType = binding.visit(descriptor)
 
       Right(
-        when {
-          descriptor is Expr.Access -> {
+        when (descriptor) {
+          is Expr.Access -> {
             findVariable(descriptor.name.text)
               ?: return Left(unresolvedVariableError(descriptor.name.text))
           }
-          Builtin.Numeric.isAssignableBy(plankType) || Builtin.Bool.isAssignableBy(plankType) -> {
+          else -> {
             val type = !plankType.toType()
             val value = !descriptor.toInstruction().codegen()
 
             val reference = buildAlloca(type, "ref.alloca.tmp")
 
-            buildStore(value, reference)
+            buildStore(value, value) // todo fix not working with load instructions
+
+            reference
           }
-          else -> buildLoad(!descriptor.toInstruction().codegen(), "ref.tmp")
         }
       )
     }
