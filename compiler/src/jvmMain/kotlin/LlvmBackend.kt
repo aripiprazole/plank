@@ -26,7 +26,7 @@ class LlvmBackend(
   lateinit var module: Module
     private set
 
-  fun initialize(file: PlankFile) {
+  fun initialize(file: PlankFile, debug: Boolean) {
     LLVMLinkInMCJIT()
     LLVMInitializeNativeAsmPrinter()
     LLVMInitializeNativeAsmParser()
@@ -36,7 +36,7 @@ class LlvmBackend(
     module = Module(LLVM.LLVMModuleCreateWithName(file.module))
 
     context = CompilerContext
-      .of(file, bindingContext, module)
+      .of(file, bindingContext, module, debug)
       .copy(moduleName = "Global")
   }
 

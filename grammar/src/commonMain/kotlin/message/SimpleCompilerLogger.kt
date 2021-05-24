@@ -7,6 +7,10 @@ class SimpleCompilerLogger : CompilerLogger {
     println("D: $location: $message")
   }
 
+  override fun verbose(message: String, location: Location?) {
+    println("V: $location: $message")
+  }
+
   override fun severe(message: String, location: Location?) {
     println("E: $location: $message")
   }

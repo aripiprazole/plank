@@ -40,7 +40,7 @@ class Plank : CliktCommand() {
     .convert { target ->
       when (target) {
         "llvm" -> Llvm
-        else -> fail("Unreconized target $target")
+        else -> fail("Unrecognized target $target")
       }
     }
     .default(Llvm)
@@ -70,6 +70,10 @@ class Plank : CliktCommand() {
     .help("Sets the compiler on debug mode")
     .flag()
 
+  private val verbose by option("--verbose", "-V")
+    .help("Sets the compiler on verbose mode")
+    .flag()
+
   private val emitIR by option("--emit-ir")
     .help("Emits the ir code when compiling")
     .flag()
@@ -80,14 +84,14 @@ class Plank : CliktCommand() {
     .multiple()
 
   override fun run() {
-    val logger = ColoredLogger(debug = debug, flush = true)
+    val logger = ColoredLogger(verbose, debug, flush = true)
 
     val plankHome = System.getenv("PLANK_HOME")
       ?.let { File(it) }
       ?: return logger.severe("Define the PLANK_HOME before compile")
 
     val options = CompilerOptions(plankHome).apply {
-      debug = this@Plank.debug
+      debug = this@Plank.verbose
       emitIR = this@Plank.emitIR
       dist = "build_${pkgName}_${System.currentTimeMillis()}"
         .let(::createTempDirectory)
@@ -110,7 +114,7 @@ class Plank : CliktCommand() {
     val context = BindingContext(pkg.tree)
     val llvm = LlvmBackend(pkg.tree, context)
 
-    logger.debug("Current workdir: ${options.dist}")
+    logger.verbose("Current workdir: ${options.dist}")
 
     val compiler = PlankCompiler(pkg, context, llvm, logger)
     try {
@@ -124,8 +128,8 @@ class Plank : CliktCommand() {
 
       error.violations.map(CodegenError::render).forEach(logger::severe)
 
-      logger.debug("LLVM Module:")
-      if (debug) {
+      logger.verbose("LLVM Module:")
+      if (verbose) {
         println(error.module.getAsString())
       }
     } catch (error: CompileError.SyntaxViolations) {
@@ -135,7 +139,7 @@ class Plank : CliktCommand() {
       logger.severe("Could not execute '${error.command}'. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
     } catch (error: Throwable) {
       logger.severe("${error::class.simpleName}: ${error.message}")
-      if (debug) {
+      if (verbose) {
         error.printStackTrace()
       }
     }
