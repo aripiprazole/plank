@@ -72,7 +72,7 @@ class PlankCompiler(
   private fun generateIR(file: PlankFile): File {
     val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
-    compiler.initialize(file)
+    compiler.initialize(file, options.debug)
 
     val results = compiler.compile(file)
     val errors = results.filterIsInstance<Left<CodegenError>>().map { it.a }

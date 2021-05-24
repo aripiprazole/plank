@@ -25,6 +25,7 @@ import org.llvm4j.llvm4j.NamedStructType
 import org.llvm4j.llvm4j.Value
 
 data class CompilerContext(
+  val debug: Boolean,
   val binding: BindingContext,
   val context: Context,
   val module: Module,
@@ -43,6 +44,12 @@ data class CompilerContext(
 
   private val expanded = mutableListOf<CompilerContext>()
   private val modules = mutableMapOf<String, CompilerContext>()
+
+  fun debug(action: () -> Unit) {
+    if (debug) {
+      action()
+    }
+  }
 
   fun Value.toFloat(): CodegenResult {
     return dataTypeConverter.convertToFloat(this@CompilerContext, this)
@@ -158,11 +165,17 @@ data class CompilerContext(
   }
 
   companion object {
-    fun of(file: PlankFile, bindingContext: BindingContext, module: Module): CompilerContext {
+    fun of(
+      file: PlankFile,
+      binding: BindingContext,
+      module: Module,
+      debug: Boolean
+    ): CompilerContext {
       val builder = module.getContext().newIRBuilder()
 
       return CompilerContext(
-        binding = bindingContext,
+        debug = debug,
+        binding = binding,
         context = module.getContext(),
         module = module,
         builder = builder,
