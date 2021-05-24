@@ -10,7 +10,10 @@ import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.either
 
-class InstanceInstruction(private val descriptor: Expr.Instance) : CompilerInstruction() {
+class InstanceInstruction(
+  private val descriptor: Expr.Instance,
+  private val isPointer: Boolean = false,
+) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
     val name = descriptor.name.text
 
@@ -29,6 +32,6 @@ class InstanceInstruction(private val descriptor: Expr.Instance) : CompilerInstr
       }
       .toTypedArray()
 
-    getInstance(struct, *arguments)
+    getInstance(struct, *arguments, isPointer = isPointer)
   }
 }

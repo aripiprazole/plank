@@ -2,8 +2,12 @@ import Std.IO;
 
 type Person = {mutable name: *Char};
 
+fun makePerson(): *Person {
+  return &Person{name: "some name"};
+}
+
 fun main(argc: Int, argv: **Char): Void {
-  let person = Person{name: "some name"};
+  let person = *makePerson();
 
   println(person.name);
 

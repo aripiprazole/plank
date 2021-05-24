@@ -12,8 +12,6 @@ class ValueInstruction(private val descriptor: Expr.Value) : CompilerInstruction
   override fun CompilerContext.codegen(): CodegenResult = either {
     val reference = !descriptor.expr.toInstruction().codegen()
 
-    println("reference ${reference.getAsString()}")
-
     Right(buildLoad(reference, "value.tmp"))
   }
 }

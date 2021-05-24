@@ -22,17 +22,16 @@ class ReferenceInstruction(private val descriptor: Expr.Reference) : CompilerIns
 
       Right(
         when (descriptor) {
-          is Expr.Access -> {
-            findVariable(descriptor.name.text)
-              ?: return Left(unresolvedVariableError(descriptor.name.text))
-          }
+          is Expr.Instance -> !InstanceInstruction(descriptor, isPointer = true).codegen()
+          is Expr.Access -> findVariable(descriptor.name.text)
+            ?: return Left(unresolvedVariableError(descriptor.name.text))
           else -> {
             val type = !plankType.toType()
             val value = !descriptor.toInstruction().codegen()
 
             val reference = buildAlloca(type, "ref.alloca.tmp")
 
-            buildStore(value, value) // todo fix not working with load instructions
+            buildStore(value, value)
 
             reference
           }
