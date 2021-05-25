@@ -1,6 +1,5 @@
 package com.lorenzoog.plank.compiler.instructions.decl
 
-import com.lorenzoog.plank.analyzer.visit
 import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.buildAlloca
 import com.lorenzoog.plank.compiler.buildStore
@@ -13,7 +12,7 @@ import com.lorenzoog.plank.shared.either
 class LetDeclInstruction(private val descriptor: Decl.LetDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
     val name = descriptor.name.text
-    val type = binding.visit(descriptor.type) { binding.visit(descriptor.value) }
+    val type = binding.findBound(descriptor)!!
 
     val variable = buildAlloca(!type.toType(), name).also {
       addVariable(name, type, it)

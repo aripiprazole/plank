@@ -39,6 +39,7 @@ class PlankRuntime(private val module: Module) {
 
   class Types(context: Context) {
     val i1 = context.getInt1Type()
+    val tag = context.getInt8Type()
     val i8 = context.getInt8Type()
     val i16 = context.getInt16Type()
     val int = context.getInt32Type()

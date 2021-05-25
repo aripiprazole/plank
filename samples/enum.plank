@@ -2,21 +2,24 @@ import Std.IO;
 
 type List =
   | Cons(*Char, List)
-  | Nil;
+  | Another(*Char)
+  | Nil(*Char);
 
 fun putStrLn(str: *Char): *Char { println(str); return str; }
 
 fun showList(list: List): *Char {
   return match list {
     Nil() => putStrLn("nil"),
+    Another() => putStrLn("another"),
     Cons(a) => putStrLn("cons")
   };
 }
 
 fun main(argv: Int, argc: **Char): Void {
-  let nil = Nil();
+  let nil = Nil("");
   let list = Cons("Yes", Cons("This", Cons("is a linked list", nil)));
 
+  showList(Another(""));
   showList(nil);
   showList(list);
 }

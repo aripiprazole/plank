@@ -81,11 +81,7 @@ sealed class PlankType {
       return members.find { it.name == name }
     }
 
-    override val size = 8 + (
-      members
-        .map { member -> member.fields.sumOf { it.size } }
-        .maxOrNull() ?: 0
-      )
+    override val size = 16
 
     override fun toString(): String {
       return "(set $name)"

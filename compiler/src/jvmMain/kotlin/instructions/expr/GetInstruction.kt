@@ -1,7 +1,6 @@
 package com.lorenzoog.plank.compiler.instructions.expr
 
 import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildGEP
 import com.lorenzoog.plank.compiler.buildLoad
 import com.lorenzoog.plank.compiler.builder.getField
 import com.lorenzoog.plank.compiler.instructions.CodegenResult
