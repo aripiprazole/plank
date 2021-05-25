@@ -104,7 +104,7 @@ fun CompilerContext.compareEnumPatterns(
   val mangledName = "${enum.name}_${member.name}"
   val memberType = findStruct(mangledName) ?: return Left(unresolvedTypeError(mangledName))
 
-  val index = enum.members.indexOf(member)
+  val index = enum.tag(member.name)
 
   val st = buildAlloca(PointerType(subject.getType().ref).getSubtypes().first())
   buildStore(st, buildLoad(subject))

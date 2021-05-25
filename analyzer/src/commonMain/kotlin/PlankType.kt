@@ -77,6 +77,13 @@ sealed class PlankType {
   data class Set(val name: String, val members: List<Member> = emptyList()) : PlankType() {
     data class Member(val name: String, val fields: List<PlankType>)
 
+    fun tag(name: String): Int {
+      return when (val index = members.indexOf(findMember(name))) {
+        -1 -> -1
+        else -> index + 1
+      }
+    }
+
     fun findMember(name: String): Member? {
       return members.find { it.name == name }
     }

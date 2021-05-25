@@ -9,6 +9,7 @@ import com.lorenzoog.plank.shared.Either
 import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.Right
 import com.lorenzoog.plank.shared.either
+import com.lorenzoog.plank.shared.map
 import org.llvm4j.llvm4j.Type
 import org.llvm4j.optional.Err
 import org.llvm4j.optional.Ok
@@ -46,7 +47,7 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either {
         )
       }
       is PlankType.Pointer -> {
-        when (val result = toType(type.inner).bind().let(context::getPointerType)) {
+        when (val result = !toType(type.inner).map(context::getPointerType)) {
           is Ok -> result.value
           is Err -> return Left(llvmError(result.error.message ?: "AssertionError"))
         }
