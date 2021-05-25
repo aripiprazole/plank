@@ -346,7 +346,8 @@ class BindingContext(moduleTree: ModuleTree) :
   }
 
   override fun visitReferenceExpr(reference: Expr.Reference): PlankType = reference.bind {
-    PlankType.Pointer(visit(reference.expr))
+    val expr = visit(reference.expr)
+    PlankType.Pointer(expr)
   }
 
   override fun visitValueExpr(value: Expr.Value): PlankType = value.bind {
@@ -460,14 +461,11 @@ class BindingContext(moduleTree: ModuleTree) :
 
   override fun visitLetDecl(letDecl: Decl.LetDecl): PlankType = letDecl.bind {
     val name = letDecl.name.text
+    val type = visit(letDecl.type) { visit(letDecl.value) }
 
-    scopes.peekLast().declare(
-      name,
-      visit(letDecl.type) { visit(letDecl.value) },
-      letDecl.mutable
-    )
+    currentScope.declare(name, type, letDecl.mutable)
 
-    Builtin.Void
+    type
   }
 
   override fun visitNameTypeDef(name: TypeDef.Name): PlankType = name.bind {

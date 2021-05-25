@@ -2,10 +2,10 @@ package com.lorenzoog.plank.compiler.instructions.element
 
 import com.lorenzoog.plank.analyzer.PlankType
 import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildAlloca
 import com.lorenzoog.plank.compiler.buildBitcast
+import com.lorenzoog.plank.compiler.buildLoad
 import com.lorenzoog.plank.compiler.buildReturn
-import com.lorenzoog.plank.compiler.buildStore
+import com.lorenzoog.plank.compiler.builder.getField
 import com.lorenzoog.plank.compiler.builder.getInstance
 import com.lorenzoog.plank.compiler.instructions.CodegenError
 import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
@@ -55,15 +55,20 @@ class IREnumConstructor(
 
       val arguments = function.getParameters().map { Constant(it.ref) }.toTypedArray()
 
-      val index = runtime.types.i8.getConstant(
+      val index = runtime.types.tag.getConstant(
         enum.members.indexOf(enum.findMember(name) ?: return Left(unresolvedTypeError(name)))
       )
-      val instance = !getInstance(struct, index, *arguments)
+      val instance = !getInstance(struct, index, *arguments, isPointer = true)
 
-      val pointer = buildAlloca(instance.getType(), "ptr")
-      buildStore(pointer, instance)
+      val bitcast = buildBitcast(instance, !enum.toType())
 
-      val bitcast = buildBitcast(pointer, !enum.toType())
+      debug {
+        printf(
+          "Creating enum member $name with tag %d (%d) of ${enum.name}",
+          buildLoad(!getField(bitcast, 0)),
+          index
+        )
+      }
 
       buildReturn(bitcast)
     }
