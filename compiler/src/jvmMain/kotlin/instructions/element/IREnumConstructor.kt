@@ -14,7 +14,6 @@ import com.lorenzoog.plank.shared.Either
 import com.lorenzoog.plank.shared.Left
 import com.lorenzoog.plank.shared.Right
 import com.lorenzoog.plank.shared.either
-import org.llvm4j.llvm4j.Constant
 import org.llvm4j.llvm4j.Function
 
 class IREnumConstructor(
@@ -53,11 +52,9 @@ class IREnumConstructor(
         .also(function::addBasicBlock)
         .also(builder::positionAfter)
 
-      val arguments = function.getParameters().map { Constant(it.ref) }.toTypedArray()
+      val arguments = function.getParameters()
 
-      val index = runtime.types.tag.getConstant(
-        enum.members.indexOf(enum.findMember(name) ?: return Left(unresolvedTypeError(name)))
-      )
+      val index = runtime.types.tag.getConstant(enum.tag(name))
       val instance = !getInstance(struct, index, *arguments, isPointer = true)
 
       val bitcast = buildBitcast(instance, !enum.toType())

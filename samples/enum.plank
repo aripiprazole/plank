@@ -2,24 +2,19 @@ import Std.IO;
 
 type List =
   | Cons(*Char, List)
-  | Another(*Char)
-  | Nil(*Char);
-
-fun putStrLn(str: *Char): *Char { println(str); return str; }
-
-fun showList(list: List): *Char {
-  return match list {
-    Nil() => putStrLn("nil"),
-    Another() => putStrLn("another"),
-    Cons(a) => putStrLn("cons")
-  };
-}
+  | Nil;
 
 fun main(argv: Int, argc: **Char): Void {
-  let nil = Nil("");
-  let list = Cons("Yes", Cons("This", Cons("is a linked list", nil)));
+  let list = Cons("Yes", Cons("This", Cons("is a linked list", Nil())));
 
-  showList(Another(""));
-  showList(nil);
-  showList(list);
+  println(match list {
+    Cons(value, next) => value,
+    Nil() => "nil"
+  });
+
+  println(match Nil() {
+    Cons(value, next) => "cons",
+    Nil() => "nil"
+  });
+
 }

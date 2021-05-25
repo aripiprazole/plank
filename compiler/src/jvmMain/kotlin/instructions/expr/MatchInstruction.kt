@@ -3,7 +3,6 @@ package com.lorenzoog.plank.compiler.instructions.expr
 import com.lorenzoog.plank.compiler.CompilerContext
 import com.lorenzoog.plank.compiler.buildAlloca
 import com.lorenzoog.plank.compiler.buildBr
-import com.lorenzoog.plank.compiler.buildGlobalStringPtr
 import com.lorenzoog.plank.compiler.buildLoad
 import com.lorenzoog.plank.compiler.buildStore
 import com.lorenzoog.plank.compiler.builder.getField
@@ -36,7 +35,7 @@ class MatchInstruction(private val descriptor: Expr.Match) : CompilerInstruction
 
     debug {
       printf("tag in subject %d", !getField(subject, 0).map(::buildLoad))
-      printf("subject string %s", buildGlobalStringPtr(subject.getAsString()))
+      printf("subject string", !getField(subject, 0).map(::buildLoad))
     }
 
     val matchBr = context.newBasicBlock("match_br")

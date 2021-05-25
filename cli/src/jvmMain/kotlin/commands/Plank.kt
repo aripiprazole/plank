@@ -91,7 +91,7 @@ class Plank : CliktCommand() {
       ?: return logger.severe("Define the PLANK_HOME before compile")
 
     val options = CompilerOptions(plankHome).apply {
-      debug = this@Plank.verbose
+      debug = this@Plank.debug
       emitIR = this@Plank.emitIR
       dist = "build_${pkgName}_${System.currentTimeMillis()}"
         .let(::createTempDirectory)
