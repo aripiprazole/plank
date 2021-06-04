@@ -39,7 +39,6 @@ import com.lorenzoog.plank.grammar.generated.PlankParser.PatternContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.PrimaryContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.ProgramContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.PtrContext
-import com.lorenzoog.plank.grammar.generated.PlankParser.QualifiedPathContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.ReturnStmtContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.SizeofExprContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.StmtContext
@@ -49,7 +48,7 @@ import com.lorenzoog.plank.grammar.generated.PlankParser.TypeDeclContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.TypeDefContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.UnaryExprContext
 import com.lorenzoog.plank.grammar.generated.PlankParserBaseVisitor
-import com.lorenzoog.plank.grammar.utils.location
+import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.Token
 import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.ParseTree
@@ -101,26 +100,26 @@ class DescriptorMapper(
       ?: ctx.findPtrType()
       ?: ctx.findGenericAccess()
       ?: ctx.findGenericUse()
-      ?: throw ExpectingViolation("type definition", ctx.toString(), ctx.start.location)
+      ?: throw ExpectingViolation("type definition", ctx.toString(), ctx.location())
 
     return visit(declContext) as TypeDef
   }
 
   override fun visitGenericAccess(ctx: GenericAccessContext): PlankElement {
-    return TypeDef.GenericAccess(ctx.name!!.asIdentifier(), ctx.start.location)
+    return TypeDef.GenericAccess(ctx.name!!.identifier(), ctx.location())
   }
 
   override fun visitGenericUse(ctx: GenericUseContext): PlankElement {
     val arguments = ctx.findTypeDef().map { visitTypeDef(it) }
     return TypeDef.GenericUse(
-      TypeDef.Name(ctx.name!!.asIdentifier(), ctx.name.location),
+      TypeDef.Name(ctx.name!!.identifier(), ctx.name.location()),
       arguments,
-      ctx.GREATER()?.symbol.location
+      ctx.GREATER()?.symbol.location()
     )
   }
 
   override fun visitPtrType(ctx: PlankParser.PtrTypeContext): PlankElement {
-    return TypeDef.Ptr(visitTypeDef(ctx.findTypeDef()!!), ctx.start.location)
+    return TypeDef.Ptr(visitTypeDef(ctx.findTypeDef()!!), ctx.location())
   }
 
   override fun visitFunType(ctx: FunTypeContext): TypeDef {
@@ -132,15 +131,15 @@ class DescriptorMapper(
 
     val returnType = visitTypeDef(ctx.returnType!!)
 
-    return TypeDef.Function(parameters, returnType, ctx.start.location)
+    return TypeDef.Function(parameters, returnType, ctx.location())
   }
 
   override fun visitNameType(ctx: NameTypeContext): TypeDef {
-    return TypeDef.Name(ctx.name!!.asIdentifier(), ctx.start.location)
+    return TypeDef.Name(ctx.name!!.identifier(), ctx.location())
   }
 
   override fun visitArrayType(ctx: ArrayTypeContext): TypeDef {
-    return TypeDef.Array(visitTypeDef(ctx.findTypeDef()!!), ctx.start.location)
+    return TypeDef.Array(visitTypeDef(ctx.findTypeDef()!!), ctx.location())
   }
 
   // declarations
@@ -151,36 +150,36 @@ class DescriptorMapper(
         ?: ctx.findTypeDecl()
         ?: ctx.findModuleDecl()
         ?: ctx.findImportDecl()
-        ?: throw ExpectingViolation("declaration", ctx.toString(), ctx.start.location)
+        ?: throw ExpectingViolation("declaration", ctx.toString(), ctx.location())
     ) as Decl
   }
 
   override fun visitImportDecl(ctx: ImportDeclContext): PlankElement {
-    val name = ctx.name!!.asIdentifier()
+    val name = ctx.name!!.identifier()
 
-    return Decl.ImportDecl(name, ctx.start.location)
+    return Decl.ImportDecl(name, ctx.location())
   }
 
   override fun visitModuleDecl(ctx: ModuleDeclContext): PlankElement {
-    val name = ctx.name!!.asIdentifier()
+    val name = ctx.name!!.identifier()
     val body = ctx.findDecl().map { visitDecl(it) }
 
-    return Decl.ModuleDecl(name, body, ctx.start.location)
+    return Decl.ModuleDecl(name, body, ctx.location())
   }
 
   override fun visitLetDecl(ctx: LetDeclContext): Decl {
-    val name = ctx.name!!.asIdentifier()
+    val name = ctx.name!!.identifier()
     val mutable = ctx.MUTABLE() != null
     val type = ctx.type?.let { visitTypeDef(it) }
     val value = visitExpr(ctx.value!!)
 
-    return Decl.LetDecl(name, mutable, type, value, ctx.start.location)
+    return Decl.LetDecl(name, mutable, type, value, ctx.location())
   }
 
   override fun visitNativeFunDecl(ctx: NativeFunDeclContext): Decl {
     val header = ctx.findFunHeader()!!
     val type = header.findFunctionType()
-    val name = header.name!!.asIdentifier()
+    val name = header.name!!.identifier()
     val parameters = header.findParameter().associate { it.name!! to visitTypeDef(it.type!!) }
 
     return Decl.FunDecl(listOf(Modifier.Native), name, type, emptyList(), parameters, type.location)
@@ -191,7 +190,7 @@ class DescriptorMapper(
 
     val header = ctx.findFunHeader()!!
     val type = header.findFunctionType()
-    val name = header.name!!.asIdentifier()
+    val name = header.name!!.identifier()
     val body = ctx.findStmt().map { visitStmt(it) }
     val parameters = header.findParameter().associate { it.name!! to visitTypeDef(it.type!!) }
 
@@ -206,10 +205,10 @@ class DescriptorMapper(
         val memberName = member.name!!
         val memberFields = member.findTypeDef().map { visitTypeDef(it) }
 
-        Decl.EnumDecl.Member(memberName.asIdentifier(), memberFields)
+        Decl.EnumDecl.Member(memberName.identifier(), memberFields)
       }
 
-      return Decl.EnumDecl(name.asIdentifier(), members, ctx.start.location)
+      return Decl.EnumDecl(name.identifier(), members, ctx.location())
     }
 
     fun findStructDecl(structCtx: StructDeclContext): Decl.StructDecl {
@@ -218,16 +217,16 @@ class DescriptorMapper(
         val fieldName = field.findParameter()!!.name!!
         val fieldType = visitTypeDef(field.findParameter()!!.type!!)
 
-        Decl.StructDecl.Field(fieldMutable, fieldName.asIdentifier(), fieldType)
+        Decl.StructDecl.Field(fieldMutable, fieldName.identifier(), fieldType)
       }
 
-      return Decl.StructDecl(name.asIdentifier(), fields, ctx.start.location)
+      return Decl.StructDecl(name.identifier(), fields, ctx.location())
     }
 
     ctx.findEnumDecl()?.let { return findEnumDecl(it) }
     ctx.findStructDecl()?.let { return findStructDecl(it) }
 
-    throw ExpectingViolation("type declaration", ctx.toString(), ctx.start.location)
+    throw ExpectingViolation("type declaration", ctx.toString(), ctx.location())
   }
 
   // statements
@@ -237,7 +236,7 @@ class DescriptorMapper(
         ?: ctx.findExprStmt()
         ?: ctx.findIfExpr()
         ?: ctx.findReturnStmt()
-        ?: throw ExpectingViolation("statement", ctx.toString(), ctx.start.location)
+        ?: throw ExpectingViolation("statement", ctx.toString(), ctx.location())
     )
 
     return when (stmt) {
@@ -248,14 +247,14 @@ class DescriptorMapper(
 
   override fun visitExprStmt(ctx: ExprStmtContext): Stmt {
     val value = visitExpr(ctx.value!!)
-    val location = ctx.start.location
+    val location = ctx.location()
 
     return Stmt.ExprStmt(value, location)
   }
 
   override fun visitReturnStmt(ctx: ReturnStmtContext): PlankElement {
     val value = visitExpr(ctx.value!!)
-    val location = ctx.RETURN()?.symbol.location
+    val location = ctx.RETURN()?.symbol.location()
 
     return Stmt.ReturnStmt(value, location)
   }
@@ -268,7 +267,7 @@ class DescriptorMapper(
         ?: ctx.findInstanceExpr()
         ?: ctx.findSizeofExpr()
         ?: ctx.findMatchExpr()
-        ?: throw ExpectingViolation("expression", ctx.toString(), ctx.start.location)
+        ?: throw ExpectingViolation("expression", ctx.toString(), ctx.start.location())
     ) as Expr
   }
 
@@ -288,20 +287,20 @@ class DescriptorMapper(
       }
       .associate { it }
 
-    return Expr.Match(subject, patterns, ctx.start.location)
+    return Expr.Match(subject, patterns, ctx.start.location())
   }
 
   override fun visitSizeofExpr(ctx: SizeofExprContext): PlankElement {
-    return Expr.Sizeof(ctx.type!!.asIdentifier(), ctx.SIZEOF()?.symbol.location)
+    return Expr.Sizeof(ctx.type!!.identifier(), ctx.SIZEOF()?.symbol.location())
   }
 
   override fun visitInstanceExpr(ctx: InstanceExprContext): PlankElement {
     return Expr.Instance(
-      ctx.name!!.asIdentifier(),
+      ctx.name!!.identifier(),
       ctx.findInstanceArgument().associate { argument ->
         argument.IDENTIFIER()!!.symbol!! to visitExpr(argument.findExpr()!!)
       },
-      ctx.LBRACE()?.symbol.location
+      ctx.LBRACE()?.symbol.location()
     )
   }
 
@@ -328,7 +327,7 @@ class DescriptorMapper(
       exprBody ?: elseBranch?.findStmt().orEmpty().map { visitStmt(it) }
     }
 
-    val location = ctx.LPAREN()?.symbol.location
+    val location = ctx.LPAREN()?.symbol.location()
 
     return Expr.If(cond, thenBranch, elseBranch, location)
   }
@@ -336,9 +335,9 @@ class DescriptorMapper(
   override fun visitAssignExpr(ctx: AssignExprContext): Expr {
     ctx.findLogicalExpr()?.let { return visitLogicalExpr(it) }
 
-    val name = ctx.name!!.asIdentifier()
+    val name = ctx.name!!.identifier()
     val value = visitAssignExpr(ctx.findAssignExpr()!!)
-    val location = ctx.EQUAL()?.symbol.location
+    val location = ctx.EQUAL()?.symbol.location()
 
     val receiver = ctx.findCallExpr()
     if (receiver != null) {
@@ -361,11 +360,11 @@ class DescriptorMapper(
         "==" -> Expr.Logical.Operation.Equals
         "!=" -> Expr.Logical.Operation.NotEquals
         else -> {
-          throw ExpectingViolation("logical operator", ctx.toString(), ctx.start.location)
+          throw ExpectingViolation("logical operator", ctx.toString(), ctx.location())
         }
       },
       rhs = visitLogicalExpr(ctx.lhs!!),
-      location = ctx.op.location
+      location = ctx.op.location()
     )
   }
 
@@ -374,7 +373,7 @@ class DescriptorMapper(
 
     val lhs = visitBinaryExpr(ctx.lhs!!)
     val rhs = visitBinaryExpr(ctx.rhs!!)
-    val location = ctx.op.location
+    val location = ctx.op.location()
 
     return Expr.Binary(
       lhs,
@@ -385,7 +384,7 @@ class DescriptorMapper(
         "/" -> Expr.Binary.Operation.Div
         "++" -> return Expr.Concat(lhs, rhs, location)
         else -> {
-          throw ExpectingViolation("binary operator", ctx.toString(), ctx.start.location)
+          throw ExpectingViolation("binary operator", ctx.toString(), ctx.location())
         }
       },
       rhs,
@@ -401,11 +400,11 @@ class DescriptorMapper(
         "!" -> Expr.Unary.Operation.Bang
         "-" -> Expr.Unary.Operation.Neg
         else -> {
-          throw ExpectingViolation("unary operator", ctx.toString(), ctx.start.location)
+          throw ExpectingViolation("unary operator", ctx.toString(), ctx.location())
         }
       },
       rhs = visitUnaryExpr(ctx.rhs!!),
-      location = ctx.op.location
+      location = ctx.op.location()
     )
   }
 
@@ -416,20 +415,20 @@ class DescriptorMapper(
     return tail.fold(head as Expr) { acc, next ->
       when (next) {
         is PlankParser.GetContext -> {
-          Expr.Get(acc, next.IDENTIFIER()?.symbol!!.asIdentifier(), next.DOT()?.symbol.location)
+          Expr.Get(acc, next.IDENTIFIER()?.symbol!!.identifier(), next.DOT()?.symbol.location())
         }
         is PlankParser.ArgumentsContext -> {
-          Expr.Call(acc, next.findExpr().map { visitExpr(it) }, next.LPAREN()?.symbol.location)
+          Expr.Call(acc, next.findExpr().map { visitExpr(it) }, next.LPAREN()?.symbol.location())
         }
         else -> {
-          throw ExpectingViolation("call arguments", ctx.toString(), ctx.start.location)
+          throw ExpectingViolation("call arguments", ctx.toString(), ctx.location())
         }
       }
     }
   }
 
   override fun visitGroupExpr(ctx: GroupExprContext): Expr {
-    return Expr.Group(visitExpr(ctx.value!!), ctx.start.location)
+    return Expr.Group(visitExpr(ctx.value!!), ctx.location())
   }
 
   override fun visitBooleanExpr(ctx: BooleanExprContext): Expr {
@@ -437,17 +436,17 @@ class DescriptorMapper(
       ctx.TRUE() != null -> true
       ctx.FALSE() != null -> false
       else -> {
-        throw ExpectingViolation("boolean", ctx.toString(), ctx.start.location)
+        throw ExpectingViolation("boolean", ctx.toString(), ctx.location())
       }
     }
 
-    return Expr.Const(value, ctx.start.location)
+    return Expr.Const(value, ctx.location())
   }
 
   override fun visitStringExpr(ctx: StringExprContext): Expr {
     val value = ctx.text.substring(1, ctx.text.length - 1)
 
-    return Expr.Const(value, ctx.start.location)
+    return Expr.Const(value, ctx.location())
   }
 
   override fun visitPtr(ctx: PtrContext): PlankElement {
@@ -456,11 +455,11 @@ class DescriptorMapper(
     val expr = ctx.findExpr()
 
     if (expr != null && reference != null) {
-      return Expr.Reference(visitExpr(expr), reference.symbol.location)
+      return Expr.Reference(visitExpr(expr), reference.symbol.location())
     }
 
     if (expr != null && value != null) {
-      return Expr.Value(visitExpr(expr), reference?.symbol.location)
+      return Expr.Value(visitExpr(expr), reference?.symbol.location())
     }
 
     return visitPrimary(ctx.findPrimary()!!)
@@ -473,7 +472,7 @@ class DescriptorMapper(
 
     val identifier = ctx.IDENTIFIER()
     if (identifier != null) {
-      return Expr.Access(identifier.symbol!!.asIdentifier(), identifier.symbol.location)
+      return Expr.Access(identifier.symbol!!.identifier(), identifier.symbol.location())
     }
 
     val node = ctx.INT() ?: ctx.DECIMAL() ?: error("Invalid primary")
@@ -482,7 +481,7 @@ class DescriptorMapper(
         ?: node.text.toDoubleOrNull()
         ?: node.text
 
-    return Expr.Const(value, node.symbol.location)
+    return Expr.Const(value, node.symbol.location())
   }
 
   override fun visitErrorNode(node: ErrorNode): PlankElement? {
@@ -493,41 +492,49 @@ class DescriptorMapper(
   }
 
   // utils
-  private val Token?.location get() = location(file)
-
-  private fun QualifiedPathContext.asIdentifier(): Identifier {
-    val first = getChild(0) as? Token
-    return Identifier(text, Location(first?.line ?: -1, first?.charPositionInLine ?: -1, file))
+  private fun Token?.location(): Location {
+    return Location.of(this!!, file)
   }
 
-  private fun RuleNode.asIdentifier(): Identifier {
-    val first = getChild(0) as? Token
-    return Identifier(text, Location(first?.line ?: -1, first?.charPositionInLine ?: -1, file))
+  private fun ParserRuleContext?.location(): Location {
+    this!!
+
+    return Location.of(start!!.startIndex, stop!!.stopIndex, file)
   }
 
-  private fun Token.asIdentifier(): Identifier {
-    return Identifier(text!!, Location(line, charPositionInLine, file))
+  private fun ParserRuleContext.identifier(): Identifier {
+    return Identifier(text, Location.of(start!!.startIndex, stop!!.stopIndex, file))
+  }
+
+  private fun RuleNode.identifier(): Identifier {
+    val first = getChild(0) as? Token ?: return Identifier(text, Location.undefined())
+    val end = getChild(childCount - 1) as? Token ?: return Identifier(text, Location.undefined())
+
+    return Identifier(text, Location.of(first.startIndex, end.stopIndex, file))
+  }
+
+  private fun Token.identifier(): Identifier {
+    return Identifier(text!!, Location.of(startIndex, stopIndex, file))
   }
 
   private fun PlankParser.FunHeaderContext.findFunctionType(): TypeDef.Function {
     val parameters = findParameter().map { visitTypeDef(it.type!!) }
-    val location = start.location
 
-    return TypeDef.Function(parameters, returnType?.let { visitTypeDef(it) }, location)
+    return TypeDef.Function(parameters, returnType?.let { visitTypeDef(it) }, location())
   }
 
   private fun mapPattern(patternCtx: PatternContext): Pattern {
     patternCtx.findIdentifierPattern()?.let { pattern ->
       val name = pattern.IDENTIFIER()?.symbol!!
-      return Pattern.Ident(name.asIdentifier(), name.location)
+      return Pattern.Ident(name.identifier(), name.location())
     }
     patternCtx.findNamedTuplePattern()?.let { pattern ->
-      val type = pattern.type!!.asIdentifier()
+      val type = pattern.type!!.identifier()
       val fields = pattern.findPattern().map(::mapPattern)
 
-      return Pattern.NamedTuple(type, fields, pattern.start.location)
+      return Pattern.NamedTuple(type, fields, pattern.location())
     }
 
-    throw ExpectingViolation("pattern", patternCtx.toString(), patternCtx.start.location)
+    throw ExpectingViolation("pattern", patternCtx.toString(), patternCtx.location())
   }
 }

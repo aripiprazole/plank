@@ -15,12 +15,12 @@ import pw.binom.io.readText
 import pw.binom.io.utf8Reader
 
 data class PlankFile(
+  val content: String,
   val moduleName: String? = null,
   val path: String = "Anonymous",
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
 ) : PlankElement {
-
   interface Visitor<T> {
     fun visit(file: PlankFile): T = visitPlankFile(file)
 
@@ -31,7 +31,7 @@ data class PlankFile(
   val module: String = moduleName ?: realFile.name
   val isValid get() = violations.isEmpty()
 
-  override val location: Location = Location(-1, -1, this)
+  override val location = Location.undefined()
 
   companion object {
     fun of(file: File): PlankFile {
@@ -47,7 +47,7 @@ data class PlankFile(
     }
 
     fun of(text: String, module: String = "anonymous", path: String = module): PlankFile {
-      val file = PlankFile(moduleName = module, path = path)
+      val file = PlankFile(text, moduleName = module, path = path)
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
       val parser = PlankParser(CommonTokenStream(lexer))
