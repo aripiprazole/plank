@@ -2,41 +2,42 @@ package com.lorenzoog.plank.analyzer.element
 
 import com.lorenzoog.plank.analyzer.PlankType
 import com.lorenzoog.plank.grammar.element.Location
+import com.lorenzoog.plank.grammar.element.PlankElement
 
-abstract class TypedStmt internal constructor() : TypedPlankElement {
+abstract class TypedStmt internal constructor() : PlankElement {
   interface Visitor<T> {
     fun visit(stmt: TypedStmt): T = stmt.accept(this)
 
-    fun visitExprStmt(exprStmt: ExprStmt): T
-    fun visitReturnStmt(returnStmt: ReturnStmt): T
+    fun visitExprStmt(stmt: TypedExprStmt): T
+    fun visitReturnStmt(stmt: TypedReturnStmt): T
 
-    fun visitImportDecl(importDecl: TypedDecl.ImportDecl): T
-    fun visitModuleDecl(moduleDecl: TypedDecl.ModuleDecl): T
-    fun visitEnumDecl(enumDecl: TypedDecl.EnumDecl): T
-    fun visitStructDecl(structDecl: TypedDecl.StructDecl): T
-    fun visitFunDecl(funDecl: TypedDecl.FunDecl): T
-    fun visitLetDecl(letDecl: TypedDecl.LetDecl): T
+    fun visitImportDecl(decl: TypedImportDecl): T
+    fun visitModuleDecl(decl: TypedModuleDecl): T
+    fun visitEnumDecl(decl: TypedEnumDecl): T
+    fun visitStructDecl(decl: TypedStructDecl): T
+    fun visitFunDecl(decl: TypedFunDecl): T
+    fun visitLetDecl(decl: TypedLetDecl): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
+}
 
-  data class ExprStmt(
-    val expr: TypedExpr,
-    override val type: PlankType,
-    override val location: Location,
-  ) : TypedStmt() {
-    override fun <T> accept(visitor: Visitor<T>): T {
-      return visitor.visitExprStmt(this)
-    }
+data class TypedExprStmt(val expr: TypedExpr, override val location: Location) :
+  TypedStmt(),
+  TypedPlankElement {
+  override val type = expr.type
+
+  override fun <T> accept(visitor: Visitor<T>): T {
+    return visitor.visitExprStmt(this)
   }
+}
 
-  data class ReturnStmt(
-    val value: TypedExpr?,
-    override val type: PlankType,
-    override val location: Location,
-  ) : TypedStmt() {
-    override fun <T> accept(visitor: Visitor<T>): T {
-      return visitor.visitReturnStmt(this)
-    }
+data class TypedReturnStmt(val value: TypedExpr?, override val location: Location) :
+  TypedStmt(),
+  TypedPlankElement {
+  override val type = value?.type ?: PlankType.unit
+
+  override fun <T> accept(visitor: Visitor<T>): T {
+    return visitor.visitReturnStmt(this)
   }
 }

@@ -15,10 +15,10 @@ class InstanceInstruction(
   private val isPointer: Boolean = false,
 ) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
-    val name = descriptor.name.text
+    val name = descriptor.struct.text
 
     // todo fix me finding only global types
-    val type = binding.findStruct(Expr.Access(descriptor.name, descriptor.location))
+    val type = binding.findStruct(Expr.Access(descriptor.struct, descriptor.location))
       ?: return Left(unresolvedTypeError(name))
 
     val struct = findStruct(name) ?: return Left(unresolvedTypeError(name))

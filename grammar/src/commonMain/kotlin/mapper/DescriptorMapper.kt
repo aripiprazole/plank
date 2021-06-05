@@ -9,7 +9,7 @@ import com.lorenzoog.plank.grammar.element.Pattern
 import com.lorenzoog.plank.grammar.element.PlankElement
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.element.Stmt
-import com.lorenzoog.plank.grammar.element.TypeDef
+import com.lorenzoog.plank.grammar.element.TypeReference
 import com.lorenzoog.plank.grammar.generated.PlankParser
 import com.lorenzoog.plank.grammar.generated.PlankParser.ArrayTypeContext
 import com.lorenzoog.plank.grammar.generated.PlankParser.AssignExprContext
@@ -93,7 +93,7 @@ class DescriptorMapper(
   }
 
   // typedef
-  override fun visitTypeDef(ctx: TypeDefContext): TypeDef {
+  override fun visitTypeDef(ctx: TypeDefContext): TypeReference {
     val declContext = ctx.findArrayType()
       ?: ctx.findFunType()
       ?: ctx.findNameType()
@@ -102,27 +102,27 @@ class DescriptorMapper(
       ?: ctx.findGenericUse()
       ?: throw ExpectingViolation("type definition", ctx.toString(), ctx.location())
 
-    return visit(declContext) as TypeDef
+    return visit(declContext) as TypeReference
   }
 
   override fun visitGenericAccess(ctx: GenericAccessContext): PlankElement {
-    return TypeDef.GenericAccess(ctx.name!!.identifier(), ctx.location())
+    return TypeReference.GenericAccess(ctx.name!!.identifier(), ctx.location())
   }
 
   override fun visitGenericUse(ctx: GenericUseContext): PlankElement {
     val arguments = ctx.findTypeDef().map { visitTypeDef(it) }
-    return TypeDef.GenericUse(
-      TypeDef.Name(ctx.name!!.identifier(), ctx.name.location()),
+    return TypeReference.GenericUse(
+      TypeReference.Access(ctx.name!!.identifier(), ctx.name.location()),
       arguments,
       ctx.GREATER()?.symbol.location()
     )
   }
 
   override fun visitPtrType(ctx: PlankParser.PtrTypeContext): PlankElement {
-    return TypeDef.Ptr(visitTypeDef(ctx.findTypeDef()!!), ctx.location())
+    return TypeReference.Pointer(visitTypeDef(ctx.findTypeDef()!!), ctx.location())
   }
 
-  override fun visitFunType(ctx: FunTypeContext): TypeDef {
+  override fun visitFunType(ctx: FunTypeContext): TypeReference {
     val parameters = ctx.children
       .orEmpty()
       .filterIsInstance<TypeDefContext>()
@@ -131,15 +131,15 @@ class DescriptorMapper(
 
     val returnType = visitTypeDef(ctx.returnType!!)
 
-    return TypeDef.Function(parameters, returnType, ctx.location())
+    return TypeReference.Function(parameters, returnType, ctx.location())
   }
 
-  override fun visitNameType(ctx: NameTypeContext): TypeDef {
-    return TypeDef.Name(ctx.name!!.identifier(), ctx.location())
+  override fun visitNameType(ctx: NameTypeContext): TypeReference {
+    return TypeReference.Access(ctx.name!!.identifier(), ctx.location())
   }
 
-  override fun visitArrayType(ctx: ArrayTypeContext): TypeDef {
-    return TypeDef.Array(visitTypeDef(ctx.findTypeDef()!!), ctx.location())
+  override fun visitArrayType(ctx: ArrayTypeContext): TypeReference {
+    return TypeReference.Array(visitTypeDef(ctx.findTypeDef()!!), ctx.location())
   }
 
   // declarations
@@ -217,7 +217,7 @@ class DescriptorMapper(
         val fieldName = field.findParameter()!!.name!!
         val fieldType = visitTypeDef(field.findParameter()!!.type!!)
 
-        Decl.StructDecl.Field(fieldMutable, fieldName.identifier(), fieldType)
+        Decl.StructDecl.Property(fieldMutable, fieldName.identifier(), fieldType)
       }
 
       return Decl.StructDecl(name.identifier(), fields, ctx.location())
@@ -517,10 +517,10 @@ class DescriptorMapper(
     return Identifier(text!!, Location.of(startIndex, stopIndex, file))
   }
 
-  private fun PlankParser.FunHeaderContext.findFunctionType(): TypeDef.Function {
+  private fun PlankParser.FunHeaderContext.findFunctionType(): TypeReference.Function {
     val parameters = findParameter().map { visitTypeDef(it.type!!) }
 
-    return TypeDef.Function(parameters, returnType?.let { visitTypeDef(it) }, location())
+    return TypeReference.Function(parameters, returnType?.let { visitTypeDef(it) }, location())
   }
 
   private fun mapPattern(patternCtx: PatternContext): Pattern {

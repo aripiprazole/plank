@@ -1,14 +1,12 @@
 package com.lorenzoog.plank.grammar.element
 
-import org.antlr.v4.kotlinruntime.Token
-
 sealed class Decl : Stmt() {
   data class EnumDecl(
     val name: Identifier,
     val members: List<Member>,
     override val location: Location
   ) : Decl() {
-    data class Member(val name: Identifier, val fields: List<TypeDef>)
+    data class Member(val name: Identifier, val fields: List<TypeReference>)
 
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitEnumDecl(this)
@@ -17,10 +15,10 @@ sealed class Decl : Stmt() {
 
   data class StructDecl(
     val name: Identifier,
-    val fields: List<Field>,
+    val properties: List<Property>,
     override val location: Location
   ) : Decl() {
-    data class Field(val mutable: Boolean, val name: Identifier, val type: TypeDef)
+    data class Property(val mutable: Boolean, val name: Identifier, val type: TypeReference)
 
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitStructDecl(this)
@@ -46,9 +44,9 @@ sealed class Decl : Stmt() {
   data class FunDecl(
     val modifiers: List<Modifier> = emptyList(),
     val name: Identifier,
-    val type: TypeDef.Function,
+    val type: TypeReference.Function,
     val body: List<Stmt>,
-    val realParameters: Map<Token, TypeDef>,
+    val realParameters: Map<Identifier, TypeReference>,
     override val location: Location
   ) : Decl() {
     enum class Modifier { Native }
@@ -66,7 +64,7 @@ sealed class Decl : Stmt() {
   data class LetDecl(
     val name: Identifier,
     val mutable: Boolean,
-    val type: TypeDef?,
+    val type: TypeReference?,
     val value: Expr,
     override val location: Location
   ) : Decl() {

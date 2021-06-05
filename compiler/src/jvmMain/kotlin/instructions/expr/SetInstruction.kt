@@ -12,7 +12,7 @@ import com.lorenzoog.plank.shared.either
 class SetInstruction(private val descriptor: Expr.Set) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
     val value = !descriptor.value.toInstruction().codegen()
-    val field = !findField(descriptor.receiver, descriptor.member)
+    val field = !findField(descriptor.receiver, descriptor.property)
 
     buildStore(field, value)
 

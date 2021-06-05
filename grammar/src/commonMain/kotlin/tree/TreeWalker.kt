@@ -5,14 +5,14 @@ import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.grammar.element.PlankElement
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.element.Stmt
-import com.lorenzoog.plank.grammar.element.TypeDef
+import com.lorenzoog.plank.grammar.element.TypeReference
 import com.lorenzoog.plank.grammar.element.visit
 
-abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visitor<Unit> {
+abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeReference.Visitor<Unit> {
   fun walk(element: PlankElement) = when (element) {
     is Expr -> visit(element)
     is Stmt -> visit(element)
-    is TypeDef -> visit(element)
+    is TypeReference -> visit(element)
     is PlankFile -> walk(element)
     else -> error("Could not visit ${element::class}")
   }
@@ -31,20 +31,6 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
   }
 
   override fun visitAccessExpr(access: Expr.Access) {
-  }
-
-  override fun visitLogicalExpr(logical: Expr.Logical) {
-    visit(logical.rhs)
-    visit(logical.lhs)
-  }
-
-  override fun visitBinaryExpr(binary: Expr.Binary) {
-    visit(binary.rhs)
-    visit(binary.lhs)
-  }
-
-  override fun visitUnaryExpr(unary: Expr.Unary) {
-    visit(unary.rhs)
   }
 
   override fun visitCallExpr(call: Expr.Call) {
@@ -84,11 +70,6 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
     visit(value.expr)
   }
 
-  override fun visitConcatExpr(concat: Expr.Concat) {
-    visit(concat.lhs)
-    visit(concat.rhs)
-  }
-
   override fun visitImportDecl(importDecl: Decl.ImportDecl) {
   }
 
@@ -105,7 +86,7 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
   }
 
   override fun visitStructDecl(structDecl: Decl.StructDecl) {
-    visit(structDecl.fields.map(Decl.StructDecl.Field::type))
+    visit(structDecl.properties.map(Decl.StructDecl.Property::type))
   }
 
   override fun visitFunDecl(funDecl: Decl.FunDecl) {
@@ -119,30 +100,6 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
     visit(letDecl.value)
   }
 
-  override fun visitGenericAccess(access: TypeDef.GenericAccess) {
-  }
-
-  override fun visitGenericUse(use: TypeDef.GenericUse) {
-    visit(use.arguments)
-    visit(use.receiver)
-  }
-
-  override fun visitNameTypeDef(name: TypeDef.Name) {
-  }
-
-  override fun visitPtrTypeDef(ptr: TypeDef.Ptr) {
-    visit(ptr.type)
-  }
-
-  override fun visitArrayTypeDef(array: TypeDef.Array) {
-    visit(array.type)
-  }
-
-  override fun visitFunctionTypeDef(function: TypeDef.Function) {
-    function.returnType?.let(this::visit)
-    visit(function.parameters)
-  }
-
   override fun visitEnumDecl(enumDecl: Decl.EnumDecl) {
     enumDecl.members.forEach {
       visit(it.fields)
@@ -152,5 +109,23 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeDef.Visi
   override fun visitMatchExpr(match: Expr.Match) {
     visit(match.subject)
     visit(match.patterns.values.toList())
+  }
+
+  override fun visitAccessTypeReference(reference: TypeReference.Access) {
+  }
+
+  override fun visitPointerTypeReference(reference: TypeReference.Pointer) {
+    visit(reference.type)
+  }
+
+  override fun visitArrayTypeReference(reference: TypeReference.Array) {
+    visit(reference.type)
+  }
+
+  override fun visitFunctionTypeReference(reference: TypeReference.Function) {
+    visit(reference.parameters)
+    reference.returnType?.let {
+      visit(reference.returnType)
+    }
   }
 }

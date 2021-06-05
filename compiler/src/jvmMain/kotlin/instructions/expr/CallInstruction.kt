@@ -14,7 +14,7 @@ class CallInstruction(private val descriptor: Expr.Call) : CompilerInstruction()
   override fun CompilerContext.codegen(): CodegenResult = either {
     val callee = when (val callee = descriptor.callee) {
       is Expr.Access -> findFunction(callee.name.text)
-      is Expr.Get -> findFunction(callee.member.text)
+      is Expr.Get -> findFunction(callee.property.text)
       else -> null
     }
 

@@ -16,7 +16,7 @@ import org.llvm4j.llvm4j.PointerType
 
 class GetInstruction(private val descriptor: Expr.Get) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
-    val field = !findField(descriptor.receiver, descriptor.member)
+    val field = !findField(descriptor.receiver, descriptor.property)
 
     Right(buildLoad(field, "load.tmp"))
   }

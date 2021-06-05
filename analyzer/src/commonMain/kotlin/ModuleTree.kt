@@ -1,27 +1,28 @@
 package com.lorenzoog.plank.analyzer
 
 import com.lorenzoog.plank.grammar.element.Decl
+import com.lorenzoog.plank.grammar.element.Identifier
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.shared.Graph
 import com.lorenzoog.plank.shared.depthFirstSearch
 
-data class Module(val name: String, val content: List<Decl>) {
+data class Module(val name: Identifier, val content: List<Decl>) {
   lateinit var scope: Scope
 
-  val type: PlankType.Module
+  val type: ModuleType
     get() {
       val variables = scope.variables.map { (name, variable) ->
-        PlankType.Struct.Field(variable.mutable, name, variable.type)
+        StructProperty(variable.mutable, name, variable.type)
       }
 
-      return PlankType.Module(name, variables)
+      return ModuleType(name, variables)
     }
 
   override fun toString(): String = "Module($name, ${scope::class.simpleName})"
 }
 
 class ModuleTree(files: List<PlankFile> = emptyList()) {
-  private val modules = mutableMapOf<String, Module>()
+  private val modules = mutableMapOf<Identifier, Module>()
 
   init {
     files.forEach { file ->
@@ -31,7 +32,7 @@ class ModuleTree(files: List<PlankFile> = emptyList()) {
     }
   }
 
-  val dependencies = Graph<String>().apply {
+  val dependencies = Graph<Identifier>().apply {
     files.map(PlankFile::module).forEach(this::addVertex)
   }
 
@@ -46,7 +47,7 @@ class ModuleTree(files: List<PlankFile> = emptyList()) {
     dependencies.addEdge(scope.name, on.name)
   }
 
-  fun createModule(name: String, enclosing: Scope, content: List<Decl>): Module {
+  fun createModule(name: Identifier, enclosing: Scope, content: List<Decl>): Module {
     dependencies.addVertex(name)
 
     val module = Module(name, content).apply {
@@ -58,7 +59,7 @@ class ModuleTree(files: List<PlankFile> = emptyList()) {
     return module
   }
 
-  fun findModule(name: String): Module? {
+  fun findModule(name: Identifier): Module? {
     return dependencies.depthFirstSearch(name).firstOrNull()?.let(modules::get)
   }
 }
