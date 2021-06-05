@@ -1,7 +1,5 @@
 package com.lorenzoog.plank.grammar.element
 
-import org.antlr.v4.kotlinruntime.Token
-
 sealed class Expr : PlankElement {
   interface Visitor<T> {
     fun visit(expr: Expr): T = expr.accept(this)
@@ -10,9 +8,6 @@ sealed class Expr : PlankElement {
     fun visitIfExpr(anIf: If): T
     fun visitConstExpr(const: Const): T
     fun visitAccessExpr(access: Access): T
-    fun visitLogicalExpr(logical: Logical): T
-    fun visitBinaryExpr(binary: Binary): T
-    fun visitUnaryExpr(unary: Unary): T
     fun visitCallExpr(call: Call): T
     fun visitAssignExpr(assign: Assign): T
     fun visitSetExpr(set: Set): T
@@ -22,7 +17,6 @@ sealed class Expr : PlankElement {
     fun visitSizeofExpr(sizeof: Sizeof): T
     fun visitReferenceExpr(reference: Reference): T
     fun visitValueExpr(value: Value): T
-    fun visitConcatExpr(concat: Concat): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -39,8 +33,8 @@ sealed class Expr : PlankElement {
 
   data class If(
     val cond: Expr,
-    val thenBranch: List<Stmt>,
-    val elseBranch: List<Stmt>,
+    val thenBranch: Expr,
+    val elseBranch: Expr?,
     override val location: Location
   ) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
@@ -59,54 +53,6 @@ sealed class Expr : PlankElement {
   data class Access(val name: Identifier, override val location: Location) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitAccessExpr(this)
-    }
-  }
-
-  data class Logical(
-    val lhs: Expr,
-    val op: Operation,
-    val rhs: Expr,
-    override val location: Location
-  ) : Expr() {
-    enum class Operation { Equals, NotEquals, Greater, GreaterEquals, Less, LessEquals }
-
-    override fun <T> accept(visitor: Visitor<T>): T {
-      return visitor.visitLogicalExpr(this)
-    }
-  }
-
-  data class Concat(
-    val lhs: Expr,
-    val rhs: Expr,
-    override val location: Location
-  ) : Expr() {
-    override fun <T> accept(visitor: Visitor<T>): T {
-      return visitor.visitConcatExpr(this)
-    }
-  }
-
-  data class Binary(
-    val lhs: Expr,
-    val op: Operation,
-    val rhs: Expr,
-    override val location: Location
-  ) : Expr() {
-    enum class Operation { Add, Sub, Mul, Div }
-
-    override fun <T> accept(visitor: Visitor<T>): T {
-      return visitor.visitBinaryExpr(this)
-    }
-  }
-
-  data class Unary(
-    val op: Operation,
-    val rhs: Expr,
-    override val location: Location
-  ) : Expr() {
-    enum class Operation { Neg, Bang }
-
-    override fun <T> accept(visitor: Visitor<T>): T {
-      return visitor.visitUnaryExpr(this)
     }
   }
 
@@ -132,7 +78,7 @@ sealed class Expr : PlankElement {
 
   data class Set(
     val receiver: Expr,
-    val member: Identifier,
+    val property: Identifier,
     val value: Expr,
     override val location: Location
   ) : Expr() {
@@ -143,7 +89,7 @@ sealed class Expr : PlankElement {
 
   data class Get(
     val receiver: Expr,
-    val member: Identifier,
+    val property: Identifier,
     override val location: Location
   ) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
@@ -162,8 +108,8 @@ sealed class Expr : PlankElement {
   }
 
   data class Instance(
-    val name: Identifier,
-    val arguments: Map<Token, Expr>,
+    val struct: TypeReference,
+    val arguments: Map<Identifier, Expr>,
     override val location: Location,
   ) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
@@ -172,7 +118,7 @@ sealed class Expr : PlankElement {
   }
 
   // todo change to typedef
-  data class Sizeof(val name: Identifier, override val location: Location) : Expr() {
+  data class Sizeof(val type: TypeReference, override val location: Location) : Expr() {
     override fun <T> accept(visitor: Visitor<T>): T {
       return visitor.visitSizeofExpr(this)
     }

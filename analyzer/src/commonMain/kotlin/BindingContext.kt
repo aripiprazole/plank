@@ -1,75 +1,119 @@
 package com.lorenzoog.plank.analyzer
 
+import com.lorenzoog.plank.analyzer.PlankType.Companion.array
+import com.lorenzoog.plank.analyzer.PlankType.Companion.bool
+import com.lorenzoog.plank.analyzer.PlankType.Companion.char
+import com.lorenzoog.plank.analyzer.PlankType.Companion.delegate
+import com.lorenzoog.plank.analyzer.PlankType.Companion.enum
+import com.lorenzoog.plank.analyzer.PlankType.Companion.float
+import com.lorenzoog.plank.analyzer.PlankType.Companion.function
+import com.lorenzoog.plank.analyzer.PlankType.Companion.int
+import com.lorenzoog.plank.analyzer.PlankType.Companion.pointer
+import com.lorenzoog.plank.analyzer.PlankType.Companion.struct
+import com.lorenzoog.plank.analyzer.PlankType.Companion.unit
+import com.lorenzoog.plank.analyzer.PlankType.Companion.untyped
+import com.lorenzoog.plank.analyzer.element.TypedAccessExpr
+import com.lorenzoog.plank.analyzer.element.TypedConstExpr
+import com.lorenzoog.plank.analyzer.element.TypedDecl
+import com.lorenzoog.plank.analyzer.element.TypedEnumDecl
+import com.lorenzoog.plank.analyzer.element.TypedExpr
+import com.lorenzoog.plank.analyzer.element.TypedExprStmt
+import com.lorenzoog.plank.analyzer.element.TypedFunDecl
+import com.lorenzoog.plank.analyzer.element.TypedGroupExpr
+import com.lorenzoog.plank.analyzer.element.TypedIdentPattern
+import com.lorenzoog.plank.analyzer.element.TypedIfExpr
+import com.lorenzoog.plank.analyzer.element.TypedImportDecl
+import com.lorenzoog.plank.analyzer.element.TypedLetDecl
+import com.lorenzoog.plank.analyzer.element.TypedMatchExpr
+import com.lorenzoog.plank.analyzer.element.TypedModuleDecl
+import com.lorenzoog.plank.analyzer.element.TypedNamedTuplePattern
+import com.lorenzoog.plank.analyzer.element.TypedPattern
+import com.lorenzoog.plank.analyzer.element.TypedPlankFile
+import com.lorenzoog.plank.analyzer.element.TypedReferenceExpr
+import com.lorenzoog.plank.analyzer.element.TypedReturnStmt
+import com.lorenzoog.plank.analyzer.element.TypedStmt
+import com.lorenzoog.plank.analyzer.element.TypedStructDecl
 import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.grammar.element.Decl.FunDecl.Modifier
 import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Add
-import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Div
-import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Mul
-import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation.Sub
-import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation.Equals
-import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation.Greater
-import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation.GreaterEquals
-import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation.Less
-import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation.LessEquals
-import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation.NotEquals
-import com.lorenzoog.plank.grammar.element.Expr.Unary.Operation.Bang
-import com.lorenzoog.plank.grammar.element.Expr.Unary.Operation.Neg
+import com.lorenzoog.plank.grammar.element.Identifier
 import com.lorenzoog.plank.grammar.element.Location
 import com.lorenzoog.plank.grammar.element.Pattern
-import com.lorenzoog.plank.grammar.element.PlankElement
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.element.Stmt
-import com.lorenzoog.plank.grammar.element.TypeDef
+import com.lorenzoog.plank.grammar.element.TypeReference
 import com.lorenzoog.plank.grammar.element.visit
 import com.lorenzoog.plank.grammar.tree.TreeWalker
 import com.lorenzoog.plank.shared.depthFirstSearch
 import pw.binom.Stack
 
-class BindingContext(moduleTree: ModuleTree) :
-  Stmt.Visitor<PlankType>,
-  Expr.Visitor<PlankType>,
-  TypeDef.Visitor<PlankType>,
-  PlankFile.Visitor<PlankType> {
-  private val bindings = mutableMapOf<PlankElement, PlankType>()
+/**
+ * This is the type-system core.
+ *
+ * This will map the file provided in [analyze] with the provided tree
+ * into a typed one [TypedPlankFile] with typed declarations/statements/expressions.
+ */
+class BindingContext(tree: ModuleTree) :
+  Expr.Visitor<TypedExpr>,
+  Stmt.Visitor<TypedStmt>,
+  Pattern.Visitor<TypedPattern>,
+  PlankFile.Visitor<TypedPlankFile>,
+  TypeReference.Visitor<PlankType> {
+  /**
+   * Used for type inference, where the type-system mutate the element's type to the most useful.
+   *
+   * E.G in pseudo-code:
+   * ```reasonml
+   * val (+): int => int => int;
+   *
+   * // the use of x in the binary operation that references on [x] function
+   * // will mutate the type in the binding map to get the more acceptable
+   * // type there.
+   * let f = (x) => x + 1;
+   * ```
+   */
+  // TODO: type inference
+  private val bindings = mutableMapOf<Expr, PlankType>()
 
   private val scopes = Stack<Scope>().also { stack ->
-    stack.pushLast(GlobalScope(moduleTree))
+    stack.pushLast(GlobalScope(tree))
   }
 
-  private val _violations = mutableSetOf<BindingViolation>()
-  val violations: List<BindingViolation>
-    get() = _violations.toList()
+  var violations = emptySet<BindingViolation>()
+    private set
 
-  val isValid: Boolean get() = violations.isEmpty()
+  val isValid get() = violations.isEmpty()
 
-  fun analyze(file: PlankFile): Boolean {
-    val globalScope = scopes.peekLast()
+  fun analyze(file: PlankFile): TypedPlankFile {
+    val globalScope = currentScope
     val fileModule = currentModuleTree
       .createModule(file.module, globalScope, file.program)
       .apply {
         scope = FileScope(file, globalScope)
       }
 
-    file.searchDependencies(file.module)
+    return file
+      .searchDependencies(file.module)
       .also { scopes.pushLast(fileModule.scope) }
       .map(Module::scope)
       .filterIsInstance<FileScope>()
       .map(FileScope::file)
       .asReversed()
-      .forEach(this::visit)
-
-    return isValid
+      .map(this::visit)
+      .let { dependencies ->
+        dependencies
+          .last()
+          .copy(dependencies = dependencies.take(dependencies.size - 1))
+      }
   }
 
-  private fun PlankElement.searchDependencies(name: String): List<Module> {
+  private fun PlankFile.searchDependencies(name: Identifier): List<Module> {
     return currentModuleTree.dependencies
       .apply {
         addVertex(name)
 
         val dependencyTreeWalker = object : TreeWalker() {
           override fun visitImportDecl(importDecl: Decl.ImportDecl) {
-            addEdge(name, importDecl.module.text)
+            addEdge(name, importDecl.module)
           }
         }
 
@@ -79,468 +123,390 @@ class BindingContext(moduleTree: ModuleTree) :
       .mapNotNull(currentModuleTree::findModule)
   }
 
-  override fun visitIfExpr(anIf: Expr.If): PlankType = anIf.bind {
-    val cond = visit(anIf.cond)
-    if (!Builtin.Bool.isAssignableBy(cond)) {
-      _violations += TypeViolation(Builtin.Bool, cond, anIf.cond.location)
-    }
+  override fun visitPlankFile(file: PlankFile): TypedPlankFile {
+    val program = visit(file.program).filterIsInstance<TypedDecl>()
 
-    val thenBranch = visit(anIf.thenBranch).lastOrNull() ?: return@bind Builtin.Void
-
-    visit(anIf.elseBranch).lastOrNull() ?: run {
-      if (!Builtin.Void.isAssignableBy(thenBranch)) {
-        _violations += TypeViolation(thenBranch, Builtin.Void, anIf.location)
-      }
-
-      thenBranch
-    }
+    return TypedPlankFile(file, program)
   }
 
-  override fun visitMatchExpr(match: Expr.Match): PlankType = match.bind {
-    fun Scope.deconstruct(
-      pattern: Pattern,
-      subject: PlankType = visit(match.subject),
-      type: PlankType = subject
-    ) {
-      when (pattern) {
-        is Pattern.Ident -> {
-          type.cast<PlankType.Set>()
-            ?.findMember(pattern.name.text)
-            ?: return declare(pattern.name.text, subject)
-        }
-        is Pattern.NamedTuple -> {
-          val enum = subject.cast<PlankType.Set>() ?: return run {
-            _violations += TypeViolation("enum", subject, pattern.location)
-          }
-
-          val member = enum.findMember(pattern.type.text) ?: return run {
-            _violations += UnresolvedVariableViolation(pattern.type.text, pattern.location)
-          }
-
-          pattern.fields.forEachIndexed { index, subPattern ->
-            val subType = member.fields.getOrNull(index) ?: return run {
-              _violations += UnresolvedVariableViolation("argument $index", pattern.location)
-            }
-
-            deconstruct(subPattern, subType, enum)
-          }
-        }
-      }
+  override fun visitConstExpr(const: Expr.Const): TypedExpr {
+    val type = when (const.value) {
+      is Boolean -> bool
+      is Unit -> bool
+      is String -> pointer(char)
+      is Int -> int(32)
+      is Short -> int(16)
+      is Byte -> int(8)
+      is Double -> float(32)
+      is Long, Float -> float(64)
+      else -> return violate("Unknown type %s", const::class.simpleName)
     }
 
-    match.patterns
-      .map { (pattern, value) ->
-        scoped(ClosureScope("match", currentScope)) {
-          deconstruct(pattern)
+    return TypedConstExpr(const.value, type, const.location)
+  }
+
+  override fun visitAccessExpr(access: Expr.Access): TypedExpr {
+    val variable = currentScope.findVariable(access.name)
+      ?: return violate("Unknown identifier %s", access.name)
+
+    return TypedAccessExpr(variable, access.location)
+  }
+
+  override fun visitCallExpr(call: Expr.Call): TypedExpr {
+    val callable = visit(call.callee)
+
+    val function = callable.type.cast<FunctionType>()
+      ?: return violate("Can not call not function", callable)
+
+    return function.call(visit(call.arguments))
+  }
+
+  override fun visitAssignExpr(assign: Expr.Assign): TypedExpr {
+    val reference = findVariable(assign.name)
+    val value = visit(assign.value)
+
+    if (!reference.mutable) {
+      return violate("Can not change immutable variable %s", reference)
+    }
+
+    if (reference.value.type != value.type) {
+      return violate(
+        "Mismatch types, expecting %s but got %s in assignment", reference.value.type, value.type
+      )
+    }
+
+    reference.value = value
+
+    return value
+  }
+
+  override fun visitSetExpr(set: Expr.Set): TypedExpr {
+    val receiver = visit(set.receiver)
+    val value = visit(set.value)
+
+    val struct = receiver.type.cast<StructType>()
+      ?: return violate("Can not update a property from non-struct expression %s", receiver)
+
+    val property = struct.property(set.property)
+      ?: return violate("Unknown property %s in struct %s", set.property, struct)
+
+    if (property.type != value.type) {
+      return violate(
+        "Mismatch types, expecting %s but got %s in set expression", property.type, value.type
+      )
+    }
+
+    return value
+  }
+
+  override fun visitGetExpr(get: Expr.Get): TypedExpr {
+    val receiver = visit(get.receiver)
+
+    val struct = receiver.type.cast<StructType>()
+      ?: return violate("Can not get a property from non-struct expression %s", receiver)
+
+    val property = struct.property(get.property)
+      ?: return violate("Unknown property %s in struct %s", get.property, struct)
+
+    return property.value ?: undeclared(property.type)
+  }
+
+  override fun visitGroupExpr(group: Expr.Group): TypedExpr {
+    val expr = visit(group.expr)
+
+    return TypedGroupExpr(expr, group.location)
+  }
+
+  override fun visitInstanceExpr(instance: Expr.Instance): TypedExpr {
+    val struct = visit(instance.struct).cast<StructType> {
+      return violate("Can not get a instance from non-struct type %s", it)
+    }
+
+    val arguments = instance.arguments.mapValues { (name, expr) ->
+      val value = visit(expr)
+      val property = struct.property(name)
+        ?: return violate("Unknown property %s in struct %s", name, struct)
+
+      if (property.type != value.type) {
+        return violate(
+          "Mismatch types, expecting %s but got %s in set expression",
+          property.type, value.type
+        )
+      }
+
+      value
+    }
+
+    return struct.instantiate(instance.location, arguments)
+  }
+
+  override fun visitSizeofExpr(sizeof: Expr.Sizeof): TypedExpr {
+    val type = visit(sizeof.type)
+
+    return int(32).const(type.size)
+  }
+
+  override fun visitReferenceExpr(reference: Expr.Reference): TypedExpr {
+    val expr = visit(reference.expr)
+
+    return TypedReferenceExpr(expr, reference.location)
+  }
+
+  override fun visitValueExpr(value: Expr.Value): TypedExpr {
+    val expr = visit(value.expr)
+
+    val type = expr.type.cast<PointerType> {
+      return violate("Can not deref from non-pointer type %s", it)
+    }
+
+    return type.const()
+  }
+
+  override fun visitMatchExpr(match: Expr.Match): TypedExpr {
+    val subject = visit(match.subject)
+
+    val patterns = match.patterns
+      .entries
+      .associate { (pattern, value) ->
+        visit(pattern) to scoped(ClosureScope(Identifier.of("match"), currentScope)) {
+          deconstruct(pattern, subject)
 
           visit(value)
         }
       }
-      .reduce { acc, next ->
-        if (!acc.isAssignableBy(next)) {
-          _violations += TypeViolation(acc, next, match.location)
-        }
 
-        acc
+    val type = patterns.values.map { it.type }.reduce { acc, next ->
+      if (acc != next) {
+        return violate("Mismatch types, expecting %s but got %s in match expression", acc, next)
       }
-  }
 
-  override fun visitConstExpr(const: Expr.Const): PlankType = const.bind {
-    when (const.value) {
-      is Boolean -> Builtin.Bool
-      is Unit -> Builtin.Void
-      is String -> Builtin.Char.pointer
-      is Int,
-      is Short,
-      is Byte -> Builtin.Int
-      is Double,
-      is Long,
-      is Float -> Builtin.Double
-      else -> Builtin.Any
-    }
-  }
-
-  override fun visitLogicalExpr(logical: Expr.Logical): PlankType = logical.bind {
-    val lhs = visit(logical.lhs)
-    val op = when (logical.op) {
-      Equals -> Builtin.Any
-      NotEquals -> Builtin.Any
-      Greater -> Builtin.Numeric
-      GreaterEquals -> Builtin.Numeric
-      Less -> Builtin.Numeric
-      LessEquals -> Builtin.Numeric
-    }
-    val rhs = visit(logical.rhs)
-
-    if (!op.isAssignableBy(lhs)) {
-      _violations += TypeViolation(op, lhs, logical.lhs.location)
+      next
     }
 
-    if (!op.isAssignableBy(rhs)) {
-      _violations += TypeViolation(op, rhs, logical.rhs.location)
+    return TypedMatchExpr(subject, patterns, type, match.location)
+  }
+
+  override fun visitNamedTuplePattern(pattern: Pattern.NamedTuple): TypedPattern {
+    TODO()
+  }
+
+  override fun visitIdentPattern(pattern: Pattern.Ident): TypedPattern {
+    return TypedIdentPattern(pattern.name, untyped(), pattern.location)
+  }
+
+  override fun visitIfExpr(anIf: Expr.If): TypedExpr {
+    val cond = visit(anIf.cond)
+
+    if (cond.type != bool) {
+      return violate("Mismatch types, expecting bool value but got %s in if condition", cond)
     }
 
-    Builtin.Bool
-  }
+    val thenBranch = visit(anIf.thenBranch)
+    val elseBranch = anIf.elseBranch?.let { visit(it) }
 
-  override fun visitConcatExpr(concat: Expr.Concat): PlankType {
-    val lhs = visit(concat.lhs)
-    val rhs = visit(concat.rhs)
-
-    if (!Builtin.String.isAssignableBy(lhs) || !Builtin.String.isAssignableBy(rhs)) {
-      _violations += TypeViolation(Builtin.String, lhs, concat.location)
+    if (elseBranch == null) {
+      return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.type, anIf.location)
     }
 
-    return Builtin.String
-  }
-
-  override fun visitBinaryExpr(binary: Expr.Binary): PlankType = binary.bind {
-    val lhs = visit(binary.lhs)
-    val op = when (binary.op) {
-      Add -> Builtin.Numeric
-      Sub -> Builtin.Numeric
-      Mul -> Builtin.Numeric
-      Div -> Builtin.Numeric
-    }
-    val rhs = visit(binary.rhs)
-
-    if (!op.isAssignableBy(lhs)) {
-      _violations += TypeViolation(op, lhs, binary.lhs.location)
+    if (thenBranch.type != elseBranch.type) {
+      return violate(
+        "Mismatch types, expecting %s but got %s in if expression",
+        thenBranch.type,
+        elseBranch.type
+      )
     }
 
-    if (!op.isAssignableBy(rhs)) {
-      _violations += TypeViolation(op, rhs, binary.rhs.location)
+    return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.type, anIf.location)
+  }
+
+  override fun visitExprStmt(exprStmt: Stmt.ExprStmt): TypedStmt {
+    return TypedExprStmt(visit(exprStmt.expr), exprStmt.location)
+  }
+
+  override fun visitReturnStmt(returnStmt: Stmt.ReturnStmt): TypedStmt {
+    val expr = returnStmt.value?.let(::visit) ?: unit.const()
+
+    val functionScope = currentScope as? FunctionScope
+      ?: return violate("Can not return in not function scope %s", currentScope).stmt()
+
+    if (functionScope.returnType != expr.type) {
+      return violate(
+        "Mismatch types, expecting %s but got %s in return statement",
+        functionScope.returnType, expr.type
+      ).stmt()
     }
 
-    when {
-      Builtin.Int.isAssignableBy(lhs) && Builtin.Int.isAssignableBy(rhs) -> Builtin.Int
-      Builtin.Char.pointer.isAssignableBy(rhs) -> Builtin.Char.pointer
-      else -> Builtin.Double
-    }
+    return TypedReturnStmt(expr, returnStmt.location)
   }
 
-  override fun visitUnaryExpr(unary: Expr.Unary): PlankType = unary.bind {
-    val op = when (unary.op) {
-      Neg -> Builtin.Numeric
-      Bang -> Builtin.Bool
-    }
-    val rhs = visit(unary.rhs)
+  override fun visitImportDecl(importDecl: Decl.ImportDecl): TypedStmt {
+    val module = currentScope.findModule(importDecl.module)
+      ?: return violate("Unresolved module %s", importDecl.module).stmt()
 
-    if (!op.isAssignableBy(rhs)) {
-      _violations += TypeViolation(op, rhs, unary.rhs.location)
+    return TypedImportDecl(module, importDecl.location)
+  }
+
+  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): TypedStmt {
+    val module = currentModuleTree.createModule(moduleDecl.name, currentScope, moduleDecl.content)
+    val content = scoped(module.scope) {
+      visit(moduleDecl.content).filterIsInstance<TypedDecl>()
     }
 
-    op
+    return TypedModuleDecl(moduleDecl.name, content, moduleDecl.location)
   }
 
-  override fun visitCallExpr(call: Expr.Call): PlankType = call.bind {
-    val callee = findCallee(call.callee) ?: return@bind Builtin.Any
+  override fun visitEnumDecl(enumDecl: Decl.EnumDecl): TypedStmt {
+    val name = enumDecl.name
 
-    call.arguments.forEachIndexed { index, argument ->
-      val expected = callee.parameters[index]
-      val found = visit(argument)
-
-      if (!expected.isAssignableBy(found)) {
-        _violations += TypeViolation(expected, found, call.location)
-      }
+    val enum = delegate(pointer(enum(name))).also {
+      currentScope.create(name, it)
     }
 
-    callee.returnType
-  }
+    val members = enumDecl.members.associate { (name, parameters) ->
+      val types = visit(parameters)
 
-  override fun visitAssignExpr(assign: Expr.Assign): PlankType = assign.bind {
-    val name = assign.name.text
-    val variable = scopes.peekLast().findVariable(name) ?: return@bind run {
-      _violations += UnresolvedVariableViolation(name, assign.location)
+      currentScope.declare(name, function(enum, types))
 
-      Builtin.Any
-    }
-    val actual = visit(assign.value)
-
-    if (!variable.mutable) {
-      _violations += AssignImmutableViolation(name, assign.location)
+      name to EnumMember(name, types)
     }
 
-    if (!variable.type.isAssignableBy(actual)) {
-      _violations += TypeViolation(variable, actual, assign.location)
+    enum.value = enum(name, members)
+
+    return TypedEnumDecl(name, members, enumDecl.location)
+  }
+
+  override fun visitStructDecl(structDecl: Decl.StructDecl): TypedStmt {
+    val name = structDecl.name
+
+    val struct = delegate(struct(structDecl.name)).also {
+      currentScope.create(name, it)
     }
 
-    variable.type
-  }
-
-  override fun visitSetExpr(set: Expr.Set): PlankType = set.bind {
-    val member = set.member.text
-    val structure = findReceiver(set.receiver)
-    val expected = structure[member] ?: return@bind run {
-      _violations += TypeViolation(Builtin.Any, Builtin.Void, set.location)
-
-      Builtin.Any
-    }
-    val actual = visit(set.value)
-
-    if (!expected.mutable) {
-      _violations += AssignImmutableViolation(member, set.location)
+    val properties = structDecl.properties.associate { (mutable, name, type) ->
+      name to StructProperty(mutable, name, visit(type))
     }
 
-    if (!expected.type.isAssignableBy(actual)) {
-      _violations += TypeViolation(expected, actual, set.location)
-    }
+    struct.value = struct(name, properties)
 
-    expected.type
+    return TypedStructDecl(name, properties, structDecl.location)
   }
 
-  override fun visitGetExpr(get: Expr.Get): PlankType = get.bind {
-    val member = get.member.text
-    val structure = findReceiver(get.receiver)
+  override fun visitFunDecl(funDecl: Decl.FunDecl): TypedStmt {
+    val name = funDecl.name
+    val realParameters = funDecl.realParameters.mapValues { visit(it.value) }
 
-    structure[member]?.type ?: run {
-      _violations += TypeViolation(Builtin.Any, Builtin.Void, get.location)
+    val location = funDecl.location
 
-      Builtin.Any
-    }
-  }
+    val attributes = funDecl.modifiers
+      .associate { "native" to Attribute.native }
 
-  private fun findReceiver(expr: Expr): PlankType = when (expr) {
-    is Expr.Access -> currentScope.findVariable(expr.name.text)?.type
-      ?: run {
-        val module = findModule(expr) ?: return@run run {
-          _violations += UnresolvedModuleViolation(expr.name.text, expr.location)
-
-          Builtin.Any
-        }
-
-        module.type
-      }
-    else -> visit(expr)
-  }
-
-  override fun visitGroupExpr(group: Expr.Group): PlankType = group.bind {
-    visit(group.expr)
-  }
-
-  override fun visitInstanceExpr(instance: Expr.Instance): PlankType = instance.bind {
-    val structure = findStruct(Expr.Access(instance.name, instance.location))
-      ?: return@bind Builtin.Any
-
-    instance.arguments.forEach { (token, value) ->
-      val name = token.text.orEmpty()
-      val expected = structure.fields.find { it.name == name }?.type ?: run {
-        _violations += UnresolvedVariableViolation(name, value.location)
-
-        Builtin.Any
-      }
-      val actual = visit(value)
-
-      if (!expected.isAssignableBy(actual)) {
-        _violations += TypeViolation(expected, actual, value.location)
-      }
-    }
-
-    structure
-  }
-
-  override fun visitSizeofExpr(sizeof: Expr.Sizeof): PlankType = sizeof.bind {
-    findStruct(Expr.Access(sizeof.name, sizeof.location))
-
-    Builtin.Int
-  }
-
-  override fun visitReferenceExpr(reference: Expr.Reference): PlankType = reference.bind {
-    val expr = visit(reference.expr)
-    PlankType.Pointer(expr)
-  }
-
-  override fun visitValueExpr(value: Expr.Value): PlankType = value.bind {
-    val ptr = visit(value.expr)
-    if (ptr !is PlankType.Pointer) {
-      _violations += TypeViolation("ptr", ptr, value.location)
-
-      return@bind Builtin.Any
-    }
-
-    ptr.inner
-  }
-
-  override fun visitGenericAccess(access: TypeDef.GenericAccess): PlankType = access.bind {
-    Builtin.Any
-  }
-
-  override fun visitGenericUse(use: TypeDef.GenericUse): PlankType = use.bind {
-    val receiver = visit(use.receiver)
-    val arguments = visit(use.arguments)
-
-    if (receiver.genericArity > arguments.size) {
-      _violations += UnexpectedGenericArgument(receiver.genericArity, arguments.size, use.location)
-    }
-
-    PlankType.Generic(receiver, arguments)
-  }
-
-  override fun visitExprStmt(exprStmt: Stmt.ExprStmt): PlankType = exprStmt.bind {
-    visit(exprStmt.expr)
-  }
-
-  override fun visitReturnStmt(returnStmt: Stmt.ReturnStmt): PlankType = returnStmt.bind {
-    visit(returnStmt.value ?: return@bind Builtin.Void)
-  }
-
-  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): PlankType = moduleDecl.bind {
-    val module = currentModuleTree
-      .createModule(moduleDecl.name.text, scopes.peekLast(), moduleDecl.content)
-
-    scoped(module.scope) {
-      visit(moduleDecl.content)
-    }
-
-    Builtin.Void
-  }
-
-  override fun visitStructDecl(structDecl: Decl.StructDecl): PlankType = structDecl.bind {
-    val struct = PlankType.Delegate(PlankType.Struct(structDecl.name.text))
-
-    scopes.peekLast().create(structDecl.name.text, struct)
-
-    struct.delegate = PlankType.Struct(
-      structDecl.name.text,
-      structDecl.fields.map {
-        PlankType.Struct.Field(it.mutable, it.name.text, visit(it.type))
-      }
-    )
-
-    struct.delegate!!
-  }
-
-  override fun visitEnumDecl(enumDecl: Decl.EnumDecl): PlankType = enumDecl.bind {
-    val enum = PlankType.Delegate(PlankType.Pointer(PlankType.Set(enumDecl.name.text)))
-
-    currentScope.create(enumDecl.name.text, enum)
-
-    enum.delegate = PlankType.Set(
-      enumDecl.name.text,
-      enumDecl.members.map { (name, fields) ->
-        currentScope.declare(name.text, PlankType.Callable(visit(fields), enum))
-
-        PlankType.Set.Member(name.text, visit(fields))
-      }
-    )
-
-    enum
-  }
-
-  override fun visitFunDecl(funDecl: Decl.FunDecl): PlankType = funDecl.bind {
-    val name = funDecl.name.text
-    val returnType = funDecl.returnType?.let { visit(it) } ?: Builtin.Void
-    val type = PlankType.Callable(
+    val returnType = visit(funDecl.returnType) { unit }
+    val type = FunctionType(
       parameters = funDecl.parameters.map { visit(it) },
-      returnType = funDecl.returnType?.let { visit(it) } ?: Builtin.Void
+      returnType = returnType
     )
 
-    scopes.peekLast().declare(name, type)
+    currentScope.declare(name, type)
 
-    scoped(name, FunctionScope(name, scopes.peekLast(), type)) {
+    val scope = FunctionScope(type, name, currentScope, currentModuleTree)
+    val content = scoped(name, scope) {
       funDecl.realParameters
-        .mapKeys { it.key.text.orEmpty() }
+        .mapKeys { it.key }
         .forEach { (name, type) ->
           declare(name, visit(type))
         }
 
-      val body = visit(funDecl.body)
+      visit(funDecl.body)
+    }
 
-      if (Modifier.Native !in funDecl.modifiers) {
-        _violations += body
-          .filterIsInstance<Stmt.ReturnStmt>()
-          .filterNot { returnType.isAssignableBy(visit(it)) }
-          .map { stmt ->
-            TypeViolation(returnType, visit(stmt), stmt.location)
-          }
+    return TypedFunDecl(name, content, realParameters, attributes, type, location)
+  }
+
+  override fun visitLetDecl(letDecl: Decl.LetDecl): TypedStmt {
+    val name = letDecl.name
+    val mutable = letDecl.mutable
+    val value = visit(letDecl.value)
+
+    currentScope.declare(name, value, mutable)
+
+    // TODO: use explicit type to infer with [bindings]
+    return TypedLetDecl(name, mutable, value, value.type, letDecl.location)
+  }
+
+  override fun visitAccessTypeReference(reference: TypeReference.Access): PlankType {
+    return currentScope.findType(reference.identifier)
+      ?: return violate("Unresolved type reference to %s", reference.identifier).type
+  }
+
+  override fun visitPointerTypeReference(reference: TypeReference.Pointer): PlankType {
+    return pointer(visit(reference.type))
+  }
+
+  override fun visitArrayTypeReference(reference: TypeReference.Array): PlankType {
+    return array(visit(reference.type))
+  }
+
+  override fun visitFunctionTypeReference(reference: TypeReference.Function): PlankType {
+    val parameters = visit(reference.parameters)
+    // TODO: infer if hasn't user-defined type
+    val returnType = visit(reference.returnType) { unit }
+
+    return FunctionType(parameters, returnType)
+  }
+
+  //
+  // Utils for the type system
+  //
+  private fun Scope.deconstruct(
+    pattern: Pattern,
+    subject: TypedExpr,
+    type: PlankType = subject.type
+  ) {
+    when (pattern) {
+      is Pattern.Ident -> {
+        type.cast<EnumType>()?.member(pattern.name) ?: return declare(pattern.name, subject)
       }
+      is Pattern.NamedTuple -> {
+        val enum = subject.type.cast<EnumType>() ?: return run {
+          violate(
+            "Expecting enum when deconstructing named tuple in pattern but got %s", subject.type
+          )
+        }
 
-      type
+        val member = enum.member(pattern.type) ?: return run {
+          violate("Unknown enum member of %s: %s", enum.name, subject.type)
+        }
+
+        pattern.fields.forEachIndexed { index, subPattern ->
+          val subType = member.fields.getOrNull(index) ?: return run {
+            violate("Unknown property %d of member %s", index, member.type)
+          }
+
+          deconstruct(subPattern, undeclared(subType), enum)
+        }
+      }
     }
   }
 
-  override fun visitLetDecl(letDecl: Decl.LetDecl): PlankType = letDecl.bind {
-    val name = letDecl.name.text
-    val type = visit(letDecl.type) { visit(letDecl.value) }
+  private fun violate(message: String, vararg values: Any?): TypedExpr {
+    violations = violations + BindingViolation(message, values.toList())
 
-    currentScope.declare(name, type, letDecl.mutable)
-
-    type
+    return TypedConstExpr(Unit, untyped(), Location.undefined())
   }
 
-  override fun visitNameTypeDef(name: TypeDef.Name): PlankType = name.bind {
-    val text = name.name.text
-
-    scopes.peekLast().findType(text) ?: return@bind run {
-      _violations += UnresolvedTypeViolation(text, name.location)
-
-      Builtin.Void
-    }
-  }
-
-  override fun visitPtrTypeDef(ptr: TypeDef.Ptr): PlankType = ptr.bind {
-    PlankType.Pointer(visit(ptr.type))
-  }
-
-  override fun visitArrayTypeDef(array: TypeDef.Array): PlankType = array.bind {
-    PlankType.Array(visit(array.type))
-  }
-
-  override fun visitFunctionTypeDef(function: TypeDef.Function): PlankType = function.bind {
-    PlankType.Callable(
-      parameters = function.parameters.map { visit(it) },
-      returnType = function.returnType?.let { visit(it) } ?: Builtin.Void
-    )
-  }
-
-  override fun visitPlankFile(file: PlankFile): PlankType = file.bind {
-    visit(file.program)
-
-    Builtin.Void
-  }
-
-  override fun visitImportDecl(importDecl: Decl.ImportDecl): PlankType = importDecl.bind {
-    val name = importDecl.module.text
-
-    val module = findModule(name, importDecl.location) ?: return@bind run {
-      _violations += UnresolvedModuleViolation(name, importDecl.location)
-
-      Builtin.Void
-    }
-
-    scopes.peekLast().expand(module.scope)
-
-    Builtin.Void
-  }
-
-  override fun visitAccessExpr(access: Expr.Access): PlankType = access.bind {
-    val name = access.name.text
-
-    scopes.peekLast().findVariable(name)?.type ?: run {
-      _violations += UnresolvedVariableViolation(name, access.location)
-
-      Builtin.Any
-    }
-  }
-
-  // utils
-  fun findBound(element: PlankElement): PlankType? {
-    return bindings[element]
+  private fun undeclared(type: PlankType): TypedExpr {
+    return TypedConstExpr(Unit, type, Location.undefined())
   }
 
   private val currentScope get() = scopes.peekLast()
   private val currentModuleTree get() = scopes.peekLast().moduleTree
 
-  private fun PlankElement.bind(genType: () -> PlankType): PlankType {
-    val type = genType()
-    bindings[this] = type
-    return type
+  private fun findVariable(name: Identifier): Variable {
+    return currentScope.findVariable(name)
+      ?: Variable(false, name, violate("Unknown variable", name))
   }
 
-  private inline fun <T> scoped(
-    scope: Scope,
-    body: Scope.() -> T
-  ): T {
+  private inline fun <T> scoped(scope: Scope, body: Scope.() -> T): T {
     scopes.pushLast(scope)
     val result = body(scope)
     scopes.popLast()
@@ -549,7 +515,7 @@ class BindingContext(moduleTree: ModuleTree) :
   }
 
   private inline fun <T> scoped(
-    name: String = "anonymous",
+    name: Identifier = Identifier.of("anonymous"),
     scope: Scope = ClosureScope(name, scopes.peekLast()),
     body: Scope.() -> T
   ): T {
@@ -558,64 +524,5 @@ class BindingContext(moduleTree: ModuleTree) :
     scopes.popLast()
 
     return result
-  }
-
-  private fun findCallee(expr: Expr): PlankType.Callable? {
-    return when (expr) {
-      is Expr.Access -> scopes.peekLast().findFunction(expr.name.text).also {
-        if (it == null) {
-          _violations += UnresolvedVariableViolation(expr.name.text, expr.location)
-        } else {
-          expr.bind { it }
-        }
-      }
-      else -> {
-        val actual = expr.bind { visit(expr) }
-        if (actual is PlankType.Callable) {
-          actual
-        } else {
-          _violations += TypeViolation("PkCallable", actual, expr.location)
-
-          return null
-        }
-      }
-    }
-  }
-
-  fun findStruct(expr: Expr): PlankType? {
-    return when (expr) {
-      is Expr.Access -> scopes.peekLast().findStructure(expr.name.text).also {
-        if (it == null) {
-          _violations += UnresolvedTypeViolation(expr.name.text, expr.location)
-        } else {
-          expr.bind { it }
-        }
-      }
-      else -> {
-        val value = expr.bind { visit(expr) }
-        if (value is PlankType.Struct) {
-          value
-        } else {
-          _violations += TypeViolation("PkStructure", value, expr.location)
-
-          return null
-        }
-      }
-    }
-  }
-
-  private fun findModule(name: String, location: Location): Module? {
-    return currentScope.findModule(name) ?: run {
-      _violations += UnresolvedModuleViolation(name, location)
-
-      null
-    }
-  }
-
-  private fun findModule(expr: Expr): Module? {
-    return when (expr) {
-      is Expr.Access -> findModule(expr.name.text, expr.location)
-      else -> null
-    }
   }
 }

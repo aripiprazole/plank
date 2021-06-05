@@ -13,7 +13,7 @@ class StructDeclInstruction(private val descriptor: Decl.StructDecl) : CompilerI
     val type = binding.visit(descriptor)
     val struct = context.getNamedStructType(name).also { struct ->
       struct.setElementTypes(
-        *descriptor.fields
+        *descriptor.properties
           .map { !binding.visit(it.type).toType() }
           .toTypedArray(),
         isPacked = false

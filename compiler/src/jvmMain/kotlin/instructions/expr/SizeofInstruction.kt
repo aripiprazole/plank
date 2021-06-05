@@ -12,8 +12,8 @@ import com.lorenzoog.plank.shared.either
 
 class SizeofInstruction(private val descriptor: Expr.Sizeof) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {
-    val struct = findStruct(descriptor.name.text)
-      ?: return Left(unresolvedTypeError(descriptor.name.text))
+    val struct = findStruct(descriptor.type.text)
+      ?: return Left(unresolvedTypeError(descriptor.type.text))
 
     Right(struct.getSize())
   }
