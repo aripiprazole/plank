@@ -18,3 +18,11 @@ data class TypedIdentPattern(
   override val type: PlankType,
   override val location: Location
 ) : TypedPattern()
+
+data class ViolatedPattern(
+  override val message: String,
+  override val arguments: List<Any>
+) : TypedPattern(), ViolatedPlankElement {
+  override val location = Location.undefined()
+  override val type = PlankType.untyped()
+}

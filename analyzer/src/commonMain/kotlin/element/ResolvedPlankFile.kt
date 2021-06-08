@@ -2,7 +2,6 @@ package com.lorenzoog.plank.analyzer.element
 
 import com.lorenzoog.plank.analyzer.BindingViolation
 import com.lorenzoog.plank.analyzer.BindingContext
-import com.lorenzoog.plank.grammar.element.PlankElement
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
 
@@ -11,17 +10,17 @@ import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
  * [bindingViolations], [dependencies] will be fulfilled by copy the generated instances in
  * [BindingContext]
  */
-data class TypedPlankFile(
+data class ResolvedPlankFile(
   val delegate: PlankFile,
-  val program: List<TypedDecl>,
+  val program: List<ResolvedDecl>,
   val syntaxViolations: List<SyntaxViolation> = emptyList(),
   val bindingViolations: List<BindingViolation> = emptyList(),
-  val dependencies: List<TypedPlankFile> = emptyList(),
-) : PlankElement {
+  val dependencies: List<ResolvedPlankFile> = emptyList(),
+) : ResolvedPlankElement {
   interface Visitor<T> {
-    fun visit(file: TypedPlankFile): T = visitPlankFile(file)
+    fun visit(file: ResolvedPlankFile): T = visitPlankFile(file)
 
-    fun visitPlankFile(file: TypedPlankFile): T
+    fun visitPlankFile(file: ResolvedPlankFile): T
   }
 
   val moduleName = delegate.moduleName

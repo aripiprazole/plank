@@ -1,8 +1,7 @@
 package com.lorenzoog.plank.analyzer.element
 
 import com.lorenzoog.plank.analyzer.PlankType
-import com.lorenzoog.plank.grammar.element.PlankElement
 
-interface TypedPlankElement : PlankElement {
+interface TypedPlankElement : ResolvedPlankElement {
   val type: PlankType
 }

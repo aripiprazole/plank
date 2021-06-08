@@ -10,26 +10,27 @@ sealed class TypedExpr : TypedPlankElement {
   interface Visitor<T> {
     fun visit(expr: TypedExpr): T = expr.accept(this)
 
-    fun visitConstExpr(const: TypedConstExpr): T
+    fun visitConstExpr(expr: TypedConstExpr): T
     fun visitIfExpr(expr: TypedIfExpr): T
-    fun visitAccessExpr(access: TypedAccessExpr): T
-    fun visitCallExpr(call: TypedCallExpr): T
-    fun visitAssignExpr(assign: TypedAssignExpr): T
-    fun visitSetExpr(set: TypedSetExpr): T
-    fun visitGetExpr(get: TypedGetExpr): T
-    fun visitGroupExpr(group: TypedGroupExpr): T
-    fun visitInstanceExpr(instance: TypedInstanceExpr): T
-    fun visitSizeofExpr(sizeof: TypedSizeofExpr): T
-    fun visitReferenceExpr(reference: TypedReferenceExpr): T
-    fun visitValueExpr(value: TypedValueExpr): T
+    fun visitAccessExpr(expr: TypedAccessExpr): T
+    fun visitCallExpr(expr: TypedCallExpr): T
+    fun visitAssignExpr(expr: TypedAssignExpr): T
+    fun visitSetExpr(expr: TypedSetExpr): T
+    fun visitGetExpr(expr: TypedGetExpr): T
+    fun visitGroupExpr(expr: TypedGroupExpr): T
+    fun visitInstanceExpr(expr: TypedInstanceExpr): T
+    fun visitSizeofExpr(expr: TypedSizeofExpr): T
+    fun visitReferenceExpr(expr: TypedReferenceExpr): T
+    fun visitValueExpr(expr: TypedValueExpr): T
     fun visitMatchExpr(expr: TypedMatchExpr): T
+    fun visitViolatedExpr(expr: ViolatedExpr): T
   }
 
   abstract override val location: Location
 
   abstract fun <T> accept(visitor: Visitor<T>): T
 
-  fun stmt(): TypedStmt = TypedExprStmt(this, location)
+  fun stmt(): ResolvedStmt = ResolvedExprStmt(this, location)
 }
 
 data class TypedConstExpr(
@@ -166,5 +167,17 @@ data class TypedMatchExpr(
 ) : TypedExpr() {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitMatchExpr(this)
+  }
+}
+
+data class ViolatedExpr(
+  override val message: String,
+  override val arguments: List<Any>
+) : TypedExpr(), ViolatedPlankElement {
+  override val location = Location.undefined()
+  override val type = PlankType.untyped()
+
+  override fun <T> accept(visitor: Visitor<T>): T {
+    return visitor.visitViolatedExpr(this)
   }
 }
