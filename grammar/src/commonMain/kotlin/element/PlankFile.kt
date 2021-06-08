@@ -34,6 +34,10 @@ data class PlankFile(
   override val location = Location.undefined()
 
   companion object {
+    fun parser(code: String): PlankParser {
+      TODO()
+    }
+
     fun of(file: File): PlankFile {
       return of(file.read().utf8Reader().readText(), file.nameWithoutExtension, file.path)
         .copy(path = file.path)

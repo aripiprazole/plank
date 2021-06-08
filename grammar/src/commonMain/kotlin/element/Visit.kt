@@ -12,4 +12,4 @@ fun <T> Expr.Visitor<T>.visit(many: List<Expr>): List<T> = many.map(::visit)
 fun <T> Pattern.Visitor<T>.visit(many: List<Pattern>): List<T> = many.map(::visit)
 
 @JvmName("visitTypeReferences")
-fun <T> TypeReference.Visitor<T>.visit(many: List<TypeReference>): List<T> = many.map(::visit)
+fun <T> TypeRef.Visitor<T>.visit(many: List<TypeRef>): List<T> = many.map(::visit)
