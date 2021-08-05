@@ -12,6 +12,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
   mavenCentral()
+  maven("https://jitpack.io")
 }
 
 kotlin {
@@ -21,7 +22,7 @@ kotlin {
     val commonAntlr by creating {
       dependencies {
         api(kotlin("stdlib-common"))
-        api("com.strumenta.antlr-kotlin:antlr-kotlin-runtime:-SNAPSHOT")
+        api("com.strumenta.antlr-kotlin:antlr-kotlin-runtime:6304d5c1c4")
       }
 
       kotlin.srcDir("$buildDir/generated-src/commonAntlr/kotlin")
