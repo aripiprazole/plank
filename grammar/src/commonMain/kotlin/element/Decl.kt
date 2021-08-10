@@ -7,7 +7,7 @@ data class EnumDecl(
   val members: List<Member>,
   override val location: Location
 ) : Decl() {
-  data class Member(val name: Identifier, val fields: List<TypeRef>)
+  data class Member(val name: Identifier, val parameters: List<TypeRef>)
 
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitEnumDecl(this)
