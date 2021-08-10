@@ -5,14 +5,14 @@ import com.lorenzoog.plank.grammar.element.Expr
 import com.lorenzoog.plank.grammar.element.PlankElement
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.element.Stmt
-import com.lorenzoog.plank.grammar.element.TypeReference
+import com.lorenzoog.plank.grammar.element.TypeRef
 import com.lorenzoog.plank.grammar.element.visit
 
-abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeReference.Visitor<Unit> {
+abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeRef.Visitor<Unit> {
   fun walk(element: PlankElement) = when (element) {
     is Expr -> visit(element)
     is Stmt -> visit(element)
-    is TypeReference -> visit(element)
+    is TypeRef -> visit(element)
     is PlankFile -> walk(element)
     else -> error("Could not visit ${element::class}")
   }
@@ -62,11 +62,11 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeReferenc
   override fun visitSizeofExpr(sizeof: Expr.Sizeof) {
   }
 
-  override fun visitReferenceExpr(reference: Expr.Reference) {
+  override fun visitRefExpr(reference: Expr.Reference) {
     visit(reference.expr)
   }
 
-  override fun visitValueExpr(value: Expr.Value) {
+  override fun visitDerefExpr(value: Expr.Value) {
     visit(value.expr)
   }
 
@@ -111,21 +111,21 @@ abstract class TreeWalker : Expr.Visitor<Unit>, Stmt.Visitor<Unit>, TypeReferenc
     visit(match.patterns.values.toList())
   }
 
-  override fun visitAccessTypeReference(reference: TypeReference.Access) {
+  override fun visitAccessTypeRef(ref: TypeRef.Access) {
   }
 
-  override fun visitPointerTypeReference(reference: TypeReference.Pointer) {
-    visit(reference.type)
+  override fun visitPointerTypeRef(ref: TypeRef.Pointer) {
+    visit(ref.type)
   }
 
-  override fun visitArrayTypeReference(reference: TypeReference.Array) {
-    visit(reference.type)
+  override fun visitArrayTypeRef(ref: TypeRef.Array) {
+    visit(ref.type)
   }
 
-  override fun visitFunctionTypeReference(reference: TypeReference.Function) {
-    visit(reference.parameters)
-    reference.returnType?.let {
-      visit(reference.returnType)
+  override fun visitFunctionTypeRef(ref: TypeRef.Function) {
+    visit(ref.parameters)
+    ref.returnType?.let {
+      visit(ref.returnType)
     }
   }
 }

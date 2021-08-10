@@ -4,10 +4,10 @@ sealed class TypeRef : PlankElement {
   interface Visitor<T> {
     fun visit(typeDef: TypeRef): T = typeDef.accept(this)
 
-    fun visitAccessTypeReference(ref: AccessTypeRef): T
-    fun visitPointerTypeReference(ref: PointerTypeRef): T
-    fun visitArrayTypeReference(ref: ArrayTypeRef): T
-    fun visitFunctionTypeReference(ref: FunctionTypeRef): T
+    fun visitAccessTypeRef(ref: AccessTypeRef): T
+    fun visitPointerTypeRef(ref: PointerTypeRef): T
+    fun visitArrayTypeRef(ref: ArrayTypeRef): T
+    fun visitFunctionTypeRef(ref: FunctionTypeRef): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -15,19 +15,19 @@ sealed class TypeRef : PlankElement {
 
 data class AccessTypeRef(val path: QualifiedPath, override val location: Location) : TypeRef() {
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitAccessTypeReference(this)
+    return visitor.visitAccessTypeRef(this)
   }
 }
 
 data class PointerTypeRef(val type: TypeRef, override val location: Location) : TypeRef() {
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitPointerTypeReference(this)
+    return visitor.visitPointerTypeRef(this)
   }
 }
 
 data class ArrayTypeRef(val type: TypeRef, override val location: Location) : TypeRef() {
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitArrayTypeReference(this)
+    return visitor.visitArrayTypeRef(this)
   }
 }
 
@@ -37,6 +37,6 @@ data class FunctionTypeRef(
   override val location: Location
 ) : TypeRef() {
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitFunctionTypeReference(this)
+    return visitor.visitFunctionTypeRef(this)
   }
 }

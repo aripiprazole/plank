@@ -8,6 +8,9 @@ sealed class QualifiedPath : PlankElement {
     fun visitQualifiedPathNil(path: QualifiedPathNil): T
   }
 
+  val text: String
+    get() = fullPath.joinToString(".")
+
   val fullPath: List<Identifier>
     get() = mutableListOf<Identifier>().apply {
       tailrec fun dumpPath(path: QualifiedPath) {
@@ -29,6 +32,20 @@ sealed class QualifiedPath : PlankElement {
 
   override fun toString(): String {
     return "QualifiedPath(${fullPath.joinToString("/") { it.text }})"
+  }
+
+  companion object {
+    fun nil(): QualifiedPath {
+      return QualifiedPathNil
+    }
+
+    fun cons(value: Identifier, next: QualifiedPath, location: Location): QualifiedPath {
+      return QualifiedPathCons(value, next, location)
+    }
+
+    fun from(identifier: Identifier): QualifiedPath {
+      return QualifiedPathCons(identifier, QualifiedPathNil, identifier.location)
+    }
   }
 }
 

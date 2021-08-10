@@ -3,6 +3,16 @@ package com.lorenzoog.plank.grammar.element
 import com.lorenzoog.plank.grammar.element.Location.Companion.undefined
 
 class Identifier(val text: String, override val location: Location) : PlankElement {
+  interface Visitor<T> {
+    fun visit(identifier: Identifier): T = identifier.accept(this)
+
+    fun visitIdentifier(identifier: Identifier): T
+  }
+
+  fun <T> accept(visitor: Visitor<T>): T {
+    return visitor.visitIdentifier(this)
+  }
+
   override fun toString(): String = "Identifier($text)"
 
   companion object {

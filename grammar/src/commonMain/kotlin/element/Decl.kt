@@ -26,14 +26,14 @@ data class StructDecl(
   }
 }
 
-data class ImportDecl(val module: Identifier, override val location: Location) : Decl() {
+data class ImportDecl(val path: QualifiedPath, override val location: Location) : Decl() {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitImportDecl(this)
   }
 }
 
 data class ModuleDecl(
-  val name: Identifier,
+  val path: QualifiedPath,
   val content: List<Decl>,
   override val location: Location
 ) : Decl() {
@@ -45,7 +45,7 @@ data class ModuleDecl(
 data class FunDecl(
   val modifiers: List<Modifier> = emptyList(),
   val name: Identifier,
-  val type: TypeRef.Function,
+  val type: FunctionTypeRef,
   val body: List<Stmt>,
   val realParameters: Map<Identifier, TypeRef>,
   override val location: Location
@@ -71,5 +71,16 @@ data class LetDecl(
 ) : Decl() {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitLetDecl(this)
+  }
+}
+
+data class ErrorDecl(
+  override val message: String,
+  override val arguments: List<Any>
+) : Decl(), ErrorPlankElement {
+  override val location = Location.undefined()
+
+  override fun <T> accept(visitor: Visitor<T>): T {
+    return visitor.visitErrorElement(this)
   }
 }

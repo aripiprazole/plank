@@ -16,7 +16,7 @@ import pw.binom.io.utf8Reader
 
 data class PlankFile(
   val content: String,
-  val moduleName: String? = null,
+  val moduleName: QualifiedPath? = null,
   val path: String = "Anonymous",
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
@@ -28,7 +28,7 @@ data class PlankFile(
   }
 
   val realFile = File(path)
-  val module: Identifier = Identifier.of(moduleName ?: realFile.name)
+  val module = moduleName ?: Identifier.of(realFile.name)
   val isValid get() = violations.isEmpty()
 
   override val location = Location.undefined()
