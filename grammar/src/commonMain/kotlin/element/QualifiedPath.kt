@@ -39,12 +39,22 @@ sealed class QualifiedPath : PlankElement {
       return QualifiedPathNil
     }
 
-    fun cons(value: Identifier, next: QualifiedPath, location: Location): QualifiedPath {
+    fun cons(
+      value: Identifier,
+      next: QualifiedPath,
+      location: Location = Location.undefined(),
+    ): QualifiedPath {
       return QualifiedPathCons(value, next, location)
     }
 
     fun from(identifier: Identifier): QualifiedPath {
-      return QualifiedPathCons(identifier, QualifiedPathNil, identifier.location)
+      return QualifiedPathCons(identifier, nil(), identifier.location)
+    }
+
+    fun from(stringPath: String): QualifiedPath {
+      return stringPath.split(".").asReversed().fold(nil()) { acc, next ->
+        cons(Identifier.of(next), acc)
+      }
     }
   }
 }
