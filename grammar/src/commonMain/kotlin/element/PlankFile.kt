@@ -43,7 +43,7 @@ data class PlankFile(
         .copy(path = file.path)
         .let {
           if (it.moduleName == null) {
-            it.copy(moduleName = file.nameWithoutExtension)
+            it.copy(moduleName = QualifiedPath.from(file.nameWithoutExtension))
           } else {
             it
           }
@@ -51,15 +51,12 @@ data class PlankFile(
     }
 
     fun of(text: String, module: String = "anonymous", path: String = module): PlankFile {
-      val file = PlankFile(text, moduleName = module, path = path)
+      val file = PlankFile(text, moduleName = QualifiedPath.from(module), path = path)
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
       val parser = PlankParser(CommonTokenStream(lexer))
-      val listener = SyntaxErrorListener(file).also {
-        parser.addErrorListener(it)
-      }
 
-      return DescriptorMapper(file, listener.violations).visitProgram(parser.program())
+      return DescriptorMapper(file).visitPlankFile(parser.plankFile())
     }
   }
 }
