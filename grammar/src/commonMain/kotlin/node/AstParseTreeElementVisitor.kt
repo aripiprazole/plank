@@ -93,7 +93,7 @@ internal object AstParseTreeElementVisitor :
 
   override fun visitAssignExpr(expr: AssignExpr): ParseTreeElement {
     return ParseTreeNode("AssignExpr") {
-      child(visit(expr.path))
+      child(visit(expr.name))
       child(visit(expr.value))
     }
   }
@@ -243,9 +243,7 @@ internal object AstParseTreeElementVisitor :
         child(visit(name), visit(type))
       }
 
-      decl.returnType?.let { returnType ->
-        child(visit(returnType))
-      }
+      child(visit(decl.returnType))
 
       decl.body.forEach {
         child(visit(it))
