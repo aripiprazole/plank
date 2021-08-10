@@ -16,29 +16,29 @@ RPAREN : ')' ;
 LBRACE : '{' ;
 RBRACE : '}' ;
 
-LBRACKET : '[' ;
-RBRACKET : ']' ;
+LBRACKET: '[' ;
+RBRACKET: ']' ;
 
-PLUS    : '+' ;
-MINUS   : '-' ;
-SLASH   : '/' ;
-STAR   : '*' ;
+ADD: '+';
+SUB: '-';
+DIV: '/';
+TIMES: '*';
+CONCAT: '++';
 
-AMPERSTAND   : '&' ;
+AMPERSTAND: '&';
 
-BANG : '!' ;
-EQUAL : '=' ;
-GREATER : '>' ;
-LESS : '<' ;
+BANG: '!';
+ASSIGN: ':=';
+EQUAL: '=';
 
-PLUS_PLUS : '++' ;
+EQ: '==';
+NEQ: '!=';
+GTE: '>=';
+GT: '>';
+LT: '<';
+LTE: '<=';
 
-EQUAL_EQUAL : '==' ;
-BANG_EQUAL : '!=' ;
-GREATER_EQUAL : '>=' ;
-LESS_EQUAL : '<=' ;
-
-APOSTROPHE : '\'' ;
+APOSTROPHE: '\'';
 
 DOUBLE_ARROW_LEFT : '=>' ;
 ARROW_LEFT : '->' ;

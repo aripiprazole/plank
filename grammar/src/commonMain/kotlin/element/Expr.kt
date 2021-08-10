@@ -1,7 +1,7 @@
 package com.lorenzoog.plank.grammar.element
 
 sealed class Expr : PlankElement {
-  interface Visitor<T> {
+  interface Visitor<T> : ErrorVisitor<T> {
     fun visit(expr: Expr): T = expr.accept(this)
 
     fun visitMatchExpr(expr: MatchExpr): T
@@ -15,8 +15,8 @@ sealed class Expr : PlankElement {
     fun visitGroupExpr(expr: GroupExpr): T
     fun visitInstanceExpr(expr: InstanceExpr): T
     fun visitSizeofExpr(expr: SizeofExpr): T
-    fun visitReferenceExpr(expr: RefExpr): T
-    fun visitValueExpr(expr: DerefExpr): T
+    fun visitRefExpr(expr: RefExpr): T
+    fun visitDerefExpr(expr: DerefExpr): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -64,7 +64,7 @@ data class GroupExpr(val expr: Expr, override val location: Location) : Expr() {
 }
 
 data class AssignExpr(
-  val path: QualifiedPath,
+  val name: Identifier,
   val value: Expr,
   override val location: Location
 ) : Expr() {
@@ -122,12 +122,23 @@ data class SizeofExpr(val type: TypeRef, override val location: Location) : Expr
 
 data class RefExpr(val expr: Expr, override val location: Location) : Expr() {
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitReferenceExpr(this)
+    return visitor.visitRefExpr(this)
   }
 }
 
 data class DerefExpr(val expr: Expr, override val location: Location) : Expr() {
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitValueExpr(this)
+    return visitor.visitDerefExpr(this)
+  }
+}
+
+data class ErrorExpr(
+  override val message: String,
+  override val arguments: List<Any> = emptyList(),
+) : Expr(), ErrorPlankElement {
+  override val location = Location.undefined()
+
+  override fun <T> accept(visitor: Visitor<T>): T {
+    return visitor.visitErrorElement(this)
   }
 }
