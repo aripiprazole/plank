@@ -106,7 +106,7 @@ data class CallExpr(
 }
 
 data class InstanceExpr(
-  val struct: TypeRef,
+  val type: TypeRef,
   val arguments: Map<Identifier, Expr>,
   override val location: Location,
 ) : Expr() {
