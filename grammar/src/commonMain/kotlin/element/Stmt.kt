@@ -1,11 +1,12 @@
 package com.lorenzoog.plank.grammar.element
 
 abstract class Stmt internal constructor() : PlankElement {
-  interface Visitor<T> : ErrorVisitor<T> {
+  interface Visitor<T> {
     fun visit(stmt: Stmt): T = stmt.accept(this)
 
     fun visitExprStmt(stmt: ExprStmt): T
     fun visitReturnStmt(stmt: ReturnStmt): T
+    fun visitErrorStmt(stmt: ErrorStmt): T
 
     fun visitImportDecl(decl: ImportDecl): T
     fun visitModuleDecl(decl: ModuleDecl): T
@@ -13,6 +14,7 @@ abstract class Stmt internal constructor() : PlankElement {
     fun visitStructDecl(decl: StructDecl): T
     fun visitFunDecl(decl: FunDecl): T
     fun visitLetDecl(decl: LetDecl): T
+    fun visitErrorDecl(decl: ErrorDecl): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -43,6 +45,6 @@ data class ErrorStmt(
   override val location = Location.undefined()
 
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitErrorElement(this)
+    return visitor.visitErrorStmt(this)
   }
 }

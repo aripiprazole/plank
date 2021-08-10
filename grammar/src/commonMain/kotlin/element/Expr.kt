@@ -1,7 +1,7 @@
 package com.lorenzoog.plank.grammar.element
 
 sealed class Expr : PlankElement {
-  interface Visitor<T> : ErrorVisitor<T> {
+  interface Visitor<T> {
     fun visit(expr: Expr): T = expr.accept(this)
 
     fun visitMatchExpr(expr: MatchExpr): T
@@ -17,6 +17,7 @@ sealed class Expr : PlankElement {
     fun visitSizeofExpr(expr: SizeofExpr): T
     fun visitRefExpr(expr: RefExpr): T
     fun visitDerefExpr(expr: DerefExpr): T
+    fun visitErrorExpr(expr: ErrorExpr): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -139,6 +140,6 @@ data class ErrorExpr(
   override val location = Location.undefined()
 
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitErrorElement(this)
+    return visitor.visitErrorExpr(this)
   }
 }

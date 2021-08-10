@@ -81,6 +81,6 @@ data class ErrorDecl(
   override val location = Location.undefined()
 
   override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitErrorElement(this)
+    return visitor.visitErrorDecl(this)
   }
 }
