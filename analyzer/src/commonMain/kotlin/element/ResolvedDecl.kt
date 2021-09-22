@@ -8,6 +8,7 @@ import com.lorenzoog.plank.analyzer.PlankType
 import com.lorenzoog.plank.analyzer.StructProperty
 import com.lorenzoog.plank.grammar.element.Identifier
 import com.lorenzoog.plank.grammar.element.Location
+import com.lorenzoog.plank.grammar.element.ErrorPlankElement
 
 sealed class ResolvedDecl : ResolvedStmt()
 
@@ -72,19 +73,18 @@ data class ResolvedLetDecl(
   val mutable: Boolean,
   val value: TypedExpr,
   override val type: PlankType,
-  override val location: Location
+  override val location: Location,
 ) : ResolvedDecl(), TypedPlankElement {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitLetDecl(this)
   }
 }
 
-data class ViolatedDecl(
+data class ResolvedErrorDecl(
   override val message: String,
   override val arguments: List<Any>,
-) : ResolvedDecl(), ViolatedPlankElement {
-  override val location = Location.undefined()
-
+  override val location: Location = Location.undefined(),
+) : ResolvedDecl(), ErrorPlankElement {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitViolatedDecl(this)
   }

@@ -116,11 +116,11 @@ class InstructionMapper(
     return SizeofInstruction(sizeof)
   }
 
-  override fun visitReferenceExpr(reference: Expr.Reference): CompilerInstruction {
+  override fun visitRefExpr(reference: Expr.Reference): CompilerInstruction {
     return ReferenceInstruction(reference)
   }
 
-  override fun visitValueExpr(value: Expr.Value): CompilerInstruction {
+  override fun visitDerefExpr(value: Expr.Value): CompilerInstruction {
     return ValueInstruction(value)
   }
 

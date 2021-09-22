@@ -1,7 +1,7 @@
 package com.lorenzoog.plank.analyzer.element
 
-import com.lorenzoog.plank.analyzer.BindingViolation
 import com.lorenzoog.plank.analyzer.BindingContext
+import com.lorenzoog.plank.analyzer.BindingViolation
 import com.lorenzoog.plank.grammar.element.PlankFile
 import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
 

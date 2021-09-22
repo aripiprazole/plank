@@ -3,6 +3,7 @@ package com.lorenzoog.plank.analyzer.element
 import com.lorenzoog.plank.analyzer.PlankType
 import com.lorenzoog.plank.grammar.element.Location
 import com.lorenzoog.plank.grammar.element.PlankElement
+import com.lorenzoog.plank.grammar.element.ErrorPlankElement
 
 abstract class ResolvedStmt internal constructor() : PlankElement {
   interface Visitor<T> {
@@ -18,8 +19,8 @@ abstract class ResolvedStmt internal constructor() : PlankElement {
     fun visitFunDecl(decl: ResolvedFunDecl): T
     fun visitLetDecl(decl: ResolvedLetDecl): T
 
-    fun visitViolatedStmt(stmt: ViolatedStmt): T
-    fun visitViolatedDecl(stmt: ViolatedDecl): T
+    fun visitViolatedStmt(stmt: ResolvedErrorStmt): T
+    fun visitViolatedDecl(stmt: ResolvedErrorDecl): T
   }
 
   abstract fun <T> accept(visitor: Visitor<T>): T
@@ -45,10 +46,10 @@ data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Loca
   }
 }
 
-data class ViolatedStmt(
+data class ResolvedErrorStmt(
   override val message: String,
   override val arguments: List<Any>,
-) : ResolvedStmt(), ViolatedPlankElement {
+) : ResolvedStmt(), ErrorPlankElement {
   override val location = Location.undefined()
 
   override fun <T> accept(visitor: Visitor<T>): T {

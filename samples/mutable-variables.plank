@@ -16,7 +16,7 @@ fun main(argc: Int, argv: **Char): Void {
 
   println(person.name);
 
-  person.name = "new name";
+  person.name := "new name";
 
   println(person.name);
 
