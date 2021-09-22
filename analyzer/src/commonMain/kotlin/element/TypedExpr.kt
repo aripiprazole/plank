@@ -5,6 +5,7 @@ import com.lorenzoog.plank.analyzer.PlankType.Companion.pointer
 import com.lorenzoog.plank.analyzer.Variable
 import com.lorenzoog.plank.grammar.element.Identifier
 import com.lorenzoog.plank.grammar.element.Location
+import com.lorenzoog.plank.grammar.element.ErrorPlankElement
 
 sealed class TypedExpr : TypedPlankElement {
   interface Visitor<T> {
@@ -23,7 +24,7 @@ sealed class TypedExpr : TypedPlankElement {
     fun visitReferenceExpr(expr: TypedReferenceExpr): T
     fun visitValueExpr(expr: TypedValueExpr): T
     fun visitMatchExpr(expr: TypedMatchExpr): T
-    fun visitViolatedExpr(expr: ViolatedExpr): T
+    fun visitViolatedExpr(expr: TypedErrorExpr): T
   }
 
   abstract override val location: Location
@@ -170,11 +171,11 @@ data class TypedMatchExpr(
   }
 }
 
-data class ViolatedExpr(
+data class TypedErrorExpr(
   override val message: String,
-  override val arguments: List<Any>
-) : TypedExpr(), ViolatedPlankElement {
-  override val location = Location.undefined()
+  override val arguments: List<Any>,
+  override val location: Location = Location.undefined(),
+) : TypedExpr(), ErrorPlankElement {
   override val type = PlankType.untyped()
 
   override fun <T> accept(visitor: Visitor<T>): T {

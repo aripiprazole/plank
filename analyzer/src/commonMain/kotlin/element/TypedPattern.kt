@@ -2,6 +2,7 @@ package com.lorenzoog.plank.analyzer.element
 
 import com.lorenzoog.plank.analyzer.EnumType
 import com.lorenzoog.plank.analyzer.PlankType
+import com.lorenzoog.plank.grammar.element.ErrorPlankElement
 import com.lorenzoog.plank.grammar.element.Identifier
 import com.lorenzoog.plank.grammar.element.Location
 
@@ -22,7 +23,7 @@ data class TypedIdentPattern(
 data class ViolatedPattern(
   override val message: String,
   override val arguments: List<Any>
-) : TypedPattern(), ViolatedPlankElement {
+) : TypedPattern(), ErrorPlankElement {
   override val location = Location.undefined()
   override val type = PlankType.untyped()
 }

@@ -42,7 +42,7 @@ import com.lorenzoog.plank.grammar.element.StructDecl
 import com.lorenzoog.plank.grammar.element.TypeRef
 import com.lorenzoog.plank.grammar.element.visit
 
-class TreeWalker :
+abstract class TreeWalker :
   Expr.Visitor<Unit>,
   Stmt.Visitor<Unit>,
   Pattern.Visitor<Unit>,
