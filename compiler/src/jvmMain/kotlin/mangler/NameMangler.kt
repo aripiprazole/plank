@@ -1,7 +1,7 @@
-package com.lorenzoog.plank.compiler.mangler
+package com.gabrielleeg1.plank.compiler.mangler
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.grammar.element.Decl
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.grammar.element.Decl
 
 class NameMangler {
   fun mangle(context: CompilerContext, function: Decl.FunDecl): String {

@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.build
+package com.gabrielleeg1.plank.build
 
 object Dependencies {
   object Kotlin {

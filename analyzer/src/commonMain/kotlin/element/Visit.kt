@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.analyzer.element
+package com.gabrielleeg1.plank.analyzer.element
 
 import kotlin.jvm.JvmName
 

@@ -1,6 +1,6 @@
-package com.lorenzoog.plank.grammar.message
+package com.gabrielleeg1.plank.grammar.message
 
-import com.lorenzoog.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.element.Location
 import pw.binom.io.Closeable
 
 interface CompilerLogger : Closeable {

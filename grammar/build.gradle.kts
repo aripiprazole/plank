@@ -1,13 +1,13 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.lorenzoog.plank.build.Dependencies
+import com.gabrielleeg1.plank.build.Dependencies
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
 
 plugins {
   id("org.jetbrains.kotlin.multiplatform")
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -53,7 +53,7 @@ tasks {
       project.dependencies.create(Dependencies.Antlr.AntlrKotlinTarget)
     )
     maxHeapSize = "64m"
-    packageName = "com.lorenzoog.plank.grammar.generated"
+    packageName = "com.gabrielleeg1.plank.grammar.generated"
     arguments = listOf("-visitor")
     source = project.objects
       .sourceDirectorySet("commonAntlr", "commonAntlr")

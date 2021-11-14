@@ -1,10 +1,10 @@
-package com.lorenzoog.plank.analyzer.test
+package com.gabrielleeg1.plank.analyzer.test
 
-import com.lorenzoog.plank.analyzer.PlankType
-import com.lorenzoog.plank.analyzer.ResolutionException
-import com.lorenzoog.plank.analyzer.element.ResolvedPlankElement
-import com.lorenzoog.plank.analyzer.element.TypedPlankElement
-import com.lorenzoog.plank.grammar.element.ErrorPlankElement
+import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.analyzer.ResolutionException
+import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankElement
+import com.gabrielleeg1.plank.analyzer.element.TypedPlankElement
+import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 import kotlin.test.assertEquals
 
 fun assertNotViolated(node: ResolvedPlankElement) {

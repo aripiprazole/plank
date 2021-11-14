@@ -1,7 +1,7 @@
-package com.lorenzoog.plank.grammar.mapper
+package com.gabrielleeg1.plank.grammar.mapper
 
-import com.lorenzoog.plank.grammar.element.Location
-import com.lorenzoog.plank.grammar.message.CompilerLogger
+import com.gabrielleeg1.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 
 sealed class SyntaxViolation : RuntimeException() {
   abstract val location: Location

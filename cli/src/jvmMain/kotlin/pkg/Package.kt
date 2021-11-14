@@ -1,8 +1,8 @@
-package com.lorenzoog.plank.cli.pkg
+package com.gabrielleeg1.plank.cli.pkg
 
-import com.lorenzoog.plank.analyzer.ModuleTree
-import com.lorenzoog.plank.cli.compiler.CompilerOptions
-import com.lorenzoog.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.analyzer.ModuleTree
+import com.gabrielleeg1.plank.cli.compiler.CompilerOptions
+import com.gabrielleeg1.plank.grammar.element.PlankFile
 import kotlin.io.path.ExperimentalPathApi
 
 @ExperimentalPathApi

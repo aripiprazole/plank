@@ -1,10 +1,10 @@
-package com.lorenzoog.plank.analyzer
+package com.gabrielleeg1.plank.analyzer
 
-import com.lorenzoog.plank.analyzer.element.TypedConstExpr
-import com.lorenzoog.plank.analyzer.element.TypedExpr
-import com.lorenzoog.plank.analyzer.element.TypedInstanceExpr
-import com.lorenzoog.plank.grammar.element.Identifier
-import com.lorenzoog.plank.grammar.element.Location
+import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
+import com.gabrielleeg1.plank.grammar.element.Identifier
+import com.gabrielleeg1.plank.grammar.element.Location
 import kotlin.reflect.KProperty
 
 /**

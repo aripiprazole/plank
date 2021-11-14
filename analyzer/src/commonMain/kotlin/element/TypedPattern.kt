@@ -1,10 +1,10 @@
-package com.lorenzoog.plank.analyzer.element
+package com.gabrielleeg1.plank.analyzer.element
 
-import com.lorenzoog.plank.analyzer.EnumType
-import com.lorenzoog.plank.analyzer.PlankType
-import com.lorenzoog.plank.grammar.element.ErrorPlankElement
-import com.lorenzoog.plank.grammar.element.Identifier
-import com.lorenzoog.plank.grammar.element.Location
+import com.gabrielleeg1.plank.analyzer.EnumType
+import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
+import com.gabrielleeg1.plank.grammar.element.Identifier
+import com.gabrielleeg1.plank.grammar.element.Location
 
 sealed class TypedPattern : TypedPlankElement
 

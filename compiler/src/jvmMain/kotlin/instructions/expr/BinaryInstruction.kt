@@ -1,16 +1,16 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildFDiv
-import com.lorenzoog.plank.compiler.buildIAdd
-import com.lorenzoog.plank.compiler.buildIMul
-import com.lorenzoog.plank.compiler.buildISub
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.grammar.element.Expr.Binary.Operation
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildFDiv
+import com.gabrielleeg1.plank.compiler.buildIAdd
+import com.gabrielleeg1.plank.compiler.buildIMul
+import com.gabrielleeg1.plank.compiler.buildISub
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.grammar.element.Expr
+import com.gabrielleeg1.plank.grammar.element.Expr.Binary.Operation
+import com.gabrielleeg1.plank.shared.Right
+import com.gabrielleeg1.plank.shared.either
 
 class BinaryInstruction(val descriptor: Expr.Binary) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {

@@ -1,5 +1,5 @@
-package com.lorenzoog.plank.analyzer.element
+package com.gabrielleeg1.plank.analyzer.element
 
-import com.lorenzoog.plank.grammar.element.PlankElement
+import com.gabrielleeg1.plank.grammar.element.PlankElement
 
 interface ResolvedPlankElement : PlankElement

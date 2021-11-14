@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.shared
+package com.gabrielleeg1.plank.shared
 
 class Graph<T> {
   val values = mutableMapOf<T, MutableSet<T>>()

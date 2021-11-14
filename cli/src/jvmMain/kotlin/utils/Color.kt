@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.lorenzoog.plank.cli.utils
+package com.gabrielleeg1.plank.cli.utils
 
 import org.fusesource.jansi.Ansi
 

@@ -1,6 +1,6 @@
-package com.lorenzoog.plank.analyzer.element
+package com.gabrielleeg1.plank.analyzer.element
 
-import com.lorenzoog.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.analyzer.PlankType
 
 interface TypedPlankElement : ResolvedPlankElement {
   val type: PlankType

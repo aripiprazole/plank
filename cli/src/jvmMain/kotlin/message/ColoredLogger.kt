@@ -1,11 +1,11 @@
-package com.lorenzoog.plank.cli.message
+package com.gabrielleeg1.plank.cli.message
 
-import com.lorenzoog.plank.cli.utils.blue
-import com.lorenzoog.plank.cli.utils.green
-import com.lorenzoog.plank.cli.utils.red
-import com.lorenzoog.plank.cli.utils.yellow
-import com.lorenzoog.plank.grammar.element.Location
-import com.lorenzoog.plank.grammar.message.CompilerLogger
+import com.gabrielleeg1.plank.cli.utils.blue
+import com.gabrielleeg1.plank.cli.utils.green
+import com.gabrielleeg1.plank.cli.utils.red
+import com.gabrielleeg1.plank.cli.utils.yellow
+import com.gabrielleeg1.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 import java.io.PrintWriter
 
 class ColoredLogger(

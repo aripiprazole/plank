@@ -1,4 +1,4 @@
-import com.lorenzoog.plank.build.Dependencies
+import com.gabrielleeg1.plank.build.Dependencies
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 buildscript {
@@ -19,7 +19,7 @@ plugins {
   id("composite-build")
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 repositories {

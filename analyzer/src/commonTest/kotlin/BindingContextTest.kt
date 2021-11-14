@@ -1,6 +1,6 @@
-package com.lorenzoog.plank.analyzer.test
+package com.gabrielleeg1.plank.analyzer.test
 
-import com.lorenzoog.plank.analyzer.PlankType.Companion.int
+import com.gabrielleeg1.plank.analyzer.PlankType.Companion.int
 import kotlin.test.Test
 
 class BindingContextTest {

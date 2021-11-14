@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.build
+package com.gabrielleeg1.plank.build
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
