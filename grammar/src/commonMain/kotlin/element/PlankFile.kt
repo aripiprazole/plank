@@ -3,16 +3,13 @@ package com.lorenzoog.plank.grammar.element
 import com.lorenzoog.plank.grammar.generated.PlankLexer
 import com.lorenzoog.plank.grammar.generated.PlankParser
 import com.lorenzoog.plank.grammar.mapper.DescriptorMapper
-import com.lorenzoog.plank.grammar.mapper.SyntaxErrorListener
 import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import pw.binom.io.file.File
 import pw.binom.io.file.name
 import pw.binom.io.file.nameWithoutExtension
-import pw.binom.io.file.read
-import pw.binom.io.readText
-import pw.binom.io.utf8Reader
+import pw.binom.io.file.readText
 
 data class PlankFile(
   val content: String,
@@ -39,7 +36,7 @@ data class PlankFile(
     }
 
     fun of(file: File): PlankFile {
-      return of(file.read().utf8Reader().readText(), file.nameWithoutExtension, file.path)
+      return of(file.readText(), file.nameWithoutExtension, file.path)
         .copy(path = file.path)
         .let {
           if (it.moduleName == null) {
