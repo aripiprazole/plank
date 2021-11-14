@@ -28,7 +28,7 @@ import com.lorenzoog.plank.grammar.mapper.render
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
 import pw.binom.io.file.File
-import pw.binom.io.file.asBFile
+import pw.binom.io.file.binom
 
 @ExperimentalPathApi
 class Plank : CliktCommand() {
@@ -63,7 +63,7 @@ class Plank : CliktCommand() {
   private val output by option("--output", "-O")
     .help("Output file")
     .file()
-    .convert { it.asBFile }
+    .convert { it.binom }
     .required()
 
   private val debug by option("--debug", "-D")

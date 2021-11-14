@@ -16,7 +16,7 @@ object Dependencies {
   }
 
   object Binom {
-    const val File = "pw.binom.io:file:0.1.19"
+    const val File = "pw.binom.io:file:0.1.32"
   }
 
   object Antlr {
