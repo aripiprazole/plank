@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package com.lorenzoog.plank.shared
+package com.gabrielleeg1.plank.shared
 
 class BindScope<A> @PublishedApi internal constructor() {
   fun <B> Either<A, B>.bind(): B {

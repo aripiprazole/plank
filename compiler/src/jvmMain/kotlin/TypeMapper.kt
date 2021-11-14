@@ -1,15 +1,15 @@
-package com.lorenzoog.plank.compiler
+package com.gabrielleeg1.plank.compiler
 
-import com.lorenzoog.plank.analyzer.Builtin
-import com.lorenzoog.plank.analyzer.PlankType
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.compiler.instructions.llvmError
-import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
-import com.lorenzoog.plank.shared.Either
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
-import com.lorenzoog.plank.shared.map
+import com.gabrielleeg1.plank.analyzer.Builtin
+import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.llvmError
+import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
+import com.gabrielleeg1.plank.shared.Either
+import com.gabrielleeg1.plank.shared.Left
+import com.gabrielleeg1.plank.shared.Right
+import com.gabrielleeg1.plank.shared.either
+import com.gabrielleeg1.plank.shared.map
 import org.llvm4j.llvm4j.Type
 import org.llvm4j.optional.Err
 import org.llvm4j.optional.Ok

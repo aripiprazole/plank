@@ -1,15 +1,15 @@
-package com.lorenzoog.plank.analyzer
+package com.gabrielleeg1.plank.analyzer
 
-import com.lorenzoog.plank.analyzer.PlankType.Companion.function
-import com.lorenzoog.plank.analyzer.PlankType.Companion.int
-import com.lorenzoog.plank.analyzer.element.TypedConstExpr
-import com.lorenzoog.plank.analyzer.element.TypedExpr
-import com.lorenzoog.plank.grammar.element.Identifier
-import com.lorenzoog.plank.grammar.element.Location
-import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.grammar.id.BinaryId
-import com.lorenzoog.plank.grammar.id.LogicalId
-import com.lorenzoog.plank.grammar.id.UnaryId
+import com.gabrielleeg1.plank.analyzer.PlankType.Companion.function
+import com.gabrielleeg1.plank.analyzer.PlankType.Companion.int
+import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.grammar.element.Identifier
+import com.gabrielleeg1.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.id.BinaryId
+import com.gabrielleeg1.plank.grammar.id.LogicalId
+import com.gabrielleeg1.plank.grammar.id.UnaryId
 
 data class Variable(val mutable: Boolean, val name: Identifier, var value: TypedExpr)
 

@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.tooling.langserver
+package com.gabrielleeg1.plank.tooling.langserver
 
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.services.LanguageClient

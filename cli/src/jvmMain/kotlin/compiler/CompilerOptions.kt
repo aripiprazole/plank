@@ -1,8 +1,8 @@
-package com.lorenzoog.plank.cli.compiler
+package com.gabrielleeg1.plank.cli.compiler
 
-import com.lorenzoog.plank.cli.utils.child
-import com.lorenzoog.plank.cli.utils.children
-import com.lorenzoog.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.cli.utils.child
+import com.gabrielleeg1.plank.cli.utils.children
+import com.gabrielleeg1.plank.grammar.element.PlankFile
 import pw.binom.io.file.File
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory

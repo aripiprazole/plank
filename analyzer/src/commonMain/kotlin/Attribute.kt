@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.analyzer
+package com.gabrielleeg1.plank.analyzer
 
 /**
  * Represents an attribute to function/struct/enum.

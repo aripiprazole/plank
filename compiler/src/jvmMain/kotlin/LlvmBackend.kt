@@ -1,12 +1,12 @@
-package com.lorenzoog.plank.compiler
+package com.gabrielleeg1.plank.compiler
 
-import com.lorenzoog.plank.analyzer.BindingContext
-import com.lorenzoog.plank.analyzer.FileScope
-import com.lorenzoog.plank.analyzer.ModuleTree
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.EntryPoint
-import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.shared.depthFirstSearch
+import com.gabrielleeg1.plank.analyzer.BindingContext
+import com.gabrielleeg1.plank.analyzer.FileScope
+import com.gabrielleeg1.plank.analyzer.ModuleTree
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.EntryPoint
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.shared.depthFirstSearch
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeAsmParser
 import org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeAsmPrinter
@@ -45,7 +45,7 @@ class LlvmBackend(
       .depthFirstSearch(main.module)
       .asSequence()
       .mapNotNull(tree::findModule)
-      .map(com.lorenzoog.plank.analyzer.Module::scope)
+      .map(com.gabrielleeg1.plank.analyzer.Module::scope)
       .filterIsInstance<FileScope>()
       .map(FileScope::file)
       .toList()

@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.cli.utils
+package com.gabrielleeg1.plank.cli.utils
 
 import pw.binom.io.file.File
 import pw.binom.io.file.binom

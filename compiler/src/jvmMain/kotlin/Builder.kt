@@ -1,12 +1,12 @@
 @file:Suppress("DuplicatedCode")
 
-package com.lorenzoog.plank.compiler
+package com.gabrielleeg1.plank.compiler
 
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.compiler.instructions.llvmError
-import com.lorenzoog.plank.shared.Either
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.llvmError
+import com.gabrielleeg1.plank.shared.Either
+import com.gabrielleeg1.plank.shared.Left
+import com.gabrielleeg1.plank.shared.Right
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMBuildStructGEP
 import org.llvm4j.llvm4j.AllocaInstruction

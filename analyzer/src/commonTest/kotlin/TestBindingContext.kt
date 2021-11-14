@@ -1,9 +1,9 @@
-package com.lorenzoog.plank.analyzer.test
+package com.gabrielleeg1.plank.analyzer.test
 
-import com.lorenzoog.plank.analyzer.BindingContext
-import com.lorenzoog.plank.analyzer.ModuleTree
-import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.grammar.parser.LanguageParser
+import com.gabrielleeg1.plank.analyzer.BindingContext
+import com.gabrielleeg1.plank.analyzer.ModuleTree
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.parser.LanguageParser
 
 class TestBindingContext(
   code: String,

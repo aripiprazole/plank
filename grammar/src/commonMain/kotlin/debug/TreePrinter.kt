@@ -1,6 +1,6 @@
-package com.lorenzoog.plank.grammar.debug
+package com.gabrielleeg1.plank.grammar.debug
 
-import com.lorenzoog.plank.grammar.element.PlankElement
+import com.gabrielleeg1.plank.grammar.element.PlankElement
 
 object TreePrinter {
   fun print(any: Any): String {

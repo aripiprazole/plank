@@ -1,9 +1,9 @@
-package com.lorenzoog.plank.grammar.element
+package com.gabrielleeg1.plank.grammar.element
 
-import com.lorenzoog.plank.grammar.generated.PlankLexer
-import com.lorenzoog.plank.grammar.generated.PlankParser
-import com.lorenzoog.plank.grammar.mapper.DescriptorMapper
-import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
+import com.gabrielleeg1.plank.grammar.generated.PlankLexer
+import com.gabrielleeg1.plank.grammar.generated.PlankParser
+import com.gabrielleeg1.plank.grammar.mapper.DescriptorMapper
+import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import pw.binom.io.file.File

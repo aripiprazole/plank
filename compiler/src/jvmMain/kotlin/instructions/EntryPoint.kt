@@ -1,12 +1,12 @@
-package com.lorenzoog.plank.compiler.instructions
+package com.gabrielleeg1.plank.compiler.instructions
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildCall
-import com.lorenzoog.plank.compiler.buildReturn
-import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildCall
+import com.gabrielleeg1.plank.compiler.buildReturn
+import com.gabrielleeg1.plank.grammar.element.Decl
+import com.gabrielleeg1.plank.shared.Left
+import com.gabrielleeg1.plank.shared.Right
+import com.gabrielleeg1.plank.shared.either
 
 class EntryPoint : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either {

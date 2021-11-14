@@ -1,6 +1,6 @@
-package com.lorenzoog.plank.grammar.element
+package com.gabrielleeg1.plank.grammar.element
 
-import com.lorenzoog.plank.grammar.element.Location.Companion.undefined
+import com.gabrielleeg1.plank.grammar.element.Location.Companion.undefined
 
 class Identifier(val text: String, override val location: Location) : PlankElement {
   interface Visitor<T> {

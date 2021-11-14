@@ -1,14 +1,14 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.analyzer.Builtin
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildFCmp
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.grammar.element.Expr.Logical.Operation
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import com.gabrielleeg1.plank.analyzer.Builtin
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildFCmp
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.grammar.element.Expr
+import com.gabrielleeg1.plank.grammar.element.Expr.Logical.Operation
+import com.gabrielleeg1.plank.shared.Right
+import com.gabrielleeg1.plank.shared.either
 import org.llvm4j.llvm4j.FloatPredicate
 
 class LogicalInstruction(private val descriptor: Expr.Logical) : CompilerInstruction() {

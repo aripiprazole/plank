@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.lorenzoog.plank.build.Dependencies
+import com.gabrielleeg1.plank.build.Dependencies
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 plugins {
@@ -9,7 +9,7 @@ plugins {
   distribution
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -115,6 +115,6 @@ distributions {
 tasks.jar {
   from(jvmMain.output)
   manifest {
-    attributes["Main-Class"] = "com.lorenzoog.plank.cli.MainKt"
+    attributes["Main-Class"] = "com.gabrielleeg1.plank.cli.MainKt"
   }
 }

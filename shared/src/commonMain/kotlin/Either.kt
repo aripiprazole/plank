@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.lorenzoog.plank.shared
+package com.gabrielleeg1.plank.shared
 
 /**
  * Either datatype

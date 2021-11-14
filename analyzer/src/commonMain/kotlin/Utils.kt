@@ -1,6 +1,6 @@
-package com.lorenzoog.plank.analyzer
+package com.gabrielleeg1.plank.analyzer
 
-import com.lorenzoog.plank.grammar.element.TypeRef
+import com.gabrielleeg1.plank.grammar.element.TypeRef
 import kotlin.jvm.JvmName
 
 @JvmName("visitTypeReferenceOrElse")

@@ -15,6 +15,6 @@ dependencies {
 gradlePlugin {
   plugins.register("composite-build") {
     id = "composite-build"
-    implementationClass = "com.lorenzoog.plank.build.CompositeBuild"
+    implementationClass = "com.gabrielleeg1.plank.build.CompositeBuild"
   }
 }

@@ -1,19 +1,19 @@
-package com.lorenzoog.plank.compiler.instructions.element
+package com.gabrielleeg1.plank.compiler.instructions.element
 
-import com.lorenzoog.plank.analyzer.PlankType
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildBitcast
-import com.lorenzoog.plank.compiler.buildLoad
-import com.lorenzoog.plank.compiler.buildReturn
-import com.lorenzoog.plank.compiler.builder.getField
-import com.lorenzoog.plank.compiler.builder.getInstance
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
-import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.shared.Either
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildBitcast
+import com.gabrielleeg1.plank.compiler.buildLoad
+import com.gabrielleeg1.plank.compiler.buildReturn
+import com.gabrielleeg1.plank.compiler.builder.getField
+import com.gabrielleeg1.plank.compiler.builder.getInstance
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
+import com.gabrielleeg1.plank.grammar.element.Decl
+import com.gabrielleeg1.plank.shared.Either
+import com.gabrielleeg1.plank.shared.Left
+import com.gabrielleeg1.plank.shared.Right
+import com.gabrielleeg1.plank.shared.either
 import org.llvm4j.llvm4j.Function
 
 class IREnumConstructor(
