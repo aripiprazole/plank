@@ -1,26 +1,23 @@
-package com.lorenzoog.plank.grammar.element
+package com.gabrielleeg1.plank.grammar.element
 
-import com.lorenzoog.plank.grammar.generated.PlankLexer
-import com.lorenzoog.plank.grammar.generated.PlankParser
-import com.lorenzoog.plank.grammar.mapper.DescriptorMapper
-import com.lorenzoog.plank.grammar.mapper.SyntaxErrorListener
-import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
+import com.gabrielleeg1.plank.grammar.generated.PlankLexer
+import com.gabrielleeg1.plank.grammar.generated.PlankParser
+import com.gabrielleeg1.plank.grammar.mapper.DescriptorMapper
+import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import pw.binom.io.file.File
 import pw.binom.io.file.name
 import pw.binom.io.file.nameWithoutExtension
-import pw.binom.io.file.read
-import pw.binom.io.readText
-import pw.binom.io.utf8Reader
+import pw.binom.io.file.readText
 
 data class PlankFile(
-  val moduleName: String? = null,
+  val content: String,
+  val moduleName: QualifiedPath? = null,
   val path: String = "Anonymous",
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
 ) : PlankElement {
-
   interface Visitor<T> {
     fun visit(file: PlankFile): T = visitPlankFile(file)
 
@@ -28,18 +25,22 @@ data class PlankFile(
   }
 
   val realFile = File(path)
-  val module: String = moduleName ?: realFile.name
+  val module = moduleName?.toIdentifier() ?: Identifier.of(realFile.name)
   val isValid get() = violations.isEmpty()
 
-  override val location: Location = Location(-1, -1, this)
+  override val location = Location.undefined()
 
   companion object {
+    fun parser(code: String): PlankParser {
+      TODO()
+    }
+
     fun of(file: File): PlankFile {
-      return of(file.read().utf8Reader().readText(), file.nameWithoutExtension, file.path)
+      return of(file.readText(), file.nameWithoutExtension, file.path)
         .copy(path = file.path)
         .let {
           if (it.moduleName == null) {
-            it.copy(moduleName = file.nameWithoutExtension)
+            it.copy(moduleName = QualifiedPath.from(file.nameWithoutExtension))
           } else {
             it
           }
@@ -47,15 +48,12 @@ data class PlankFile(
     }
 
     fun of(text: String, module: String = "anonymous", path: String = module): PlankFile {
-      val file = PlankFile(moduleName = module, path = path)
+      val file = PlankFile(text, moduleName = QualifiedPath.from(module), path = path)
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
       val parser = PlankParser(CommonTokenStream(lexer))
-      val listener = SyntaxErrorListener(file).also {
-        parser.addErrorListener(it)
-      }
 
-      return DescriptorMapper(file, listener.violations).visitProgram(parser.program())
+      return DescriptorMapper(file).visitPlankFile(parser.plankFile())
     }
   }
 }

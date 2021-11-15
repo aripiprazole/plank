@@ -1,8 +1,8 @@
-package com.lorenzoog.plank.cli.compiler
+package com.gabrielleeg1.plank.cli.compiler
 
-import com.lorenzoog.plank.analyzer.BindingViolation
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.grammar.mapper.SyntaxViolation
+import com.gabrielleeg1.plank.analyzer.BindingViolation
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import org.llvm4j.llvm4j.Module
 
 sealed class CompileError : Throwable() {

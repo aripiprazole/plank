@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.grammar.debug
+package com.gabrielleeg1.plank.grammar.debug
 
 import kotlin.reflect.full.memberProperties
 

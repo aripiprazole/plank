@@ -1,12 +1,12 @@
-package com.lorenzoog.plank.analyzer
+package com.gabrielleeg1.plank.analyzer
 
-import com.lorenzoog.plank.grammar.element.TypeDef
+import com.gabrielleeg1.plank.grammar.element.TypeRef
 import kotlin.jvm.JvmName
 
-@JvmName("visitPkTypeTypeDefNullable")
-inline fun TypeDef.Visitor<PlankType>.visit(
-  typeDef: TypeDef?,
-  orElse: () -> PlankType = { Builtin.Void }
+@JvmName("visitTypeReferenceOrElse")
+inline fun TypeRef.Visitor<PlankType>.visit(
+    typeDef: TypeRef?,
+    orElse: () -> PlankType
 ): PlankType {
   return typeDef?.let { visit(it) } ?: orElse()
 }

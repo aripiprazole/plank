@@ -1,45 +1,38 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.llvmError
-import com.lorenzoog.plank.compiler.instructions.unresolvedFieldErrror
-import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
-import org.llvm4j.llvm4j.Constant
-import org.llvm4j.optional.Err
-import org.llvm4j.optional.Ok
+import arrow.core.computations.either
+import arrow.core.left
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.builder.getInstance
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.llvmError
+import com.gabrielleeg1.plank.compiler.instructions.unresolvedFieldError
+import com.gabrielleeg1.plank.grammar.element.Identifier
+import org.llvm4j.llvm4j.NamedStructType
 
-class InstanceInstruction(private val descriptor: Expr.Instance) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
-    val name = descriptor.name.text
+class InstanceInstruction(
+  private val descriptor: TypedInstanceExpr,
+  private val isPointer: Boolean = false,
+) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+    val struct = descriptor.type.toType().bind()
 
-    // todo fix me finding only global types
-    val struct = binding.findStruct(Expr.Access(descriptor.name, descriptor.location))
-      ?: return Left(unresolvedTypeError(name))
+    ensure(struct is NamedStructType) { llvmError("TODO") }
 
-    val llvmStruct = findStruct(name)
-      ?: return Left(unresolvedTypeError(name))
+    val arguments = descriptor.type.properties
+      .map { (name, property) ->
+        val (_, value) = descriptor.arguments.entries.find { it.key == property.name }
+          ?: unresolvedFieldError(name.text, property.type)
+            .left()
+            .bind<Map.Entry<Identifier, TypedExpr>>()
 
-    val arguments = struct.fields.map { field ->
-      val (_, value) = descriptor.arguments.entries.find { it.key.text == field.name }
-        ?: return Left(unresolvedFieldErrror(field.name, struct))
+        value.toInstruction().codegen().bind()
+      }
+      .toTypedArray()
 
-      !value.toInstruction().codegen()
-    }
-
-    val const = llvmStruct.getConstant(
-      *arguments.map { it as Constant }.toTypedArray(),
-      isPacked = false
-    )
-
-    when (const) {
-      is Ok -> Right(const.value)
-      is Err -> Left(llvmError(const.error.message ?: "failed to create struct instance"))
-    }
+    getInstance(struct as NamedStructType, *arguments, isPointer = isPointer).bind()
   }
 }

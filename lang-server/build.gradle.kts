@@ -1,4 +1,4 @@
-import com.lorenzoog.plank.build.Dependencies
+import com.gabrielleeg1.plank.build.Dependencies
 
 plugins {
   kotlin("multiplatform")
@@ -6,7 +6,7 @@ plugins {
   java
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 kotlin {
@@ -52,7 +52,7 @@ tasks.shadowJar {
 
   from(jvmMain.output)
   manifest {
-    attributes["Main-Class"] = "com.lorenzoog.plank.tooling.langserver.MainKt"
+    attributes["Main-Class"] = "com.gabrielleeg1.plank.tooling.langserver.MainKt"
   }
 
   configurations = mutableListOf(jvmMain.compileDependencyFiles as Configuration)

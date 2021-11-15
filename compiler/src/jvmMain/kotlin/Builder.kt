@@ -1,8 +1,14 @@
 @file:Suppress("DuplicatedCode")
 
-package com.lorenzoog.plank.compiler
+package com.gabrielleeg1.plank.compiler
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.llvmError
 import org.bytedeco.llvm.global.LLVM
+import org.bytedeco.llvm.global.LLVM.LLVMBuildStructGEP
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.BasicBlock
 import org.llvm4j.llvm4j.BranchInstruction
@@ -82,6 +88,14 @@ fun CompilerContext.buildGEP(
   )
 }
 
+fun CompilerContext.buildStructGEP(
+  aggregate: Value,
+  index: Int,
+  name: String? = null
+): Value {
+  return Value(LLVMBuildStructGEP(builder.ref, aggregate.ref, index, name ?: ""))
+}
+
 fun CompilerContext.buildICmp(
   predicate: IntPredicate,
   lhs: Value,
@@ -132,6 +146,28 @@ fun CompilerContext.buildFPToUI(value: Value, type: IntegerType, name: String? =
   return builder.buildFloatToUnsigned(value, type, Option.of(name))
 }
 
-fun CompilerContext.buildUIToFP(value: Value, type: FloatingPointType, name: String? = null): Value {
+fun CompilerContext.buildUIToFP(
+  value: Value,
+  type: FloatingPointType,
+  name: String? = null
+): Value {
   return builder.buildUnsignedToFloat(value, type, Option.of(name))
 }
+
+fun CompilerContext.buildBitcast(op: Value, type: Type, name: String? = null): Value {
+  return builder.buildBitCast(op, type, Option.of(name))
+}
+
+val CompilerContext.insertionBlock: Either<CodegenError, BasicBlock>
+  get() =
+    builder.getInsertionBlock().toNullable()
+      ?.right()
+      ?: llvmError("can not reach function in this context").left()
+
+val CompilerContext.currentFunction: Either<CodegenError, Function>
+  get() =
+    builder.getInsertionBlock().toNullable()
+      ?.getFunction()
+      ?.toNullable()
+      ?.right()
+      ?: llvmError("can not reach function in this context").left()

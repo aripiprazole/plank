@@ -1,20 +1,15 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.getSize
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.unresolvedTypeError
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import arrow.core.computations.either
+import arrow.core.left
+import com.gabrielleeg1.plank.analyzer.element.TypedSizeofExpr
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.getSize
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class SizeofInstruction(private val descriptor: Expr.Sizeof) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
-    val struct = findStruct(descriptor.name.text)
-      ?: return Left(unresolvedTypeError(descriptor.name.text))
-
-    Right(struct.getSize())
+class SizeofInstruction(private val descriptor: TypedSizeofExpr) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+    descriptor.type.toType().bind().getSize()
   }
 }

@@ -1,4 +1,4 @@
-import com.lorenzoog.plank.build.Dependencies
+import com.gabrielleeg1.plank.build.Dependencies
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 buildscript {
@@ -19,7 +19,7 @@ plugins {
   id("composite-build")
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -40,7 +40,7 @@ subprojects {
     mavenCentral()
     mavenLocal()
     jcenter()
-    maven("https://repo.binom.pw/releases")
+    maven("https://repo.binom.pw")
     maven("https://jitpack.io")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")

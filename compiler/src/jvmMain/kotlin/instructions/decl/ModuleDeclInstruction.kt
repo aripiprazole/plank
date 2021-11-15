@@ -1,22 +1,21 @@
-package com.lorenzoog.plank.compiler.instructions.decl
+package com.gabrielleeg1.plank.compiler.instructions.decl
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import arrow.core.computations.either
+import com.gabrielleeg1.plank.analyzer.element.ResolvedModuleDecl
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class ModuleDeclInstruction(private val descriptor: Decl.ModuleDecl) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
+class ModuleDeclInstruction(private val descriptor: ResolvedModuleDecl) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
     createNestedScope(descriptor.name.text) nestedScope@{
       this@codegen.addModule(this@nestedScope)
 
       descriptor.content.forEach {
-        !it.toInstruction().codegen()
+        it.toInstruction().codegen().bind()
       }
     }
 
-    Right(runtime.nullConstant)
+    runtime.nullConstant
   }
 }

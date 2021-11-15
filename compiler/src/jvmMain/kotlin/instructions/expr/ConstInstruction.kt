@@ -1,17 +1,16 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildGlobalStringPtr
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.invalidConstantError
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
+import arrow.core.Either
+import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildGlobalStringPtr
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.invalidConstantError
 
-class ConstInstruction(private val descriptor: Expr.Const) : CompilerInstruction() {
+class ConstInstruction(private val descriptor: TypedConstExpr) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult {
-    return Right(
+    return Either.Right(
       when (val value = descriptor.value) {
         is Double -> runtime.types.double.getConstant(value.toDouble())
         is Int -> runtime.types.int.getConstant(value.toInt())
@@ -20,7 +19,7 @@ class ConstInstruction(private val descriptor: Expr.Const) : CompilerInstruction
         is Float -> runtime.types.float.getConstant(value.toDouble())
         is Boolean -> if (value) runtime.trueConstant else runtime.falseConstant
         is String -> buildGlobalStringPtr(value, "str")
-        else -> return Left(invalidConstantError(value))
+        else -> return Either.Left(invalidConstantError(value))
       }
     )
   }

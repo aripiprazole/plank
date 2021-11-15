@@ -1,12 +1,12 @@
-package com.lorenzoog.plank.cli.compiler
+package com.gabrielleeg1.plank.cli.compiler
 
-import com.lorenzoog.plank.cli.utils.child
-import com.lorenzoog.plank.cli.utils.children
-import com.lorenzoog.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.cli.utils.child
+import com.gabrielleeg1.plank.cli.utils.children
+import com.gabrielleeg1.plank.grammar.element.PlankFile
 import pw.binom.io.file.File
-import pw.binom.io.file.asBFile
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
+import pw.binom.io.file.binom
 
 @ExperimentalPathApi
 class CompilerOptions(plankHome: File) {
@@ -17,7 +17,7 @@ class CompilerOptions(plankHome: File) {
   var linker = "clang++"
   var output = File("main")
 
-  var dist = createTempDirectory().toFile().asBFile
+  var dist = createTempDirectory().toFile().binom
 
   val objects by lazy { dist.child("objects", recreate = true, dir = true) }
   val ir by lazy { dist.child("ir", recreate = true, dir = true) }
@@ -29,7 +29,4 @@ class CompilerOptions(plankHome: File) {
 
   /** TODO: remove ffi from stdlib */
   var runtime = plankHome.child("runtime")
-
-  /** TODO: remove ffi from stdlib */
-  val runtimeTarget by lazy { dist.child("cmake", recreate = true, dir = true) }
 }

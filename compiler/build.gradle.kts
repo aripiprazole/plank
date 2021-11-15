@@ -1,10 +1,10 @@
-import com.lorenzoog.plank.build.Dependencies
+import com.gabrielleeg1.plank.build.Dependencies
 
 plugins {
   id("org.jetbrains.kotlin.multiplatform")
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 kotlin {
@@ -14,6 +14,7 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
+        compileOnly(Dependencies.Arrow.Core)
       }
     }
     val commonTest by getting {

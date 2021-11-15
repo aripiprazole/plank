@@ -1,11 +1,44 @@
-package com.lorenzoog.plank.analyzer
+package com.gabrielleeg1.plank.analyzer
 
-import com.lorenzoog.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.analyzer.PlankType.Companion.function
+import com.gabrielleeg1.plank.analyzer.PlankType.Companion.int
+import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.grammar.element.Identifier
+import com.gabrielleeg1.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.id.BinaryId
+import com.gabrielleeg1.plank.grammar.id.LogicalId
+import com.gabrielleeg1.plank.grammar.id.UnaryId
 
-data class Variable(val mutable: Boolean, val type: PlankType)
+data class Variable(val mutable: Boolean, val name: Identifier, var value: TypedExpr)
 
 class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
-  override val name: String = "Global"
+  /**
+   * Init compiler-defined functions
+   */
+  init {
+    // Add default binary operators
+    declare(BinaryId.add(), function(int(), int(), int()))
+    declare(BinaryId.sub(), function(int(), int(), int()))
+    declare(BinaryId.times(), function(int(), int(), int()))
+    declare(BinaryId.div(), function(int(), int(), int()))
+    declare(BinaryId.div(), function(int(), int(), int()))
+
+    // Add default logical operators
+    declare(LogicalId.eq(), function(int(), int(), int()))
+    declare(LogicalId.neq(), function(int(), int(), int()))
+    declare(LogicalId.gt(), function(int(), int(), int()))
+    declare(LogicalId.gte(), function(int(), int(), int()))
+    declare(LogicalId.lt(), function(int(), int(), int()))
+    declare(LogicalId.lte(), function(int(), int(), int()))
+
+    // Add default unary operators
+    declare(UnaryId.plus(), function(int(), int()))
+    declare(UnaryId.neg(), function(int(), int()))
+  }
+
+  override val name = Identifier.of("Global")
   override val enclosing: Scope? = null
 }
 
@@ -14,7 +47,7 @@ data class FileScope(
   override val enclosing: Scope? = null,
   override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
-  override val name: String = file.module
+  override val name = file.module
   override val nested = false
 }
 
@@ -23,13 +56,13 @@ data class ModuleScope(
   override val enclosing: Scope,
   override val moduleTree: ModuleTree = ModuleTree()
 ) : Scope() {
-  override val name: String = "${enclosing.name}.${module.name}"
+  override val name: Identifier = Identifier.of("${enclosing.name}.${module.name}")
 }
 
 class FunctionScope(
-  override val name: String,
+  val function: FunctionType,
+  override val name: Identifier,
   override val enclosing: Scope? = null,
-  val function: PlankType.Callable,
   override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
   val parameters = function.parameters
@@ -37,20 +70,20 @@ class FunctionScope(
 }
 
 class ClosureScope(
-  override val name: String,
+  override val name: Identifier,
   override val enclosing: Scope,
   override val moduleTree: ModuleTree = ModuleTree()
 ) : Scope()
 
 sealed class Scope {
-  abstract val name: String
+  abstract val name: Identifier
   abstract val enclosing: Scope?
   abstract val moduleTree: ModuleTree
   open val nested: Boolean get() = enclosing != null
 
-  val variables = mutableMapOf<String, Variable>()
+  val variables = mutableMapOf<Identifier, Variable>()
 
-  private val types = mutableMapOf<String, PlankType.Struct>()
+  private val types = mutableMapOf<Identifier, PlankType>()
   private val expanded = mutableListOf<Scope>()
 
   fun expand(another: Scope): Scope {
@@ -59,47 +92,52 @@ sealed class Scope {
     return this
   }
 
-  fun declare(name: String, type: PlankType, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, type)
+  /**
+   * Declares a compiler-defined variable with type [type] in the context
+   */
+  fun declare(name: Identifier, type: PlankType, mutable: Boolean = false) {
+    variables[name] = Variable(mutable, name, TypedConstExpr(Unit, type, Location.undefined()))
   }
 
-  fun getOrCreate(name: String): PlankType {
+  fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
+    variables[name] = Variable(mutable, name, value)
+  }
+
+  fun getOrCreate(name: Identifier): PlankType {
     return types.getOrPut(name) {
-      PlankType.Struct(name)
+      StructType(name)
     }
   }
 
-  fun create(name: String, type: PlankType.Struct) {
+  fun create(name: Identifier, type: PlankType) {
     types[name] = type
   }
 
-  fun findType(name: String): PlankType? {
-    return Builtin.values[name] ?: findStructure(name)
-  }
-
-  fun findModule(name: String): Module? {
+  fun findModule(name: Identifier): Module? {
     return moduleTree.findModule(name)
       ?: enclosing?.findModule(name)
   }
 
-  fun findStructure(name: String): PlankType.Struct? {
+  fun findType(name: Identifier): PlankType? {
     return types[name]
-      ?: enclosing?.findStructure(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findStructure(name) }.firstOrNull()
+      ?: enclosing?.findType(name)
+      ?: expanded.filter { it != this }.mapNotNull { it.findType(name) }.firstOrNull()
   }
 
   // todo add usage tracker
-  fun findVariableOn(scope: Scope, name: String): Variable? {
+  fun findVariableOn(scope: Scope, name: Identifier): Variable? {
     return variables[name]
   }
 
-  fun findVariable(name: String): Variable? {
+  fun findVariable(name: Identifier): Variable? {
     return variables[name]
       ?: enclosing?.findVariable(name)
       ?: expanded.filter { it != this }.mapNotNull { it.findVariable(name) }.firstOrNull()
   }
 
-  fun findFunction(name: String): PlankType.Callable? {
-    return findVariable(name)?.type as? PlankType.Callable
+  fun findFunction(name: Identifier): FunctionType? {
+    return findVariable(name)
+      ?.value
+      ?.type as? FunctionType
   }
 }

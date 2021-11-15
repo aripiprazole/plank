@@ -1,436 +1,603 @@
-package com.lorenzoog.plank.grammar.mapper
+package com.gabrielleeg1.plank.grammar.mapper
 
-import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.grammar.element.Decl.FunDecl.Modifier
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.grammar.element.Identifier
-import com.lorenzoog.plank.grammar.element.Location
-import com.lorenzoog.plank.grammar.element.PlankElement
-import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.grammar.element.Stmt
-import com.lorenzoog.plank.grammar.element.TypeDef
-import com.lorenzoog.plank.grammar.generated.PlankParser
-import com.lorenzoog.plank.grammar.generated.PlankParserBaseVisitor
-import com.lorenzoog.plank.grammar.utils.location
+import com.gabrielleeg1.plank.grammar.element.AccessExpr
+import com.gabrielleeg1.plank.grammar.element.AccessTypeRef
+import com.gabrielleeg1.plank.grammar.element.ArrayTypeRef
+import com.gabrielleeg1.plank.grammar.element.AssignExpr
+import com.gabrielleeg1.plank.grammar.element.CallExpr
+import com.gabrielleeg1.plank.grammar.element.ConstExpr
+import com.gabrielleeg1.plank.grammar.element.Decl
+import com.gabrielleeg1.plank.grammar.element.DerefExpr
+import com.gabrielleeg1.plank.grammar.element.EnumDecl
+import com.gabrielleeg1.plank.grammar.element.ErrorExpr
+import com.gabrielleeg1.plank.grammar.element.Expr
+import com.gabrielleeg1.plank.grammar.element.ExprStmt
+import com.gabrielleeg1.plank.grammar.element.FunDecl
+import com.gabrielleeg1.plank.grammar.element.FunctionTypeRef
+import com.gabrielleeg1.plank.grammar.element.GetExpr
+import com.gabrielleeg1.plank.grammar.element.GroupExpr
+import com.gabrielleeg1.plank.grammar.element.IdentPattern
+import com.gabrielleeg1.plank.grammar.element.Identifier
+import com.gabrielleeg1.plank.grammar.element.IfExpr
+import com.gabrielleeg1.plank.grammar.element.ImportDecl
+import com.gabrielleeg1.plank.grammar.element.InstanceExpr
+import com.gabrielleeg1.plank.grammar.element.LetDecl
+import com.gabrielleeg1.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.element.MatchExpr
+import com.gabrielleeg1.plank.grammar.element.ModuleDecl
+import com.gabrielleeg1.plank.grammar.element.NamedTuplePattern
+import com.gabrielleeg1.plank.grammar.element.Pattern
+import com.gabrielleeg1.plank.grammar.element.PlankElement
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.element.PointerTypeRef
+import com.gabrielleeg1.plank.grammar.element.QualifiedPath
+import com.gabrielleeg1.plank.grammar.element.RefExpr
+import com.gabrielleeg1.plank.grammar.element.ReturnStmt
+import com.gabrielleeg1.plank.grammar.element.SizeofExpr
+import com.gabrielleeg1.plank.grammar.element.Stmt
+import com.gabrielleeg1.plank.grammar.element.StructDecl
+import com.gabrielleeg1.plank.grammar.element.TypeRef
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.AccessTypeRefContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ArrayTypeRefContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.AssignExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.AssignExprHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.AssignExprProviderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.AssignValueHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryExprHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryValueHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.BooleanPrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.CallArgumentContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.CallExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ConstExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.DecimalPrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.DeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.DeclStmtContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.DefinedLetDeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.DerefExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.EnumDeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ExprStmtContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.FileModuleContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.FunDeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.FunctionTypeRefContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.GetArgumentContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.GroupPrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.IdentPatternContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.IdentifierPrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.IfExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ImportDeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.InferLetDeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.InstanceExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.IntPrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.LogicalExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.LogicalExprHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.LogicalValueHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.MatchExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ModuleDeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.NamedTuplePatternContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.PatternContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.PlankFileContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.PointerTypeRefContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.QualifiedPathContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.RefExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ReferenceContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.ReturnStmtContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.SizeofExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.StmtContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.StringPrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.StructDeclContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.TypeReferenceContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.UnaryExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.UnaryExprHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.UnaryValueHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParserBaseVisitor
+import org.antlr.v4.kotlinruntime.RuleContext
 import org.antlr.v4.kotlinruntime.Token
+import org.antlr.v4.kotlinruntime.misc.Interval
 import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.ParseTree
 import org.antlr.v4.kotlinruntime.tree.RuleNode
+import org.antlr.v4.kotlinruntime.tree.TerminalNode
 
-class DescriptorMapper(
-  private val file: PlankFile,
-  violations: List<SyntaxViolation>,
-) : PlankParserBaseVisitor<PlankElement>() {
-  private val violations = violations.toMutableList()
-
-  override fun visit(tree: ParseTree): PlankElement {
-    try {
-      return super.visit(tree)!!
-    } catch (violation: SyntaxViolation) {
-      violations += violation
-    }
-
-    return file.copy(
-      program = emptyList(),
-      violations = violations
-    )
+class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElement>() {
+  override fun visit(tree: ParseTree): PlankElement? {
+    return tree.accept(this)
   }
 
-  // program
-  override fun visitProgram(ctx: PlankParser.ProgramContext): PlankFile {
-    val moduleName = ctx.findFileModule()?.findModuleName()?.text
+  override fun visitChildren(node: RuleNode): PlankElement? {
+    return null
+  }
 
-    if (violations.isNotEmpty()) {
-      return file.copy(
-        moduleName = moduleName,
-        program = emptyList(),
-        violations = violations
-      )
-    }
+  override fun visitErrorNode(node: ErrorNode): Expr {
+    return ErrorExpr(node.text)
+  }
 
-    return file.copy(
+  override fun visitTerminal(node: TerminalNode): Identifier {
+    return Identifier(node.text, node.sourceInterval.location())
+  }
+
+  override fun visitPlankFile(ctx: PlankFileContext): PlankFile {
+    val moduleName = ctx.findFileModule()?.let(::visitFileModule)
+
+    return PlankFile(
+      content = ctx.text,
       moduleName = moduleName,
-      program = ctx.findDecl().map { visitDecl(it) },
-      violations = violations,
+      path = file.path,
     )
   }
 
-  // typedef
-  override fun visitTypeDef(ctx: PlankParser.TypeDefContext): TypeDef {
-    val declContext = ctx.findArrayType()
-      ?: ctx.findFunType()
-      ?: ctx.findNameType()
-      ?: ctx.findPtrType()
-      ?: ctx.findGenericAccess()
-      ?: ctx.findGenericUse()
-      ?: throw ExpectingViolation("type definition", ctx.toString(), ctx.start.location)
+  override fun visitFileModule(ctx: FileModuleContext): QualifiedPath {
+    val path = ctx.path ?: error("No path received in file module context")
 
-    return visit(declContext) as TypeDef
+    return path.qualifiedPath()
   }
 
-  override fun visitGenericAccess(ctx: PlankParser.GenericAccessContext): PlankElement {
-    return TypeDef.GenericAccess(ctx.name!!.asIdentifier(), ctx.start.location)
+  override fun visitAccessTypeRef(ctx: AccessTypeRefContext): TypeRef {
+    val path = ctx.path ?: error("No path received in access type ref")
+
+    return AccessTypeRef(path.qualifiedPath(), ctx.location())
   }
 
-  override fun visitGenericUse(ctx: PlankParser.GenericUseContext): PlankElement {
-    val arguments = ctx.findTypeDef().map { visitTypeDef(it) }
-    return TypeDef.GenericUse(
-      TypeDef.Name(ctx.name!!.asIdentifier(), ctx.name.location),
-      arguments,
-      ctx.GREATER()?.symbol.location
-    )
+  override fun visitFunctionTypeRef(ctx: FunctionTypeRefContext): TypeRef {
+    val parameters = ctx.findTypeReference().map { it.typeRef() }
+    val returnType = ctx.returnType ?: error("No return type received in function type ref")
+
+    return FunctionTypeRef(parameters, returnType.typeRef(), ctx.location())
   }
 
-  override fun visitPtrType(ctx: PlankParser.PtrTypeContext): PlankElement {
-    return TypeDef.Ptr(visitTypeDef(ctx.findTypeDef()!!), ctx.start.location)
+  override fun visitPointerTypeRef(ctx: PointerTypeRefContext): TypeRef {
+    val typeRef = ctx.type ?: error("No type received in array type ref")
+
+    return PointerTypeRef(typeRef.typeRef(), ctx.location())
   }
 
-  override fun visitFunType(ctx: PlankParser.FunTypeContext): TypeDef {
-    val parameters = ctx.children
-      .orEmpty()
-      .filterIsInstance<PlankParser.TypeDefContext>()
-      .let { it.take(it.size - 1) }
-      .map { visitTypeDef(it) }
+  override fun visitArrayTypeRef(ctx: ArrayTypeRefContext): TypeRef {
+    val typeRef = ctx.type ?: error("No type received in array type ref")
 
-    val returnType = visitTypeDef(ctx.returnType!!)
-
-    return TypeDef.Function(parameters, returnType, ctx.start.location)
+    return ArrayTypeRef(typeRef.typeRef(), ctx.location())
   }
 
-  override fun visitNameType(ctx: PlankParser.NameTypeContext): TypeDef {
-    return TypeDef.Name(ctx.name!!.asIdentifier(), ctx.start.location)
+  override fun visitModuleDecl(ctx: ModuleDeclContext): Decl {
+    val path = ctx.path ?: error("No path received in module decl context")
+    val content = ctx.findDecl().map { it.decl() }
+
+    return ModuleDecl(path.qualifiedPath(), content, ctx.location())
   }
 
-  override fun visitArrayType(ctx: PlankParser.ArrayTypeContext): TypeDef {
-    return TypeDef.Array(visitTypeDef(ctx.findTypeDef()!!), ctx.start.location)
-  }
+  override fun visitStructDecl(ctx: StructDeclContext): Decl {
+    val name = ctx.name ?: error("No name received in struct decl context")
+    val properties = ctx.findProperty()
+      .map { propertyCtx ->
+        val parameter = propertyCtx.findParameter()
+          ?: error("No parameter received in property context")
 
-  // declarations
-  override fun visitDecl(ctx: PlankParser.DeclContext): Decl {
-    return visit(
-      ctx.findLetDecl()
-        ?: ctx.findFunDecl()
-        ?: ctx.findStructDecl()
-        ?: ctx.findModuleDecl()
-        ?: ctx.findImportDecl()
-        ?: throw ExpectingViolation("declaration", ctx.toString(), ctx.start.location)
-    ) as Decl
-  }
+        val propertyMutable = when (propertyCtx.MUTABLE()) {
+          null -> false
+          else -> true
+        }
+        val propertyName = parameter.name ?: error("No name received in parameter context")
+        val propertyType = parameter.type ?: error("No type received in parameter context")
 
-  override fun visitImportDecl(ctx: PlankParser.ImportDeclContext): PlankElement {
-    val name = ctx.name!!.asIdentifier()
-
-    return Decl.ImportDecl(name, ctx.start.location)
-  }
-
-  override fun visitModuleDecl(ctx: PlankParser.ModuleDeclContext): PlankElement {
-    val name = ctx.name!!.asIdentifier()
-    val body = ctx.findDecl().map { visitDecl(it) }
-
-    return Decl.ModuleDecl(name, body, ctx.start.location)
-  }
-
-  override fun visitLetDecl(ctx: PlankParser.LetDeclContext): Decl {
-    val name = ctx.name!!.asIdentifier()
-    val mutable = ctx.MUTABLE() != null
-    val type = ctx.type?.let { visitTypeDef(it) }
-    val value = visitExpr(ctx.value!!)
-
-    return Decl.LetDecl(name, mutable, type, value, ctx.start.location)
-  }
-
-  override fun visitNativeFunDecl(ctx: PlankParser.NativeFunDeclContext): Decl {
-    val header = ctx.findFunHeader()!!
-    val type = header.findFunctionType()
-    val name = header.name!!.asIdentifier()
-    val parameters = header.findParameter().associate { it.name!! to visitTypeDef(it.type!!) }
-
-    return Decl.FunDecl(listOf(Modifier.Native), name, type, emptyList(), parameters, type.location)
-  }
-
-  override fun visitFunDecl(ctx: PlankParser.FunDeclContext): Decl {
-    ctx.findNativeFunDecl()?.let { return visitNativeFunDecl(it) }
-
-    val header = ctx.findFunHeader()!!
-    val type = header.findFunctionType()
-    val name = header.name!!.asIdentifier()
-    val body = ctx.findStmt().map { visitStmt(it) }
-    val parameters = header.findParameter().associate { it.name!! to visitTypeDef(it.type!!) }
-
-    return Decl.FunDecl(emptyList(), name, type, body, parameters, type.location)
-  }
-
-  override fun visitStructDecl(ctx: PlankParser.StructDeclContext): Decl {
-    val name = ctx.name!!
-    val fields = ctx.findStructField().map { field ->
-      val fieldMutable = field.MUTABLE() != null
-      val fieldName = field.findParameter()!!.name!!
-      val fieldType = visitTypeDef(field.findParameter()!!.type!!)
-
-      Decl.StructDecl.Field(fieldMutable, fieldName.asIdentifier(), fieldType)
-    }
-
-    return Decl.StructDecl(name.asIdentifier(), fields, ctx.start.location)
-  }
-
-  // statements
-  override fun visitStmt(ctx: PlankParser.StmtContext): Stmt {
-    val stmt = visit(
-      ctx.findDecl()
-        ?: ctx.findExprStmt()
-        ?: ctx.findIfExpr()
-        ?: ctx.findReturnStmt()
-        ?: throw ExpectingViolation("statement", ctx.toString(), ctx.start.location)
-    )
-
-    return when (stmt) {
-      is Expr -> Stmt.ExprStmt(stmt, stmt.location)
-      else -> stmt as Stmt
-    }
-  }
-
-  override fun visitExprStmt(ctx: PlankParser.ExprStmtContext): Stmt {
-    val value = visitExpr(ctx.value!!)
-    val location = ctx.start.location
-
-    return Stmt.ExprStmt(value, location)
-  }
-
-  override fun visitReturnStmt(ctx: PlankParser.ReturnStmtContext): PlankElement {
-    val value = visitExpr(ctx.value!!)
-    val location = ctx.RETURN()?.symbol.location
-
-    return Stmt.ReturnStmt(value, location)
-  }
-
-  // expressions
-  override fun visitExpr(ctx: PlankParser.ExprContext): Expr {
-    return visit(
-      ctx.findIfExpr()
-        ?: ctx.findAssignExpr()
-        ?: ctx.findInstanceExpr()
-        ?: ctx.findSizeofExpr()
-        ?: throw ExpectingViolation("expression", ctx.toString(), ctx.start.location)
-    ) as Expr
-  }
-
-  override fun visitSizeofExpr(ctx: PlankParser.SizeofExprContext): PlankElement {
-    return Expr.Sizeof(ctx.type!!.asIdentifier(), ctx.SIZEOF()?.symbol.location)
-  }
-
-  override fun visitInstanceExpr(ctx: PlankParser.InstanceExprContext): PlankElement {
-    return Expr.Instance(
-      ctx.name!!.asIdentifier(),
-      ctx.findInstanceArgument().associate { argument ->
-        argument.IDENTIFIER()!!.symbol!! to visitExpr(argument.findExpr()!!)
-      },
-      ctx.LBRACE()?.symbol.location
-    )
-  }
-
-  override fun visitIfExpr(ctx: PlankParser.IfExprContext): Expr {
-    val cond = visitExpr(ctx.cond!!)
-
-    val thenBranch = ctx.findThenBranch().let { thenBranch ->
-      val exprBody = thenBranch?.findExpr()?.let {
-        val expr = visitExpr(it)
-
-        listOf(Stmt.ExprStmt(expr, expr.location))
+        StructDecl.Property(propertyMutable, propertyName.identifier(), propertyType.typeRef())
       }
 
-      exprBody ?: thenBranch?.findStmt().orEmpty().map { visitStmt(it) }
+    return StructDecl(name.identifier(), properties, ctx.location())
+  }
+
+  override fun visitEnumDecl(ctx: EnumDeclContext): Decl {
+    val name = ctx.name ?: error("No name received in enum decl context")
+    val members = ctx.findEnumMember().map { memberCtx ->
+      val memberName = memberCtx.name ?: error("No name received in enum member context")
+      val memberParameters = memberCtx.findTypeReference()
+
+      EnumDecl.Member(memberName.identifier(), memberParameters.map { it.typeRef() })
     }
 
-    val elseBranch = ctx.findElseBranch().let { elseBranch ->
-      val exprBody = elseBranch?.findExpr()?.let {
-        val expr = visitExpr(it)
+    return EnumDecl(name.identifier(), members, ctx.location())
+  }
 
-        listOf(Stmt.ExprStmt(expr, expr.location))
+  override fun visitQualifiedPath(ctx: QualifiedPathContext): QualifiedPath {
+    return ctx.IDENTIFIER().reversed().fold(QualifiedPath.nil()) { acc, next ->
+      val identifier = next.identifier()
+      val location = next.sourceInterval.location()
+
+      QualifiedPath.cons(identifier, acc, location)
+    }
+  }
+
+  override fun visitDefinedLetDecl(ctx: DefinedLetDeclContext): Decl {
+    val name = ctx.name ?: error("No name received in defined let decl context")
+    val mutable = when (ctx.MUTABLE()) {
+      null -> false
+      else -> true
+    }
+    val type = ctx.type ?: error("No type received in defined let decl context")
+    val value = ctx.value ?: error("No value received in defined let decl context")
+
+    return LetDecl(name.identifier(), mutable, type.typeRef(), value.expr(), ctx.location())
+  }
+
+  override fun visitInferLetDecl(ctx: InferLetDeclContext): Decl {
+    val name = ctx.name ?: error("No name received in infer let decl context")
+    val mutable = when (ctx.MUTABLE()) {
+      null -> false
+      else -> true
+    }
+    val value = ctx.value ?: error("No value received in infer let decl context")
+
+    return LetDecl(name.identifier(), mutable, null, value.expr(), ctx.location())
+  }
+
+  override fun visitImportDecl(ctx: ImportDeclContext): Decl {
+    val path = ctx.path ?: error("No path received in import decl context")
+
+    return ImportDecl(path.qualifiedPath(), ctx.location())
+  }
+
+  override fun visitFunDecl(ctx: FunDeclContext): Decl {
+    val parameters = ctx.findParameter().associate { parameter ->
+      val name = parameter.name ?: error("No parameter name received in parameter context")
+      val type = parameter.type ?: error("No parameter type received in parameter context")
+
+      name.identifier() to type.typeRef()
+    }
+
+    val body = ctx.findFunctionBody()?.findStmt().orEmpty().map {
+      it.stmt()
+    }
+
+    val modifiers = ctx.findFunctionModifier().map { modifier ->
+      when {
+        modifier.NATIVE() != null -> FunDecl.Modifier.Native
+        else -> error("No modifier received in function modifier context")
       }
-
-      exprBody ?: elseBranch?.findStmt().orEmpty().map { visitStmt(it) }
     }
 
-    val location = ctx.LPAREN()?.symbol.location
+    val returnType = ctx.findFunctionReturn()
+      ?.returnType
+      ?: error("No return type received in fun decl context")
+    val name = ctx.name ?: error("No name received in fun decl context")
 
-    return Expr.If(cond, thenBranch, elseBranch, location)
+    val type = FunctionTypeRef(parameters.values.toList(), returnType.typeRef(), ctx.location())
+
+    return FunDecl(modifiers, name.identifier(), type, body, parameters, ctx.location())
   }
 
-  override fun visitAssignExpr(ctx: PlankParser.AssignExprContext): Expr {
-    ctx.findLogicalExpr()?.let { return visitLogicalExpr(it) }
+  override fun visitDeclStmt(ctx: DeclStmtContext): Decl {
+    val decl = ctx.findDecl() ?: error("No decl received in decl stmt context")
 
-    val name = ctx.name!!.asIdentifier()
-    val value = visitAssignExpr(ctx.findAssignExpr()!!)
-    val location = ctx.EQUAL()?.symbol.location
+    return decl.decl()
+  }
 
-    val receiver = ctx.findCallExpr()
-    if (receiver != null) {
-      return Expr.Set(visitCallExpr(receiver), name, value, location)
+  override fun visitExprStmt(ctx: ExprStmtContext): Stmt {
+    val value = ctx.value ?: error("No value received in expr stmt context")
+
+    return ExprStmt(value.expr(), ctx.location())
+  }
+
+  override fun visitReturnStmt(ctx: ReturnStmtContext): Stmt {
+    val value = ctx.value ?: error("No value received in expr stmt context")
+
+    return ReturnStmt(value.expr(), ctx.location())
+  }
+
+  override fun visitNamedTuplePattern(ctx: NamedTuplePatternContext): Pattern {
+    val type = ctx.type ?: error("No type received in named tuple pattern context")
+    val fields = ctx.findPattern()
+
+    return NamedTuplePattern(type.qualifiedPath(), fields.map { it.pattern() }, ctx.location())
+  }
+
+  override fun visitIdentPattern(ctx: IdentPatternContext): Pattern {
+    val name = ctx.name ?: error("No name received in ident pattern context")
+
+    return IdentPattern(name.identifier(), ctx.location())
+  }
+
+  override fun visitMatchExpr(ctx: MatchExprContext): Expr {
+    val subject = ctx.subject ?: error("No subject received in match expr context")
+    val patterns = ctx.findMatchPattern().associate { case ->
+      val pattern = case.findPattern() ?: error("No pattern received in match pattern context")
+      val value = case.value ?: error("No value received in match pattern context")
+
+      pattern.pattern() to value.expr()
     }
 
-    return Expr.Assign(name, value, location)
+    return MatchExpr(subject.expr(), patterns, ctx.location())
   }
 
-  override fun visitLogicalExpr(ctx: PlankParser.LogicalExprContext): Expr {
-    ctx.findBinaryExpr()?.let { return visitBinaryExpr(it) }
+  override fun visitSizeofExpr(ctx: SizeofExprContext): Expr {
+    val type = ctx.type ?: error("No type received in sizeof expr context")
 
-    return Expr.Logical(
-      lhs = visitLogicalExpr(ctx.rhs!!),
-      op = when (ctx.op?.text) {
-        "<=" -> Expr.Logical.Operation.LessEquals
-        "<" -> Expr.Logical.Operation.Less
-        ">=" -> Expr.Logical.Operation.GreaterEquals
-        ">" -> Expr.Logical.Operation.Greater
-        "==" -> Expr.Logical.Operation.Equals
-        "!=" -> Expr.Logical.Operation.NotEquals
-        else -> {
-          throw ExpectingViolation("logical operator", ctx.toString(), ctx.start.location)
-        }
-      },
-      rhs = visitLogicalExpr(ctx.lhs!!),
-      location = ctx.op.location
-    )
+    return SizeofExpr(type.typeRef(), ctx.location())
   }
 
-  override fun visitBinaryExpr(ctx: PlankParser.BinaryExprContext): Expr {
-    ctx.findUnaryExpr()?.let { return visitUnaryExpr(it) }
+  override fun visitInstanceExpr(ctx: InstanceExprContext): Expr {
+    val struct = ctx.type ?: error("No type received in instance expr context")
+    val arguments = ctx.findInstanceArgument().associate { argument ->
+      val name = argument.name ?: error("No argument name received in instance expr context")
+      val value = argument.value ?: error("No argument value received in instance expr context")
 
-    val lhs = visitBinaryExpr(ctx.lhs!!)
-    val rhs = visitBinaryExpr(ctx.rhs!!)
-    val location = ctx.op.location
+      name.identifier() to value.expr()
+    }
 
-    return Expr.Binary(
-      lhs,
-      op = when (ctx.op?.text) {
-        "+" -> Expr.Binary.Operation.Add
-        "-" -> Expr.Binary.Operation.Sub
-        "*" -> Expr.Binary.Operation.Mul
-        "/" -> Expr.Binary.Operation.Div
-        "++" -> return Expr.Concat(lhs, rhs, location)
-        else -> {
-          throw ExpectingViolation("binary operator", ctx.toString(), ctx.start.location)
-        }
-      },
-      rhs,
-      location
-    )
+    return InstanceExpr(struct.typeRef(), arguments, ctx.location())
   }
 
-  override fun visitUnaryExpr(ctx: PlankParser.UnaryExprContext): Expr {
-    ctx.findCallExpr()?.let { return visitCallExpr(it) }
+  override fun visitAssignExprProvider(ctx: AssignExprProviderContext): Expr {
+    val value = ctx.findAssignExpr()
+      ?: error("No assign expr received in assign expr holder context")
 
-    return Expr.Unary(
-      op = when (ctx.op?.text) {
-        "!" -> Expr.Unary.Operation.Bang
-        "-" -> Expr.Unary.Operation.Neg
-        else -> {
-          throw ExpectingViolation("unary operator", ctx.toString(), ctx.start.location)
-        }
-      },
-      rhs = visitUnaryExpr(ctx.rhs!!),
-      location = ctx.op.location
-    )
+    return value.expr()
   }
 
-  override fun visitCallExpr(ctx: PlankParser.CallExprContext): Expr {
-    val head = visit(ctx.access!!)
-    val tail = ctx.children.orEmpty().drop(1)
+  override fun visitIfExpr(ctx: IfExprContext): Expr {
+    val cond = ctx.cond ?: error("No cond received in if expr context")
+    val thenBranch = ctx.thenBranch ?: error("No thenBranch received in if expr context")
+    val elseBranch = ctx.findElseBranch()
 
-    return tail.fold(head as Expr) { acc, next ->
+    return IfExpr(cond.expr(), thenBranch.expr(), elseBranch?.value?.expr(), ctx.location())
+  }
+
+  override fun visitAssignExprHolder(ctx: AssignExprHolderContext): Expr {
+    val name = ctx.name ?: error("No name received in assign expr holder context")
+    val value = ctx.value ?: error("No value received in assign expr holder context")
+
+    return AssignExpr(name.identifier(), value.expr(), ctx.location())
+  }
+
+  override fun visitAssignValueHolder(ctx: AssignValueHolderContext): Expr {
+    val value = ctx.value ?: error("No value received in assign value holder context")
+
+    return value.expr()
+  }
+
+  override fun visitLogicalExprHolder(ctx: LogicalExprHolderContext): Expr {
+    val op = ctx.op ?: error("No op received in logical expr context")
+    val lhs = ctx.lhs ?: error("No lhs received in logical expr context")
+    val rhs = ctx.rhs ?: error("No rhs received in logical expr context")
+
+    return CallExpr(op.identifier().access(), listOf(lhs.expr(), rhs.expr()), ctx.location())
+  }
+
+  override fun visitLogicalValueHolder(ctx: LogicalValueHolderContext): Expr {
+    val value = ctx.value ?: error("No value received in logical value holder context")
+
+    return value.expr()
+  }
+
+  override fun visitBinaryExprHolder(ctx: BinaryExprHolderContext): Expr {
+    val op = ctx.op ?: error("No op received in binary expr context")
+    val lhs = ctx.lhs ?: error("No lhs received in binary expr context")
+    val rhs = ctx.rhs ?: error("No rhs received in binary expr context")
+
+    return CallExpr(op.identifier().access(), listOf(lhs.expr(), rhs.expr()), ctx.location())
+  }
+
+  override fun visitBinaryValueHolder(ctx: BinaryValueHolderContext): Expr {
+    val value = ctx.value ?: error("No value received in binary value holder context")
+
+    return value.expr()
+  }
+
+  override fun visitUnaryExprHolder(ctx: UnaryExprHolderContext): Expr {
+    val op = ctx.op ?: error("No op received in unary expr context")
+    val rhs = ctx.rhs ?: error("No rhs received in unary expr context")
+
+    return CallExpr(op.identifier().access(), listOf(rhs.expr()), ctx.location())
+  }
+
+  override fun visitUnaryValueHolder(ctx: UnaryValueHolderContext): Expr {
+    val value = ctx.value ?: error("No value received in unary value holder context")
+
+    return visitCallExpr(value)
+  }
+
+  override fun visitCallExpr(ctx: CallExprContext): Expr {
+    val callee = ctx.callee ?: error("No callee received in call expr context")
+
+    return ctx.findArgumentFragment().fold(callee.expr()) { acc, next ->
       when (next) {
-        is PlankParser.GetContext -> {
-          Expr.Get(acc, next.IDENTIFIER()?.symbol!!.asIdentifier(), next.DOT()?.symbol.location)
+        is GetArgumentContext -> {
+          val property = next.IDENTIFIER()
+            ?: error("No property received in call expr context with get chain")
+
+          GetExpr(acc, property.identifier(), next.location())
         }
-        is PlankParser.ArgumentsContext -> {
-          Expr.Call(acc, next.findExpr().map { visitExpr(it) }, next.LPAREN()?.symbol.location)
+        is CallArgumentContext -> {
+          CallExpr(acc, next.findExpr().map { it.expr() }, next.location())
         }
-        else -> {
-          throw ExpectingViolation("call arguments", ctx.toString(), ctx.start.location)
-        }
+        else -> error("No argument context received when folding in call expr context")
       }
     }
   }
 
-  override fun visitGroupExpr(ctx: PlankParser.GroupExprContext): Expr {
-    return Expr.Group(visitExpr(ctx.value!!), ctx.start.location)
+  override fun visitRefExpr(ctx: RefExprContext): Expr {
+    val value = ctx.value ?: error("No value received in ref expr context")
+
+    return RefExpr(value.expr(), ctx.location())
   }
 
-  override fun visitBooleanExpr(ctx: PlankParser.BooleanExprContext): Expr {
+  override fun visitDerefExpr(ctx: DerefExprContext): Expr {
+    val value = ctx.value ?: error("No value received in deref expr context")
+
+    return DerefExpr(value.expr(), ctx.location())
+  }
+
+  override fun visitConstExpr(ctx: ConstExprContext): Expr {
+    return when (val primary = ctx.findPrimary()) {
+      is IntPrimaryContext -> visitIntPrimary(primary)
+      is DecimalPrimaryContext -> visitDecimalPrimary(primary)
+      is StringPrimaryContext -> visitStringPrimary(primary)
+      is IdentifierPrimaryContext -> visitIdentifierPrimary(primary)
+      is BooleanPrimaryContext -> visitBooleanPrimary(primary)
+      is GroupPrimaryContext -> visitGroupPrimary(primary)
+      null -> error("No primary received in const expr context")
+      else -> error("No valid primary(${primary::class}) received in const expr context")
+    }
+  }
+
+  override fun visitIntPrimary(ctx: IntPrimaryContext): Expr {
+    val value = ctx.INT() ?: error("No int received in int primary context")
+
+    return ConstExpr(value, ctx.location())
+  }
+
+  override fun visitDecimalPrimary(ctx: DecimalPrimaryContext): Expr {
+    val value = ctx.DECIMAL() ?: error("No decimal received in decimal primary context")
+
+    return ConstExpr(value, ctx.location())
+  }
+
+  override fun visitStringPrimary(ctx: StringPrimaryContext): Expr {
+    val value = ctx.STRING() ?: error("No string received in string primary context")
+
+    return ConstExpr(value, ctx.location())
+  }
+
+  override fun visitIdentifierPrimary(ctx: IdentifierPrimaryContext): Expr {
+    val value = ctx.IDENTIFIER() ?: error("No identifier received in identifier primary context")
+
+    return AccessExpr(QualifiedPath.from(value.identifier()), ctx.location())
+  }
+
+  override fun visitBooleanPrimary(ctx: BooleanPrimaryContext): Expr {
     val value = when {
-      ctx.TRUE() != null -> true
       ctx.FALSE() != null -> false
-      else -> {
-        throw ExpectingViolation("boolean", ctx.toString(), ctx.start.location)
-      }
+      ctx.TRUE() != null -> true
+      else -> error("No boolean value received in boolean primary context")
     }
 
-    return Expr.Const(value, ctx.start.location)
+    return ConstExpr(value, ctx.location())
   }
 
-  override fun visitStringExpr(ctx: PlankParser.StringExprContext): Expr {
-    val value = ctx.text.substring(1, ctx.text.length - 1)
+  override fun visitGroupPrimary(ctx: GroupPrimaryContext): Expr {
+    val value = ctx.value ?: error("No expr received in group primary context")
 
-    return Expr.Const(value, ctx.start.location)
+    return GroupExpr(value.expr(), ctx.location())
   }
 
-  override fun visitPtr(ctx: PlankParser.PtrContext): PlankElement {
-    val reference = ctx.AMPERSTAND()
-    val value = ctx.STAR()
-    val expr = ctx.findExpr()
+  // ast mapper utils
+  private fun Identifier.access(): AccessExpr {
+    return AccessExpr(QualifiedPath.from(this), location)
+  }
 
-    if (expr != null && reference != null) {
-      return Expr.Reference(visitExpr(expr), reference.symbol.location)
+  private fun QualifiedPath.access(): AccessExpr {
+    return AccessExpr(this, location)
+  }
+
+  private fun Interval.location(): Location {
+    return Location.of(a, b, file)
+  }
+
+  private fun RuleContext.location(): Location {
+    return sourceInterval.location()
+  }
+
+  private fun QualifiedPathContext.qualifiedPath(): QualifiedPath {
+    return visitQualifiedPath(this)
+  }
+
+  private fun TypeReferenceContext.typeRef(): TypeRef {
+    return when (this) {
+      is ArrayTypeRefContext -> visitArrayTypeRef(this)
+      is PointerTypeRefContext -> visitPointerTypeRef(this)
+      is FunctionTypeRefContext -> visitFunctionTypeRef(this)
+      is AccessTypeRefContext -> visitAccessTypeRef(this)
+      else -> error("Unknown type reference type context ${this::class.simpleName}")
     }
+  }
 
-    if (expr != null && value != null) {
-      return Expr.Value(visitExpr(expr), reference?.symbol.location)
+  private fun TerminalNode.identifier(): Identifier {
+    return Identifier.of(text, sourceInterval.location())
+  }
+
+  private fun Token.identifier(): Identifier {
+    val text = text ?: error("No text received in Token")
+
+    return Identifier.of(text, Location.of(startIndex, stopIndex, file))
+  }
+
+  private fun ExprContext.expr(): Expr {
+    return when (this) {
+      is IfExprContext -> visitIfExpr(this)
+      is SizeofExprContext -> visitSizeofExpr(this)
+      is InstanceExprContext -> visitInstanceExpr(this)
+      is AssignExprProviderContext -> visitAssignExprProvider(this)
+      is MatchExprContext -> visitMatchExpr(this)
+      else -> error("Unknown type reference expr context ${this::class.simpleName}")
     }
-
-    return visitPrimary(ctx.findPrimary()!!)
   }
 
-  override fun visitPrimary(ctx: PlankParser.PrimaryContext): Expr {
-    ctx.findGroupExpr()?.let { return visitGroupExpr(it) }
-    ctx.findBooleanExpr()?.let { return visitBooleanExpr(it) }
-    ctx.findStringExpr()?.let { return visitStringExpr(it) }
-
-    val identifier = ctx.IDENTIFIER()
-    if (identifier != null) {
-      return Expr.Access(identifier.symbol!!.asIdentifier(), identifier.symbol.location)
+  private fun PatternContext.pattern(): Pattern {
+    return when (this) {
+      is IdentPatternContext -> visitIdentPattern(this)
+      is NamedTuplePatternContext -> visitNamedTuplePattern(this)
+      else -> error("Unknown type reference pattern context ${this::class.simpleName}")
     }
-
-    val node = ctx.INT() ?: ctx.DECIMAL() ?: error("Invalid primary")
-    val value =
-      node.text.toIntOrNull()
-        ?: node.text.toDoubleOrNull()
-        ?: node.text
-
-    return Expr.Const(value, node.symbol.location)
   }
 
-  override fun visitErrorNode(node: ErrorNode): PlankElement? {
-    println(node)
-    println(node.payload)
-
-    return super.visitErrorNode(node)
+  private fun AssignExprContext.expr(): Expr {
+    return when (this) {
+      is AssignExprHolderContext -> visitAssignExprHolder(this)
+      is AssignValueHolderContext -> visitAssignValueHolder(this)
+      else -> error("Unknown type reference assign expr context ${this::class.simpleName}")
+    }
   }
 
-  // utils
-  private val Token?.location get() = location(file)
-
-  private fun RuleNode.asIdentifier(): Identifier {
-    val first = getChild(0) as? Token
-    return Identifier(text, Location(first?.line ?: -1, first?.charPositionInLine ?: -1, file))
+  private fun LogicalExprContext.expr(): Expr {
+    return when (this) {
+      is LogicalExprHolderContext -> visitLogicalExprHolder(this)
+      is LogicalValueHolderContext -> visitLogicalValueHolder(this)
+      else -> error("Unknown type reference logical expr context ${this::class.simpleName}")
+    }
   }
 
-  private fun Token.asIdentifier(): Identifier {
-    return Identifier(text!!, Location(line, charPositionInLine, file))
+  private fun BinaryExprContext.expr(): Expr {
+    return when (this) {
+      is BinaryExprHolderContext -> visitBinaryExprHolder(this)
+      is BinaryValueHolderContext -> visitBinaryValueHolder(this)
+      else -> error("Unknown type reference binary expr context ${this::class.simpleName}")
+    }
   }
 
-  private fun PlankParser.FunHeaderContext.findFunctionType(): TypeDef.Function {
-    val parameters = findParameter().map { visitTypeDef(it.type!!) }
-    val location = start.location
+  private fun UnaryExprContext.expr(): Expr {
+    return when (this) {
+      is UnaryExprHolderContext -> visitUnaryExprHolder(this)
+      is UnaryValueHolderContext -> visitUnaryValueHolder(this)
+      else -> error("Unknown type reference unary expr context ${this::class.simpleName}")
+    }
+  }
 
-    return TypeDef.Function(parameters, returnType?.let { visitTypeDef(it) }, location)
+  private fun ReferenceContext.expr(): Expr {
+    return when (this) {
+      is ConstExprContext -> visitConstExpr(this)
+      is DerefExprContext -> visitDerefExpr(this)
+      is RefExprContext -> visitRefExpr(this)
+      else -> error("Unknown type reference reference context ${this::class.simpleName}")
+    }
+  }
+
+  private fun StmtContext.stmt(): Stmt {
+    return when (this) {
+      is DeclStmtContext -> visitDeclStmt(this)
+      is ExprStmtContext -> visitExprStmt(this)
+      is ReturnStmtContext -> visitReturnStmt(this)
+      else -> error("Unknown type stmt context ${this::class.simpleName}")
+    }
+  }
+
+  private fun DeclContext.decl(): Decl {
+    return when (this) {
+      is DefinedLetDeclContext -> visitDefinedLetDecl(this)
+      is FunDeclContext -> visitFunDecl(this)
+      is ImportDeclContext -> visitImportDecl(this)
+      is InferLetDeclContext -> visitInferLetDecl(this)
+      is ModuleDeclContext -> visitModuleDecl(this)
+      is StructDeclContext -> visitStructDecl(this)
+      is EnumDeclContext -> visitEnumDecl(this)
+      else -> error("Unknown type decl context ${this::class.simpleName}")
+    }
   }
 }

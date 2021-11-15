@@ -1,15 +1,11 @@
-package com.lorenzoog.plank.compiler.instructions.stmt
+package com.gabrielleeg1.plank.compiler.instructions.stmt
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.grammar.element.Stmt
-import com.lorenzoog.plank.shared.Either
-import com.lorenzoog.plank.shared.either
-import org.llvm4j.llvm4j.Value
+import com.gabrielleeg1.plank.analyzer.element.ResolvedExprStmt
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class ExprStmtInstruction(private val descriptor: Stmt.ExprStmt) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): Either<CodegenError, Value> = either {
+class ExprStmtInstruction(private val descriptor: ResolvedExprStmt) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult =
     descriptor.expr.toInstruction().codegen()
-  }
 }

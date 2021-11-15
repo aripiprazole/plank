@@ -1,31 +1,30 @@
-package com.lorenzoog.plank.cli.compiler
+package com.gabrielleeg1.plank.cli.compiler
 
-import com.lorenzoog.plank.analyzer.BindingContext
-import com.lorenzoog.plank.analyzer.FileScope
-import com.lorenzoog.plank.analyzer.Module
-import com.lorenzoog.plank.cli.pkg.Package
-import com.lorenzoog.plank.cli.utils.child
-import com.lorenzoog.plank.cli.utils.children
-import com.lorenzoog.plank.cli.utils.printOutput
-import com.lorenzoog.plank.compiler.LlvmBackend
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.grammar.message.MessageRenderer
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.depthFirstSearch
+import com.gabrielleeg1.plank.analyzer.BindingContext
+import com.gabrielleeg1.plank.analyzer.FileScope
+import com.gabrielleeg1.plank.analyzer.Module
+import com.gabrielleeg1.plank.cli.pkg.Package
+import com.gabrielleeg1.plank.cli.utils.child
+import com.gabrielleeg1.plank.cli.utils.children
+import com.gabrielleeg1.plank.cli.utils.printOutput
+import com.gabrielleeg1.plank.compiler.LlvmBackend
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.message.CompilerLogger
+import com.gabrielleeg1.plank.shared.Left
+import com.gabrielleeg1.plank.shared.depthFirstSearch
+import kotlin.io.path.ExperimentalPathApi
 import pw.binom.io.file.File
+import pw.binom.io.file.append
 import pw.binom.io.file.extension
 import pw.binom.io.file.nameWithoutExtension
-import pw.binom.io.file.write
-import pw.binom.io.utf8Appendable
-import kotlin.io.path.ExperimentalPathApi
 
 @ExperimentalPathApi
 class PlankCompiler(
   private val pkg: Package,
   private val context: BindingContext,
   private val compiler: LlvmBackend,
-  private val renderer: MessageRenderer
+  private val renderer: CompilerLogger
 ) {
   private val options = pkg.options
 
@@ -55,7 +54,7 @@ class PlankCompiler(
     context.analyze(file)
 
     if (!context.isValid) {
-      throw CompileError.BindingViolations(context.violations)
+      throw CompileError.BindingViolations(context.violations.toList())
     }
   }
 
@@ -72,14 +71,12 @@ class PlankCompiler(
   private fun generateIR(file: PlankFile): File {
     val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
-    compiler.initialize(file)
+    compiler.initialize(file, options.debug)
 
     val results = compiler.compile(file)
     val errors = results.filterIsInstance<Left<CodegenError>>().map { it.a }
 
-    target.write()
-      .utf8Appendable()
-      .append(compiler.context.module.getAsString())
+    target.append(compiler.context.module.getAsString())
 
     if (errors.isNotEmpty()) {
       throw CompileError.IRViolations(compiler.module, errors)
@@ -89,7 +86,7 @@ class PlankCompiler(
   }
 
   private fun generateStdlibObjects() {
-    options.runtime.children
+    options.runtime.list()
       .filter { it.extension == "cpp" }
       .forEach { file ->
         val target = options.objects.child("${file.nameWithoutExtension}.o")

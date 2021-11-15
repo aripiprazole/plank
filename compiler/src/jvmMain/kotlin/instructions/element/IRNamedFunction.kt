@@ -1,34 +1,31 @@
-package com.lorenzoog.plank.compiler.instructions.element
+package com.gabrielleeg1.plank.compiler.instructions.element
 
-import com.lorenzoog.plank.analyzer.visit
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.shared.Either
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import arrow.core.Either
+import arrow.core.computations.either
+import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
 import org.llvm4j.llvm4j.Function
 
 class IRNamedFunction(
   override val name: String,
   override val mangledName: String,
-  override val descriptor: Decl.FunDecl
+  override val descriptor: ResolvedFunDecl,
 ) : IRFunction() {
   override fun accessIn(context: CompilerContext): Function? {
     return context.module.getFunction(mangledName).toNullable()
   }
 
-  override fun CompilerContext.codegen(): Either<CodegenError, Function> = either {
-    val parameters = descriptor.parameters
-      .map(binding::visit)
-      .map { !it.toType() }
-
-    val returnType = !binding.visit(descriptor.returnType).toType()
-
-    Right(
-      context.getFunctionType(returnType, *parameters.toTypedArray(), isVariadic = false).let {
-        module.addFunction(mangledName, it)
-      }
+  override fun CompilerContext.codegen(): Either<CodegenError, Function> = either.eager {
+    module.addFunction(
+      mangledName,
+      context.getFunctionType(
+        returnType = descriptor.returnType.toType().bind(),
+        *descriptor.realParameters.values
+          .map { it.toType().bind() }
+          .toTypedArray(),
+        isVariadic = false,
+      ),
     )
   }
 }

@@ -7,7 +7,7 @@ import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind} fro
 
 let client: LanguageClient;
 
-const MAIN_CLASS = 'com.lorenzoog.jplank.tooling.langserver.MainKt';
+const MAIN_CLASS = 'com.gabrielleeg1.jplank.tooling.langserver.MainKt';
 const JAVA_HOME = process.env.JAVA_HOME!!;
 
 const JAVA = path.join(JAVA_HOME, 'bin', 'java');

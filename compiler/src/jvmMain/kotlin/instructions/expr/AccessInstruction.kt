@@ -1,20 +1,22 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildLoad
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.unresolvedVariableError
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import arrow.core.computations.either
+import arrow.core.left
+import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildLoad
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
+import org.llvm4j.llvm4j.AllocaInstruction
 
-class AccessInstruction(private val descriptor: Expr.Access) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
+class AccessInstruction(private val descriptor: TypedAccessExpr) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val value = findVariable(descriptor.name.text)
-      ?: return Left(unresolvedVariableError(descriptor.name.text))
+      ?: unresolvedVariableError(descriptor.name.text)
+        .left()
+        .bind<AllocaInstruction>()
 
-    Right(buildLoad(value))
+    buildLoad(value)
   }
 }

@@ -1,8 +1,10 @@
+import com.gabrielleeg1.plank.build.Dependencies
+
 plugins {
   kotlin("multiplatform")
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -10,7 +12,11 @@ repositories {
 }
 
 kotlin {
-  jvm()
+  jvm {
+    testRuns["test"].executionTask.configure {
+      useJUnitPlatform()
+    }
+  }
 
   /* Targets configuration omitted.
    * To find out how to configure the targets, please follow the link:
@@ -27,8 +33,18 @@ kotlin {
 
     val commonTest by getting {
       dependencies {
+        implementation(Dependencies.Arrow.Core)
+        implementation(kotlin("stdlib-common"))
         implementation(kotlin("test-common"))
         implementation(kotlin("test-annotations-common"))
+      }
+    }
+
+    val jvmTest by getting {
+      dependencies {
+        implementation(kotlin("test-junit"))
+        implementation(Dependencies.JUnit.JupiterApi)
+        implementation(Dependencies.JUnit.JupiterEngine)
       }
     }
   }

@@ -1,0 +1,20 @@
+import Std.IO;
+
+type List =
+  | Cons(*Char, List)
+  | Nil;
+
+fun main(argv: Int, argc: **Char): Void {
+  let list = Cons("Yes", Cons("This", Cons("is a linked list", Nil())));
+
+  println(match list {
+    Cons(value, next) => value,
+    Nil() => "nil"
+  });
+
+  println(match Nil() {
+    Cons(value, next) => "cons",
+    Nil() => "nil"
+  });
+
+}

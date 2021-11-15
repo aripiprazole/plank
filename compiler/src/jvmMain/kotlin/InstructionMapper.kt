@@ -1,35 +1,37 @@
-package com.lorenzoog.plank.compiler
+package com.gabrielleeg1.plank.compiler
 
-import com.lorenzoog.plank.analyzer.BindingContext
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.ClassDeclInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.FunDeclInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.ImportDeclInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.LetDeclInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.ModuleDeclInstruction
-import com.lorenzoog.plank.compiler.instructions.decl.NativeFunDeclInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.AccessInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.AssignInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.BinaryInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.CallInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.ConcatInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.ConstInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.FBinaryInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.GetInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.GroupInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.IfInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.InstanceInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.LogicalInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.ReferenceInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.SetInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.SizeofInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.UnaryInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.ValueInstruction
-import com.lorenzoog.plank.compiler.instructions.stmt.ExprStmtInstruction
-import com.lorenzoog.plank.compiler.instructions.stmt.ReturnInstruction
-import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.grammar.element.Stmt
+import com.gabrielleeg1.plank.analyzer.BindingContext
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.EnumDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.FunDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.ImportDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.LetDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.ModuleDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.NativeFunDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.StructDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.AccessInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.AssignInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.BinaryInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.CallInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.ConcatInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.ConstInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.FBinaryInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.GetInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.GroupInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.InstanceInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.LogicalInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.MatchInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.RefInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.SetInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.SizeofInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.UnaryInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.DerefInstruction
+import com.gabrielleeg1.plank.compiler.instructions.stmt.ExprStmtInstruction
+import com.gabrielleeg1.plank.compiler.instructions.stmt.ReturnInstruction
+import com.gabrielleeg1.plank.grammar.element.Decl
+import com.gabrielleeg1.plank.grammar.element.Expr
+import com.gabrielleeg1.plank.grammar.element.Stmt
 
 class InstructionMapper(
   val binding: BindingContext
@@ -86,8 +88,8 @@ class InstructionMapper(
     return ReturnInstruction(returnStmt)
   }
 
-  override fun visitClassDecl(structDecl: Decl.StructDecl): CompilerInstruction {
-    return ClassDeclInstruction(structDecl)
+  override fun visitStructDecl(structDecl: Decl.StructDecl): CompilerInstruction {
+    return StructDeclInstruction(structDecl)
   }
 
   override fun visitFunDecl(funDecl: Decl.FunDecl): CompilerInstruction {
@@ -114,12 +116,12 @@ class InstructionMapper(
     return SizeofInstruction(sizeof)
   }
 
-  override fun visitReferenceExpr(reference: Expr.Reference): CompilerInstruction {
-    return ReferenceInstruction(reference)
+  override fun visitRefExpr(reference: Expr.Reference): CompilerInstruction {
+    return RefInstruction(reference)
   }
 
-  override fun visitValueExpr(value: Expr.Value): CompilerInstruction {
-    return ValueInstruction(value)
+  override fun visitDerefExpr(value: Expr.Value): CompilerInstruction {
+    return DerefInstruction(value)
   }
 
   override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): CompilerInstruction {
@@ -132,5 +134,13 @@ class InstructionMapper(
 
   override fun visitConcatExpr(concat: Expr.Concat): CompilerInstruction {
     return ConcatInstruction()
+  }
+
+  override fun visitEnumDecl(enumDecl: Decl.EnumDecl): CompilerInstruction {
+    return EnumDeclInstruction(enumDecl)
+  }
+
+  override fun visitMatchExpr(match: Expr.Match): CompilerInstruction {
+    return MatchInstruction(match)
   }
 }

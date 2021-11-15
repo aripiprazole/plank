@@ -1,11 +1,12 @@
-package com.lorenzoog.plank.compiler.mangler
+package com.gabrielleeg1.plank.compiler.mangler
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.grammar.element.Decl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.grammar.element.Decl
 
 class NameMangler {
-  fun mangle(context: CompilerContext, function: Decl.FunDecl): String {
-    if (function.isNative) {
+  fun mangle(context: CompilerContext, function: ResolvedFunDecl): String {
+    if (function.hasAttribute("native")) {
       // todo add export tag to avoid it
       return buildString {
         append(function.location.file.module)

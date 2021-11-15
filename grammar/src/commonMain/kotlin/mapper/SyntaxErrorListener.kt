@@ -1,7 +1,7 @@
-package com.lorenzoog.plank.grammar.mapper
+package com.gabrielleeg1.plank.grammar.mapper
 
-import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.grammar.utils.location
+import com.gabrielleeg1.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.element.PlankFile
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Recognizer
@@ -20,7 +20,7 @@ class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
     e: RecognitionException?
   ) {
     if (e != null) {
-      _violations += RecognitionViolation(msg, e.offendingToken.location(file))
+      _violations += RecognitionViolation(msg, Location.of(e.offendingToken!!, file))
     }
   }
 }

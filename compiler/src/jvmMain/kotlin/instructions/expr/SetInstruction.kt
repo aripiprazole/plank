@@ -1,21 +1,20 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildStore
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.expr.GetInstruction.Companion.findField
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import arrow.core.computations.either
+import com.gabrielleeg1.plank.analyzer.element.TypedSetExpr
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.GetInstruction.Companion.findField
 
-class SetInstruction(private val descriptor: Expr.Set) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
-    val value = !descriptor.value.toInstruction().codegen()
-    val field = !findField(descriptor.receiver, descriptor.member)
+class SetInstruction(private val descriptor: TypedSetExpr) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+    val value = descriptor.value.toInstruction().codegen().bind()
+    val field = findField(descriptor.receiver, descriptor.member).bind()
 
-    buildStore(value, field)
+    buildStore(field, value)
 
-    Right(field)
+    field
   }
 }

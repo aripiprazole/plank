@@ -1,16 +1,17 @@
-package com.lorenzoog.plank.cli.utils
+package com.gabrielleeg1.plank.cli.utils
 
 import pw.binom.io.file.File
-import pw.binom.io.file.asBFile
-import pw.binom.io.file.asJFile
+import pw.binom.io.file.binom
+import pw.binom.io.file.java
 import pw.binom.io.file.mkdirs
+import java.io.File as JFile
 import java.nio.file.Path
 import java.nio.file.Paths
 
 val currentFile: File
-  get() = Paths.get("").toAbsolutePath().toFile().asBFile
+  get() = Paths.get("").toAbsolutePath().toFile().binom
 
-val File.children get() = asJFile.listFiles().orEmpty().map(java.io.File::asBFile)
+val File.children get() = java.listFiles().orEmpty().map(JFile::binom)
 
 fun File.child(name: String, recreate: Boolean = false, dir: Boolean = false): File {
   val file = File(this, name)
@@ -21,7 +22,7 @@ fun File.child(name: String, recreate: Boolean = false, dir: Boolean = false): F
     if (dir) {
       file.mkdirs()
     } else {
-      file.asJFile.createNewFile()
+      file.java.createNewFile()
     }
   }
 
@@ -29,11 +30,11 @@ fun File.child(name: String, recreate: Boolean = false, dir: Boolean = false): F
 }
 
 fun Path.asFile(): File {
-  return toFile().asBFile
+  return toFile().binom
 }
 
 fun File.getRelativePath(child: File): String {
-  return asJFile.toRelativeString(child.asJFile.absoluteFile)
+  return java.toRelativeString(child.java.absoluteFile)
 }
 
 fun Process.printOutput() {

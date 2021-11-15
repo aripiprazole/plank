@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.tooling.langserver
+package com.gabrielleeg1.plank.tooling.langserver
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

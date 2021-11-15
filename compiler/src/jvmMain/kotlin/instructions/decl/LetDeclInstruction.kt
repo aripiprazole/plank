@@ -1,28 +1,23 @@
-package com.lorenzoog.plank.compiler.instructions.decl
+package com.gabrielleeg1.plank.compiler.instructions.decl
 
-import com.lorenzoog.plank.analyzer.visit
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildAlloca
-import com.lorenzoog.plank.compiler.buildStore
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.grammar.element.Decl
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import arrow.core.computations.either
+import com.gabrielleeg1.plank.analyzer.element.ResolvedLetDecl
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildAlloca
+import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class LetDeclInstruction(private val descriptor: Decl.LetDecl) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
+class LetDeclInstruction(private val descriptor: ResolvedLetDecl) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val name = descriptor.name.text
-    val type = !binding
-      .visit(descriptor.type) { binding.visit(descriptor.value) }
-      .toType()
 
-    val variable = buildAlloca(type, name).also {
-      addVariable(name, it)
+    val variable = buildAlloca(descriptor.type.toType().bind(), name).also {
+      addVariable(name, descriptor.type, it)
     }
 
-    val value = !descriptor.toInstruction().codegen()
+    val value = descriptor.value.toInstruction().codegen().bind()
 
-    Right(buildStore(variable, value))
+    buildStore(variable, value)
   }
 }

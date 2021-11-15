@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.build
+package com.gabrielleeg1.plank.build
 
 object Dependencies {
   object Kotlin {
@@ -16,7 +16,7 @@ object Dependencies {
   }
 
   object Binom {
-    const val File = "pw.binom.io:file:0.1.19"
+    const val File = "pw.binom.io:file:0.1.32"
   }
 
   object Antlr {
@@ -29,7 +29,16 @@ object Dependencies {
   }
 
   object ByteDeco {
-    const val LLVMPlatform = "org.bytedeco:llvm-platform:10.0.1-1.5.4"
+    const val LLVMPlatform = "org.bytedeco:llvm-platform:11.1.0-1.5.5"
+  }
+
+  object Arrow  {
+    const val Core = "io.arrow-kt:arrow-core:1.0.1"
+  }
+
+  object JUnit {
+    const val JupiterApi = "org.junit.jupiter:junit-jupiter-api:5.6.0"
+    const val JupiterEngine = "org.junit.jupiter:junit-jupiter-engine:5.6.0"
   }
 
   object Jansi {

@@ -1,17 +1,18 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.lorenzoog.plank.build.Dependencies
+import com.gabrielleeg1.plank.build.Dependencies
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
 
 plugins {
   id("org.jetbrains.kotlin.multiplatform")
 }
 
-group = "com.lorenzoog"
+group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 repositories {
   mavenCentral()
+  maven("https://jitpack.io")
 }
 
 kotlin {
@@ -21,7 +22,7 @@ kotlin {
     val commonAntlr by creating {
       dependencies {
         api(kotlin("stdlib-common"))
-        api("com.strumenta.antlr-kotlin:antlr-kotlin-runtime:-SNAPSHOT")
+        api("com.strumenta.antlr-kotlin:antlr-kotlin-runtime:6304d5c1c4")
       }
 
       kotlin.srcDir("$buildDir/generated-src/commonAntlr/kotlin")
@@ -52,7 +53,7 @@ tasks {
       project.dependencies.create(Dependencies.Antlr.AntlrKotlinTarget)
     )
     maxHeapSize = "64m"
-    packageName = "com.lorenzoog.plank.grammar.generated"
+    packageName = "com.gabrielleeg1.plank.grammar.generated"
     arguments = listOf("-visitor")
     source = project.objects
       .sourceDirectorySet("commonAntlr", "commonAntlr")

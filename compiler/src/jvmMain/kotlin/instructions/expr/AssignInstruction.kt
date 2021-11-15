@@ -1,21 +1,23 @@
-package com.lorenzoog.plank.compiler.instructions.expr
+package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import com.lorenzoog.plank.compiler.CompilerContext
-import com.lorenzoog.plank.compiler.buildStore
-import com.lorenzoog.plank.compiler.instructions.CodegenResult
-import com.lorenzoog.plank.compiler.instructions.CompilerInstruction
-import com.lorenzoog.plank.compiler.instructions.unresolvedVariableError
-import com.lorenzoog.plank.grammar.element.Expr
-import com.lorenzoog.plank.shared.Left
-import com.lorenzoog.plank.shared.Right
-import com.lorenzoog.plank.shared.either
+import arrow.core.computations.either
+import arrow.core.left
+import com.gabrielleeg1.plank.analyzer.element.TypedAssignExpr
+import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
+import org.llvm4j.llvm4j.AllocaInstruction
 
-class AssignInstruction(private val descriptor: Expr.Assign) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
-    val value = !descriptor.value.toInstruction().codegen()
+class AssignInstruction(private val descriptor: TypedAssignExpr) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+    val value = descriptor.value.toInstruction().codegen().bind()
     val variable = findVariable(descriptor.name.text)
-      ?: return Left(unresolvedVariableError(descriptor.name.text))
+      ?: unresolvedVariableError(descriptor.name.text)
+        .left()
+        .bind<AllocaInstruction>()
 
-    Right(buildStore(variable, value))
+    buildStore(variable, value)
   }
 }

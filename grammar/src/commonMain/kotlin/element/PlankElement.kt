@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.grammar.element
+package com.gabrielleeg1.plank.grammar.element
 
 interface PlankElement {
   val location: Location

@@ -1,4 +1,4 @@
-package com.lorenzoog.plank.cli.commands
+package com.gabrielleeg1.plank.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -12,23 +12,23 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import com.lorenzoog.plank.analyzer.BindingContext
-import com.lorenzoog.plank.analyzer.render
-import com.lorenzoog.plank.cli.compiler.CompileError
-import com.lorenzoog.plank.cli.compiler.CompilerOptions
-import com.lorenzoog.plank.cli.compiler.PlankCompiler
-import com.lorenzoog.plank.cli.compiler.Target.Llvm
-import com.lorenzoog.plank.cli.message.ColoredMessageRenderer
-import com.lorenzoog.plank.cli.pkg.Package
-import com.lorenzoog.plank.cli.utils.asFile
-import com.lorenzoog.plank.compiler.LlvmBackend
-import com.lorenzoog.plank.compiler.instructions.CodegenError
-import com.lorenzoog.plank.grammar.element.PlankFile
-import com.lorenzoog.plank.grammar.mapper.render
-import pw.binom.io.file.File
-import pw.binom.io.file.asBFile
+import com.gabrielleeg1.plank.analyzer.BindingContext
+import com.gabrielleeg1.plank.analyzer.render
+import com.gabrielleeg1.plank.cli.compiler.CompileError
+import com.gabrielleeg1.plank.cli.compiler.CompilerOptions
+import com.gabrielleeg1.plank.cli.compiler.PlankCompiler
+import com.gabrielleeg1.plank.cli.compiler.Target.Llvm
+import com.gabrielleeg1.plank.cli.message.ColoredLogger
+import com.gabrielleeg1.plank.cli.pkg.Package
+import com.gabrielleeg1.plank.cli.utils.asFile
+import com.gabrielleeg1.plank.compiler.LlvmBackend
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.mapper.render
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createTempDirectory
+import pw.binom.io.file.File
+import pw.binom.io.file.binom
 
 @ExperimentalPathApi
 class Plank : CliktCommand() {
@@ -40,7 +40,7 @@ class Plank : CliktCommand() {
     .convert { target ->
       when (target) {
         "llvm" -> Llvm
-        else -> fail("Unreconized target $target")
+        else -> fail("Unrecognized target $target")
       }
     }
     .default(Llvm)
@@ -63,11 +63,15 @@ class Plank : CliktCommand() {
   private val output by option("--output", "-O")
     .help("Output file")
     .file()
-    .convert { it.asBFile }
+    .convert { it.binom }
     .required()
 
   private val debug by option("--debug", "-D")
     .help("Sets the compiler on debug mode")
+    .flag()
+
+  private val verbose by option("--verbose", "-V")
+    .help("Sets the compiler on verbose mode")
     .flag()
 
   private val emitIR by option("--emit-ir")
@@ -80,11 +84,11 @@ class Plank : CliktCommand() {
     .multiple()
 
   override fun run() {
-    val renderer = ColoredMessageRenderer(flush = true)
+    val logger = ColoredLogger(verbose, debug, flush = true)
 
     val plankHome = System.getenv("PLANK_HOME")
       ?.let { File(it) }
-      ?: return renderer.severe("Define the PLANK_HOME before compile")
+      ?: return logger.severe("Define the PLANK_HOME before compile")
 
     val options = CompilerOptions(plankHome).apply {
       debug = this@Plank.debug
@@ -110,29 +114,34 @@ class Plank : CliktCommand() {
     val context = BindingContext(pkg.tree)
     val llvm = LlvmBackend(pkg.tree, context)
 
-    val compiler = PlankCompiler(pkg, context, llvm, renderer)
+    logger.verbose("Current workdir: ${options.dist}")
+
+    val compiler = PlankCompiler(pkg, context, llvm, logger)
     try {
       compiler.compile()
-      renderer.info("Successfully compiled $output")
+      logger.info("Successfully compiled $output")
     } catch (error: CompileError.BindingViolations) {
-      renderer.severe("Please resolve the following issues before compile:")
-      error.violations.render(renderer)
+      logger.severe("Please resolve the following issues before compile:")
+      error.violations.render(logger)
     } catch (error: CompileError.IRViolations) {
-      renderer.severe("Internal compiler error, please open an issue.")
+      logger.severe("Internal compiler error, please open an issue.")
 
-      error.violations.map(CodegenError::render).forEach(renderer::severe)
+      error.violations.map(CodegenError::render).forEach(logger::severe)
 
-      if (debug) {
-        renderer.info("LLVM Module:")
+      logger.verbose("LLVM Module:")
+      if (verbose) {
         println(error.module.getAsString())
       }
     } catch (error: CompileError.SyntaxViolations) {
-      renderer.severe("Please resolve the following issues before compile:")
-      error.violations.render(renderer)
+      logger.severe("Please resolve the following issues before compile:")
+      error.violations.render(logger)
     } catch (error: CompileError.FailedCommand) {
-      renderer.severe("Could not execute '${error.command}'. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
+      logger.severe("Could not execute '${error.command}'. Failed with exit code: ${error.exitCode}") // ktlint-disable max-line-length
     } catch (error: Throwable) {
-      renderer.severe("${error::class.simpleName}: ${error.message}")
+      logger.severe("${error::class.simpleName}: ${error.message}")
+      if (verbose) {
+        error.printStackTrace()
+      }
     }
   }
 }
