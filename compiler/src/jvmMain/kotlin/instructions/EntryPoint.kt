@@ -1,19 +1,20 @@
 package com.gabrielleeg1.plank.compiler.instructions
 
+import arrow.core.computations.either
+import arrow.core.left
+import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.buildCall
 import com.gabrielleeg1.plank.compiler.buildReturn
-import com.gabrielleeg1.plank.grammar.element.Decl
-import com.gabrielleeg1.plank.shared.Left
-import com.gabrielleeg1.plank.shared.Right
-import com.gabrielleeg1.plank.shared.either
 
 class EntryPoint : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val name = currentFile.program
-      .filterIsInstance<Decl.FunDecl>()
+      .filterIsInstance<ResolvedFunDecl>()
       .find { it.name.text == "main" }
-      ?: return Left(unresolvedVariableError("main"))
+      ?: unresolvedVariableError("main")
+        .left()
+        .bind<ResolvedFunDecl>()
 
     val main = module.getFunction(mangler.mangle(this@codegen, name)).toNullable()
 
@@ -39,6 +40,6 @@ class EntryPoint : CompilerInstruction() {
       buildReturn(runtime.types.int.getConstant(0))
     }
 
-    Right(runtime.nullConstant)
+    runtime.nullConstant
   }
 }

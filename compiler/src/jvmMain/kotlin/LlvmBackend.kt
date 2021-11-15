@@ -33,7 +33,7 @@ class LlvmBackend(
     LLVMInitializeNativeDisassembler()
     LLVMInitializeNativeTarget()
 
-    module = Module(LLVM.LLVMModuleCreateWithName(file.module))
+    module = Module(LLVM.LLVMModuleCreateWithName(file.module.text))
 
     context = CompilerContext
       .of(file, bindingContext, module, debug)

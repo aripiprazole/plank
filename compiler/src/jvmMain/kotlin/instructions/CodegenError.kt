@@ -1,6 +1,7 @@
 package com.gabrielleeg1.plank.compiler.instructions
 
 import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.grammar.element.Expr
 import kotlin.reflect.KClass
@@ -27,7 +28,7 @@ sealed class CodegenError {
   }
 
   data class UnresolvedFunction(
-    val callee: Expr,
+    val callee: TypedExpr,
     override val context: CompilerContext
   ) : CodegenError() {
     override fun render(): String = "Unresolved callable at ${callee.location}"
@@ -88,7 +89,7 @@ sealed class CodegenError {
   }
 }
 
-fun CompilerContext.unresolvedFunctionError(callee: Expr): CodegenError {
+fun CompilerContext.unresolvedFunctionError(callee: TypedExpr): CodegenError {
   return CodegenError.UnresolvedFunction(callee, this)
 }
 

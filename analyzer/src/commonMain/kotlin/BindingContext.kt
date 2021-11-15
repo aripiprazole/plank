@@ -12,34 +12,35 @@ import com.gabrielleeg1.plank.analyzer.PlankType.Companion.pointer
 import com.gabrielleeg1.plank.analyzer.PlankType.Companion.struct
 import com.gabrielleeg1.plank.analyzer.PlankType.Companion.unit
 import com.gabrielleeg1.plank.analyzer.PlankType.Companion.untyped
-import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
 import com.gabrielleeg1.plank.analyzer.element.ResolvedDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedErrorDecl
-import com.gabrielleeg1.plank.analyzer.element.TypedErrorExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.ResolvedExprStmt
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
-import com.gabrielleeg1.plank.analyzer.element.TypedGroupExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedIdentPattern
-import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
 import com.gabrielleeg1.plank.analyzer.element.ResolvedImportDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedLetDecl
-import com.gabrielleeg1.plank.analyzer.element.TypedMatchExpr
 import com.gabrielleeg1.plank.analyzer.element.ResolvedModuleDecl
-import com.gabrielleeg1.plank.analyzer.element.TypedPattern
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
-import com.gabrielleeg1.plank.analyzer.element.TypedReferenceExpr
 import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStructDecl
+import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedErrorExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedGroupExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedIdentPattern
+import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedMatchExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedPattern
+import com.gabrielleeg1.plank.analyzer.element.TypedRefExpr
 import com.gabrielleeg1.plank.grammar.element.AccessExpr
 import com.gabrielleeg1.plank.grammar.element.AccessTypeRef
 import com.gabrielleeg1.plank.grammar.element.ArrayTypeRef
 import com.gabrielleeg1.plank.grammar.element.AssignExpr
 import com.gabrielleeg1.plank.grammar.element.CallExpr
 import com.gabrielleeg1.plank.grammar.element.ConstExpr
+import com.gabrielleeg1.plank.grammar.element.DerefExpr
 import com.gabrielleeg1.plank.grammar.element.EnumDecl
 import com.gabrielleeg1.plank.grammar.element.ErrorDecl
 import com.gabrielleeg1.plank.grammar.element.ErrorExpr
@@ -49,6 +50,7 @@ import com.gabrielleeg1.plank.grammar.element.ExprStmt
 import com.gabrielleeg1.plank.grammar.element.FunDecl
 import com.gabrielleeg1.plank.grammar.element.FunctionTypeRef
 import com.gabrielleeg1.plank.grammar.element.GetExpr
+import com.gabrielleeg1.plank.grammar.element.GroupExpr
 import com.gabrielleeg1.plank.grammar.element.IdentPattern
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.IfExpr
@@ -92,7 +94,6 @@ interface BindingContext :
   fun analyze(file: PlankFile): ResolvedPlankFile
 }
 
-@Suppress("Detekt.FunctionNaming")
 fun BindingContext(tree: ModuleTree): BindingContext = BindingContextImpl(tree)
 
 private class BindingContextImpl(tree: ModuleTree) : BindingContext {
@@ -150,7 +151,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
 
         val dependencyTreeWalker = object : TreeWalker() {
           override fun visitImportDecl(decl: ImportDecl) {
-            addEdge(name, decl.module)
+            addEdge(name, decl.path.toIdentifier())
           }
         }
 
@@ -183,8 +184,8 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   }
 
   override fun visitAccessExpr(expr: AccessExpr): TypedExpr {
-    val variable = currentScope.findVariable(expr.name)
-      ?: return violate("Unknown identifier %s", expr.name)
+    val variable = currentScope.findVariable(expr.path.toIdentifier())
+      ?: return violate("Unknown identifier %s", expr.path.toIdentifier())
 
     return TypedAccessExpr(variable, expr.location)
   }
@@ -248,14 +249,14 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
     return property.value ?: undeclared(property.type)
   }
 
-  override fun visitGroupExpr(group: Expr.Group): TypedExpr {
-    val expr = visit(group.expr)
+  override fun visitGroupExpr(expr: GroupExpr): TypedExpr {
+    val expr = visit(expr.value)
 
-    return TypedGroupExpr(expr, group.location)
+    return TypedGroupExpr(expr, expr.location)
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr): TypedExpr {
-    val struct = visit(expr.struct).cast<StructType> {
+    val struct = visit(expr.type).cast<StructType> {
       return violate("Can not get a instance from non-struct type %s", it)
     }
 
@@ -286,13 +287,13 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   override fun visitRefExpr(expr: RefExpr): TypedExpr {
     val expr = visit(expr.expr)
 
-    return TypedReferenceExpr(expr, expr.location)
+    return TypedRefExpr(expr, expr.location)
   }
 
-  override fun visitDerefExpr(value: Expr.Value): TypedExpr {
-    val expr = visit(value.expr)
+  override fun visitDerefExpr(expr: DerefExpr): TypedExpr {
+    val ref = visit(expr.ref)
 
-    val type = expr.type.cast<PointerType> {
+    val type = ref.type.cast<PointerType> {
       return violate("Can not deref from non-pointer type %s", it)
     }
 
@@ -385,19 +386,23 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   }
 
   override fun visitImportDecl(decl: ImportDecl): ResolvedStmt {
-    val module = currentScope.findModule(decl.module)
-      ?: return violate("Unresolved module %s", decl.module).stmt()
+    val module = currentScope.findModule(decl.path.toIdentifier())
+      ?: return violate("Unresolved module %s", decl.path.toIdentifier()).stmt()
 
     return ResolvedImportDecl(module, decl.location)
   }
 
   override fun visitModuleDecl(decl: ModuleDecl): ResolvedStmt {
-    val module = currentModuleTree.createModule(decl.name, currentScope, decl.content)
+    val module = currentModuleTree.createModule(
+      name = decl.path.toIdentifier(),
+      enclosing = currentScope,
+      content = decl.content,
+    )
     val content = scoped(module.scope) {
       visit(decl.content).filterIsInstance<ResolvedDecl>()
     }
 
-    return ResolvedModuleDecl(decl.name, content, decl.location)
+    return ResolvedModuleDecl(decl.path, content, decl.location)
   }
 
   override fun visitEnumDecl(decl: EnumDecl): ResolvedStmt {
@@ -483,8 +488,8 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   }
 
   override fun visitAccessTypeRef(ref: AccessTypeRef): PlankType {
-    return currentScope.findType(ref.identifier)
-      ?: return violate("Unresolved type reference to %s", ref.identifier).type
+    return currentScope.findType(ref.path.toIdentifier())
+      ?: return violate("Unresolved type reference to %s", ref.path.toIdentifier()).type
   }
 
   override fun visitPointerTypeRef(ref: PointerTypeRef): PlankType {
@@ -522,7 +527,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
           )
         }
 
-        val member = enum.member(pattern.type) ?: return run {
+        val member = enum.member(pattern.type.toIdentifier()) ?: return run {
           violate("Unknown enum member of %s: %s", enum.name, subject.type)
         }
 

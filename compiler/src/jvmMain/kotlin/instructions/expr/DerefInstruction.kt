@@ -1,15 +1,14 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
 import arrow.core.computations.either
-import arrow.core.left
-import com.gabrielleeg1.plank.analyzer.element.TypedSizeofExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedValueExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.getSize
+import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class SizeofInstruction(private val descriptor: TypedSizeofExpr) : CompilerInstruction() {
+class DerefInstruction(private val descriptor: TypedValueExpr) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    descriptor.type.toType().bind().getSize()
+    buildLoad(descriptor.expr.toInstruction().codegen().bind(), "value.tmp")
   }
 }

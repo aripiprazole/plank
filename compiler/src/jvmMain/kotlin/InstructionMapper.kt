@@ -22,11 +22,11 @@ import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.InstanceInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.LogicalInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.MatchInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.ReferenceInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.RefInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.SetInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.SizeofInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.UnaryInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.ValueInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.DerefInstruction
 import com.gabrielleeg1.plank.compiler.instructions.stmt.ExprStmtInstruction
 import com.gabrielleeg1.plank.compiler.instructions.stmt.ReturnInstruction
 import com.gabrielleeg1.plank.grammar.element.Decl
@@ -117,11 +117,11 @@ class InstructionMapper(
   }
 
   override fun visitRefExpr(reference: Expr.Reference): CompilerInstruction {
-    return ReferenceInstruction(reference)
+    return RefInstruction(reference)
   }
 
   override fun visitDerefExpr(value: Expr.Value): CompilerInstruction {
-    return ValueInstruction(value)
+    return DerefInstruction(value)
   }
 
   override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): CompilerInstruction {

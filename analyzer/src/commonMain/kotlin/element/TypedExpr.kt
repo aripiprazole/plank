@@ -2,6 +2,7 @@ package com.gabrielleeg1.plank.analyzer.element
 
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.PlankType.Companion.pointer
+import com.gabrielleeg1.plank.analyzer.StructType
 import com.gabrielleeg1.plank.analyzer.Variable
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
@@ -21,7 +22,7 @@ sealed class TypedExpr : TypedPlankElement {
     fun visitGroupExpr(expr: TypedGroupExpr): T
     fun visitInstanceExpr(expr: TypedInstanceExpr): T
     fun visitSizeofExpr(expr: TypedSizeofExpr): T
-    fun visitReferenceExpr(expr: TypedReferenceExpr): T
+    fun visitReferenceExpr(expr: TypedRefExpr): T
     fun visitValueExpr(expr: TypedValueExpr): T
     fun visitMatchExpr(expr: TypedMatchExpr): T
     fun visitViolatedExpr(expr: TypedErrorExpr): T
@@ -122,7 +123,7 @@ data class TypedCallExpr(
 
 data class TypedInstanceExpr(
   val arguments: Map<Identifier, TypedExpr>,
-  override val type: PlankType,
+  override val type: StructType,
   override val location: Location,
 ) : TypedExpr() {
   override fun <T> accept(visitor: Visitor<T>): T {
@@ -139,7 +140,7 @@ data class TypedSizeofExpr(
   }
 }
 
-data class TypedReferenceExpr(
+data class TypedRefExpr(
   val expr: TypedExpr,
   override val location: Location
 ) : TypedExpr() {

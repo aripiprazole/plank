@@ -30,6 +30,10 @@ sealed class QualifiedPath : PlankElement {
 
   abstract fun <T> accept(visitor: Visitor<T>): T
 
+  fun toIdentifier(): Identifier {
+    return Identifier.of(text)
+  }
+
   override fun toString(): String {
     return "QualifiedPath(${fullPath.joinToString("/") { it.text }})"
   }

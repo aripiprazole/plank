@@ -25,7 +25,7 @@ data class PlankFile(
   }
 
   val realFile = File(path)
-  val module = moduleName ?: Identifier.of(realFile.name)
+  val module = moduleName?.toIdentifier() ?: Identifier.of(realFile.name)
   val isValid get() = violations.isEmpty()
 
   override val location = Location.undefined()
