@@ -1,5 +1,7 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
+import arrow.core.computations.either
+import com.gabrielleeg1.plank.analyzer.element.TypedMatchExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.buildAlloca
 import com.gabrielleeg1.plank.compiler.buildBr
@@ -11,31 +13,23 @@ import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRPattern
 import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction.Companion.createIf
-import com.gabrielleeg1.plank.compiler.instructions.llvmError
-import com.gabrielleeg1.plank.grammar.element.Expr
-import com.gabrielleeg1.plank.shared.Left
-import com.gabrielleeg1.plank.shared.Right
-import com.gabrielleeg1.plank.shared.either
-import com.gabrielleeg1.plank.shared.map
 
-class MatchInstruction(private val descriptor: Expr.Match) : CompilerInstruction() {
-  override fun CompilerContext.codegen(): CodegenResult = either {
+class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruction() {
+  override fun CompilerContext.codegen(): CodegenResult = either.eager {
     debug {
       printf("=>> MATCH")
     }
-    val targetType = binding.findBound(descriptor)
-      ?: return Left(llvmError("can not find type of match descriptor"))
 
-    val subjectType = binding.findBound(descriptor.subject)
-      ?: return Left(llvmError("can not find type of match subject"))
+    val targetType = descriptor.type
+    val subjectType = descriptor.subject.type
 
-    val target = buildAlloca(!targetType.toType(), "match")
+    val target = buildAlloca(targetType.toType().bind(), "match")
 
-    val subject = !descriptor.subject.toInstruction().codegen()
+    val subject = descriptor.subject.toInstruction().codegen().bind()
 
     debug {
-      printf("tag in subject %d", !getField(subject, 0).map(::buildLoad))
-      printf("subject string", !getField(subject, 0).map(::buildLoad))
+      printf("tag in subject %d", buildLoad(getField(subject, 0).bind()))
+      printf("subject string", buildLoad(getField(subject, 0).bind()))
     }
 
     val matchBr = context.newBasicBlock("match_br")
@@ -46,23 +40,23 @@ class MatchInstruction(private val descriptor: Expr.Match) : CompilerInstruction
 
     descriptor.patterns.forEach { (pattern, value) ->
       val thenStmts = {
-        val instruction = !value.toInstruction().codegen()
+        val instruction = value.toInstruction().codegen().bind()
         val store = buildStore(target, instruction)
 
         listOf(instruction, store)
       }
 
-      !createIf(
+      createIf(
         targetType,
-        !IRPattern.of(pattern, subject, subjectType).codegen(),
+        IRPattern.of(pattern, subject, subjectType).codegen().bind(),
         thenStmts,
-      )
+      ).bind()
     }
 
     debug {
       printf("<<= MATCH")
     }
 
-    Right(buildLoad(target, "match.target"))
+    buildLoad(target, "match.target")
   }
 }

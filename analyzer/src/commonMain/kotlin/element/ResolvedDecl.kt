@@ -9,14 +9,16 @@ import com.gabrielleeg1.plank.analyzer.StructProperty
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
+import com.gabrielleeg1.plank.grammar.element.QualifiedPath
 
 sealed class ResolvedDecl : ResolvedStmt()
 
 data class ResolvedEnumDecl(
   val name: Identifier,
   val members: Map<Identifier, EnumMember>,
+  override val type: PlankType,
   override val location: Location
-) : ResolvedDecl() {
+) : ResolvedDecl(), TypedPlankElement {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitEnumDecl(this)
   }
@@ -24,9 +26,10 @@ data class ResolvedEnumDecl(
 
 data class ResolvedStructDecl(
   val name: Identifier,
-  val fields: Map<Identifier, StructProperty>,
-  override val location: Location
-) : ResolvedDecl() {
+  val properties: Map<Identifier, StructProperty>,
+   override val type: PlankType,
+  override val location: Location,
+) : ResolvedDecl(), TypedPlankElement {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitStructDecl(this)
   }
@@ -42,7 +45,7 @@ data class ResolvedImportDecl(
 }
 
 data class ResolvedModuleDecl(
-  val name: Identifier,
+  val name: QualifiedPath,
   val content: List<ResolvedDecl>,
   override val location: Location
 ) : ResolvedDecl() {
@@ -56,9 +59,13 @@ data class ResolvedFunDecl(
   val content: List<ResolvedStmt>,
   val realParameters: Map<Identifier, PlankType>,
   val attributes: Map<String, Attribute> = emptyMap(),
+  val body: List<ResolvedStmt>,
   override val type: FunctionType,
   override val location: Location
 ) : ResolvedDecl(), TypedPlankElement {
+  val parameters = type.parameters
+  val returnType = type.returnType
+
   fun hasAttribute(name: String): Boolean {
     return attributes[name] != null
   }

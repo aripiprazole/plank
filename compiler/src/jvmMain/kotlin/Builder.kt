@@ -2,11 +2,11 @@
 
 package com.gabrielleeg1.plank.compiler
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import com.gabrielleeg1.plank.compiler.instructions.CodegenError
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
-import com.gabrielleeg1.plank.shared.Either
-import com.gabrielleeg1.plank.shared.Left
-import com.gabrielleeg1.plank.shared.Right
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMBuildStructGEP
 import org.llvm4j.llvm4j.AllocaInstruction
@@ -159,19 +159,15 @@ fun CompilerContext.buildBitcast(op: Value, type: Type, name: String? = null): V
 }
 
 val CompilerContext.insertionBlock: Either<CodegenError, BasicBlock>
-  get() {
-    return builder
-      .getInsertionBlock().toNullable()
-      ?.let { Right(it) }
-      ?: return Left(llvmError("can not reach function in this context"))
-  }
+  get() =
+    builder.getInsertionBlock().toNullable()
+      ?.right()
+      ?: llvmError("can not reach function in this context").left()
 
 val CompilerContext.currentFunction: Either<CodegenError, Function>
-  get() {
-    return builder
-      .getInsertionBlock().toNullable()
+  get() =
+    builder.getInsertionBlock().toNullable()
       ?.getFunction()
       ?.toNullable()
-      ?.let { Right(it) }
-      ?: return Left(llvmError("can not reach function in this context"))
-  }
+      ?.right()
+      ?: llvmError("can not reach function in this context").left()

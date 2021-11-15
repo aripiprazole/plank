@@ -14,6 +14,7 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
+        compileOnly(Dependencies.Arrow.Core)
       }
     }
     val commonTest by getting {

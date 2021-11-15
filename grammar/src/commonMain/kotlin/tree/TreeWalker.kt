@@ -106,7 +106,7 @@ abstract class TreeWalker :
   }
 
   override fun visitGroupExpr(expr: GroupExpr) {
-    visit(expr.expr)
+    visit(expr.value)
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr) {
@@ -127,7 +127,7 @@ abstract class TreeWalker :
   }
 
   override fun visitDerefExpr(expr: DerefExpr) {
-    visit(expr.expr)
+    visit(expr.ref)
   }
 
   override fun visitErrorExpr(expr: ErrorExpr) {

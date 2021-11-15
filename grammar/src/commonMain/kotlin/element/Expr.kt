@@ -58,7 +58,7 @@ data class AccessExpr(val path: QualifiedPath, override val location: Location) 
   }
 }
 
-data class GroupExpr(val expr: Expr, override val location: Location) : Expr() {
+data class GroupExpr(val value: Expr, override val location: Location) : Expr() {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitGroupExpr(this)
   }
@@ -127,7 +127,7 @@ data class RefExpr(val expr: Expr, override val location: Location) : Expr() {
   }
 }
 
-data class DerefExpr(val expr: Expr, override val location: Location) : Expr() {
+data class DerefExpr(val ref: Expr, override val location: Location) : Expr() {
   override fun <T> accept(visitor: Visitor<T>): T {
     return visitor.visitDerefExpr(this)
   }

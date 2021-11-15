@@ -22,21 +22,6 @@ class PlankRuntime(private val module: Module) {
     function
   }
 
-  val concatFunction: Function?
-    get() {
-      return module.getFunction(CONCAT_CALL).toNullable()
-    }
-
-  val eqFunction: Function?
-    get() {
-      return module.getFunction(EQ_CALL).toNullable()
-    }
-
-  val neqFunction: Function?
-    get() {
-      return module.getFunction(NEQ_CALL).toNullable()
-    }
-
   class Types(context: Context) {
     val i1 = context.getInt1Type()
     val tag = context.getInt8Type()
@@ -48,11 +33,5 @@ class PlankRuntime(private val module: Module) {
     val string = context.getPointerType(i8).unwrap()
     val void = context.getVoidType()
     val voidPtr = context.getPointerType(i8).unwrap()
-  }
-
-  companion object {
-    const val EQ_CALL = "Plank_Internal_eq"
-    const val NEQ_CALL = "Plank_Internal_neq"
-    const val CONCAT_CALL = "internal_Plank_Internal_concat"
   }
 }

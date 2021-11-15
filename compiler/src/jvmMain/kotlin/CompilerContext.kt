@@ -1,7 +1,9 @@
 package com.gabrielleeg1.plank.compiler
 
+import arrow.core.Either
 import com.gabrielleeg1.plank.analyzer.BindingContext
 import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.converter.DataTypeConverter
 import com.gabrielleeg1.plank.compiler.instructions.CodegenError
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
@@ -10,12 +12,10 @@ import com.gabrielleeg1.plank.compiler.instructions.element.IRFunction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRNamedFunction
 import com.gabrielleeg1.plank.compiler.mangler.NameMangler
 import com.gabrielleeg1.plank.compiler.runtime.PlankRuntime
-import com.gabrielleeg1.plank.grammar.element.Decl
 import com.gabrielleeg1.plank.grammar.element.Expr
 import com.gabrielleeg1.plank.grammar.element.PlankElement
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.grammar.element.Stmt
-import com.gabrielleeg1.plank.shared.Either
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Context
 import org.llvm4j.llvm4j.Function
@@ -80,7 +80,7 @@ data class CompilerContext(
   fun createFileScope(file: PlankFile = currentFile): CompilerContext = copy(
     enclosing = this,
     currentFile = file,
-    moduleName = file.module,
+    moduleName = file.module.text,
   )
 
   inline fun createNestedScope(
@@ -88,22 +88,22 @@ data class CompilerContext(
     builder: CompilerContext.() -> Unit
   ): CompilerContext = copy(enclosing = this, moduleName = moduleName).apply(builder)
 
-  fun addFunction(irFunction: IRFunction): Either<CodegenError, Function> {
-    functions[irFunction.name] = irFunction
+  fun addFunction(function: IRFunction): Either<CodegenError, Function> {
+    functions[function.name] = function
 
-    return irFunction.run {
+    return with(function) {
       this@CompilerContext.codegen()
     }
   }
 
-  fun addFunction(decl: Decl.FunDecl): Either<CodegenError, Function> {
+  fun addFunction(decl: ResolvedFunDecl): Either<CodegenError, Function> {
     val name = decl.name.text
     val mangledName = mangler.mangle(this, decl)
-    val irFunction = IRNamedFunction(name, mangledName, decl)
+    val function = IRNamedFunction(name, mangledName, decl)
 
-    functions[name] = irFunction
+    functions[name] = function
 
-    return irFunction.run {
+    return with(function) {
       this@CompilerContext.codegen()
     }
   }
@@ -176,7 +176,7 @@ data class CompilerContext(
         runtime = PlankRuntime(module),
         currentFile = file,
         dataTypeConverter = DataTypeConverter(),
-        moduleName = file.module,
+        moduleName = file.module.text,
       )
     }
   }

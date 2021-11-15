@@ -32,6 +32,10 @@ object Dependencies {
     const val LLVMPlatform = "org.bytedeco:llvm-platform:11.1.0-1.5.5"
   }
 
+  object Arrow  {
+    const val Core = "io.arrow-kt:arrow-core:1.0.1"
+  }
+
   object JUnit {
     const val JupiterApi = "org.junit.jupiter:junit-jupiter-api:5.6.0"
     const val JupiterEngine = "org.junit.jupiter:junit-jupiter-engine:5.6.0"

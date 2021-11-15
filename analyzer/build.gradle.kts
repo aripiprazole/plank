@@ -33,6 +33,7 @@ kotlin {
 
     val commonTest by getting {
       dependencies {
+        implementation(Dependencies.Arrow.Core)
         implementation(kotlin("stdlib-common"))
         implementation(kotlin("test-common"))
         implementation(kotlin("test-annotations-common"))
