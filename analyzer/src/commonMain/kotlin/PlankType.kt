@@ -190,13 +190,13 @@ class StructType(
 }
 
 class IntType(
-  name: String,
-  override val size: Int,
-  val floatingPoint: Boolean = false,
-  val unsigned: Boolean = false,
+    name: String,
+    override val size: Int,
+    val floatingPoint: Boolean = false,
+    val unsigned: Boolean = false,
 ) : PlankType() {
-  override val name = Identifier.of(name)
-  override val isPrimitive: Boolean = true
+    override val name = Identifier(name)
+    override val isPrimitive: Boolean = true
 }
 
 // TODO: use currying

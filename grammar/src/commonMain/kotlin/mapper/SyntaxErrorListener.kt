@@ -20,7 +20,7 @@ class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
     e: RecognitionException?
   ) {
     if (e != null) {
-      _violations += RecognitionViolation(msg, Location.of(e.offendingToken!!, file))
+      _violations += RecognitionViolation(msg, Location(e.offendingToken!!, file))
     }
   }
 }

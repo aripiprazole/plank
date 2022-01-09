@@ -38,7 +38,7 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     declare(UnaryId.neg(), function(int(), int()))
   }
 
-  override val name = Identifier.of("Global")
+  override val name = Identifier("Global")
   override val enclosing: Scope? = null
 }
 
@@ -56,7 +56,7 @@ data class ModuleScope(
   override val enclosing: Scope,
   override val moduleTree: ModuleTree = ModuleTree()
 ) : Scope() {
-  override val name: Identifier = Identifier.of("${enclosing.name}.${module.name}")
+  override val name: Identifier = Identifier("${enclosing.name}.${module.name}")
 }
 
 class FunctionScope(

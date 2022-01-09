@@ -1,8 +1,21 @@
 package com.gabrielleeg1.plank.grammar.element
 
-abstract class Stmt internal constructor() : PlankElement {
+sealed interface Stmt : PlankElement {
   interface Visitor<T> {
-    fun visit(stmt: Stmt): T = stmt.accept(this)
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Replace with pattern matching")
+    fun visit(stmt: Stmt): T = when (stmt) {
+      is ExprStmt -> visitExprStmt(stmt)
+      is ReturnStmt -> visitReturnStmt(stmt)
+      is ErrorStmt -> visitErrorStmt(stmt)
+      is EnumDecl -> visitEnumDecl(stmt)
+      is StructDecl -> visitStructDecl(stmt)
+      is ImportDecl -> visitImportDecl(stmt)
+      is ModuleDecl -> visitModuleDecl(stmt)
+      is FunDecl -> visitFunDecl(stmt)
+      is LetDecl -> visitLetDecl(stmt)
+      is ErrorDecl -> visitErrorDecl(stmt)
+    }
 
     fun visitExprStmt(stmt: ExprStmt): T
     fun visitReturnStmt(stmt: ReturnStmt): T
@@ -16,35 +29,15 @@ abstract class Stmt internal constructor() : PlankElement {
     fun visitLetDecl(decl: LetDecl): T
     fun visitErrorDecl(decl: ErrorDecl): T
   }
-
-  abstract fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class ExprStmt(
-  val expr: Expr,
-  override val location: Location
-) : Stmt() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitExprStmt(this)
-  }
-}
+data class ExprStmt(val expr: Expr, override val location: Location) : Stmt
 
-data class ReturnStmt(
-  val value: Expr?,
-  override val location: Location
-) : Stmt() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitReturnStmt(this)
-  }
-}
+data class ReturnStmt(val value: Expr?, override val location: Location) : Stmt
 
 data class ErrorStmt(
   override val message: String,
   override val arguments: List<Any>
-) : Stmt(), ErrorPlankElement {
-  override val location = Location.undefined()
-
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitErrorStmt(this)
-  }
+) : Stmt, ErrorPlankElement {
+  override val location = Location.Generated
 }

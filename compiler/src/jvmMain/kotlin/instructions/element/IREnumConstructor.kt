@@ -56,7 +56,7 @@ class IREnumConstructor(
 
       val arguments = function.getParameters()
 
-      val index = runtime.types.tag.getConstant(enum.tag(Identifier.of(name)))
+      val index = runtime.types.tag.getConstant(enum.tag(Identifier(name)))
       val instance = getInstance(struct, index, *arguments, isPointer = true).bind()
 
       val bitcast = buildBitcast(instance, enum.toType().bind())

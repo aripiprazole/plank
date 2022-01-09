@@ -13,7 +13,7 @@ buildscript {
 }
 
 plugins {
-  kotlin("multiplatform") version "1.4.32" apply false
+  kotlin("multiplatform") version "1.6.10" apply false
   id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
   id("io.gitlab.arturbosch.detekt") version "1.16.0"
   id("composite-build")

@@ -1,37 +1,30 @@
 package com.gabrielleeg1.plank.grammar.element
 
-import com.gabrielleeg1.plank.grammar.element.Location.Companion.undefined
-
-class Identifier(val text: String, override val location: Location) : PlankElement {
+class Identifier(val text: String, override val location: Location = Location.Generated) :
+  PlankElement {
   interface Visitor<T> {
-    fun visit(identifier: Identifier): T = identifier.accept(this)
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Replace with pattern matching")
+    fun visit(identifier: Identifier): T = visitIdentifier(identifier)
 
     fun visitIdentifier(identifier: Identifier): T
-  }
-
-  fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitIdentifier(this)
   }
 
   override fun toString(): String = "Identifier($text)"
 
   companion object {
-    fun of(text: String, location: Location = undefined()): Identifier {
-      return Identifier(text, location)
-    }
+    fun eq(location: Location = Location.Generated): Identifier = Identifier("==", location)
+    fun neq(location: Location = Location.Generated): Identifier = Identifier("!=", location)
+    fun gt(location: Location = Location.Generated): Identifier = Identifier(">", location)
+    fun gte(location: Location = Location.Generated): Identifier = Identifier(">=", location)
+    fun lte(location: Location = Location.Generated): Identifier = Identifier("<=", location)
+    fun lt(location: Location = Location.Generated): Identifier = Identifier("<", location)
 
-    fun eq(location: Location = undefined()): Identifier = of("==", location)
-    fun neq(location: Location = undefined()): Identifier = of("!=", location)
-    fun gt(location: Location = undefined()): Identifier = of(">", location)
-    fun gte(location: Location = undefined()): Identifier = of(">=", location)
-    fun lte(location: Location = undefined()): Identifier = of("<=", location)
-    fun lt(location: Location = undefined()): Identifier = of("<", location)
+    fun add(location: Location = Location.Generated): Identifier = Identifier("+", location)
+    fun sub(location: Location = Location.Generated): Identifier = Identifier("-", location)
+    fun times(location: Location = Location.Generated): Identifier = Identifier("*", location)
+    fun div(location: Location = Location.Generated): Identifier = Identifier("/", location)
 
-    fun add(location: Location = undefined()): Identifier = of("+", location)
-    fun sub(location: Location = undefined()): Identifier = of("-", location)
-    fun times(location: Location = undefined()): Identifier = of("*", location)
-    fun div(location: Location = undefined()): Identifier = of("/", location)
-
-    fun concat(location: Location = undefined()): Identifier = of("++", location)
+    fun concat(location: Location = Location.Generated): Identifier = Identifier("++", location)
   }
 }

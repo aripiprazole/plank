@@ -310,7 +310,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
     val patterns = expr.patterns
       .entries
       .associate { (pattern, value) ->
-        visit(pattern) to scoped(ClosureScope(Identifier.of("match"), currentScope)) {
+        visit(pattern) to scoped(ClosureScope(Identifier("match"), currentScope)) {
           deconstruct(pattern, subject)
 
           visit(value)
@@ -568,15 +568,15 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
     return result
   }
 
-  private inline fun <T> scoped(
-    name: Identifier = Identifier.of("anonymous"),
-    scope: Scope = ClosureScope(name, scopes.peekLast()),
-    body: Scope.() -> T
-  ): T {
-    scopes.pushLast(scope)
-    val result = body(scope)
-    scopes.popLast()
+    private inline fun <T> scoped(
+        name: Identifier = Identifier("anonymous"),
+        scope: Scope = ClosureScope(name, scopes.peekLast()),
+        body: Scope.() -> T
+    ): T {
+        scopes.pushLast(scope)
+        val result = body(scope)
+        scopes.popLast()
 
-    return result
-  }
+        return result
+    }
 }

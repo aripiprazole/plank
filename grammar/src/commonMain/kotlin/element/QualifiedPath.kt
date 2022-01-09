@@ -1,8 +1,13 @@
 package com.gabrielleeg1.plank.grammar.element
 
-sealed class QualifiedPath : PlankElement {
+sealed interface QualifiedPath : PlankElement {
   interface Visitor<T> {
-    fun visit(path: QualifiedPath) = path.accept(this)
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Replace with pattern matching")
+    fun visit(path: QualifiedPath) = when (path) {
+      is QualifiedPathNil -> visitQualifiedPathNil(path)
+      is QualifiedPathCons -> visitQualifiedPathCons(path)
+    }
 
     fun visitQualifiedPathCons(path: QualifiedPathCons): T
     fun visitQualifiedPathNil(path: QualifiedPathNil): T
@@ -28,14 +33,8 @@ sealed class QualifiedPath : PlankElement {
       dumpPath(this@QualifiedPath)
     }
 
-  abstract fun <T> accept(visitor: Visitor<T>): T
-
   fun toIdentifier(): Identifier {
-    return Identifier.of(text)
-  }
-
-  override fun toString(): String {
-    return "QualifiedPath(${fullPath.joinToString("/") { it.text }})"
+    return Identifier(text)
   }
 
   companion object {
@@ -46,7 +45,7 @@ sealed class QualifiedPath : PlankElement {
     fun cons(
       value: Identifier,
       next: QualifiedPath,
-      location: Location = Location.undefined(),
+      location: Location = Location.Generated,
     ): QualifiedPath {
       return QualifiedPathCons(value, next, location)
     }
@@ -57,7 +56,7 @@ sealed class QualifiedPath : PlankElement {
 
     fun from(stringPath: String): QualifiedPath {
       return stringPath.split(".").asReversed().fold(nil()) { acc, next ->
-        cons(Identifier.of(next), acc)
+        cons(Identifier(next), acc)
       }
     }
   }
@@ -67,16 +66,16 @@ data class QualifiedPathCons(
   val value: Identifier,
   val next: QualifiedPath,
   override val location: Location
-) : QualifiedPath() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitQualifiedPathCons(this)
+) : QualifiedPath {
+  override fun toString(): String {
+    return "QualifiedPath(${fullPath.joinToString("/") { it.text }})"
   }
 }
 
-object QualifiedPathNil : QualifiedPath() {
-  override val location = Location.undefined()
+object QualifiedPathNil : QualifiedPath {
+  override val location = Location.Generated
 
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitQualifiedPathNil(this)
+  override fun toString(): String {
+    return "QualifiedPath(${fullPath.joinToString("/") { it.text }})"
   }
 }

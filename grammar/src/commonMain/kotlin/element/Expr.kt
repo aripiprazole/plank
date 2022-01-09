@@ -1,8 +1,25 @@
 package com.gabrielleeg1.plank.grammar.element
 
-sealed class Expr : PlankElement {
+sealed interface Expr : PlankElement {
   interface Visitor<T> {
-    fun visit(expr: Expr): T = expr.accept(this)
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Replace with pattern matching")
+    fun visit(expr: Expr): T = when (expr) {
+      is MatchExpr -> visitMatchExpr(expr)
+      is IfExpr -> visitIfExpr(expr)
+      is ConstExpr -> visitConstExpr(expr)
+      is AccessExpr -> visitAccessExpr(expr)
+      is GroupExpr -> visitGroupExpr(expr)
+      is AssignExpr -> visitAssignExpr(expr)
+      is SetExpr -> visitSetExpr(expr)
+      is GetExpr -> visitGetExpr(expr)
+      is CallExpr -> visitCallExpr(expr)
+      is InstanceExpr -> visitInstanceExpr(expr)
+      is SizeofExpr -> visitSizeofExpr(expr)
+      is RefExpr -> visitRefExpr(expr)
+      is DerefExpr -> visitDerefExpr(expr)
+      is ErrorExpr -> visitErrorExpr(expr)
+    }
 
     fun visitMatchExpr(expr: MatchExpr): T
     fun visitIfExpr(expr: IfExpr): T
@@ -19,127 +36,69 @@ sealed class Expr : PlankElement {
     fun visitDerefExpr(expr: DerefExpr): T
     fun visitErrorExpr(expr: ErrorExpr): T
   }
-
-  abstract fun <T> accept(visitor: Visitor<T>): T
 }
 
 data class MatchExpr(
   val subject: Expr,
   val patterns: Map<Pattern, Expr>,
   override val location: Location
-) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitMatchExpr(this)
-  }
-}
+) : Expr
 
 data class IfExpr(
   val cond: Expr,
   val thenBranch: Expr,
   val elseBranch: Expr?,
   override val location: Location
-) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitIfExpr(this)
-  }
-}
+) : Expr
 
-data class ConstExpr(val value: Any, override val location: Location) : Expr() {
+data class ConstExpr(val value: Any, override val location: Location) : Expr {
   val literal = value.toString()
-
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitConstExpr(this)
-  }
 }
 
-data class AccessExpr(val path: QualifiedPath, override val location: Location) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitAccessExpr(this)
-  }
-}
+data class AccessExpr(val path: QualifiedPath, override val location: Location) : Expr
 
-data class GroupExpr(val value: Expr, override val location: Location) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitGroupExpr(this)
-  }
-}
+data class GroupExpr(val value: Expr, override val location: Location) : Expr
 
 data class AssignExpr(
   val name: Identifier,
   val value: Expr,
   override val location: Location
-) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitAssignExpr(this)
-  }
-}
+) : Expr
 
 data class SetExpr(
   val receiver: Expr,
   val property: Identifier,
   val value: Expr,
   override val location: Location
-) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitSetExpr(this)
-  }
-}
+) : Expr
 
 data class GetExpr(
   val receiver: Expr,
   val property: Identifier,
   override val location: Location
-) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitGetExpr(this)
-  }
-}
+) : Expr
 
 data class CallExpr(
   val callee: Expr,
   val arguments: List<Expr>,
   override val location: Location
-) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitCallExpr(this)
-  }
-}
+) : Expr
 
 data class InstanceExpr(
   val type: TypeRef,
   val arguments: Map<Identifier, Expr>,
   override val location: Location,
-) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitInstanceExpr(this)
-  }
-}
+) : Expr
 
-data class SizeofExpr(val type: TypeRef, override val location: Location) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitSizeofExpr(this)
-  }
-}
+data class SizeofExpr(val type: TypeRef, override val location: Location) : Expr
 
-data class RefExpr(val expr: Expr, override val location: Location) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitRefExpr(this)
-  }
-}
+data class RefExpr(val expr: Expr, override val location: Location) : Expr
 
-data class DerefExpr(val ref: Expr, override val location: Location) : Expr() {
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitDerefExpr(this)
-  }
-}
+data class DerefExpr(val ref: Expr, override val location: Location) : Expr
 
 data class ErrorExpr(
   override val message: String,
   override val arguments: List<Any> = emptyList(),
-) : Expr(), ErrorPlankElement {
-  override val location = Location.undefined()
-
-  override fun <T> accept(visitor: Visitor<T>): T {
-    return visitor.visitErrorExpr(this)
-  }
+) : Expr, ErrorPlankElement {
+  override val location = Location.Generated
 }

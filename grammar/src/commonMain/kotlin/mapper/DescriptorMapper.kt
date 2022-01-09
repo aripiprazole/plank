@@ -488,7 +488,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   private fun Interval.location(): Location {
-    return Location.of(a, b, file)
+    return Location(a, b, file)
   }
 
   private fun RuleContext.location(): Location {
@@ -510,13 +510,13 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   private fun TerminalNode.identifier(): Identifier {
-    return Identifier.of(text, sourceInterval.location())
+    return Identifier(text, sourceInterval.location())
   }
 
   private fun Token.identifier(): Identifier {
     val text = text ?: error("No text received in Token")
 
-    return Identifier.of(text, Location.of(startIndex, stopIndex, file))
+    return Identifier(text, Location(startIndex, stopIndex, file))
   }
 
   private fun ExprContext.expr(): Expr {
