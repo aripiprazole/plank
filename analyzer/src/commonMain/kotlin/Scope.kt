@@ -1,6 +1,5 @@
 package com.gabrielleeg1.plank.analyzer
 
-import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
@@ -13,6 +12,12 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
    * Init compiler-defined functions
    */
   init {
+    create(UnitType)
+    create(CharType)
+    create(BoolType)
+    create(IntType(32))
+    create(FloatType(32))
+
     // Add default binary operators
     declare(Identifier.add(), FunctionType(IntType(), IntType(), IntType()))
     declare(Identifier.sub(), FunctionType(IntType(), IntType(), IntType()))
@@ -83,11 +88,15 @@ sealed class Scope {
     return this
   }
 
+  fun declare(name: Identifier, type: PlankType, location: Location, mutable: Boolean = false) {
+    variables[name] = Variable(mutable, name, type.const().copy(location = location))
+  }
+
   /**
    * Declares a compiler-defined variable with type [type] in the context
    */
   fun declare(name: Identifier, type: PlankType, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, TypedConstExpr(Unit, type, Location.Generated))
+    variables[name] = Variable(mutable, name, type.const())
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
@@ -98,6 +107,12 @@ sealed class Scope {
     return types.getOrPut(name) {
       StructType(name)
     }
+  }
+
+  fun create(type: PlankType) {
+    requireNotNull(type.name) { "type.name must be not null" }
+
+    types[type.name!!] = type
   }
 
   fun create(name: Identifier, type: PlankType) {

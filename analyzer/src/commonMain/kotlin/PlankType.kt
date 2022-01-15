@@ -2,6 +2,7 @@
 
 package com.gabrielleeg1.plank.analyzer
 
+import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
@@ -100,7 +101,7 @@ class ModuleType(
 ) : PlankType() {
   override val size = 0
 
-  override fun toString(): String = "ModuleType($name)"
+  override fun toString(): String = "ModuleType(${name.text})"
 }
 
 data class PointerType(val inner: PlankType) : PlankType() {
@@ -135,7 +136,7 @@ class StructType(
     acc + property.type.size
   }
 
-  override fun toString(): String = "StructType($name, size = $size)"
+  override fun toString(): String = "StructType(${name.text}, size = $size)"
 }
 
 class IntType internal constructor(
@@ -148,8 +149,7 @@ class IntType internal constructor(
   override val isPrimitive: Boolean = true
 
   override fun toString(): String = buildString {
-    append(name)
-    append(if (size > 1) size else "")
+    append(name.text)
     append(if (floatingPoint) "f" else "")
     append(if (unsigned) "u" else "")
   }
@@ -161,7 +161,7 @@ private val intCache = mutableMapOf<Int, IntType>()
 fun FloatType(size: Int = 32, unsigned: Boolean = false): IntType {
   return floatCache.getOrPut(size) {
     IntType(
-      name = "Float",
+      name = "Float$size",
       size,
       floatingPoint = true,
       unsigned = unsigned
@@ -170,7 +170,7 @@ fun FloatType(size: Int = 32, unsigned: Boolean = false): IntType {
 }
 
 fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
-  return intCache.getOrPut(size) { IntType("Int", size, unsigned = unsigned) }
+  return intCache.getOrPut(size) { IntType("Int$size", size, unsigned = unsigned) }
 }
 
 // TODO: use currying
@@ -185,10 +185,10 @@ class FunctionType(val parameters: List<PlankType>, val returnType: PlankType) :
   override val isPrimitive: Boolean = true
   override val size = 8
 
-  fun call(arguments: List<TypedExpr>): TypedExpr {
+  fun call(callee: TypedExpr, location: Location, arguments: List<TypedExpr>): TypedExpr {
     // TODO: add constant evaluation in compile-time if arguments are constants
 
-    return returnType.const()
+    return TypedCallExpr(callee, arguments, returnType, location)
   }
 
   override fun toString(): String {

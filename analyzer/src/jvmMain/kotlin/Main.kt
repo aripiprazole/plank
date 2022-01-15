@@ -1,12 +1,14 @@
-import com.gabrielleeg1.plank.analyzer.ModuleTree
-import com.gabrielleeg1.plank.analyzer.analyze
+package com.gabrielleeg1.plank.analyzer
+
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 
 fun main() {
   val file = PlankFile.of(
     """
-    fun main(argc: Int, argv: **Char): Void {
+    native fun println(message: *Char): Void
+
+    fun main(argc: Int32, argv: **Char): Void {
       println("Hello, world");
     }
     """.trimIndent(),
@@ -14,5 +16,8 @@ fun main() {
 
   val resolved = analyze(file, ModuleTree())
 
+  resolved.bindingViolations.forEach { println(it) }
+
+//  println(file.dumpTree())
   println(resolved.dumpTree())
 }

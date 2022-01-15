@@ -6,6 +6,7 @@ import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.Module
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.StructProperty
+import com.gabrielleeg1.plank.grammar.debug.DontDump
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
@@ -62,6 +63,7 @@ data class ResolvedFunDecl(
   override val type: FunctionType,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
+  @DontDump
   val parameters = type.parameters
   val returnType = type.returnType
 

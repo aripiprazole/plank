@@ -1,5 +1,6 @@
 package com.gabrielleeg1.plank.grammar.element
 
+import com.gabrielleeg1.plank.grammar.debug.DontDump
 import com.gabrielleeg1.plank.grammar.generated.PlankLexer
 import com.gabrielleeg1.plank.grammar.generated.PlankParser
 import com.gabrielleeg1.plank.grammar.mapper.DescriptorMapper
@@ -20,6 +21,7 @@ import pw.binom.io.file.nameWithoutExtension
 import pw.binom.io.file.readText
 
 data class PlankFile(
+  @DontDump
   val content: String,
   val moduleName: QualifiedPath? = null,
   val path: String = "Anonymous",

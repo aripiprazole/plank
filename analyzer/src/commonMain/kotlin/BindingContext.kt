@@ -101,7 +101,8 @@ internal class BindingContextImpl(tree: ModuleTree) :
 
   // TODO: testing
   @Suppress("unused")
-  val isValid get() = violations.isEmpty()
+  val isValid
+    get() = violations.isEmpty()
 
   fun analyze(file: PlankFile): ResolvedPlankFile {
     val globalScope = currentScope
@@ -146,7 +147,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
   override fun visitPlankFile(file: PlankFile): ResolvedPlankFile {
     val program = visitStmts(file.program).filterIsInstance<ResolvedDecl>()
 
-    return ResolvedPlankFile(file, program)
+    return ResolvedPlankFile(file, program, bindingViolations = violations.toList())
   }
 
   override fun visitConstExpr(expr: ConstExpr): TypedExpr {
@@ -159,7 +160,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
       is Byte -> IntType(8)
       is Double -> FloatType(32)
       is Long, Float -> FloatType(64)
-      else -> return violate("Unknown type %s", expr::class.simpleName)
+      else -> return violate("Unknown type %s", expr.value::class.simpleName)
     }
 
     return TypedConstExpr(expr.value, type, expr.location)
@@ -178,7 +179,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
     val function = callable.type.cast<FunctionType>()
       ?: return violate("Can not call not function", callable)
 
-    return function.call(visitExprs(expr.arguments))
+    return function.call(callable, expr.location, visitExprs(expr.arguments))
   }
 
   override fun visitAssignExpr(expr: AssignExpr): TypedExpr {
@@ -435,7 +436,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
     val returnType = visit(decl.returnType) { UnitType }
     val type = FunctionType(returnType, decl.parameters.map { visit(it) })
 
-    currentScope.declare(name, type)
+    currentScope.declare(name, type, decl.location)
 
     val scope = FunctionScope(type, name, currentScope, currentModuleTree)
     val content = scoped(name, scope) {

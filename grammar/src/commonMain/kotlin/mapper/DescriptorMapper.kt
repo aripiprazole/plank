@@ -442,7 +442,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitStringPrimary(ctx: StringPrimaryContext): Expr {
     val value = ctx.STRING() ?: error("No string received in string primary context")
 
-    return ConstExpr(value, ctx.location())
+    return ConstExpr(value.text, ctx.location())
   }
 
   override fun visitIdentifierPrimary(ctx: IdentifierPrimaryContext): Expr {

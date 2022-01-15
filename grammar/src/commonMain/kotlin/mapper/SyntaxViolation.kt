@@ -7,6 +7,8 @@ sealed class SyntaxViolation : RuntimeException() {
   abstract val location: Location
 
   abstract fun render(renderer: CompilerLogger)
+
+  override fun toString(): String = message ?: "SyntaxViolation"
 }
 
 data class ExpectingViolation(
