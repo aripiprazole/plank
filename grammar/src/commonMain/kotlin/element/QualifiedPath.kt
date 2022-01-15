@@ -1,81 +1,44 @@
 package com.gabrielleeg1.plank.grammar.element
 
-sealed interface QualifiedPath : PlankElement {
+data class QualifiedPath(val fullPath: List<Identifier>, override val location: Location) :
+  PlankElement {
+  constructor(identifier: Identifier) :
+    this(listOf(identifier), identifier.location)
+
+  constructor(stringPath: String, location: Location = Location.Generated) :
+    this(stringPath.split(".").asReversed().map(::Identifier), location)
+
   interface Visitor<T> {
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Replace with pattern matching")
-    fun visit(path: QualifiedPath) = when (path) {
-      is QualifiedPathNil -> visitQualifiedPathNil(path)
-      is QualifiedPathCons -> visitQualifiedPathCons(path)
-    }
+    fun visit(path: QualifiedPath): T = visitQualifiedPath(path)
 
-    fun visitQualifiedPathCons(path: QualifiedPathCons): T
-    fun visitQualifiedPathNil(path: QualifiedPathNil): T
+    fun visitQualifiedPath(path: QualifiedPath): T
   }
 
-  val text: String
-    get() = fullPath.joinToString(".")
-
-  val fullPath: List<Identifier>
-    get() = mutableListOf<Identifier>().apply {
-      tailrec fun dumpPath(path: QualifiedPath) {
-        when (path) {
-          is QualifiedPathCons -> {
-            add(path.value)
-
-            dumpPath(path.next)
-          }
-          is QualifiedPathNil -> {
-          }
-        }
-      }
-
-      dumpPath(this@QualifiedPath)
-    }
+  val text: String get() = fullPath.joinToString(".")
 
   fun toIdentifier(): Identifier {
     return Identifier(text)
   }
 
   companion object {
-    fun nil(): QualifiedPath {
-      return QualifiedPathNil
-    }
-
-    fun cons(
-      value: Identifier,
-      next: QualifiedPath,
-      location: Location = Location.Generated,
-    ): QualifiedPath {
-      return QualifiedPathCons(value, next, location)
-    }
-
+    @Deprecated(
+      message = "Replace with constructor calling",
+      replaceWith = ReplaceWith("QualifiedPath(identifier)"),
+      level = DeprecationLevel.ERROR,
+    )
     fun from(identifier: Identifier): QualifiedPath {
-      return QualifiedPathCons(identifier, nil(), identifier.location)
+      return QualifiedPath(identifier)
     }
 
-    fun from(stringPath: String): QualifiedPath {
-      return stringPath.split(".").asReversed().fold(nil()) { acc, next ->
-        cons(Identifier(next), acc)
-      }
+    @Deprecated(
+      message = "Replace with constructor calling",
+      replaceWith = ReplaceWith("QualifiedPath(stringPath, location)"),
+      level = DeprecationLevel.ERROR,
+    )
+    fun from(stringPath: String, location: Location = Location.Generated): QualifiedPath {
+      return QualifiedPath(stringPath, location)
     }
-  }
-}
-
-data class QualifiedPathCons(
-  val value: Identifier,
-  val next: QualifiedPath,
-  override val location: Location
-) : QualifiedPath {
-  override fun toString(): String {
-    return "QualifiedPath(${fullPath.joinToString("/") { it.text }})"
-  }
-}
-
-object QualifiedPathNil : QualifiedPath {
-  override val location = Location.Generated
-
-  override fun toString(): String {
-    return "QualifiedPath(${fullPath.joinToString("/") { it.text }})"
   }
 }

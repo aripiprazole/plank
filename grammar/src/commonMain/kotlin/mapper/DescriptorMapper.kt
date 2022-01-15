@@ -58,6 +58,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.DerefExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.EnumDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ExprStmtContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.FileContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.FileModuleContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.FunDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.FunctionTypeRefContext
@@ -77,7 +78,6 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.MatchExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ModuleDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.NamedTuplePatternContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.PatternContext
-import com.gabrielleeg1.plank.grammar.generated.PlankParser.PlankFileContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.PointerTypeRefContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.QualifiedPathContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.RefExprContext
@@ -117,14 +117,8 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return Identifier(node.text, node.sourceInterval.location())
   }
 
-  override fun visitPlankFile(ctx: PlankFileContext): PlankFile {
-    val moduleName = ctx.findFileModule()?.let(::visitFileModule)
-
-    return PlankFile(
-      content = ctx.text,
-      moduleName = moduleName,
-      path = file.path,
-    )
+  override fun visitFile(ctx: FileContext): PlankFile {
+    return file.copy(program = ctx.findDecl().map { it.decl() })
   }
 
   override fun visitFileModule(ctx: FileModuleContext): QualifiedPath {
@@ -198,12 +192,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitQualifiedPath(ctx: QualifiedPathContext): QualifiedPath {
-    return ctx.IDENTIFIER().reversed().fold(QualifiedPath.nil()) { acc, next ->
-      val identifier = next.identifier()
-      val location = next.sourceInterval.location()
-
-      QualifiedPath.cons(identifier, acc, location)
-    }
+    return QualifiedPath(ctx.IDENTIFIER().reversed().map { it.identifier() }, ctx.location())
   }
 
   override fun visitDefinedLetDecl(ctx: DefinedLetDeclContext): Decl {
@@ -459,7 +448,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitIdentifierPrimary(ctx: IdentifierPrimaryContext): Expr {
     val value = ctx.IDENTIFIER() ?: error("No identifier received in identifier primary context")
 
-    return AccessExpr(QualifiedPath.from(value.identifier()), ctx.location())
+    return AccessExpr(QualifiedPath(value.identifier()), ctx.location())
   }
 
   override fun visitBooleanPrimary(ctx: BooleanPrimaryContext): Expr {
@@ -480,7 +469,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
 
   // ast mapper utils
   private fun Identifier.access(): AccessExpr {
-    return AccessExpr(QualifiedPath.from(this), location)
+    return AccessExpr(QualifiedPath(this), location)
   }
 
   private fun QualifiedPath.access(): AccessExpr {

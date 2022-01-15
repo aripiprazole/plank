@@ -31,8 +31,6 @@ import com.gabrielleeg1.plank.grammar.element.PlankElement
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.grammar.element.PointerTypeRef
 import com.gabrielleeg1.plank.grammar.element.QualifiedPath
-import com.gabrielleeg1.plank.grammar.element.QualifiedPathCons
-import com.gabrielleeg1.plank.grammar.element.QualifiedPathNil
 import com.gabrielleeg1.plank.grammar.element.RefExpr
 import com.gabrielleeg1.plank.grammar.element.ReturnStmt
 import com.gabrielleeg1.plank.grammar.element.SetExpr
@@ -215,12 +213,10 @@ abstract class TreeWalker :
     visit(pattern.name)
   }
 
-  override fun visitQualifiedPathCons(path: QualifiedPathCons) {
-    visit(path.value)
-    visit(path.next)
-  }
-
-  override fun visitQualifiedPathNil(path: QualifiedPathNil) {
+  override fun visitQualifiedPath(path: QualifiedPath) {
+    path.fullPath.forEach {
+      visit(it)
+    }
   }
 
   override fun visitIdentifier(identifier: Identifier) {
