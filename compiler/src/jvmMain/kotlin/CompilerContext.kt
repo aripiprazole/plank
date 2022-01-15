@@ -6,14 +6,11 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.compiler.converter.DataTypeConverter
 import com.gabrielleeg1.plank.compiler.instructions.CodegenError
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRFunction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRNamedFunction
-import com.gabrielleeg1.plank.compiler.mangler.NameMangler
-import com.gabrielleeg1.plank.compiler.runtime.PlankRuntime
 import com.gabrielleeg1.plank.grammar.element.PlankElement
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Context
@@ -21,18 +18,15 @@ import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.IRBuilder
 import org.llvm4j.llvm4j.Module
 import org.llvm4j.llvm4j.NamedStructType
-import org.llvm4j.llvm4j.Value
 
 data class CompilerContext(
   val debug: Boolean,
   val module: Module,
   val currentFile: ResolvedPlankFile,
+  val moduleName: String = currentFile.module.text,
   val context: Context = module.getContext(),
   val builder: IRBuilder = module.getContext().newIRBuilder(),
   val runtime: PlankRuntime = PlankRuntime(module),
-  val moduleName: String = currentFile.module.text,
-  val mangler: NameMangler = NameMangler(),
-  val dataTypeConverter: DataTypeConverter = DataTypeConverter(),
   private val mapper: InstructionMapper = InstructionMapper,
   private val enclosing: CompilerContext? = null,
 ) {
@@ -47,14 +41,6 @@ data class CompilerContext(
     if (debug) {
       action(DebugCompilerContext(this))
     }
-  }
-
-  fun Value.toFloat(): CodegenResult {
-    return dataTypeConverter.convertToFloat(this@CompilerContext, this)
-  }
-
-  fun Value.toInt(): CodegenResult {
-    return dataTypeConverter.convertToInt(this@CompilerContext, this)
   }
 
   fun PlankType.toType(): TypegenResult {
@@ -96,7 +82,7 @@ data class CompilerContext(
 
   fun addFunction(decl: ResolvedFunDecl): Either<CodegenError, Function> {
     val name = decl.name.text
-    val mangledName = mangler.mangle(this, decl)
+    val mangledName = mangle(this, decl)
     val function = IRNamedFunction(name, mangledName, decl)
 
     functions[name] = function

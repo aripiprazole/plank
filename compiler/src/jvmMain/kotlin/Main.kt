@@ -6,7 +6,7 @@ import org.llvm4j.llvm4j.Module
 import java.io.File
 import kotlin.io.path.createTempDirectory
 
-val linker = "/home/gabi/Programs/swift-5.3.1-RELEASE-ubuntu20.04/usr/bin/clang++"
+private const val linker = "/home/gabi/Programs/swift-5.3.1-RELEASE-ubuntu20.04/usr/bin/clang++"
 
 private fun compileStdlibFile(file: File, target: File): String {
   return listOf(
@@ -94,7 +94,6 @@ private fun runCompilation(module: Module) {
   exec(binaryFile.absolutePath)
 }
 
-
 fun main() {
   val file = PlankFile.of(
     """
@@ -108,7 +107,7 @@ fun main() {
 
   val results = compile(file, ::analyze).orNull() ?: error("Compilation failed")
 
-  println("LLVM MODULE =>")
+  println("LLVM Module:")
   println(results.getAsString())
   println("==============")
 

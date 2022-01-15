@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.compiler.runtime
+package com.gabrielleeg1.plank.compiler
 
 import org.llvm4j.llvm4j.Context
 import org.llvm4j.llvm4j.Function
@@ -21,17 +21,17 @@ class PlankRuntime(private val module: Module) {
 
     function
   }
+}
 
-  class Types(context: Context) {
-    val i1 = context.getInt1Type()
-    val tag = context.getInt8Type()
-    val i8 = context.getInt8Type()
-    val i16 = context.getInt16Type()
-    val int = context.getInt32Type()
-    val double = context.getDoubleType()
-    val float = context.getFloatType()
-    val string = context.getPointerType(i8).unwrap()
-    val void = context.getVoidType()
-    val voidPtr = context.getPointerType(i8).unwrap()
-  }
+class Types(context: Context) {
+  val i1 = context.getInt1Type()
+  val tag = context.getInt8Type()
+  val i8 = context.getInt8Type()
+  val i16 = context.getInt16Type()
+  val int = context.getInt32Type()
+  val double = context.getDoubleType()
+  val float = context.getFloatType()
+  val string = context.getPointerType(i8).unwrap()
+  val void = context.getVoidType()
+  val voidPtr = context.getPointerType(i8).unwrap()
 }

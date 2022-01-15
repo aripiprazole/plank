@@ -6,6 +6,7 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.buildCall
 import com.gabrielleeg1.plank.compiler.buildReturn
+import com.gabrielleeg1.plank.compiler.mangle
 
 class EntryPoint : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
@@ -16,7 +17,7 @@ class EntryPoint : CompilerInstruction() {
         .left()
         .bind<ResolvedFunDecl>()
 
-    val main = module.getFunction(mangler.mangle(this@codegen, name)).toNullable()
+    val main = module.getFunction(mangle(this@codegen, name)).toNullable()
 
     val mainFunctionType = context.getFunctionType(
       runtime.types.int,
