@@ -99,20 +99,22 @@ class ModuleType(
   val members: List<StructProperty> = emptyList(),
 ) : PlankType() {
   override val size = 0
+
+  override fun toString(): String = "ModuleType($name)"
 }
 
 data class PointerType(val inner: PlankType) : PlankType() {
   override val isPrimitive: Boolean = true
   override val size = 8
 
-  override fun toString(): String {
-    return "&$inner"
-  }
+  override fun toString(): String = "&$inner"
 }
 
 data class ArrayType(val inner: PlankType) : PlankType() {
   override val isPrimitive: Boolean = true
   override val size get() = TODO("add size to arrays")
+
+  override fun toString(): String = "[$inner]"
 }
 
 class StructType(
@@ -132,6 +134,8 @@ class StructType(
   override val size: Int = properties.values.fold(0) { acc, property ->
     acc + property.type.size
   }
+
+  override fun toString(): String = "StructType($name, size = $size)"
 }
 
 class IntType internal constructor(
@@ -142,6 +146,13 @@ class IntType internal constructor(
 ) : PlankType() {
   override val name = Identifier(name)
   override val isPrimitive: Boolean = true
+
+  override fun toString(): String = buildString {
+    append(name)
+    append(if (size > 1) size else "")
+    append(if (floatingPoint) "f" else "")
+    append(if (unsigned) "u" else "")
+  }
 }
 
 private val floatCache = mutableMapOf<Int, IntType>()
@@ -150,7 +161,7 @@ private val intCache = mutableMapOf<Int, IntType>()
 fun FloatType(size: Int = 32, unsigned: Boolean = false): IntType {
   return floatCache.getOrPut(size) {
     IntType(
-      "Float",
+      name = "Float",
       size,
       floatingPoint = true,
       unsigned = unsigned
@@ -198,7 +209,7 @@ class DelegateType(var value: PlankType? = null) : PlankType() {
     value = plankType
   }
 
-  override fun toString() = value!!.toString()
+  override fun toString() = "=>${value!!}"
 }
 
 val UnitType = IntType("Void", 8)
@@ -210,6 +221,8 @@ val BoolType = IntType("Bool", 1)
  */
 object Untyped : PlankType() {
   override val size: Int = -1
+
+  override fun toString(): String = "Untyped"
 }
 
 data class EnumMember(val name: Identifier, val fields: List<PlankType>)
