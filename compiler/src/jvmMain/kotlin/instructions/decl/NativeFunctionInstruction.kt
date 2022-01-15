@@ -6,7 +6,7 @@ import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class NativeFunDeclInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
+class NativeFunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     addFunction(descriptor).bind()
   }

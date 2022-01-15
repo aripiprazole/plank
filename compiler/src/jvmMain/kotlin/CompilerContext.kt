@@ -1,9 +1,11 @@
 package com.gabrielleeg1.plank.compiler
 
 import arrow.core.Either
-import com.gabrielleeg1.plank.analyzer.BindingContext
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
+import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.compiler.converter.DataTypeConverter
 import com.gabrielleeg1.plank.compiler.instructions.CodegenError
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
@@ -12,10 +14,7 @@ import com.gabrielleeg1.plank.compiler.instructions.element.IRFunction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRNamedFunction
 import com.gabrielleeg1.plank.compiler.mangler.NameMangler
 import com.gabrielleeg1.plank.compiler.runtime.PlankRuntime
-import com.gabrielleeg1.plank.grammar.element.Expr
 import com.gabrielleeg1.plank.grammar.element.PlankElement
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.element.Stmt
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Context
 import org.llvm4j.llvm4j.Function
@@ -26,16 +25,15 @@ import org.llvm4j.llvm4j.Value
 
 data class CompilerContext(
   val debug: Boolean,
-  val binding: BindingContext,
-  val context: Context,
   val module: Module,
-  val builder: IRBuilder,
-  val runtime: PlankRuntime,
-  val currentFile: PlankFile,
-  val dataTypeConverter: DataTypeConverter,
-  val moduleName: String,
+  val currentFile: ResolvedPlankFile,
+  val context: Context = module.getContext(),
+  val builder: IRBuilder = module.getContext().newIRBuilder(),
+  val runtime: PlankRuntime = PlankRuntime(module),
+  val moduleName: String = currentFile.module.text,
   val mangler: NameMangler = NameMangler(),
-  private val mapper: InstructionMapper = InstructionMapper(binding),
+  val dataTypeConverter: DataTypeConverter = DataTypeConverter(),
+  private val mapper: InstructionMapper = InstructionMapper,
   private val enclosing: CompilerContext? = null,
 ) {
   private val functions = mutableMapOf<String, IRFunction>()
@@ -71,13 +69,13 @@ data class CompilerContext(
 
   fun PlankElement.toInstruction(): CompilerInstruction {
     return when (this) {
-      is Expr -> mapper.visit(this)
-      is Stmt -> mapper.visit(this)
-      else -> TODO()
+      is TypedExpr -> mapper.visit(this)
+      is ResolvedStmt -> mapper.visit(this)
+      else -> TODO("Not implemented mapping for ${this::class.simpleName}")
     }
   }
 
-  fun createFileScope(file: PlankFile = currentFile): CompilerContext = copy(
+  fun createFileScope(file: ResolvedPlankFile = currentFile): CompilerContext = copy(
     enclosing = this,
     currentFile = file,
     moduleName = file.module.text,
@@ -127,57 +125,34 @@ data class CompilerContext(
   fun findModule(name: String): CompilerContext? {
     return modules[name]
       ?: enclosing?.findModule(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findModule(name) }.firstOrNull()
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findModule(name) }
   }
 
   fun findFunction(name: String): IRFunction? {
     return functions[name]
       ?: enclosing?.findFunction(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findFunction(name) }.firstOrNull()
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findFunction(name) }
   }
 
   fun findType(predicate: (Pair<PlankType, NamedStructType>) -> Boolean): PlankType? {
     return types.values.find(predicate)?.first
       ?: enclosing?.findType(predicate)
-      ?: expanded.filter { it != this }.mapNotNull { it.findType(predicate) }.firstOrNull()
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findType(predicate) }
   }
 
   fun findStruct(name: String): NamedStructType? {
     return types[name]?.second
       ?: enclosing?.findStruct(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findStruct(name) }.firstOrNull()
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findStruct(name) }
   }
 
   fun findVariable(name: String): AllocaInstruction? {
     return values[name]?.second
       ?: enclosing?.findVariable(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findVariable(name) }.firstOrNull()
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
   }
 
   override fun toString(): String {
     return "PlankContext($moduleName, $enclosing)"
-  }
-
-  companion object {
-    fun of(
-      file: PlankFile,
-      binding: BindingContext,
-      module: Module,
-      debug: Boolean
-    ): CompilerContext {
-      val builder = module.getContext().newIRBuilder()
-
-      return CompilerContext(
-        debug = debug,
-        binding = binding,
-        context = module.getContext(),
-        module = module,
-        builder = builder,
-        runtime = PlankRuntime(module),
-        currentFile = file,
-        dataTypeConverter = DataTypeConverter(),
-        moduleName = file.module.text,
-      )
-    }
   }
 }

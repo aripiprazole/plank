@@ -24,7 +24,7 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitInstanceExpr(expr: TypedInstanceExpr): T
     fun visitSizeofExpr(expr: TypedSizeofExpr): T
     fun visitReferenceExpr(expr: TypedRefExpr): T
-    fun visitValueExpr(expr: TypedValueExpr): T
+    fun visitDerefExpr(expr: TypedDerefExpr): T
     fun visitMatchExpr(expr: TypedMatchExpr): T
     fun visitViolatedExpr(expr: TypedErrorExpr): T
 
@@ -154,13 +154,13 @@ data class TypedRefExpr(
   }
 }
 
-data class TypedValueExpr(
+data class TypedDerefExpr(
   val expr: TypedExpr,
   override val type: PlankType,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitValueExpr(this)
+    return visitor.visitDerefExpr(this)
   }
 }
 

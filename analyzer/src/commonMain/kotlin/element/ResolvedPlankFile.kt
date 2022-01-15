@@ -22,6 +22,7 @@ data class ResolvedPlankFile(
     fun visitPlankFile(file: ResolvedPlankFile): T
   }
 
+  val module = delegate.module
   val moduleName = delegate.moduleName
   val path = delegate.path
   val realFile = delegate.realFile

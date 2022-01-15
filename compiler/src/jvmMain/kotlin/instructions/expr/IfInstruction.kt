@@ -1,7 +1,9 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
+import arrow.core.Either
 import arrow.core.computations.either
 import arrow.core.left
+import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.BoolType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
@@ -13,6 +15,7 @@ import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.buildPhi
 import com.gabrielleeg1.plank.compiler.buildStore
 import com.gabrielleeg1.plank.compiler.currentFunction
+import com.gabrielleeg1.plank.compiler.instructions.CodegenError
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
@@ -27,18 +30,26 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
     createIf(
       descriptor.type,
       cond,
-      thenStmts = { listOf(descriptor.thenBranch.toInstruction().codegen().bind()) },
-      elseStmts = { listOf(descriptor.elseBranch!!.toInstruction().codegen().bind()) },
+      thenStmts = {
+        either.eager {
+          listOf(descriptor.thenBranch.toInstruction().codegen().bind())
+        }
+      },
+      elseStmts = {
+        either.eager {
+          listOf(descriptor.elseBranch!!.toInstruction().codegen().bind())
+        }
+      },
     ).bind()
   }
 
   companion object {
     fun CompilerContext.createAnd(lhs: Value, rhs: Value): CodegenResult = either.eager {
       val variable = buildAlloca(BoolType.toType().bind())
-      val thenStmts = { listOf(buildStore(variable, rhs)) }
-      val elseStmts = { listOf(buildStore(variable, runtime.falseConstant)) }
+      val thenStmts = { listOf(buildStore(variable, rhs)).right() }
+      val elseStmts = { listOf(buildStore(variable, runtime.falseConstant)).right() }
 
-        createIf(BoolType, lhs, thenStmts, elseStmts).bind()
+      createIf(BoolType, lhs, thenStmts, elseStmts).bind()
 
       buildLoad(variable)
     }
@@ -46,8 +57,8 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
     fun CompilerContext.createIf(
       type: PlankType,
       cond: Value,
-      thenStmts: () -> List<Value>,
-      elseStmts: () -> List<Value> = ::emptyList,
+      thenStmts: () -> Either<CodegenError, List<Value>>,
+      elseStmts: () -> Either<CodegenError, List<Value>> = { emptyList<Value>().right() },
     ): CodegenResult = either.eager {
       val currentFunction = currentFunction.bind()
 
@@ -64,7 +75,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
       thenBranch.also { br ->
         builder.positionAfter(br) // emit then
 
-        thenRet = thenStmts().lastOrNull()
+        thenRet = thenStmts().bind().lastOrNull()
           ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
           ?.takeIf { it.getType() != runtime.types.void }
           ?.also {
@@ -80,7 +91,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
         currentFunction.addBasicBlock(br)
         builder.positionAfter(br) // emit else
 
-        elseRet = elseStmts().lastOrNull()
+        elseRet = elseStmts().bind().lastOrNull()
           ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
           ?.takeIf { it.getType() != runtime.types.void }
           ?.also {

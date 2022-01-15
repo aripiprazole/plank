@@ -18,7 +18,7 @@ import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.compiler.verify
 import com.gabrielleeg1.plank.grammar.element.Identifier
 
-class FunDeclInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
+class FunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val parameters = descriptor.parameters
     val returnType = descriptor.returnType

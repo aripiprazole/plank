@@ -1,7 +1,6 @@
 package com.gabrielleeg1.plank.compiler.instructions.decl
 
 import arrow.core.computations.either
-import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
@@ -9,7 +8,7 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IREnumConstructor
 
 // enums implements tagged unions
-class EnumDeclInstruction(val descriptor: ResolvedEnumDecl) : CompilerInstruction() {
+class EnumInstruction(val descriptor: ResolvedEnumDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val type = descriptor.type
     val union = context.getNamedStructType(descriptor.name.text).also { enum ->

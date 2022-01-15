@@ -1,146 +1,158 @@
 package com.gabrielleeg1.plank.compiler
 
-import com.gabrielleeg1.plank.analyzer.BindingContext
+import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedErrorDecl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedErrorStmt
+import com.gabrielleeg1.plank.analyzer.element.ResolvedExprStmt
+import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedImportDecl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedLetDecl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedModuleDecl
+import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
+import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
+import com.gabrielleeg1.plank.analyzer.element.ResolvedStructDecl
+import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedAssignExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedDerefExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedErrorExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedGetExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedGroupExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedMatchExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedRefExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedSetExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedSizeofExpr
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
-import com.gabrielleeg1.plank.compiler.instructions.decl.EnumDeclInstruction
-import com.gabrielleeg1.plank.compiler.instructions.decl.FunDeclInstruction
-import com.gabrielleeg1.plank.compiler.instructions.decl.ImportDeclInstruction
-import com.gabrielleeg1.plank.compiler.instructions.decl.LetDeclInstruction
-import com.gabrielleeg1.plank.compiler.instructions.decl.ModuleDeclInstruction
-import com.gabrielleeg1.plank.compiler.instructions.decl.NativeFunDeclInstruction
-import com.gabrielleeg1.plank.compiler.instructions.decl.StructDeclInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.EnumInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.FunctionInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.ImportInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.LetInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.ModuleInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.NativeFunctionInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.StructInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.AccessInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.AssignInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.BinaryInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.CallInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.ConcatInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.ConstInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.FBinaryInstruction
+import com.gabrielleeg1.plank.compiler.instructions.expr.DerefInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.GetInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.GroupInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.InstanceInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.LogicalInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.MatchInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.RefInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.SetInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.SizeofInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.UnaryInstruction
-import com.gabrielleeg1.plank.compiler.instructions.expr.DerefInstruction
 import com.gabrielleeg1.plank.compiler.instructions.stmt.ExprStmtInstruction
 import com.gabrielleeg1.plank.compiler.instructions.stmt.ReturnInstruction
-import com.gabrielleeg1.plank.grammar.element.Decl
-import com.gabrielleeg1.plank.grammar.element.Expr
-import com.gabrielleeg1.plank.grammar.element.Stmt
 
-class InstructionMapper(
-  val binding: BindingContext
-) : Expr.Visitor<CompilerInstruction>, Stmt.Visitor<CompilerInstruction> {
-  override fun visitIfExpr(anIf: Expr.If): CompilerInstruction {
-    return IfInstruction(anIf)
-  }
-
-  override fun visitConstExpr(const: Expr.Const): CompilerInstruction {
-    return ConstInstruction(const)
-  }
-
-  override fun visitLogicalExpr(logical: Expr.Logical): CompilerInstruction {
-    return LogicalInstruction(logical)
-  }
-
-  override fun visitBinaryExpr(binary: Expr.Binary): CompilerInstruction {
-    if (binding.visit(binary).isFP) {
-      return FBinaryInstruction(binary)
+interface InstructionMapper :
+  TypedExpr.Visitor<CompilerInstruction>,
+  ResolvedStmt.Visitor<CompilerInstruction> {
+  companion object : InstructionMapper {
+    override fun visitExprStmt(stmt: ResolvedExprStmt): CompilerInstruction {
+      return ExprStmtInstruction(stmt)
     }
 
-    return BinaryInstruction(binary)
-  }
-
-  override fun visitUnaryExpr(unary: Expr.Unary): CompilerInstruction {
-    return UnaryInstruction(unary)
-  }
-
-  override fun visitCallExpr(call: Expr.Call): CompilerInstruction {
-    return CallInstruction(call)
-  }
-
-  override fun visitAssignExpr(assign: Expr.Assign): CompilerInstruction {
-    return AssignInstruction(assign)
-  }
-
-  override fun visitSetExpr(set: Expr.Set): CompilerInstruction {
-    return SetInstruction(set)
-  }
-
-  override fun visitGetExpr(get: Expr.Get): CompilerInstruction {
-    return GetInstruction(get)
-  }
-
-  override fun visitGroupExpr(group: Expr.Group): CompilerInstruction {
-    return GroupInstruction(group)
-  }
-
-  override fun visitExprStmt(exprStmt: Stmt.ExprStmt): CompilerInstruction {
-    return ExprStmtInstruction(exprStmt)
-  }
-
-  override fun visitReturnStmt(returnStmt: Stmt.ReturnStmt): CompilerInstruction {
-    return ReturnInstruction(returnStmt)
-  }
-
-  override fun visitStructDecl(structDecl: Decl.StructDecl): CompilerInstruction {
-    return StructDeclInstruction(structDecl)
-  }
-
-  override fun visitFunDecl(funDecl: Decl.FunDecl): CompilerInstruction {
-    if (funDecl.isNative) {
-      return NativeFunDeclInstruction(funDecl)
+    override fun visitReturnStmt(stmt: ResolvedReturnStmt): CompilerInstruction {
+      return ReturnInstruction(stmt)
     }
 
-    return FunDeclInstruction(funDecl)
-  }
+    override fun visitImportDecl(decl: ResolvedImportDecl): CompilerInstruction {
+      return ImportInstruction(decl)
+    }
 
-  override fun visitLetDecl(letDecl: Decl.LetDecl): CompilerInstruction {
-    return LetDeclInstruction(letDecl)
-  }
+    override fun visitModuleDecl(decl: ResolvedModuleDecl): CompilerInstruction {
+      return ModuleInstruction(decl)
+    }
 
-  override fun visitAccessExpr(access: Expr.Access): CompilerInstruction {
-    return AccessInstruction(access)
-  }
+    override fun visitEnumDecl(decl: ResolvedEnumDecl): CompilerInstruction {
+      return EnumInstruction(decl)
+    }
 
-  override fun visitInstanceExpr(instance: Expr.Instance): CompilerInstruction {
-    return InstanceInstruction(instance)
-  }
+    override fun visitStructDecl(decl: ResolvedStructDecl): CompilerInstruction {
+      return StructInstruction(decl)
+    }
 
-  override fun visitSizeofExpr(sizeof: Expr.Sizeof): CompilerInstruction {
-    return SizeofInstruction(sizeof)
-  }
+    override fun visitFunDecl(decl: ResolvedFunDecl): CompilerInstruction {
+      return if (decl.hasAttribute("native")) {
+        NativeFunctionInstruction(decl)
+      } else {
+        FunctionInstruction(decl)
+      }
+    }
 
-  override fun visitRefExpr(reference: Expr.Reference): CompilerInstruction {
-    return RefInstruction(reference)
-  }
+    override fun visitLetDecl(decl: ResolvedLetDecl): CompilerInstruction {
+      return LetInstruction(decl)
+    }
 
-  override fun visitDerefExpr(value: Expr.Value): CompilerInstruction {
-    return DerefInstruction(value)
-  }
+    override fun visitConstExpr(expr: TypedConstExpr): CompilerInstruction {
+      return ConstInstruction(expr)
+    }
 
-  override fun visitModuleDecl(moduleDecl: Decl.ModuleDecl): CompilerInstruction {
-    return ModuleDeclInstruction(moduleDecl)
-  }
+    override fun visitIfExpr(expr: TypedIfExpr): CompilerInstruction {
+      return IfInstruction(expr)
+    }
 
-  override fun visitImportDecl(importDecl: Decl.ImportDecl): CompilerInstruction {
-    return ImportDeclInstruction(importDecl)
-  }
+    override fun visitAccessExpr(expr: TypedAccessExpr): CompilerInstruction {
+      return AccessInstruction(expr)
+    }
 
-  override fun visitConcatExpr(concat: Expr.Concat): CompilerInstruction {
-    return ConcatInstruction()
-  }
+    override fun visitCallExpr(expr: TypedCallExpr): CompilerInstruction {
+      return CallInstruction(expr)
+    }
 
-  override fun visitEnumDecl(enumDecl: Decl.EnumDecl): CompilerInstruction {
-    return EnumDeclInstruction(enumDecl)
-  }
+    override fun visitAssignExpr(expr: TypedAssignExpr): CompilerInstruction {
+      return AssignInstruction(expr)
+    }
 
-  override fun visitMatchExpr(match: Expr.Match): CompilerInstruction {
-    return MatchInstruction(match)
+    override fun visitSetExpr(expr: TypedSetExpr): CompilerInstruction {
+      return SetInstruction(expr)
+    }
+
+    override fun visitGetExpr(expr: TypedGetExpr): CompilerInstruction {
+      return GetInstruction(expr)
+    }
+
+    override fun visitGroupExpr(expr: TypedGroupExpr): CompilerInstruction {
+      return GroupInstruction(expr)
+    }
+
+    override fun visitInstanceExpr(expr: TypedInstanceExpr): CompilerInstruction {
+      return InstanceInstruction(expr)
+    }
+
+    override fun visitSizeofExpr(expr: TypedSizeofExpr): CompilerInstruction {
+      return SizeofInstruction(expr)
+    }
+
+    override fun visitReferenceExpr(expr: TypedRefExpr): CompilerInstruction {
+      return RefInstruction(expr)
+    }
+
+    override fun visitDerefExpr(expr: TypedDerefExpr): CompilerInstruction {
+      return DerefInstruction(expr)
+    }
+
+    override fun visitMatchExpr(expr: TypedMatchExpr): CompilerInstruction {
+      return MatchInstruction(expr)
+    }
+
+    override fun visitViolatedExpr(expr: TypedErrorExpr): CompilerInstruction {
+      TODO("Not yet implemented")
+    }
+
+    override fun visitViolatedStmt(stmt: ResolvedErrorStmt): CompilerInstruction {
+      TODO("Not yet implemented")
+    }
+
+    override fun visitViolatedDecl(stmt: ResolvedErrorDecl): CompilerInstruction {
+      TODO("Not yet implemented")
+    }
   }
 }
+
