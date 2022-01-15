@@ -15,14 +15,14 @@ import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.PointerType
 import com.gabrielleeg1.plank.analyzer.StructType
 import com.gabrielleeg1.plank.analyzer.UnitType
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import org.llvm4j.llvm4j.Type
 import org.llvm4j.optional.Err
 import org.llvm4j.optional.Ok
 
-typealias TypegenResult = Either<CodegenError, Type>
+typealias TypegenResult = Either<CodegenViolation, Type>
 
 fun CompilerContext.toType(type: PlankType?): TypegenResult = either.eager {
   when (type) {

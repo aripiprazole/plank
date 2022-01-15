@@ -5,7 +5,7 @@ package com.gabrielleeg1.plank.compiler
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMBuildStructGEP
@@ -158,13 +158,13 @@ fun CompilerContext.buildBitcast(op: Value, type: Type, name: String? = null): V
   return builder.buildBitCast(op, type, Option.of(name))
 }
 
-val CompilerContext.insertionBlock: Either<CodegenError, BasicBlock>
+val CompilerContext.insertionBlock: Either<CodegenViolation, BasicBlock>
   get() =
     builder.getInsertionBlock().toNullable()
       ?.right()
       ?: llvmError("can not reach function in this context").left()
 
-val CompilerContext.currentFunction: Either<CodegenError, Function>
+val CompilerContext.currentFunction: Either<CodegenViolation, Function>
   get() =
     builder.getInsertionBlock().toNullable()
       ?.getFunction()

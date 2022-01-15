@@ -5,7 +5,6 @@ import arrow.core.computations.either
 import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.EnumMember
 import com.gabrielleeg1.plank.analyzer.EnumType
-import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.buildBitcast
@@ -13,7 +12,7 @@ import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.Function
@@ -30,7 +29,7 @@ class IREnumConstructor(
     return context.module.getFunction(mangledName).toNullable()
   }
 
-  override fun CompilerContext.codegen(): Either<CodegenError, Function> = either.eager {
+  override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
     val parameters = member.fields.map { it.toType().bind() }
 
     val enum = descriptor.type.cast()

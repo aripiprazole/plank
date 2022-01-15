@@ -3,11 +3,10 @@ package com.gabrielleeg1.plank.compiler.instructions
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.grammar.element.Expr
 import kotlin.reflect.KClass
 import org.llvm4j.llvm4j.Function
 
-sealed class CodegenError {
+sealed class CodegenViolation {
   abstract val context: CompilerContext
 
   abstract fun render(): String
@@ -15,7 +14,7 @@ sealed class CodegenError {
   data class InvalidFunction(
     val function: Function,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String =
       "Invalid function ${function.getName()} at ${context.currentFile.location}"
   }
@@ -23,42 +22,42 @@ sealed class CodegenError {
   data class UnresolvedType(
     val name: String,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String = "Unresolved type $name at ${context.currentFile.location}"
   }
 
   data class UnresolvedFunction(
     val callee: TypedExpr,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String = "Unresolved callable at ${callee.location}"
   }
 
   data class UnresolvedVariable(
     val name: String,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String = "Unresolved variable $name at ${context.currentFile.location}"
   }
 
   data class InvalidConstant(
     val value: Any,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String = "Invalid const $value at ${context.currentFile.location}"
   }
 
   data class UnresolvedModule(
     val name: String,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String = "Unresolved module $name at ${context.currentFile.location}"
   }
 
   data class ExpectedType(
     val expected: KClass<out PlankType>,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String =
       "Expected type ${expected.simpleName} at ${context.currentFile.location}"
   }
@@ -67,64 +66,64 @@ sealed class CodegenError {
     val actual: PlankType,
     val expected: PlankType,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String =
       "Mismatch types. Expected $expected, got $actual at ${context.currentFile.location}"
   }
 
-  data class LlvmError(
+  data class LlvmViolation(
     val message: String,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String = "Unknown llvm error. $message"
   }
 
-  data class UnresolvedFieldError(
+  data class UnresolvedFieldViolation(
     val field: String,
     val struct: PlankType,
     override val context: CompilerContext
-  ) : CodegenError() {
+  ) : CodegenViolation() {
     override fun render(): String =
       "Unresolved field error $field in type $struct at ${context.currentFile.location}"
   }
 }
 
-fun CompilerContext.unresolvedFunctionError(callee: TypedExpr): CodegenError {
-  return CodegenError.UnresolvedFunction(callee, this)
+fun CompilerContext.unresolvedFunctionError(callee: TypedExpr): CodegenViolation {
+  return CodegenViolation.UnresolvedFunction(callee, this)
 }
 
-fun CompilerContext.invalidFunctionError(function: Function): CodegenError {
-  return CodegenError.InvalidFunction(function, this)
+fun CompilerContext.invalidFunctionError(function: Function): CodegenViolation {
+  return CodegenViolation.InvalidFunction(function, this)
 }
 
-fun CompilerContext.unresolvedVariableError(name: String): CodegenError {
-  return CodegenError.UnresolvedVariable(name, this)
+fun CompilerContext.unresolvedVariableError(name: String): CodegenViolation {
+  return CodegenViolation.UnresolvedVariable(name, this)
 }
 
-fun CompilerContext.invalidConstantError(value: Any): CodegenError {
-  return CodegenError.InvalidConstant(value, this)
+fun CompilerContext.invalidConstantError(value: Any): CodegenViolation {
+  return CodegenViolation.InvalidConstant(value, this)
 }
 
-fun CompilerContext.unresolvedTypeError(name: String): CodegenError {
-  return CodegenError.UnresolvedType(name, this)
+fun CompilerContext.unresolvedTypeError(name: String): CodegenViolation {
+  return CodegenViolation.UnresolvedType(name, this)
 }
 
-fun CompilerContext.unresolvedFieldError(name: String, struct: PlankType): CodegenError {
-  return CodegenError.UnresolvedFieldError(name, struct, this)
+fun CompilerContext.unresolvedFieldError(name: String, struct: PlankType): CodegenViolation {
+  return CodegenViolation.UnresolvedFieldViolation(name, struct, this)
 }
 
-fun CompilerContext.expectedTypeError(expected: KClass<out PlankType>): CodegenError {
-  return CodegenError.ExpectedType(expected, this)
+fun CompilerContext.expectedTypeError(expected: KClass<out PlankType>): CodegenViolation {
+  return CodegenViolation.ExpectedType(expected, this)
 }
 
-fun CompilerContext.mismatchTypesError(actual: PlankType, expected: PlankType): CodegenError {
-  return CodegenError.MismatchTypes(actual, expected, this)
+fun CompilerContext.mismatchTypesError(actual: PlankType, expected: PlankType): CodegenViolation {
+  return CodegenViolation.MismatchTypes(actual, expected, this)
 }
 
-fun CompilerContext.unresolvedModuleError(name: String): CodegenError {
-  return CodegenError.UnresolvedModule(name, this)
+fun CompilerContext.unresolvedModuleError(name: String): CodegenViolation {
+  return CodegenViolation.UnresolvedModule(name, this)
 }
 
-fun CompilerContext.llvmError(message: String): CodegenError {
-  return CodegenError.LlvmError(message, this)
+fun CompilerContext.llvmError(message: String): CodegenViolation {
+  return CodegenViolation.LlvmViolation(message, this)
 }

@@ -32,6 +32,7 @@ kotlin {
         implementation(Dependencies.Clikt.Clikt)
         implementation(Dependencies.Jansi.Jansi)
         implementation(Dependencies.ByteDeco.LLVMPlatform)
+        implementation(Dependencies.Arrow.Core)
         implementation(Dependencies.LLVM4J.LLVM4J) {
           exclude("org.bytedeco")
         }

@@ -15,7 +15,7 @@ import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.buildPhi
 import com.gabrielleeg1.plank.compiler.buildStore
 import com.gabrielleeg1.plank.compiler.currentFunction
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
@@ -57,8 +57,8 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
     fun CompilerContext.createIf(
       type: PlankType,
       cond: Value,
-      thenStmts: () -> Either<CodegenError, List<Value>>,
-      elseStmts: () -> Either<CodegenError, List<Value>> = { emptyList<Value>().right() },
+      thenStmts: () -> Either<CodegenViolation, List<Value>>,
+      elseStmts: () -> Either<CodegenViolation, List<Value>> = { emptyList<Value>().right() },
     ): CodegenResult = either.eager {
       val currentFunction = currentFunction.bind()
 

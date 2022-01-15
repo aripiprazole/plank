@@ -4,7 +4,7 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.expectedTypeError
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
@@ -18,7 +18,7 @@ val FLOAT_TYPES = listOf(
 
 val INT_TYPES = listOf(TypeKind.Integer)
 
-fun CompilerContext.convertToFloat(value: Value): Either<CodegenError, Value> {
+fun CompilerContext.convertToFloat(value: Value): Either<CodegenViolation, Value> {
   val type = value.getType().getTypeKind()
   if (type in FLOAT_TYPES) {
     return value.right()
@@ -30,7 +30,7 @@ fun CompilerContext.convertToFloat(value: Value): Either<CodegenError, Value> {
   }
 }
 
-fun CompilerContext.convertToInt(value: Value): Either<CodegenError, Value> {
+fun CompilerContext.convertToInt(value: Value): Either<CodegenViolation, Value> {
   val type = value.getType().getTypeKind()
   if (type in INT_TYPES) {
     return value.right()

@@ -9,7 +9,7 @@ import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.buildStore
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.currentFunction
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRPattern
@@ -42,7 +42,7 @@ class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruc
 
     descriptor.patterns.forEach { (pattern, value) ->
       val thenStmts = {
-        either.eager<CodegenError, List<Value>> {
+        either.eager<CodegenViolation, List<Value>> {
           val instruction = value.toInstruction().codegen().bind()
           val store = buildStore(target, instruction)
 

@@ -6,7 +6,7 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRFunction
@@ -72,7 +72,7 @@ data class CompilerContext(
     builder: CompilerContext.() -> Unit
   ): CompilerContext = copy(enclosing = this, moduleName = moduleName).apply(builder)
 
-  fun addFunction(function: IRFunction): Either<CodegenError, Function> {
+  fun addFunction(function: IRFunction): Either<CodegenViolation, Function> {
     functions[function.name] = function
 
     return with(function) {
@@ -80,7 +80,7 @@ data class CompilerContext(
     }
   }
 
-  fun addFunction(decl: ResolvedFunDecl): Either<CodegenError, Function> {
+  fun addFunction(decl: ResolvedFunDecl): Either<CodegenViolation, Function> {
     val name = decl.name.text
     val mangledName = mangle(this, decl)
     val function = IRNamedFunction(name, mangledName, decl)

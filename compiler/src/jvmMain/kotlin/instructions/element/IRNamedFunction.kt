@@ -4,7 +4,7 @@ import arrow.core.Either
 import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import org.llvm4j.llvm4j.Function
 
 class IRNamedFunction(
@@ -16,7 +16,7 @@ class IRNamedFunction(
     return context.module.getFunction(mangledName).toNullable()
   }
 
-  override fun CompilerContext.codegen(): Either<CodegenError, Function> = either.eager {
+  override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
     module.addFunction(
       mangledName,
       context.getFunctionType(

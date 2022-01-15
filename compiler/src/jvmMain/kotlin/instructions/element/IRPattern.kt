@@ -17,7 +17,7 @@ import com.gabrielleeg1.plank.compiler.buildICmp
 import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.buildStore
 import com.gabrielleeg1.plank.compiler.builder.getField
-import com.gabrielleeg1.plank.compiler.instructions.CodegenError
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction.Companion.createAnd
@@ -109,7 +109,7 @@ fun CompilerContext.compareEnumPatterns(
   enum: EnumType,
   subject: Value,
   member: EnumMember,
-): Either<CodegenError, Pair<AllocaInstruction, Value>> = either.eager {
+): Either<CodegenViolation, Pair<AllocaInstruction, Value>> = either.eager {
   val mangledName = "${enum.name}_${member.name}"
   val memberType = findStruct(mangledName)
     ?: unresolvedTypeError(mangledName)
