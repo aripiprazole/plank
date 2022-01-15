@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package com.gabrielleeg1.plank.analyzer
 
 import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
@@ -17,6 +19,9 @@ import kotlin.reflect.KProperty
  * @see ArrayType
  * @see ModuleType
  * @see IntType
+ * @see UnitType
+ * @see CharType
+ * @see BoolType
  */
 sealed class PlankType {
   open val name: Identifier? = null
@@ -24,72 +29,14 @@ sealed class PlankType {
 
   abstract val size: Int
 
-  override fun toString(): String {
-    return name?.text ?: "Type ${this::class.simpleName}@${hashCode().toString(4)} of size $size"
-  }
-
   fun const(value: Any = Unit): TypedConstExpr {
     return TypedConstExpr(value, this, Location.Generated)
   }
 
-  companion object {
-    val unit = IntType("Void", 8)
-    val char = IntType("Char", 8)
-    val bool = IntType("Bool", 1)
+  inline fun <reified A : PlankType> cast(default: (PlankType) -> A): A {
+    val type = cast<A>()
 
-    fun float(size: Int = 32, unsigned: Boolean = false): PlankType {
-      return fpCache.getOrPut(size) {
-        IntType("Float", size, floatingPoint = true, unsigned = unsigned)
-      }
-    }
-
-    fun int(size: Int = 32, unsigned: Boolean = false): PlankType {
-      return intCache.getOrPut(size) {
-        IntType("Int", size, unsigned = unsigned)
-      }
-    }
-
-    fun enum(name: Identifier, members: Map<Identifier, EnumMember> = emptyMap()): EnumType {
-      return EnumType(name, members)
-    }
-
-    fun struct(
-      name: Identifier,
-      properties: Map<Identifier, StructProperty> = emptyMap()
-    ): StructType {
-      return StructType(name, properties)
-    }
-
-    fun pointer(type: PlankType): PointerType {
-      return PointerType(type)
-    }
-
-    fun function(returnType: PlankType, parameters: List<PlankType>): FunctionType {
-      return FunctionType(parameters, returnType)
-    }
-
-    fun function(returnType: PlankType, vararg parameters: PlankType): FunctionType {
-      return FunctionType(parameters.toList(), returnType)
-    }
-
-    fun delegate(type: PlankType): DelegateType {
-      return DelegateType(type)
-    }
-
-    fun module(name: Identifier, members: List<StructProperty>): ModuleType {
-      return ModuleType(name, members)
-    }
-
-    fun array(type: PlankType): ArrayType {
-      return ArrayType(type)
-    }
-
-    fun untyped(): Untyped {
-      return Untyped
-    }
-
-    private val fpCache = mutableMapOf<Int, PlankType>()
-    private val intCache = mutableMapOf<Int, PlankType>()
+    return type ?: default(this)
   }
 
   inline fun <reified A : PlankType> cast(): A? {
@@ -103,12 +50,6 @@ sealed class PlankType {
     }
   }
 
-  inline fun <reified A : PlankType> cast(default: (PlankType) -> A): A {
-    val type = cast<A>()
-
-    return type ?: default(this)
-  }
-
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other == null || this::class != other::class) return false
@@ -119,6 +60,10 @@ sealed class PlankType {
     if (size != other.size) return false
 
     return true
+  }
+
+  override fun toString(): String {
+    return name?.text ?: "Type ${this::class.simpleName}@${hashCode().toString(4)} of size $size"
   }
 
   override fun hashCode(): Int {
@@ -189,18 +134,43 @@ class StructType(
   }
 }
 
-class IntType(
-    name: String,
-    override val size: Int,
-    val floatingPoint: Boolean = false,
-    val unsigned: Boolean = false,
+class IntType internal constructor(
+  name: String,
+  override val size: Int,
+  val floatingPoint: Boolean = false,
+  val unsigned: Boolean = false,
 ) : PlankType() {
-    override val name = Identifier(name)
-    override val isPrimitive: Boolean = true
+  override val name = Identifier(name)
+  override val isPrimitive: Boolean = true
+}
+
+private val floatCache = mutableMapOf<Int, IntType>()
+private val intCache = mutableMapOf<Int, IntType>()
+
+fun FloatType(size: Int = 32, unsigned: Boolean = false): IntType {
+  return floatCache.getOrPut(size) {
+    IntType(
+      "Float",
+      size,
+      floatingPoint = true,
+      unsigned = unsigned
+    )
+  }
+}
+
+fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
+  return intCache.getOrPut(size) { IntType("Int", size, unsigned = unsigned) }
 }
 
 // TODO: use currying
-class FunctionType(val parameters: List<PlankType>, val returnType: PlankType) : PlankType() {
+class FunctionType(val parameters: List<PlankType>, val returnType: PlankType) :
+  PlankType() {
+  constructor(returnType: PlankType, parameters: List<PlankType>) : this(parameters, returnType)
+  constructor(returnType: PlankType, vararg parameters: PlankType) : this(
+    parameters.toList(),
+    returnType,
+  )
+
   override val isPrimitive: Boolean = true
   override val size = 8
 
@@ -231,8 +201,12 @@ class DelegateType(var value: PlankType? = null) : PlankType() {
   override fun toString() = value!!.toString()
 }
 
+val UnitType = IntType("Void", 8)
+val CharType = IntType("Char", 8)
+val BoolType = IntType("Bool", 1)
+
 /**
- * Represents unknown type when compilers raises an violation or something
+ * Represents unknown type when compilers raise a violation or something
  */
 object Untyped : PlankType() {
   override val size: Int = -1

@@ -3,7 +3,7 @@ package com.gabrielleeg1.plank.compiler.instructions.decl
 import arrow.core.computations.either
 import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.unit
+import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
 import com.gabrielleeg1.plank.compiler.CompilerContext
@@ -53,7 +53,9 @@ class FunDeclInstruction(private val descriptor: ResolvedFunDecl) : CompilerInst
         it.toInstruction().codegen().bind()
       }
 
-      if (returnType == unit && descriptor.content.filterIsInstance<ResolvedReturnStmt>().isEmpty()) {
+      if (returnType == UnitType && descriptor.content.filterIsInstance<ResolvedReturnStmt>()
+          .isEmpty()
+      ) {
         buildReturn()
       }
 

@@ -1,7 +1,5 @@
 package com.gabrielleeg1.plank.analyzer
 
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.function
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.int
 import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.grammar.element.Identifier
@@ -16,19 +14,19 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
    */
   init {
     // Add default binary operators
-    declare(Identifier.add(), function(int(), int(), int()))
-    declare(Identifier.sub(), function(int(), int(), int()))
-    declare(Identifier.times(), function(int(), int(), int()))
-    declare(Identifier.div(), function(int(), int(), int()))
-    declare(Identifier.div(), function(int(), int(), int()))
+    declare(Identifier.add(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.sub(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.times(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.div(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.div(), FunctionType(IntType(), IntType(), IntType()))
 
     // Add default logical operators
-    declare(Identifier.eq(), function(int(), int(), int()))
-    declare(Identifier.neq(), function(int(), int(), int()))
-    declare(Identifier.gt(), function(int(), int(), int()))
-    declare(Identifier.gte(), function(int(), int(), int()))
-    declare(Identifier.lt(), function(int(), int(), int()))
-    declare(Identifier.lte(), function(int(), int(), int()))
+    declare(Identifier.eq(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.neq(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.gt(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.gte(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.lt(), FunctionType(IntType(), IntType(), IntType()))
+    declare(Identifier.lte(), FunctionType(IntType(), IntType(), IntType()))
   }
 
   override val name = Identifier("Global")

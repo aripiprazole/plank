@@ -2,7 +2,10 @@ package com.gabrielleeg1.plank.compiler
 
 import arrow.core.Either
 import arrow.core.computations.either
+import com.gabrielleeg1.plank.analyzer.BoolType
+import com.gabrielleeg1.plank.analyzer.CharType
 import com.gabrielleeg1.plank.analyzer.DelegateType
+import com.gabrielleeg1.plank.analyzer.IntType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.compiler.instructions.CodegenError
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
@@ -18,10 +21,10 @@ typealias TypegenResult = Either<CodegenError, Type>
 fun CompilerContext.toType(type: PlankType?) = either.eager {
   when (type) {
     PlankType.void -> runtime.types.void
-    PlankType.int -> runtime.types.int
+    IntType() -> runtime.types.int
     PlankType. -> runtime.types.double
-    PlankType.bool -> runtime.types.i1
-    PlankType.char -> runtime.types.i8
+    BoolType -> runtime.types.i1
+    CharType -> runtime.types.i8
     is DelegateType -> {
       toType(type.value ?: return Left(unresolvedTypeError("delegate $type")))
     }

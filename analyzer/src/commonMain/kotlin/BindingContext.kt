@@ -1,17 +1,5 @@
 package com.gabrielleeg1.plank.analyzer
 
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.array
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.bool
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.char
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.delegate
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.enum
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.float
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.function
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.int
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.pointer
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.struct
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.unit
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.untyped
 import com.gabrielleeg1.plank.analyzer.element.ResolvedDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedErrorDecl
@@ -163,14 +151,14 @@ internal class BindingContextImpl(tree: ModuleTree) :
 
   override fun visitConstExpr(expr: ConstExpr): TypedExpr {
     val type = when (expr.value) {
-      is Boolean -> bool
-      is Unit -> bool
-      is String -> pointer(char)
-      is Int -> int(32)
-      is Short -> int(16)
-      is Byte -> int(8)
-      is Double -> float(32)
-      is Long, Float -> float(64)
+      is Boolean -> BoolType
+      is Unit -> BoolType
+      is String -> PointerType(CharType)
+      is Int -> IntType(32)
+      is Short -> IntType(16)
+      is Byte -> IntType(8)
+      is Double -> FloatType(32)
+      is Long, Float -> FloatType(64)
       else -> return violate("Unknown type %s", expr::class.simpleName)
     }
 
@@ -275,7 +263,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
   override fun visitSizeofExpr(expr: SizeofExpr): TypedExpr {
     val type = visit(expr.type)
 
-    return int(32).const(type.size)
+    return IntType(32).const(type.size)
   }
 
   override fun visitRefExpr(expr: RefExpr): TypedExpr {
@@ -327,13 +315,13 @@ internal class BindingContextImpl(tree: ModuleTree) :
   }
 
   override fun visitIdentPattern(pattern: IdentPattern): TypedPattern {
-    return TypedIdentPattern(pattern.name, untyped(), pattern.location)
+    return TypedIdentPattern(pattern.name, Untyped, pattern.location)
   }
 
   override fun visitIfExpr(expr: IfExpr): TypedExpr {
     val cond = visit(expr.cond)
 
-    if (cond.type != bool) {
+    if (cond.type != BoolType) {
       return violate("Mismatch types, expecting bool value but got %s in if condition", cond)
     }
 
@@ -360,7 +348,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
   }
 
   override fun visitReturnStmt(stmt: ReturnStmt): ResolvedStmt {
-    val expr = stmt.value?.let(::visit) ?: unit.const()
+    val expr = stmt.value?.let(::visit) ?: UnitType.const()
 
     val functionScope = currentScope as? FunctionScope
       ?: return violate("Can not return in not function scope %s", currentScope).stmt()
@@ -402,19 +390,19 @@ internal class BindingContextImpl(tree: ModuleTree) :
   override fun visitEnumDecl(decl: EnumDecl): ResolvedStmt {
     val name = decl.name
 
-    val enum = delegate(pointer(enum(name))).also {
+    val enum = DelegateType(PointerType(EnumType(name))).also {
       currentScope.create(name, it)
     }
 
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
 
-      currentScope.declare(name, function(enum, types))
+      currentScope.declare(name, FunctionType(enum, types))
 
       name to EnumMember(name, types)
     }
 
-    enum.value = enum(name, members)
+    enum.value = EnumType(name, members)
 
     return ResolvedEnumDecl(name, members, enum, decl.location)
   }
@@ -422,7 +410,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
   override fun visitStructDecl(decl: StructDecl): ResolvedStmt {
     val name = decl.name
 
-    val struct = delegate(struct(decl.name)).also {
+    val struct = DelegateType(StructType(decl.name)).also {
       currentScope.create(name, it)
     }
 
@@ -430,7 +418,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
       name to StructProperty(mutable, name, visit(type))
     }
 
-    struct.value = struct(name, properties)
+    struct.value = StructType(name, properties)
 
     return ResolvedStructDecl(name, properties, struct, decl.location)
   }
@@ -444,11 +432,8 @@ internal class BindingContextImpl(tree: ModuleTree) :
     val attributes = decl.modifiers
       .associate { "native" to Attribute.native }
 
-    val returnType = visit(decl.returnType) { unit }
-    val type = FunctionType(
-      parameters = decl.parameters.map { visit(it) },
-      returnType = returnType
-    )
+    val returnType = visit(decl.returnType) { UnitType }
+    val type = FunctionType(returnType, decl.parameters.map { visit(it) })
 
     currentScope.declare(name, type)
 
@@ -487,17 +472,17 @@ internal class BindingContextImpl(tree: ModuleTree) :
   }
 
   override fun visitPointerTypeRef(ref: PointerTypeRef): PlankType {
-    return pointer(visit(ref.type))
+    return PointerType(visit(ref.type))
   }
 
   override fun visitArrayTypeRef(ref: ArrayTypeRef): PlankType {
-    return array(visit(ref.type))
+    return ArrayType(visit(ref.type))
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef): PlankType {
     val parameters = visitTypeRefs(ref.parameters)
     // TODO: infer if hasn't user-defined type
-    val returnType = visit(ref.returnType) { unit }
+    val returnType = visit(ref.returnType) { UnitType }
 
     return FunctionType(parameters, returnType)
   }
@@ -539,7 +524,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
   private fun violate(message: String, vararg values: Any?): TypedExpr {
     violations = violations + BindingViolation(message, values.toList())
 
-    return TypedConstExpr(Unit, untyped(), Location.Generated)
+    return TypedConstExpr(Unit, Untyped, Location.Generated)
   }
 
   private fun undeclared(type: PlankType): TypedExpr {

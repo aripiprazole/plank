@@ -1,6 +1,7 @@
 package com.gabrielleeg1.plank.analyzer.element
 
 import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.PlankElement
 import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
@@ -41,7 +42,7 @@ data class ResolvedExprStmt(val expr: TypedExpr, override val location: Location
 data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Location) :
   ResolvedStmt,
   TypedPlankElement {
-  override val type = value?.type ?: PlankType.unit
+  override val type = value?.type ?: UnitType
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitReturnStmt(this)

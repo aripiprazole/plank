@@ -1,8 +1,9 @@
 package com.gabrielleeg1.plank.analyzer.element
 
 import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.PlankType.Companion.pointer
+import com.gabrielleeg1.plank.analyzer.PointerType
 import com.gabrielleeg1.plank.analyzer.StructType
+import com.gabrielleeg1.plank.analyzer.Untyped
 import com.gabrielleeg1.plank.analyzer.Variable
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
@@ -146,7 +147,7 @@ data class TypedRefExpr(
   val expr: TypedExpr,
   override val location: Location
 ) : TypedExpr {
-  override val type = pointer(expr.type)
+  override val type = PointerType(expr.type)
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitReferenceExpr(this)
@@ -179,7 +180,7 @@ data class TypedErrorExpr(
   override val arguments: List<Any>,
   override val location: Location = Location.Generated,
 ) : TypedExpr, ErrorPlankElement {
-  override val type = PlankType.untyped()
+  override val type = Untyped
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitViolatedExpr(this)

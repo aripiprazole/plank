@@ -2,6 +2,7 @@ package com.gabrielleeg1.plank.compiler.instructions.expr
 
 import arrow.core.computations.either
 import arrow.core.left
+import com.gabrielleeg1.plank.analyzer.BoolType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
@@ -33,11 +34,11 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
 
   companion object {
     fun CompilerContext.createAnd(lhs: Value, rhs: Value): CodegenResult = either.eager {
-      val variable = buildAlloca(PlankType.bool.toType().bind())
+      val variable = buildAlloca(BoolType.toType().bind())
       val thenStmts = { listOf(buildStore(variable, rhs)) }
       val elseStmts = { listOf(buildStore(variable, runtime.falseConstant)) }
 
-      createIf(PlankType.bool, lhs, thenStmts, elseStmts).bind()
+        createIf(BoolType, lhs, thenStmts, elseStmts).bind()
 
       buildLoad(variable)
     }
