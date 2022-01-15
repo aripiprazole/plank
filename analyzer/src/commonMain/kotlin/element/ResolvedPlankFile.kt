@@ -1,14 +1,12 @@
 package com.gabrielleeg1.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.BindingContext
 import com.gabrielleeg1.plank.analyzer.BindingViolation
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 
 /**
  * Represents a [PlankFile] with type definitions. The properties [syntaxViolations],
- * [bindingViolations], [dependencies] will be fulfilled by copy the generated instances in
- * [BindingContext]
+ * [bindingViolations], [dependencies] will be fulfilled by copy the generated instances
  */
 data class ResolvedPlankFile(
   val delegate: PlankFile,

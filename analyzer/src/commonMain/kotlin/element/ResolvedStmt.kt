@@ -5,7 +5,7 @@ import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.PlankElement
 import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 
-abstract class ResolvedStmt internal constructor() : PlankElement {
+sealed interface ResolvedStmt  : PlankElement {
   interface Visitor<T> {
     fun visit(stmt: ResolvedStmt): T = stmt.accept(this)
 
@@ -21,27 +21,29 @@ abstract class ResolvedStmt internal constructor() : PlankElement {
 
     fun visitViolatedStmt(stmt: ResolvedErrorStmt): T
     fun visitViolatedDecl(stmt: ResolvedErrorDecl): T
+
+    fun visitStmts(many: List<ResolvedStmt>): List<T> = many.map(::visit)
   }
 
-  abstract fun <T> accept(visitor: Visitor<T>): T
+  fun <T> accept(visitor: Visitor<T>): T
 }
 
 data class ResolvedExprStmt(val expr: TypedExpr, override val location: Location) :
-  ResolvedStmt(),
+  ResolvedStmt,
   TypedPlankElement {
   override val type = expr.type
 
-  override fun <T> accept(visitor: Visitor<T>): T {
+  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitExprStmt(this)
   }
 }
 
 data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Location) :
-  ResolvedStmt(),
+  ResolvedStmt,
   TypedPlankElement {
   override val type = value?.type ?: PlankType.unit
 
-  override fun <T> accept(visitor: Visitor<T>): T {
+  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitReturnStmt(this)
   }
 }
@@ -49,10 +51,10 @@ data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Loca
 data class ResolvedErrorStmt(
   override val message: String,
   override val arguments: List<Any>,
-) : ResolvedStmt(), ErrorPlankElement {
-  override val location = Location.undefined()
+) : ResolvedStmt, ErrorPlankElement {
+  override val location = Location.Generated
 
-  override fun <T> accept(visitor: Visitor<T>): T {
+  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitViolatedStmt(this)
   }
 }

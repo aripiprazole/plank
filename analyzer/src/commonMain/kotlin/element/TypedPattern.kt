@@ -24,6 +24,6 @@ data class ViolatedPattern(
   override val message: String,
   override val arguments: List<Any>
 ) : TypedPattern(), ErrorPlankElement {
-  override val location = Location.undefined()
+  override val location = Location.Generated
   override val type = PlankType.untyped()
 }
