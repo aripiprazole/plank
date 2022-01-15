@@ -1,6 +1,6 @@
 package com.gabrielleeg1.plank.grammar
 
-import com.gabrielleeg1.plank.grammar.debug.printTree
+import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 
 fun main() {
@@ -16,5 +16,5 @@ fun main() {
 
   println("Parsed plank file: $file")
 
-  println("Dumped plank file: ${file.printTree()}")
+  println("Dumped plank file: ${file.dumpTree()}")
 }
