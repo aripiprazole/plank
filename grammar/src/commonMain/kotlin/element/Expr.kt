@@ -2,8 +2,6 @@ package com.gabrielleeg1.plank.grammar.element
 
 sealed interface Expr : PlankElement {
   interface Visitor<T> {
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Replace with pattern matching")
     fun visit(expr: Expr): T = when (expr) {
       is MatchExpr -> visitMatchExpr(expr)
       is IfExpr -> visitIfExpr(expr)
@@ -35,6 +33,8 @@ sealed interface Expr : PlankElement {
     fun visitRefExpr(expr: RefExpr): T
     fun visitDerefExpr(expr: DerefExpr): T
     fun visitErrorExpr(expr: ErrorExpr): T
+
+    fun visitExprs(many: List<Expr>): List<T> = many.map(::visit)
   }
 }
 

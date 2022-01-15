@@ -2,8 +2,6 @@ package com.gabrielleeg1.plank.grammar.element
 
 sealed interface TypeRef : PlankElement {
   interface Visitor<T> {
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Replace with pattern matching")
     fun visit(typeDef: TypeRef): T = when (typeDef) {
       is AccessTypeRef -> visitAccessTypeRef(typeDef)
       is PointerTypeRef -> visitPointerTypeRef(typeDef)
@@ -15,6 +13,8 @@ sealed interface TypeRef : PlankElement {
     fun visitPointerTypeRef(ref: PointerTypeRef): T
     fun visitArrayTypeRef(ref: ArrayTypeRef): T
     fun visitFunctionTypeRef(ref: FunctionTypeRef): T
+
+    fun visitTypeRefs(many: List<TypeRef>): List<T> = many.map(::visit)
   }
 }
 

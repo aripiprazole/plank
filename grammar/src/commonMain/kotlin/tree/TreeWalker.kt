@@ -38,7 +38,6 @@ import com.gabrielleeg1.plank.grammar.element.SizeofExpr
 import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StructDecl
 import com.gabrielleeg1.plank.grammar.element.TypeRef
-import com.gabrielleeg1.plank.grammar.element.visit
 
 abstract class TreeWalker :
   Expr.Visitor<Unit>,
@@ -56,7 +55,7 @@ abstract class TreeWalker :
   }
 
   private fun walk(file: PlankFile) {
-    visit(file.program)
+    visitStmts(file.program)
   }
 
   override fun visitMatchExpr(expr: MatchExpr) {
@@ -84,7 +83,7 @@ abstract class TreeWalker :
 
   override fun visitCallExpr(expr: CallExpr) {
     visit(expr.callee)
-    visit(expr.arguments)
+    visitExprs(expr.arguments)
   }
 
   override fun visitAssignExpr(expr: AssignExpr) {
@@ -148,7 +147,7 @@ abstract class TreeWalker :
 
   override fun visitModuleDecl(decl: ModuleDecl) {
     visit(decl.path)
-    visit(decl.content)
+    visitStmts(decl.content)
   }
 
   override fun visitEnumDecl(decl: EnumDecl) {
@@ -156,7 +155,7 @@ abstract class TreeWalker :
 
     decl.members.forEach { (member, parameters) ->
       visit(member)
-      visit(parameters)
+      visitTypeRefs(parameters)
     }
   }
 
@@ -171,7 +170,7 @@ abstract class TreeWalker :
   override fun visitFunDecl(decl: FunDecl) {
     visit(decl.name)
     visit(decl.type)
-    visit(decl.body)
+    visitStmts(decl.body)
     decl.realParameters.forEach { (parameter, type) ->
       visit(parameter)
       visit(type)
@@ -200,13 +199,13 @@ abstract class TreeWalker :
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef) {
-    visit(ref.parameters)
+    visitTypeRefs(ref.parameters)
     visit(ref.returnType)
   }
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern) {
     visit(pattern.type)
-    visit(pattern.fields)
+    visitPatterns(pattern.fields)
   }
 
   override fun visitIdentPattern(pattern: IdentPattern) {

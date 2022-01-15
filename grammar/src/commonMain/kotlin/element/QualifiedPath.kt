@@ -9,8 +9,6 @@ data class QualifiedPath(val fullPath: List<Identifier>, override val location: 
     this(stringPath.split(".").asReversed().map(::Identifier), location)
 
   interface Visitor<T> {
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Replace with pattern matching")
     fun visit(path: QualifiedPath): T = visitQualifiedPath(path)
 
     fun visitQualifiedPath(path: QualifiedPath): T

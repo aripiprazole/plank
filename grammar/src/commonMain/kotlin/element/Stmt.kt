@@ -2,8 +2,6 @@ package com.gabrielleeg1.plank.grammar.element
 
 sealed interface Stmt : PlankElement {
   interface Visitor<T> {
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Replace with pattern matching")
     fun visit(stmt: Stmt): T = when (stmt) {
       is ExprStmt -> visitExprStmt(stmt)
       is ReturnStmt -> visitReturnStmt(stmt)
@@ -28,6 +26,8 @@ sealed interface Stmt : PlankElement {
     fun visitFunDecl(decl: FunDecl): T
     fun visitLetDecl(decl: LetDecl): T
     fun visitErrorDecl(decl: ErrorDecl): T
+
+    fun visitStmts(many: List<Stmt>): List<T> = many.map(::visit)
   }
 }
 

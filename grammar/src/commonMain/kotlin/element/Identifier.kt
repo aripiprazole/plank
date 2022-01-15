@@ -3,8 +3,6 @@ package com.gabrielleeg1.plank.grammar.element
 class Identifier(val text: String, override val location: Location = Location.Generated) :
   PlankElement {
   interface Visitor<T> {
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Replace with pattern matching")
     fun visit(identifier: Identifier): T = visitIdentifier(identifier)
 
     fun visitIdentifier(identifier: Identifier): T
