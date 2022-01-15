@@ -7,9 +7,6 @@ import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.id.BinaryId
-import com.gabrielleeg1.plank.grammar.id.LogicalId
-import com.gabrielleeg1.plank.grammar.id.UnaryId
 
 data class Variable(val mutable: Boolean, val name: Identifier, var value: TypedExpr)
 
@@ -19,23 +16,19 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
    */
   init {
     // Add default binary operators
-    declare(BinaryId.add(), function(int(), int(), int()))
-    declare(BinaryId.sub(), function(int(), int(), int()))
-    declare(BinaryId.times(), function(int(), int(), int()))
-    declare(BinaryId.div(), function(int(), int(), int()))
-    declare(BinaryId.div(), function(int(), int(), int()))
+    declare(Identifier.add(), function(int(), int(), int()))
+    declare(Identifier.sub(), function(int(), int(), int()))
+    declare(Identifier.times(), function(int(), int(), int()))
+    declare(Identifier.div(), function(int(), int(), int()))
+    declare(Identifier.div(), function(int(), int(), int()))
 
     // Add default logical operators
-    declare(LogicalId.eq(), function(int(), int(), int()))
-    declare(LogicalId.neq(), function(int(), int(), int()))
-    declare(LogicalId.gt(), function(int(), int(), int()))
-    declare(LogicalId.gte(), function(int(), int(), int()))
-    declare(LogicalId.lt(), function(int(), int(), int()))
-    declare(LogicalId.lte(), function(int(), int(), int()))
-
-    // Add default unary operators
-    declare(UnaryId.plus(), function(int(), int()))
-    declare(UnaryId.neg(), function(int(), int()))
+    declare(Identifier.eq(), function(int(), int(), int()))
+    declare(Identifier.neq(), function(int(), int(), int()))
+    declare(Identifier.gt(), function(int(), int(), int()))
+    declare(Identifier.gte(), function(int(), int(), int()))
+    declare(Identifier.lt(), function(int(), int(), int()))
+    declare(Identifier.lte(), function(int(), int(), int()))
   }
 
   override val name = Identifier("Global")
@@ -96,7 +89,7 @@ sealed class Scope {
    * Declares a compiler-defined variable with type [type] in the context
    */
   fun declare(name: Identifier, type: PlankType, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, TypedConstExpr(Unit, type, Location.undefined()))
+    variables[name] = Variable(mutable, name, TypedConstExpr(Unit, type, Location.Generated))
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
@@ -121,7 +114,7 @@ sealed class Scope {
   fun findType(name: Identifier): PlankType? {
     return types[name]
       ?: enclosing?.findType(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findType(name) }.firstOrNull()
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findType(name) }
   }
 
   // todo add usage tracker
@@ -132,7 +125,7 @@ sealed class Scope {
   fun findVariable(name: Identifier): Variable? {
     return variables[name]
       ?: enclosing?.findVariable(name)
-      ?: expanded.filter { it != this }.mapNotNull { it.findVariable(name) }.firstOrNull()
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
   }
 
   fun findFunction(name: Identifier): FunctionType? {

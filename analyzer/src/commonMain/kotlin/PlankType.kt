@@ -29,7 +29,7 @@ sealed class PlankType {
   }
 
   fun const(value: Any = Unit): TypedConstExpr {
-    return TypedConstExpr(value, this, Location.undefined())
+    return TypedConstExpr(value, this, Location.Generated)
   }
 
   companion object {

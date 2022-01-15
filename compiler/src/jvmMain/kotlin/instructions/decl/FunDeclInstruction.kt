@@ -17,7 +17,6 @@ import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.compiler.verify
 import com.gabrielleeg1.plank.grammar.element.Identifier
-import org.llvm4j.llvm4j.Value
 
 class FunDeclInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
@@ -50,11 +49,11 @@ class FunDeclInstruction(private val descriptor: ResolvedFunDecl) : CompilerInst
         addVariable(name, plankType, variable)
       }
 
-      descriptor.body.map {
+      descriptor.content.map {
         it.toInstruction().codegen().bind()
       }
 
-      if (returnType == unit && descriptor.body.filterIsInstance<ResolvedReturnStmt>().isEmpty()) {
+      if (returnType == unit && descriptor.content.filterIsInstance<ResolvedReturnStmt>().isEmpty()) {
         buildReturn()
       }
 

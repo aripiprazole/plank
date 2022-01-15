@@ -71,36 +71,28 @@ import com.gabrielleeg1.plank.grammar.element.SizeofExpr
 import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StructDecl
 import com.gabrielleeg1.plank.grammar.element.TypeRef
-import com.gabrielleeg1.plank.grammar.element.visit
 import com.gabrielleeg1.plank.grammar.tree.TreeWalker
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import pw.binom.Stack
 
 /**
- * This is the type-system core.
- *
- * This will map the file provided in [analyze] with the provided tree
- * into a typed one [ResolvedPlankFile] with typed declarations/statements/expressions.
+ * Analyzes the provided [PlankFile] and returns a typed [ResolvedPlankFile]
+ * with typed declarations/statements/expressions.
  */
-interface BindingContext :
+fun analyze(file: PlankFile, tree: ModuleTree): ResolvedPlankFile {
+  return BindingContextImpl(tree).analyze(file)
+}
+
+internal class BindingContextImpl(tree: ModuleTree) :
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,
   Pattern.Visitor<TypedPattern>,
   PlankFile.Visitor<ResolvedPlankFile>,
   TypeRef.Visitor<PlankType> {
-  val violations: Set<BindingViolation>
-  val isValid: Boolean
-
-  fun analyze(file: PlankFile): ResolvedPlankFile
-}
-
-fun BindingContext(tree: ModuleTree): BindingContext = BindingContextImpl(tree)
-
-private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   /**
    * Used for type inference, where the type-system mutate the element's type to the most useful.
    *
-   * E.G in pseudo-code:
+   * E.G in pseudocode:
    * ```reasonml
    * val (+): int => int => int;
    *
@@ -117,11 +109,13 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
     stack.pushLast(GlobalScope(tree))
   }
 
-  override var violations = emptySet<BindingViolation>()
+  var violations = emptySet<BindingViolation>()
 
-  override val isValid get() = violations.isEmpty()
+  // TODO: testing
+  @Suppress("unused")
+  val isValid get() = violations.isEmpty()
 
-  override fun analyze(file: PlankFile): ResolvedPlankFile {
+  fun analyze(file: PlankFile): ResolvedPlankFile {
     val globalScope = currentScope
     val fileModule = currentModuleTree
       .createModule(file.module, globalScope, file.program)
@@ -162,7 +156,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   }
 
   override fun visitPlankFile(file: PlankFile): ResolvedPlankFile {
-    val program = visit(file.program).filterIsInstance<ResolvedDecl>()
+    val program = visitStmts(file.program).filterIsInstance<ResolvedDecl>()
 
     return ResolvedPlankFile(file, program)
   }
@@ -196,7 +190,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
     val function = callable.type.cast<FunctionType>()
       ?: return violate("Can not call not function", callable)
 
-    return function.call(visit(expr.arguments))
+    return function.call(visitExprs(expr.arguments))
   }
 
   override fun visitAssignExpr(expr: AssignExpr): TypedExpr {
@@ -250,9 +244,9 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   }
 
   override fun visitGroupExpr(expr: GroupExpr): TypedExpr {
-    val expr = visit(expr.value)
+    val inner = visit(expr.value)
 
-    return TypedGroupExpr(expr, expr.location)
+    return TypedGroupExpr(inner, inner.location)
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr): TypedExpr {
@@ -285,9 +279,9 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   }
 
   override fun visitRefExpr(expr: RefExpr): TypedExpr {
-    val expr = visit(expr.expr)
+    val inner = visit(expr.expr)
 
-    return TypedRefExpr(expr, expr.location)
+    return TypedRefExpr(inner, inner.location)
   }
 
   override fun visitDerefExpr(expr: DerefExpr): TypedExpr {
@@ -399,7 +393,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
       content = decl.content,
     )
     val content = scoped(module.scope) {
-      visit(decl.content).filterIsInstance<ResolvedDecl>()
+      visitStmts(decl.content).filterIsInstance<ResolvedDecl>()
     }
 
     return ResolvedModuleDecl(decl.path, content, decl.location)
@@ -413,7 +407,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
     }
 
     val members = decl.members.associate { (name, parameters) ->
-      val types = visit(parameters)
+      val types = visitTypeRefs(parameters)
 
       currentScope.declare(name, function(enum, types))
 
@@ -422,7 +416,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
 
     enum.value = enum(name, members)
 
-    return ResolvedEnumDecl(name, members, decl.location)
+    return ResolvedEnumDecl(name, members, enum, decl.location)
   }
 
   override fun visitStructDecl(decl: StructDecl): ResolvedStmt {
@@ -438,7 +432,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
 
     struct.value = struct(name, properties)
 
-    return ResolvedStructDecl(name, properties, decl.location)
+    return ResolvedStructDecl(name, properties, struct, decl.location)
   }
 
   override fun visitFunDecl(decl: FunDecl): ResolvedStmt {
@@ -466,7 +460,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
           declare(name, visit(type))
         }
 
-      visit(decl.body)
+      visitStmts(decl.body)
     }
 
     return ResolvedFunDecl(name, content, realParameters, attributes, type, location)
@@ -501,7 +495,7 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef): PlankType {
-    val parameters = visit(ref.parameters)
+    val parameters = visitTypeRefs(ref.parameters)
     // TODO: infer if hasn't user-defined type
     val returnType = visit(ref.returnType) { unit }
 
@@ -545,11 +539,11 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
   private fun violate(message: String, vararg values: Any?): TypedExpr {
     violations = violations + BindingViolation(message, values.toList())
 
-    return TypedConstExpr(Unit, untyped(), Location.undefined())
+    return TypedConstExpr(Unit, untyped(), Location.Generated)
   }
 
   private fun undeclared(type: PlankType): TypedExpr {
-    return TypedConstExpr(Unit, type, Location.undefined())
+    return TypedConstExpr(Unit, type, Location.Generated)
   }
 
   private val currentScope get() = scopes.peekLast()
@@ -568,15 +562,15 @@ private class BindingContextImpl(tree: ModuleTree) : BindingContext {
     return result
   }
 
-    private inline fun <T> scoped(
-        name: Identifier = Identifier("anonymous"),
-        scope: Scope = ClosureScope(name, scopes.peekLast()),
-        body: Scope.() -> T
-    ): T {
-        scopes.pushLast(scope)
-        val result = body(scope)
-        scopes.popLast()
+  private inline fun <T> scoped(
+    name: Identifier = Identifier("anonymous"),
+    scope: Scope = ClosureScope(name, scopes.peekLast()),
+    body: Scope.() -> T
+  ): T {
+    scopes.pushLast(scope)
+    val result = body(scope)
+    scopes.popLast()
 
-        return result
-    }
+    return result
+  }
 }
