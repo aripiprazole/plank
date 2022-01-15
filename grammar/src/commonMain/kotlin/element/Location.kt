@@ -21,6 +21,8 @@ sealed interface Location {
 
   object Generated : Location {
     override val file: PlankFile get() = error("Should not get location of generated code")
+
+    override fun toString(): String = "Location.Generated"
   }
 }
 
