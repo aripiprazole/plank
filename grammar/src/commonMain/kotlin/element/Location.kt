@@ -1,9 +1,11 @@
 package com.gabrielleeg1.plank.grammar.element
 
+import com.gabrielleeg1.plank.grammar.debug.DontDump
 import org.antlr.v4.kotlinruntime.Token
 import pw.binom.io.file.File
 
 sealed interface Location {
+  @DontDump
   val file: PlankFile
 
   data class Defined internal constructor(
@@ -20,6 +22,7 @@ sealed interface Location {
   }
 
   object Generated : Location {
+    @DontDump
     override val file: PlankFile get() = error("Should not get location of generated code")
 
     override fun toString(): String = "Location.Generated"

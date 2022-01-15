@@ -14,7 +14,7 @@ data class QualifiedPath(val fullPath: List<Identifier>, override val location: 
     fun visitQualifiedPath(path: QualifiedPath): T
   }
 
-  val text: String get() = fullPath.joinToString(".")
+  val text: String get() = fullPath.joinToString(".") { it.text }
 
   fun toIdentifier(): Identifier {
     return Identifier(text)

@@ -1,30 +1,85 @@
 package com.gabrielleeg1.plank.grammar.debug
 
+import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.PlankElement
 
 fun PlankElement.dumpTree(): String {
-  return dumpTree(asMap())
+  return dumpTree(asMap(), name = this::class.simpleName!!)
+}
+
+fun dumpInline(map: Map<String, Any?>, prefix: String = "", name: Any = "Element"): String =
+  buildString {
+    append(prefix)
+    append(name)
+    if (map.isNotEmpty()) {
+      append(map.entries.reversed().joinToString(", ", prefix = "(", postfix = ")") { (a, b) ->
+        "$a: $b"
+      })
+    }
+    append('\n')
+  }
+
+fun isComplex(map: Map<*, *>): Boolean {
+  return map.values.any {
+    when (it) {
+      is PlankElement -> isComplex(it.asMap())
+      is String, is Boolean, is Int, is Float, is Byte, is Short, is Char, is Double -> false
+      is List<*> -> true
+      is Location -> false
+      else -> true // has a complex element
+    }
+  }
 }
 
 fun dumpTree(
-  expr: Map<String, Any?> = mapOf(),
+  map: Map<String, DumpEntry> = mapOf(),
   prefix: String = "",
   childrenPrefix: String = "",
   name: Any = "Element",
+  forceComplex: Boolean = false,
 ): String = buildString {
+  if (!isComplex(map.mapValues { (_, b) -> b.value }) && !forceComplex) {
+    return dumpInline(map, prefix, name)
+  }
+
   append(prefix)
   append(name)
   append('\n')
 
-  fun dumpTree(name: String = "", value: Any?): String {
+  fun DumpEntry.dumpTree(name: String = ""): String {
     return when (value) {
       is List<*> -> {
-        dumpTree(value.asMap(), "$childrenPrefix├── $name: ", "$childrenPrefix│   ", "List<Expr>")
+        val itemType = type.arguments[0].type!!
+        dumpTree(
+          value.asMap(),
+          "$childrenPrefix├── $name: ",
+          "$childrenPrefix│   ",
+          "List[$itemType]",
+          true
+        ) // todo use other dumper for list
       }
       is PlankElement -> {
         val typeName = value::class.simpleName!!
+        val valueAsMap = value.asMap()
 
-        dumpTree(value.asMap(), "$childrenPrefix├── $name: ", "$childrenPrefix│   ", typeName)
+        if (isComplex(valueAsMap.mapValues { (_, b) -> b.value })) {
+          dumpTree(valueAsMap, "$childrenPrefix├── $name: ", "$childrenPrefix│   ", typeName)
+        } else {
+          dumpInline(valueAsMap, "$childrenPrefix├── $name: ", typeName)
+        }
+      }
+      is Map<*, *> -> {
+        val keyType = type.arguments[0].type!!
+        val valueType = type.arguments[1].type!!
+
+        dumpTree(
+          value
+            .mapKeys { (a) -> a.toString() }
+            .mapValues { (_, b) -> DumpEntry(valueType, b) },
+          "$childrenPrefix├── $name: ",
+          "$childrenPrefix│   ",
+          (if (value.isEmpty()) "EmptyMap" else "Map") + "[$keyType, $valueType]"
+        )
       }
       else -> {
         dumpTree(mapOf(), "$childrenPrefix├── $name: ", "$childrenPrefix│   ", value.toString())
@@ -32,7 +87,7 @@ fun dumpTree(
     }
   }
 
-  return toString() + expr.entries.joinToString(separator = "") { (name, value) ->
-    dumpTree(name, value)
+  return toString() + map.entries.joinToString(separator = "") { (name, value) ->
+    value.dumpTree(name)
   }
 }

@@ -107,7 +107,7 @@ data class PointerType(val inner: PlankType) : PlankType() {
   override val isPrimitive: Boolean = true
   override val size = 8
 
-  override fun toString(): String = "&$inner"
+  override fun toString(): String = "*$inner"
 }
 
 data class ArrayType(val inner: PlankType) : PlankType() {
@@ -192,7 +192,7 @@ class FunctionType(val parameters: List<PlankType>, val returnType: PlankType) :
   }
 
   override fun toString(): String {
-    return "${parameters.joinToString("->")} -> $returnType"
+    return "${parameters.joinToString(" -> ")} -> $returnType"
   }
 }
 
