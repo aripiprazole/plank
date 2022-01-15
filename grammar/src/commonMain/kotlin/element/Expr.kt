@@ -1,6 +1,42 @@
 package com.gabrielleeg1.plank.grammar.element
 
-sealed interface Expr : PlankElement
+sealed interface Expr : PlankElement {
+  interface Visitor<T> {
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Replace with pattern matching")
+    fun visit(expr: Expr): T = when (expr) {
+      is MatchExpr -> visitMatchExpr(expr)
+      is IfExpr -> visitIfExpr(expr)
+      is ConstExpr -> visitConstExpr(expr)
+      is AccessExpr -> visitAccessExpr(expr)
+      is GroupExpr -> visitGroupExpr(expr)
+      is AssignExpr -> visitAssignExpr(expr)
+      is SetExpr -> visitSetExpr(expr)
+      is GetExpr -> visitGetExpr(expr)
+      is CallExpr -> visitCallExpr(expr)
+      is InstanceExpr -> visitInstanceExpr(expr)
+      is SizeofExpr -> visitSizeofExpr(expr)
+      is RefExpr -> visitRefExpr(expr)
+      is DerefExpr -> visitDerefExpr(expr)
+      is ErrorExpr -> visitErrorExpr(expr)
+    }
+
+    fun visitMatchExpr(expr: MatchExpr): T
+    fun visitIfExpr(expr: IfExpr): T
+    fun visitConstExpr(expr: ConstExpr): T
+    fun visitAccessExpr(expr: AccessExpr): T
+    fun visitCallExpr(expr: CallExpr): T
+    fun visitAssignExpr(expr: AssignExpr): T
+    fun visitSetExpr(expr: SetExpr): T
+    fun visitGetExpr(expr: GetExpr): T
+    fun visitGroupExpr(expr: GroupExpr): T
+    fun visitInstanceExpr(expr: InstanceExpr): T
+    fun visitSizeofExpr(expr: SizeofExpr): T
+    fun visitRefExpr(expr: RefExpr): T
+    fun visitDerefExpr(expr: DerefExpr): T
+    fun visitErrorExpr(expr: ErrorExpr): T
+  }
+}
 
 data class MatchExpr(
   val subject: Expr,

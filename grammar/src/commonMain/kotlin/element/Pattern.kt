@@ -1,6 +1,18 @@
 package com.gabrielleeg1.plank.grammar.element
 
-sealed interface Pattern : PlankElement
+sealed interface Pattern : PlankElement {
+  interface Visitor<T> {
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Replace with pattern matching")
+    fun visit(pattern: Pattern): T = when (pattern) {
+      is NamedTuplePattern -> visitNamedTuplePattern(pattern)
+      is IdentPattern -> visitIdentPattern(pattern)
+    }
+
+    fun visitNamedTuplePattern(pattern: NamedTuplePattern): T
+    fun visitIdentPattern(pattern: IdentPattern): T
+  }
+}
 
 data class NamedTuplePattern(
   val type: QualifiedPath,

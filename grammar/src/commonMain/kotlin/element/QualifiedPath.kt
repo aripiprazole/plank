@@ -8,7 +8,37 @@ data class QualifiedPath(val fullPath: List<Identifier>, override val location: 
   constructor(stringPath: String, location: Location = Location.Generated) :
     this(stringPath.split(".").asReversed().map(::Identifier), location)
 
+  interface Visitor<T> {
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Replace with pattern matching")
+    fun visit(path: QualifiedPath): T = visitQualifiedPath(path)
+
+    fun visitQualifiedPath(path: QualifiedPath): T
+  }
+
   val text: String get() = fullPath.joinToString(".")
 
-  fun toIdentifier(): Identifier = Identifier(text)
+  fun toIdentifier(): Identifier {
+    return Identifier(text)
+  }
+
+  companion object {
+    @Deprecated(
+      message = "Replace with constructor calling",
+      replaceWith = ReplaceWith("QualifiedPath(identifier)"),
+      level = DeprecationLevel.ERROR,
+    )
+    fun from(identifier: Identifier): QualifiedPath {
+      return QualifiedPath(identifier)
+    }
+
+    @Deprecated(
+      message = "Replace with constructor calling",
+      replaceWith = ReplaceWith("QualifiedPath(stringPath, location)"),
+      level = DeprecationLevel.ERROR,
+    )
+    fun from(stringPath: String, location: Location = Location.Generated): QualifiedPath {
+      return QualifiedPath(stringPath, location)
+    }
+  }
 }

@@ -1,5 +1,3 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
-
 package com.gabrielleeg1.plank.grammar.tree
 
 import com.gabrielleeg1.plank.grammar.element.AccessExpr
@@ -40,239 +38,187 @@ import com.gabrielleeg1.plank.grammar.element.SizeofExpr
 import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StructDecl
 import com.gabrielleeg1.plank.grammar.element.TypeRef
+import com.gabrielleeg1.plank.grammar.element.visit
 
-abstract class TreeWalker {
-  open fun walk(element: PlankElement) = when (element) {
-    is Expr -> walk(element)
-    is Stmt -> walk(element)
-    is TypeRef -> walk(element)
+abstract class TreeWalker :
+  Expr.Visitor<Unit>,
+  Stmt.Visitor<Unit>,
+  Pattern.Visitor<Unit>,
+  QualifiedPath.Visitor<Unit>,
+  Identifier.Visitor<Unit>,
+  TypeRef.Visitor<Unit> {
+  fun walk(element: PlankElement) = when (element) {
+    is Expr -> visit(element)
+    is Stmt -> visit(element)
+    is TypeRef -> visit(element)
     is PlankFile -> walk(element)
-    else -> error("Could not walk through ${element::class}")
+    else -> error("Could not visit ${element::class}")
   }
 
-  open fun walk(typeRef: TypeRef) {
-    when (typeRef) {
-      is AccessTypeRef -> visitAccessTypeRef(typeRef)
-      is PointerTypeRef -> visitPointerTypeRef(typeRef)
-      is ArrayTypeRef -> visitArrayTypeRef(typeRef)
-      is FunctionTypeRef -> visitFunctionTypeRef(typeRef)
-    }
+  private fun walk(file: PlankFile) {
+    visit(file.program)
   }
 
-  open fun walk(stmt: Stmt) {
-    when (stmt) {
-      is ExprStmt -> visitExprStmt(stmt)
-      is ReturnStmt -> visitReturnStmt(stmt)
-      is ErrorStmt -> visitErrorStmt(stmt)
-      is EnumDecl -> visitEnumDecl(stmt)
-      is StructDecl -> visitStructDecl(stmt)
-      is ImportDecl -> visitImportDecl(stmt)
-      is ModuleDecl -> visitModuleDecl(stmt)
-      is FunDecl -> visitFunDecl(stmt)
-      is LetDecl -> visitLetDecl(stmt)
-      is ErrorDecl -> visitErrorDecl(stmt)
-    }
-  }
-
-  open fun walk(expr: Expr) {
-    when (expr) {
-      is MatchExpr -> visitMatchExpr(expr)
-      is IfExpr -> visitIfExpr(expr)
-      is ConstExpr -> visitConstExpr(expr)
-      is AccessExpr -> visitAccessExpr(expr)
-      is GroupExpr -> visitGroupExpr(expr)
-      is AssignExpr -> visitAssignExpr(expr)
-      is SetExpr -> visitSetExpr(expr)
-      is GetExpr -> visitGetExpr(expr)
-      is CallExpr -> visitCallExpr(expr)
-      is InstanceExpr -> visitInstanceExpr(expr)
-      is SizeofExpr -> visitSizeofExpr(expr)
-      is RefExpr -> visitRefExpr(expr)
-      is DerefExpr -> visitDerefExpr(expr)
-      is ErrorExpr -> visitErrorExpr(expr)
-    }
-  }
-
-  open fun walk(file: PlankFile) {
-    walk(file.program)
-  }
-
-  open fun visitMatchExpr(expr: MatchExpr) {
-    walk(expr.subject)
+  override fun visitMatchExpr(expr: MatchExpr) {
+    visit(expr.subject)
     expr.patterns.forEach { (pattern, value) ->
-      walk(pattern)
-      walk(value)
+      visit(pattern)
+      visit(value)
     }
   }
 
-  open fun visitIfExpr(expr: IfExpr) {
-    walk(expr.cond)
-    walk(expr.thenBranch)
+  override fun visitIfExpr(expr: IfExpr) {
+    visit(expr.cond)
+    visit(expr.thenBranch)
     expr.elseBranch?.let {
-      walk(it)
+      visit(it)
     }
   }
 
-  open fun visitConstExpr(expr: ConstExpr) {
+  override fun visitConstExpr(expr: ConstExpr) {
   }
 
-  open fun visitAccessExpr(expr: AccessExpr) {
-    walk(expr.path)
+  override fun visitAccessExpr(expr: AccessExpr) {
+    visit(expr.path)
   }
 
-  open fun visitCallExpr(expr: CallExpr) {
-    walk(expr.callee)
-    walk(expr.arguments)
+  override fun visitCallExpr(expr: CallExpr) {
+    visit(expr.callee)
+    visit(expr.arguments)
   }
 
-  open fun visitAssignExpr(expr: AssignExpr) {
-    walk(expr.name)
-    walk(expr.value)
+  override fun visitAssignExpr(expr: AssignExpr) {
+    visit(expr.name)
+    visit(expr.value)
   }
 
-  open fun visitSetExpr(expr: SetExpr) {
-    walk(expr.receiver)
-    walk(expr.property)
-    walk(expr.value)
+  override fun visitSetExpr(expr: SetExpr) {
+    visit(expr.receiver)
+    visit(expr.property)
+    visit(expr.value)
   }
 
-  open fun visitGetExpr(expr: GetExpr) {
-    walk(expr.receiver)
-    walk(expr.property)
+  override fun visitGetExpr(expr: GetExpr) {
+    visit(expr.receiver)
+    visit(expr.property)
   }
 
-  open fun visitGroupExpr(expr: GroupExpr) {
-    walk(expr.value)
+  override fun visitGroupExpr(expr: GroupExpr) {
+    visit(expr.value)
   }
 
-  open fun visitInstanceExpr(expr: InstanceExpr) {
-    walk(expr.type)
+  override fun visitInstanceExpr(expr: InstanceExpr) {
+    visit(expr.type)
 
     expr.arguments.forEach { (property, value) ->
-      walk(property)
-      walk(value)
+      visit(property)
+      visit(value)
     }
   }
 
-  open fun visitSizeofExpr(expr: SizeofExpr) {
-    walk(expr.type)
+  override fun visitSizeofExpr(expr: SizeofExpr) {
+    visit(expr.type)
   }
 
-  open fun visitRefExpr(expr: RefExpr) {
-    walk(expr.expr)
+  override fun visitRefExpr(expr: RefExpr) {
+    visit(expr.expr)
   }
 
-  open fun visitDerefExpr(expr: DerefExpr) {
-    walk(expr.ref)
+  override fun visitDerefExpr(expr: DerefExpr) {
+    visit(expr.ref)
   }
 
-  open fun visitErrorExpr(expr: ErrorExpr) {
+  override fun visitErrorExpr(expr: ErrorExpr) {
   }
 
-  open fun visitExprStmt(stmt: ExprStmt) {
-    walk(stmt.expr)
+  override fun visitExprStmt(stmt: ExprStmt) {
+    visit(stmt.expr)
   }
 
-  open fun visitReturnStmt(stmt: ReturnStmt) {
-    stmt.value?.let { walk(it) }
+  override fun visitReturnStmt(stmt: ReturnStmt) {
+    stmt.value?.let { visit(it) }
   }
 
-  open fun visitErrorStmt(stmt: ErrorStmt) {
+  override fun visitErrorStmt(stmt: ErrorStmt) {
   }
 
-  open fun visitImportDecl(decl: ImportDecl) {
-    walk(decl.path)
+  override fun visitImportDecl(decl: ImportDecl) {
+    visit(decl.path)
   }
 
-  open fun visitModuleDecl(decl: ModuleDecl) {
-    walk(decl.path)
-    walk(decl.content)
+  override fun visitModuleDecl(decl: ModuleDecl) {
+    visit(decl.path)
+    visit(decl.content)
   }
 
-  open fun visitEnumDecl(decl: EnumDecl) {
-    walk(decl.name)
+  override fun visitEnumDecl(decl: EnumDecl) {
+    visit(decl.name)
 
     decl.members.forEach { (member, parameters) ->
-      walk(member)
-      walk(parameters)
+      visit(member)
+      visit(parameters)
     }
   }
 
-  open fun visitStructDecl(decl: StructDecl) {
-    walk(decl.name)
+  override fun visitStructDecl(decl: StructDecl) {
+    visit(decl.name)
     decl.properties.forEach { (_, property, type) ->
-      walk(property)
-      walk(type)
+      visit(property)
+      visit(type)
     }
   }
 
-  open fun visitFunDecl(decl: FunDecl) {
-    walk(decl.name)
-    walk(decl.type)
-    walk(decl.body)
+  override fun visitFunDecl(decl: FunDecl) {
+    visit(decl.name)
+    visit(decl.type)
+    visit(decl.body)
     decl.realParameters.forEach { (parameter, type) ->
-      walk(parameter)
-      walk(type)
+      visit(parameter)
+      visit(type)
     }
   }
 
-  open fun visitLetDecl(decl: LetDecl) {
-    walk(decl.name)
-    decl.type?.let { walk(it) }
-    walk(decl.value)
+  override fun visitLetDecl(decl: LetDecl) {
+    visit(decl.name)
+    decl.type?.let { visit(it) }
+    visit(decl.value)
   }
 
-  open fun visitErrorDecl(decl: ErrorDecl) {
+  override fun visitErrorDecl(decl: ErrorDecl) {
   }
 
-  open fun visitAccessTypeRef(ref: AccessTypeRef) {
-    walk(ref.path)
+  override fun visitAccessTypeRef(ref: AccessTypeRef) {
+    visit(ref.path)
   }
 
-  open fun visitPointerTypeRef(ref: PointerTypeRef) {
-    walk(ref.type)
+  override fun visitPointerTypeRef(ref: PointerTypeRef) {
+    visit(ref.type)
   }
 
-  open fun visitArrayTypeRef(ref: ArrayTypeRef) {
-    walk(ref.type)
+  override fun visitArrayTypeRef(ref: ArrayTypeRef) {
+    visit(ref.type)
   }
 
-  open fun visitFunctionTypeRef(ref: FunctionTypeRef) {
-    walk(ref.parameters)
-    walk(ref.returnType)
+  override fun visitFunctionTypeRef(ref: FunctionTypeRef) {
+    visit(ref.parameters)
+    visit(ref.returnType)
   }
 
-  open fun visitNamedTuplePattern(pattern: NamedTuplePattern) {
-    walk(pattern.type)
-    walk(pattern.fields)
+  override fun visitNamedTuplePattern(pattern: NamedTuplePattern) {
+    visit(pattern.type)
+    visit(pattern.fields)
   }
 
-  open fun visitIdentPattern(pattern: IdentPattern) {
-    walk(pattern.name)
+  override fun visitIdentPattern(pattern: IdentPattern) {
+    visit(pattern.name)
   }
 
-  open fun visitQualifiedPath(path: QualifiedPath) {
+  override fun visitQualifiedPath(path: QualifiedPath) {
     path.fullPath.forEach {
-      walk(it)
+      visit(it)
     }
   }
 
-  open fun visitIdentifier(identifier: Identifier) {
-  }
-
-  open fun walk(patterns: List<Pattern>) {
-    patterns.map(::walk)
-  }
-
-  open fun walk(types: List<TypeRef>) {
-    types.map(::walk)
-  }
-
-  open fun walk(stmts: List<Stmt>) {
-    stmts.map(::walk)
-  }
-
-  open fun walk(exprs: List<Expr>) {
-    exprs.map(::walk)
+  override fun visitIdentifier(identifier: Identifier) {
   }
 }
