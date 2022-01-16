@@ -36,7 +36,7 @@ sealed class CodegenViolation {
     override val context: CompilerContext
   ) : CodegenViolation() {
     override fun render(logger: CompilerLogger) {
-      logger.severe("Unresolved callable at ${callee.location}")
+      logger.severe("Unresolved callable $callee at ${callee.location}")
     }
   }
 
