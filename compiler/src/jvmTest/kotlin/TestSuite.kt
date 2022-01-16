@@ -4,6 +4,56 @@ import org.junit.jupiter.api.Test
 
 class TestSuite {
   @Test
+  fun `test hof`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: (*Char) -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          println("String (outside hof)");
+          hof(println);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test function ref`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          fun nested(): Void {
+            println("Hello, world! (nested)");
+          }
+
+          println("Hello, world!");
+          nested;
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test nesting functions`() {
     TestCompilation
       .of(

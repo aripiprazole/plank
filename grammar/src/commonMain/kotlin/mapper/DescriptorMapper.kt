@@ -149,7 +149,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitFunctionTypeRef(ctx: FunctionTypeRefContext): TypeRef {
-    val parameters = ctx.findTypeReference().map { it.typeRef() }
+    val parameters = ctx.findTypeReference().map { it.typeRef() }.dropLast(1)
     val returnType = ctx.returnType ?: error("No return type received in function type ref")
 
     return FunctionTypeRef(parameters, returnType.typeRef(), ctx.location())
@@ -484,13 +484,13 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitIntPrimary(ctx: IntPrimaryContext): Expr {
     val value = ctx.INT() ?: error("No int received in int primary context")
 
-    return ConstExpr(value, ctx.location())
+    return ConstExpr(value.text.toInt(), ctx.location())
   }
 
   override fun visitDecimalPrimary(ctx: DecimalPrimaryContext): Expr {
     val value = ctx.DECIMAL() ?: error("No decimal received in decimal primary context")
 
-    return ConstExpr(value, ctx.location())
+    return ConstExpr(value.text.toDouble(), ctx.location())
   }
 
   override fun visitStringPrimary(ctx: StringPrimaryContext): Expr {

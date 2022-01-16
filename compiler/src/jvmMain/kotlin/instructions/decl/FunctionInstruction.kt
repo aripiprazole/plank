@@ -1,6 +1,5 @@
 package com.gabrielleeg1.plank.compiler.instructions.decl
 
-import arrow.core.Either
 import arrow.core.Either.Right
 import arrow.core.computations.either
 import arrow.core.left
@@ -36,15 +35,12 @@ class FunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerIns
 
       function.getParameters().forEachIndexed { index, parameter ->
         val plankType = parameters.getOrNull(index)
-          ?: unresolvedTypeError("type of parameter $index")
-            .left()
-            .bind<PlankType>()
+          ?: unresolvedTypeError("type of parameter $index").left().bind<PlankType>()
 
         val type = parameter.getType()
 
         val entry = descriptor.realParameters.entries.toList().getOrElse(index) {
-          unresolvedVariableError(parameter.getName())
-            .left()
+          unresolvedVariableError(parameter.getName()).left()
             .bind<Map.Entry<Identifier, PlankType>>()
         }
         val name = entry.key.text

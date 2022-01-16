@@ -47,11 +47,15 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either.eager {
     }
     is FunctionType -> {
       val returnType = type.returnType.toType().bind()
-
-      context.getFunctionType(
+      val functionType = context.getFunctionType(
         returnType,
         parameters = type.parameters.traverseEither { it.toType() }.bind().toTypedArray()
       )
+
+      when (val result = context.getPointerType(functionType)) {
+        is Ok -> result.value
+        is Err -> llvmError(result.error.message ?: "AssertionError").left().bind<Type>()
+      }
     }
     is PointerType -> {
       when (val result = toType(type.inner).map(context::getPointerType).bind()) {

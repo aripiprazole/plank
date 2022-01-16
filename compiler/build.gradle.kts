@@ -34,6 +34,7 @@ kotlin {
         compileOnly(Dependencies.LLVM4J.LLVM4J) {
           exclude(group = "org.bytedeco")
         }
+        implementation(kotlin("reflect"))
         implementation(project(":grammar"))
         implementation(project(":shared"))
         implementation(project(":analyzer"))
@@ -41,6 +42,7 @@ kotlin {
     }
     val jvmTest by getting {
       dependencies {
+        implementation(kotlin("reflect"))
         implementation(Dependencies.ByteDeco.LLVMPlatform)
         implementation(Dependencies.Arrow.Core)
         implementation(Dependencies.LLVM4J.LLVM4J) {

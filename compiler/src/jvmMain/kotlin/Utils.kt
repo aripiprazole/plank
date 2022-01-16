@@ -4,6 +4,11 @@ import org.bytedeco.llvm.global.LLVM
 import org.llvm4j.llvm4j.Constant
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.Type
+import org.llvm4j.llvm4j.Value
+
+inline fun <reified A> Value.unsafeCast(): A {
+  return A::class.constructors.first().call(ref)
+}
 
 fun Type.getSize(): Constant {
   return Constant(LLVM.LLVMSizeOf(ref))

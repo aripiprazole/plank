@@ -1,16 +1,19 @@
 package com.gabrielleeg1.plank.compiler
 
 import arrow.core.Either
+import arrow.core.computations.either
+import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRFunction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRNamedFunction
+import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.grammar.element.PlankElement
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Context
@@ -120,22 +123,30 @@ data class CompilerContext(
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findFunction(name) }
   }
 
-  fun findType(predicate: (Pair<PlankType, NamedStructType>) -> Boolean): PlankType? {
-    return types.values.find(predicate)?.first
-      ?: enclosing?.findType(predicate)
-      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findType(predicate) }
-  }
-
   fun findStruct(name: String): NamedStructType? {
     return types[name]?.second
       ?: enclosing?.findStruct(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findStruct(name) }
   }
 
-  fun findVariable(name: String): AllocaInstruction? {
+  fun findVariable(name: String): Either<CodegenViolation, AllocaInstruction> = either.eager {
+    findVariableAlloca(name)
+      ?: findFunction(name)
+        ?.accessIn(this@CompilerContext)
+        ?.let { function ->
+          val functionAlloca = buildAlloca(function.getType())
+          buildStore(functionAlloca, function)
+          functionAlloca
+        }
+      ?: unresolvedVariableError(name)
+        .left()
+        .bind<AllocaInstruction>()
+  }
+
+  private fun findVariableAlloca(name: String): AllocaInstruction? {
     return values[name]?.second
-      ?: enclosing?.findVariable(name)
-      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
+      ?: enclosing?.findVariableAlloca(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariableAlloca(name) }
   }
 
   override fun toString(): String {

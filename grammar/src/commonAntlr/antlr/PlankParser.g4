@@ -14,7 +14,7 @@ ws: (NEWLINE | WS)*;
 
 // types
 typeReference: path=qualifiedPath # AccessTypeRef
-             | LPAREN RPAREN (typeReference (COMMA typeReference)*)? ARROW_LEFT returnType=typeReference # FunctionTypeRef
+             | LPAREN (typeReference (COMMA typeReference)*)? RPAREN  ARROW_LEFT returnType=typeReference # FunctionTypeRef
              | LBRACKET type=typeReference RBRACKET # ArrayTypeRef
              | TIMES type=typeReference # PointerTypeRef
              ;
