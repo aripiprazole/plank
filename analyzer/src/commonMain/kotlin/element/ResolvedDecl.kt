@@ -1,15 +1,15 @@
 package com.gabrielleeg1.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.Attribute
 import com.gabrielleeg1.plank.analyzer.EnumMember
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.Module
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.StructProperty
 import com.gabrielleeg1.plank.grammar.debug.DontDump
+import com.gabrielleeg1.plank.grammar.element.Attribute
+import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 import com.gabrielleeg1.plank.grammar.element.QualifiedPath
 
 sealed interface ResolvedDecl : ResolvedStmt
@@ -28,7 +28,7 @@ data class ResolvedEnumDecl(
 data class ResolvedStructDecl(
   val name: Identifier,
   val properties: Map<Identifier, StructProperty>,
-   override val type: PlankType,
+  override val type: PlankType,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
@@ -59,7 +59,7 @@ data class ResolvedFunDecl(
   val name: Identifier,
   val content: List<ResolvedStmt>,
   val realParameters: Map<Identifier, PlankType>,
-  val attributes: Map<String, Attribute> = emptyMap(),
+  val attributes: List<Attribute> = emptyList(),
   override val type: FunctionType,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
@@ -67,8 +67,12 @@ data class ResolvedFunDecl(
   val parameters = type.parameters
   val returnType = type.returnType
 
+  fun attribute(name: String): Attribute? {
+    return attributes.find { it.name.text == name }
+  }
+
   fun hasAttribute(name: String): Boolean {
-    return attributes[name] != null
+    return attributes.any { it.name.text == name }
   }
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {

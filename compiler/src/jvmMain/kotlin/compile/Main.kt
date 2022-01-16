@@ -37,7 +37,9 @@ private fun execBinary(code: String): Int {
 }
 
 fun main() {
-  val code = """native fun println(message: *Char): Void
+  val code = """
+@external("PLANK_INTERNAL_println")
+fun println(message: *Char): Void
 
 type Person = {mutable name: *Char};
 

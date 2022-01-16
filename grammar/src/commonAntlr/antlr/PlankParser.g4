@@ -32,7 +32,7 @@ decl: TYPE name=IDENTIFIER EQUAL (LBRACE (property (COMMA property)*)? RBRACE) s
     | TYPE name=IDENTIFIER EQUAL (BAR enumMember)* semis # EnumDecl
     | MODULE path=qualifiedPath LBRACE decl* RBRACE semis # ModuleDecl
     | IMPORT path=qualifiedPath semis # ImportDecl
-    | functionModifier* FUN name=IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN functionReturn? functionBody? # FunDecl
+    | attribute* FUN name=IDENTIFIER LPAREN (parameter (COMMA parameter)*)? RPAREN functionReturn? functionBody? # FunDecl
     | LET MUTABLE? name=IDENTIFIER EQUAL value=expr semis  # InferLetDecl
     | LET MUTABLE? name=IDENTIFIER COLON type=typeReference EQUAL value=expr semis # DefinedLetDecl
     ;
@@ -41,9 +41,18 @@ qualifiedPath: IDENTIFIER (DOT IDENTIFIER)*;
 
 functionReturn: COLON returnType=typeReference;
 
-functionModifier: NATIVE;
-
 functionBody: LBRACE stmt* RBRACE;
+
+// attribute
+// TODO: add support for nesting attributes
+attributeArgument: INT # IntAtttributePrimary
+                 | DECIMAL # DecimalAtttributePrimary
+                 | STRING # StringAtttributePrimary
+                 | IDENTIFIER # IdentifierAtttributePrimary
+                 | (TRUE | FALSE) # BooleanAtttributePrimary
+                 ;
+
+attribute: AT name=IDENTIFIER (LPAREN (attributeArgument (COMMA attributeArgument)*)? RPAREN)?;
 
 // stmts
 stmt: decl # DeclStmt

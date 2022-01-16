@@ -2,11 +2,11 @@
 
 extern "C" {
 
-void anonymous_println(char *message) {
+void PLANK_INTERNAL_println(char *message) {
   std::cout << message << std::endl;
 }
 
-void anonymous_print(char *message) {
+void PLANK_INTERNAL_print(char *message) {
   std::cout << message;
 }
 

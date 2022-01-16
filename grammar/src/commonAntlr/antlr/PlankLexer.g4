@@ -4,6 +4,8 @@ WS : (' ' | '\t' | NEWLINE)+ -> channel(HIDDEN);
 NEWLINE : ([\r\n] | [\n])+;
 
 // symbols
+AT : '@' ;
+
 SEMICOLON : ';'+;
 COMMA : ',' ;
 COLON : ':' ;
@@ -56,7 +58,6 @@ MUTABLE : 'mutable' ;
 TRUE : 'true' ;
 FALSE : 'false' ;
 IMPORT : 'import' ;
-NATIVE : 'native' ;
 SIZEOF : 'sizeof' ;
 MODULE : 'module' ;
 MATCH : 'match' ;

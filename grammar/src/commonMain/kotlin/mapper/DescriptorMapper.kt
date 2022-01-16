@@ -4,8 +4,11 @@ import com.gabrielleeg1.plank.grammar.element.AccessExpr
 import com.gabrielleeg1.plank.grammar.element.AccessTypeRef
 import com.gabrielleeg1.plank.grammar.element.ArrayTypeRef
 import com.gabrielleeg1.plank.grammar.element.AssignExpr
+import com.gabrielleeg1.plank.grammar.element.Attribute
+import com.gabrielleeg1.plank.grammar.element.BooleanAttributePrimary
 import com.gabrielleeg1.plank.grammar.element.CallExpr
 import com.gabrielleeg1.plank.grammar.element.ConstExpr
+import com.gabrielleeg1.plank.grammar.element.DecimalAttributePrimary
 import com.gabrielleeg1.plank.grammar.element.Decl
 import com.gabrielleeg1.plank.grammar.element.DerefExpr
 import com.gabrielleeg1.plank.grammar.element.EnumDecl
@@ -21,6 +24,7 @@ import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.IfExpr
 import com.gabrielleeg1.plank.grammar.element.ImportDecl
 import com.gabrielleeg1.plank.grammar.element.InstanceExpr
+import com.gabrielleeg1.plank.grammar.element.IntAttributePrimary
 import com.gabrielleeg1.plank.grammar.element.LetDecl
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.MatchExpr
@@ -36,8 +40,10 @@ import com.gabrielleeg1.plank.grammar.element.ReturnStmt
 import com.gabrielleeg1.plank.grammar.element.SetExpr
 import com.gabrielleeg1.plank.grammar.element.SizeofExpr
 import com.gabrielleeg1.plank.grammar.element.Stmt
+import com.gabrielleeg1.plank.grammar.element.StringAttributePrimary
 import com.gabrielleeg1.plank.grammar.element.StructDecl
 import com.gabrielleeg1.plank.grammar.element.TypeRef
+import com.gabrielleeg1.plank.grammar.generated.PlankParser
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.AccessTypeRefContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ArrayTypeRefContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.AssignExprContext
@@ -47,10 +53,12 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.AssignValueHolderCon
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryExprHolderContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryValueHolderContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.BooleanAtttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BooleanPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.CallArgumentContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.CallExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ConstExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.DecimalAtttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.DecimalPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.DeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.DeclStmtContext
@@ -71,6 +79,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.IfExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ImportDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.InferLetDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.InstanceExprContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.IntAtttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.IntPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.LogicalExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.LogicalExprHolderContext
@@ -87,6 +96,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.ReturnStmtContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.SetExprHolderContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.SizeofExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StmtContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.StringAtttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StringPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StructDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.TypeReferenceContext
@@ -226,6 +236,37 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return ImportDecl(path.qualifiedPath(), ctx.location())
   }
 
+  override fun visitAttribute(ctx: PlankParser.AttributeContext): Attribute {
+    val name = ctx.name ?: error("No parameter name received in attribute context")
+    val arguments = ctx.findAttributeArgument().map { primary ->
+      when (primary) {
+        is IntAtttributePrimaryContext -> {
+          IntAttributePrimary(primary.INT()!!.text.toInt(), primary.location())
+        }
+        is DecimalAtttributePrimaryContext -> {
+          DecimalAttributePrimary(primary.DECIMAL()!!.text.toDouble(), primary.location())
+        }
+        is StringAtttributePrimaryContext -> {
+          val value = primary.STRING()!!.text
+
+          StringAttributePrimary(value.substring(1, value.length - 1), primary.location())
+        }
+        is BooleanAtttributePrimaryContext -> {
+          val value = when {
+            primary.FALSE() != null -> false
+            primary.TRUE() != null -> true
+            else -> error("No boolean value received in boolean primary context")
+          }
+
+          BooleanAttributePrimary(value, primary.location())
+        }
+        else -> error("No valid attribute primary(${primary::class}) received in const expr context")
+      }
+    }
+
+    return Attribute(name.identifier(), arguments, ctx.location())
+  }
+
   override fun visitFunDecl(ctx: FunDeclContext): Decl {
     val parameters = ctx.findParameter().associate { parameter ->
       val name = parameter.name ?: error("No parameter name received in parameter context")
@@ -238,12 +279,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       it.stmt()
     }
 
-    val modifiers = ctx.findFunctionModifier().map { modifier ->
-      when {
-        modifier.NATIVE() != null -> FunDecl.Modifier.Native
-        else -> error("No modifier received in function modifier context")
-      }
-    }
+    val modifiers = ctx.findAttribute().map(::visitAttribute)
 
     val returnType = ctx.findFunctionReturn()
       ?.returnType

@@ -27,17 +27,13 @@ data class ModuleDecl(
 ) : Decl
 
 data class FunDecl(
-  val modifiers: List<Modifier> = emptyList(),
+  val attributes: List<Attribute> = emptyList(),
   val name: Identifier,
   val type: FunctionTypeRef,
   val body: List<Stmt>,
   val realParameters: Map<Identifier, TypeRef>,
   override val location: Location
 ) : Decl {
-  enum class Modifier { Native }
-
-  val isNative get() = Modifier.Native in modifiers
-
   val parameters = type.parameters
   val returnType = type.returnType
 }

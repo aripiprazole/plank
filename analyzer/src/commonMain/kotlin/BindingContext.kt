@@ -434,8 +434,7 @@ internal class BindingContext(tree: ModuleTree) :
 
     val location = decl.location
 
-    val attributes = decl.modifiers
-      .associate { "native" to Attribute.native }
+    val attributes = decl.attributes // todo validate
 
     val returnType = visit(decl.returnType) { UnitType }
     val type = FunctionType(returnType, decl.parameters.map { visit(it) })
@@ -535,6 +534,8 @@ internal class BindingContext(tree: ModuleTree) :
   private fun undeclared(type: PlankType): TypedExpr {
     return TypedConstExpr(Unit, type, Location.Generated)
   }
+
+  private val attributeScope = AttributeScope(tree)
 
   private val currentScope get() = scopes.peekLast()
   private val currentModuleTree get() = scopes.peekLast().moduleTree

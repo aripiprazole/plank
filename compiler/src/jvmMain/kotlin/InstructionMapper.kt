@@ -79,7 +79,7 @@ interface InstructionMapper :
     }
 
     override fun visitFunDecl(decl: ResolvedFunDecl): CompilerInstruction {
-      return if (decl.hasAttribute("native")) {
+      return if (decl.hasAttribute("external")) {
         NativeFunctionInstruction(decl)
       } else {
         FunctionInstruction(decl)

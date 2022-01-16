@@ -38,6 +38,20 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
   override val enclosing: Scope? = null
 }
 
+data class AttributeScope(override val moduleTree: ModuleTree) : Scope() {
+  override val name: Identifier = Identifier("ATTRIBUTE_SCOPE")
+  override val enclosing: Scope? = null
+
+  init {
+    create(UnitType)
+    create(CharType)
+    create(BoolType)
+    create(Identifier("String"), PointerType(CharType))
+    create(Identifier("Int"), IntType(32))
+    create(Identifier("Float"), FloatType(32))
+  }
+}
+
 data class FileScope(
   val file: PlankFile,
   override val enclosing: Scope? = null,
