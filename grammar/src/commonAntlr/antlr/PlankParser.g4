@@ -45,11 +45,11 @@ functionBody: LBRACE stmt* RBRACE;
 
 // attribute
 // TODO: add support for nesting attributes
-attributeArgument: INT # IntAtttributePrimary
-                 | DECIMAL # DecimalAtttributePrimary
-                 | STRING # StringAtttributePrimary
-                 | IDENTIFIER # IdentifierAtttributePrimary
-                 | (TRUE | FALSE) # BooleanAtttributePrimary
+attributeArgument: INT # IntAttributePrimary
+                 | DECIMAL # DecimalAttributePrimary
+                 | STRING # StringAttributePrimary
+                 | IDENTIFIER # IdentifierAttributePrimary
+                 | (TRUE | FALSE) # BooleanAttributePrimary
                  ;
 
 attribute: AT name=IDENTIFIER (LPAREN (attributeArgument (COMMA attributeArgument)*)? RPAREN)?;

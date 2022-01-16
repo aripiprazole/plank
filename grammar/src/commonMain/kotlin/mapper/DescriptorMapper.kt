@@ -53,12 +53,12 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.AssignValueHolderCon
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryExprHolderContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BinaryValueHolderContext
-import com.gabrielleeg1.plank.grammar.generated.PlankParser.BooleanAtttributePrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.BooleanAttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.BooleanPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.CallArgumentContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.CallExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ConstExprContext
-import com.gabrielleeg1.plank.grammar.generated.PlankParser.DecimalAtttributePrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.DecimalAttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.DecimalPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.DeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.DeclStmtContext
@@ -79,7 +79,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.IfExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ImportDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.InferLetDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.InstanceExprContext
-import com.gabrielleeg1.plank.grammar.generated.PlankParser.IntAtttributePrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.IntAttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.IntPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.LogicalExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.LogicalExprHolderContext
@@ -96,7 +96,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.ReturnStmtContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.SetExprHolderContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.SizeofExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StmtContext
-import com.gabrielleeg1.plank.grammar.generated.PlankParser.StringAtttributePrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.StringAttributePrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StringPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StructDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.TypeReferenceContext
@@ -243,18 +243,18 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     val name = ctx.name ?: error("No parameter name received in attribute context")
     val arguments = ctx.findAttributeArgument().map { primary ->
       when (primary) {
-        is IntAtttributePrimaryContext -> {
+        is IntAttributePrimaryContext -> {
           IntAttributePrimary(primary.INT()!!.text.toInt(), primary.location())
         }
-        is DecimalAtttributePrimaryContext -> {
+        is DecimalAttributePrimaryContext -> {
           DecimalAttributePrimary(primary.DECIMAL()!!.text.toDouble(), primary.location())
         }
-        is StringAtttributePrimaryContext -> {
+        is StringAttributePrimaryContext -> {
           val value = primary.STRING()!!.text
 
           StringAttributePrimary(value.substring(1, value.length - 1), primary.location())
         }
-        is BooleanAtttributePrimaryContext -> {
+        is BooleanAttributePrimaryContext -> {
           val value = when {
             primary.FALSE() != null -> false
             primary.TRUE() != null -> true
