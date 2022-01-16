@@ -12,6 +12,8 @@ import pw.binom.io.file.nameWithoutExtension
 import java.io.File
 
 fun Package.compileBinary(): File {
+  logger.info("Selected home: ${options.plankHome}")
+
   generateStdlibObjects()
 
   tree.dependencies
@@ -83,7 +85,7 @@ private fun Package.generateStdlibObjects() {
 private fun Package.cmd(command: String) {
   val process = Runtime.getRuntime().exec(command)
   if (options.debug) {
-    process.printOutput()
+    process.printOutput(logger)
   }
 
   val exitCode = process.waitFor()

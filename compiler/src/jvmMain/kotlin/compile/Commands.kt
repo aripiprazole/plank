@@ -1,14 +1,15 @@
 package com.gabrielleeg1.plank.compiler.compile
 
+import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 import java.io.File
 
-fun Process.printOutput(): Process = apply {
+fun Process.printOutput(logger: CompilerLogger): Process = apply {
   inputStream.bufferedReader().lineSequence().forEach {
-    println(it)
+    logger.info(it)
   }
 
   errorStream.bufferedReader().lineSequence().forEach {
-    println(it)
+    logger.severe(it)
   }
 }
 

@@ -47,6 +47,8 @@ kotlin {
           exclude("org.bytedeco")
         }
 
+        implementation(Dependencies.Jansi.Jansi)
+
         implementation(kotlin("test-junit"))
         implementation(Dependencies.JUnit.JupiterApi)
         implementation(Dependencies.JUnit.JupiterEngine)
