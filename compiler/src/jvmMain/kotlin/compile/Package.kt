@@ -18,13 +18,15 @@ data class Package(
   constructor(
     text: String,
     home: File = Paths.get(".").toAbsolutePath().toFile(),
+    includeStd: Boolean = true,
     builder: CompileOptions.() -> Unit = {},
-  ) : this(text, CompileOptions(home).apply(builder))
+  ) : this(text, includeStd, CompileOptions(home).apply(builder))
 
-  constructor(text: String, options: CompileOptions) : this(
+  constructor(text: String, includeStd: Boolean, options: CompileOptions) : this(
     name = "Anonymous",
     kind = Kind.Binary,
     options = options,
+    include = if (includeStd) options.stdlib else emptyList(),
     main = PlankFile.of(
       text,
       treeDebug = options.debug.treeDebug,

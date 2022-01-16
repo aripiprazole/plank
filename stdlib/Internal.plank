@@ -1,3 +1,0 @@
-module Std.Internal;
-
-native fun Plank_Internal_concat(lhs: *Char, rhs: *Char): *Char;

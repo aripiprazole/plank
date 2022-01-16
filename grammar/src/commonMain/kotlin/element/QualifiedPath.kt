@@ -6,7 +6,7 @@ data class QualifiedPath(val fullPath: List<Identifier>, override val location: 
     this(listOf(identifier), identifier.location)
 
   constructor(stringPath: String, location: Location = Location.Generated) :
-    this(stringPath.split(".").asReversed().map(::Identifier), location)
+    this(stringPath.split(".").reversed().map(::Identifier), location)
 
   interface Visitor<T> {
     fun visit(path: QualifiedPath): T = visitQualifiedPath(path)

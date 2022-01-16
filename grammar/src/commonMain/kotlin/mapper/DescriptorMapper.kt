@@ -207,7 +207,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitQualifiedPath(ctx: QualifiedPathContext): QualifiedPath {
-    return QualifiedPath(ctx.IDENTIFIER().reversed().map { it.identifier() }, ctx.location())
+    return QualifiedPath(ctx.IDENTIFIER().map { it.identifier() }, ctx.location())
   }
 
   override fun visitDefinedLetDecl(ctx: DefinedLetDeclContext): Decl {

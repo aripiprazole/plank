@@ -8,8 +8,9 @@ class TestSuite {
     TestCompilation
       .of(
         """
-        @external("PLANK_INTERNAL_println")
-        fun println(message: *Char): Void
+        module Main;
+
+        import Std.IO;
 
         fun main(argc: Int32, argv: **Char): Void {
           println("Hello, world!");
@@ -27,8 +28,9 @@ class TestSuite {
     TestCompilation
       .of(
         """
-        @external("PLANK_INTERNAL_println")
-        fun println(message: *Char): Void
+        module Main;
+
+        import Std.IO;
 
         type Person = {mutable name: *Char};
 
@@ -49,8 +51,9 @@ class TestSuite {
     TestCompilation
       .of(
         """
-        @external("PLANK_INTERNAL_println")
-        fun println(message: *Char): Void
+        module Main;
+
+        import Std.IO;
 
         type Person = {mutable name: *Char};
 

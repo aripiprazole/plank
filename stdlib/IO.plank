@@ -1,5 +1,7 @@
 module Std.IO;
 
-native fun println(message: *Char): Void;
+@external("PLANK_INTERNAL_println")
+fun println(message: *Char): Void
 
-native fun print(message: *Char): Void;
+@external("PLANK_INTERNAL_print")
+fun print(message: *Char): Void
