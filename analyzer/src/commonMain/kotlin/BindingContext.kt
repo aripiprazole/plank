@@ -14,6 +14,7 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStructDecl
 import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedDerefExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedErrorExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedGetExpr
@@ -282,7 +283,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
       return violate("Can not deref from non-pointer type %s", it)
     }
 
-    return type.const()
+    return TypedDerefExpr(ref, type.inner, expr.location)
   }
 
   override fun visitErrorExpr(expr: ErrorExpr): TypedExpr {

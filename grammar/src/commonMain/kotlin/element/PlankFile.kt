@@ -57,12 +57,16 @@ data class PlankFile(
       val file = PlankFile(text, moduleName = QualifiedPath(module), path = path)
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
+
+      val syntaxErrorListener = SyntaxErrorListener(file)
       val parser = PlankParser(CommonTokenStream(lexer)).apply {
-        addErrorListener(SyntaxErrorListener(file))
+        addErrorListener(syntaxErrorListener)
 //        addErrorListener(PlankErrorListener)
       }
 
-      return DescriptorMapper(file).visitFile(parser.file())
+      return DescriptorMapper(file)
+        .visitFile(parser.file())
+        .copy(violations = syntaxErrorListener.violations)
     }
   }
 }

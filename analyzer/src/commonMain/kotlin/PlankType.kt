@@ -8,8 +8,6 @@ import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 import kotlin.reflect.KProperty
 
 /**
@@ -50,12 +48,7 @@ sealed class PlankType {
     return type ?: default(this)
   }
 
-  @OptIn(ExperimentalContracts::class)
   inline fun <reified A : PlankType> cast(): A? {
-    contract {
-      returns() implies (this@PlankType is A)
-    }
-
     return when (this) {
       is A -> this
       is DelegateType -> when (value) {
@@ -67,15 +60,12 @@ sealed class PlankType {
   }
 
   override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other == null || this::class != other::class) return false
-
-    other as PlankType
-
-    if (name != other.name) return false
-    if (size != other.size) return false
-
-    return true
+    if (other === this) return true
+    return when (other) {
+      !is PlankType -> false
+      is DelegateType -> other.value == this
+      else -> name == other.name && size == other.size
+    }
   }
 
   override fun toString(): String {
@@ -228,7 +218,7 @@ class DelegateType(var value: PlankType? = null) : PlankType() {
     value = plankType
   }
 
-  override fun toString() = "=>${value!!}"
+  override fun toString() = "DelegateType(${value!!})"
 }
 
 val UnitType = IntType("Void", 8)

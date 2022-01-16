@@ -6,6 +6,8 @@ import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.ModuleTree
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
+import com.gabrielleeg1.plank.compiler.compile.BindingError
+import com.gabrielleeg1.plank.compiler.compile.SyntaxError
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.EntryPoint
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
@@ -16,13 +18,23 @@ import org.llvm4j.llvm4j.Module
 
 data class CompilerError(val module: Module, val violations: List<CodegenViolation>)
 
+private fun ResolvedPlankFile.check(): ResolvedPlankFile = apply {
+  if (syntaxViolations.isNotEmpty()) {
+    throw SyntaxError(syntaxViolations)
+  }
+
+  if (bindingViolations.isNotEmpty()) {
+    throw BindingError(bindingViolations)
+  }
+}
+
 fun compile(
   plainMain: PlankFile,
   analyze: (PlankFile, ModuleTree) -> ResolvedPlankFile,
   debug: Boolean = false,
   tree: ModuleTree = ModuleTree(),
 ): Either<CompilerError, Module> {
-  val main = analyze(plainMain, tree)
+  val main = analyze(plainMain, tree).check()
 
   val module = Module(LLVMModuleCreateWithName(main.module.text))
   val context = CompilerContext(debug, module, main).copy(moduleName = "Global")
@@ -41,7 +53,7 @@ fun compile(
     .map(FileScope::file)
     .toList()
     .asReversed() // reverse order
-    .map { analyze(it, tree) }
+    .map { analyze(it, tree).check() }
     .flatMap { plankModule ->
       context
         .createFileScope(plankModule)
