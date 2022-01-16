@@ -84,6 +84,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.QualifiedPathContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.RefExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ReferenceContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ReturnStmtContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.SetExprHolderContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.SizeofExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StmtContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.StringPrimaryContext
@@ -334,11 +335,25 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     val name = ctx.name ?: error("No name received in assign expr holder context")
     val value = ctx.value ?: error("No value received in assign expr holder context")
 
-    ctx.findCallExpr()?.let { receiver ->
-      return SetExpr(visitCallExpr(receiver), name.identifier(), value.expr(), ctx.location())
-    }
+//    ctx.findCallExpr()?.let { receiver ->
+//      return SetExpr(visitCallExpr(receiver), name.identifier(), value.expr(), ctx.location())
+//    }
 
     return AssignExpr(name.identifier(), value.expr(), ctx.location())
+  }
+
+  override fun visitSetExprHolder(ctx: SetExprHolderContext): Expr {
+    val get = ctx.receiver
+      ?.let(::visitCallExpr)
+      ?: error("No receiver received in set expr holder context")
+
+    if (get !is GetExpr) {
+      error("Receiver of set expr holder context must be get expr") // TODO: add support for delegate variables maybe
+    }
+
+    val value = ctx.value ?: error("No value received in set expr holder context")
+
+    return SetExpr(get.receiver, get.property, value.expr(), ctx.location())
   }
 
   override fun visitAssignValueHolder(ctx: AssignValueHolderContext): Expr {
@@ -536,6 +551,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return when (this) {
       is AssignExprHolderContext -> visitAssignExprHolder(this)
       is AssignValueHolderContext -> visitAssignValueHolder(this)
+      is SetExprHolderContext -> visitSetExprHolder(this)
       else -> error("Unknown type reference assign expr context ${this::class.simpleName}")
     }
   }

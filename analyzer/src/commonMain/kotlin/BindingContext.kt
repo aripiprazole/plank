@@ -62,7 +62,7 @@ import com.gabrielleeg1.plank.grammar.element.SizeofExpr
 import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StructDecl
 import com.gabrielleeg1.plank.grammar.element.TypeRef
-import com.gabrielleeg1.plank.grammar.tree.TreeWalker
+import com.gabrielleeg1.plank.grammar.element.TreeWalker
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import pw.binom.Stack
 

@@ -29,8 +29,7 @@ fun main() {
 type Person = {mutable name: *Char};
 
 fun person(): *Person {
-  let p = Person{name: "Gabrielle"};
-  return &p;
+  return &Person{name: "Gabrielle"};
 }
 
 fun main(argc: Int32, argv: **Char): Void {

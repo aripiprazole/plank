@@ -1,43 +1,4 @@
-package com.gabrielleeg1.plank.grammar.tree
-
-import com.gabrielleeg1.plank.grammar.element.AccessExpr
-import com.gabrielleeg1.plank.grammar.element.AccessTypeRef
-import com.gabrielleeg1.plank.grammar.element.ArrayTypeRef
-import com.gabrielleeg1.plank.grammar.element.AssignExpr
-import com.gabrielleeg1.plank.grammar.element.CallExpr
-import com.gabrielleeg1.plank.grammar.element.ConstExpr
-import com.gabrielleeg1.plank.grammar.element.DerefExpr
-import com.gabrielleeg1.plank.grammar.element.EnumDecl
-import com.gabrielleeg1.plank.grammar.element.ErrorDecl
-import com.gabrielleeg1.plank.grammar.element.ErrorExpr
-import com.gabrielleeg1.plank.grammar.element.ErrorStmt
-import com.gabrielleeg1.plank.grammar.element.Expr
-import com.gabrielleeg1.plank.grammar.element.ExprStmt
-import com.gabrielleeg1.plank.grammar.element.FunDecl
-import com.gabrielleeg1.plank.grammar.element.FunctionTypeRef
-import com.gabrielleeg1.plank.grammar.element.GetExpr
-import com.gabrielleeg1.plank.grammar.element.GroupExpr
-import com.gabrielleeg1.plank.grammar.element.IdentPattern
-import com.gabrielleeg1.plank.grammar.element.Identifier
-import com.gabrielleeg1.plank.grammar.element.IfExpr
-import com.gabrielleeg1.plank.grammar.element.ImportDecl
-import com.gabrielleeg1.plank.grammar.element.InstanceExpr
-import com.gabrielleeg1.plank.grammar.element.LetDecl
-import com.gabrielleeg1.plank.grammar.element.MatchExpr
-import com.gabrielleeg1.plank.grammar.element.ModuleDecl
-import com.gabrielleeg1.plank.grammar.element.NamedTuplePattern
-import com.gabrielleeg1.plank.grammar.element.Pattern
-import com.gabrielleeg1.plank.grammar.element.PlankElement
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.element.PointerTypeRef
-import com.gabrielleeg1.plank.grammar.element.QualifiedPath
-import com.gabrielleeg1.plank.grammar.element.RefExpr
-import com.gabrielleeg1.plank.grammar.element.ReturnStmt
-import com.gabrielleeg1.plank.grammar.element.SetExpr
-import com.gabrielleeg1.plank.grammar.element.SizeofExpr
-import com.gabrielleeg1.plank.grammar.element.Stmt
-import com.gabrielleeg1.plank.grammar.element.StructDecl
-import com.gabrielleeg1.plank.grammar.element.TypeRef
+package com.gabrielleeg1.plank.grammar.element
 
 abstract class TreeWalker :
   Expr.Visitor<Unit>,
