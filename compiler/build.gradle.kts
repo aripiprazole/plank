@@ -8,7 +8,11 @@ group = "com.gabrielleeg1"
 version = "1.0-SNAPSHOT"
 
 kotlin {
-  jvm()
+  jvm {
+    testRuns["test"].executionTask.configure {
+      useJUnitPlatform()
+    }
+  }
 
   sourceSets {
     val commonMain by getting {
@@ -35,6 +39,18 @@ kotlin {
         implementation(project(":analyzer"))
       }
     }
-    val jvmTest by getting
+    val jvmTest by getting {
+      dependencies {
+        implementation(Dependencies.ByteDeco.LLVMPlatform)
+        implementation(Dependencies.Arrow.Core)
+        implementation(Dependencies.LLVM4J.LLVM4J) {
+          exclude("org.bytedeco")
+        }
+
+        implementation(kotlin("test-junit"))
+        implementation(Dependencies.JUnit.JupiterApi)
+        implementation(Dependencies.JUnit.JupiterEngine)
+      }
+    }
   }
 }
