@@ -1,5 +1,7 @@
 package com.gabrielleeg1.plank.compiler.instructions.decl
 
+import arrow.core.Either
+import arrow.core.Either.Right
 import arrow.core.computations.either
 import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.PlankType
@@ -10,6 +12,7 @@ import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.buildAlloca
 import com.gabrielleeg1.plank.compiler.buildReturn
 import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.insertionBlock
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
@@ -17,12 +20,15 @@ import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.compiler.verify
 import com.gabrielleeg1.plank.grammar.element.Identifier
+import org.llvm4j.llvm4j.BasicBlock
 
 class FunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val parameters = descriptor.parameters
     val returnType = descriptor.returnType
     val function = addFunction(descriptor).bind()
+
+    val topFunctionBlock = insertionBlock
 
     createNestedScope(descriptor.name.text) {
       val body = context.newBasicBlock("entry").also(function::addBasicBlock)
@@ -60,6 +66,10 @@ class FunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerIns
       }
 
       ensure(function.verify()) { invalidFunctionError(function) }
+    }
+
+    if (topFunctionBlock is Right<BasicBlock>) {
+      builder.positionAfter(topFunctionBlock.value)
     }
 
     function

@@ -4,6 +4,31 @@ import org.junit.jupiter.api.Test
 
 class TestSuite {
   @Test
+  fun `test nesting functions`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          fun nested(): Void {
+            println("Hello, world! (nested)");
+          }
+
+          println("Hello, world!");
+          nested();
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test call`() {
     TestCompilation
       .of(

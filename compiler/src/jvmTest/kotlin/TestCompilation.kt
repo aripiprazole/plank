@@ -45,20 +45,20 @@ class TestCompilation(
   fun expectSuccess(): TestCompilation = apply {
     if (codegenViolations.isNotEmpty()) {
       pkg.logger.severe("Codegen violations:")
-      codegenViolations.forEach { pkg.logger.severe(it.render()) }
-      pkg.logger.severe("")
+      codegenViolations.forEach { it.render(pkg.logger) }
+      pkg.logger.severe()
     }
 
     if (syntaxViolations.isNotEmpty()) {
       pkg.logger.severe("Syntax violations:")
       syntaxViolations.forEach { it.render(pkg.logger) }
-      pkg.logger.severe("")
+      pkg.logger.severe()
     }
 
     if (bindingViolations.isNotEmpty()) {
       pkg.logger.severe("Binding violations:")
       bindingViolations.forEach { it.render(pkg.logger) }
-      pkg.logger.severe("")
+      pkg.logger.severe()
     }
 
     expectExitCode(0)
