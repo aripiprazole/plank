@@ -16,12 +16,14 @@ import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedErrorExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedGetExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedGroupExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedIdentPattern
 import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedMatchExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedPattern
 import com.gabrielleeg1.plank.analyzer.element.TypedRefExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedSetExpr
 import com.gabrielleeg1.plank.grammar.element.AccessExpr
 import com.gabrielleeg1.plank.grammar.element.AccessTypeRef
 import com.gabrielleeg1.plank.grammar.element.ArrayTypeRef
@@ -217,7 +219,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
       )
     }
 
-    return value
+    return TypedSetExpr(receiver, property.name, value, value.type, expr.location)
   }
 
   override fun visitGetExpr(expr: GetExpr): TypedExpr {
@@ -229,7 +231,7 @@ internal class BindingContextImpl(tree: ModuleTree) :
     val property = struct.property(expr.property)
       ?: return violate("Unknown property %s in struct %s", expr.property, struct)
 
-    return property.value ?: undeclared(property.type)
+    return TypedGetExpr(receiver, property.name, property.type, expr.location)
   }
 
   override fun visitGroupExpr(expr: GroupExpr): TypedExpr {

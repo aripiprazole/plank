@@ -8,6 +8,7 @@ import com.gabrielleeg1.plank.analyzer.ModuleTree
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.EntryPoint
+import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import org.bytedeco.llvm.global.LLVM.LLVMModuleCreateWithName
@@ -18,13 +19,18 @@ data class CompilerError(val module: Module, val violations: List<CodegenViolati
 fun compile(
   plainMain: PlankFile,
   analyze: (PlankFile, ModuleTree) -> ResolvedPlankFile,
-  tree: ModuleTree = ModuleTree(),
   debug: Boolean = false,
+  tree: ModuleTree = ModuleTree(),
 ): Either<CompilerError, Module> {
   val main = analyze(plainMain, tree)
 
   val module = Module(LLVMModuleCreateWithName(main.module.text))
   val context = CompilerContext(debug, module, main).copy(moduleName = "Global")
+
+  if (debug) {
+    println("Typed AST:")
+    println(main.dumpTree())
+  }
 
   val violations = tree.dependencies
     .depthFirstSearch(main.module)

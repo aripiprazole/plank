@@ -42,11 +42,11 @@ class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction
             .left()
             .bind<PlankType>()
 
-        ensure(type is StructType) { unresolvedTypeError("unknown") }
+        ensure(type.isInstance<StructType>()) { unresolvedTypeError(type.name.text) }
 
         getField(
           instance,
-          (type as StructType).properties.entries.indexOfFirst { it.key == name }
+          type.cast<StructType>()!!.properties.entries.indexOfFirst { it.key == name },
         ).bind()
       }
   }

@@ -7,7 +7,7 @@ private fun execBinary(code: String): Int {
     linker = "/home/gabi/Programs/swift-5.3.1-RELEASE-ubuntu20.04/usr/bin/clang++" // todo change linker
     output = dist.resolve("main")
     dist = createTempDirectory("plank-test").toFile()
-    debug = true
+    debug = false
   }
 
   val binary = pkg.compileBinary()
@@ -18,11 +18,16 @@ private fun execBinary(code: String): Int {
 fun main() {
   execBinary(
     """
-    native fun println(message: *Char): Void
+native fun println(message: *Char): Void
 
-    fun main(argc: Int32, argv: **Char): Void {
-      println("Hello, world");
-    }
+type Person = {mutable name: *Char}
+
+fun main(argc: Int32, argv: **Char): Void {
+  let person = Person {name: "Gabrielle"};
+  println(person.name);
+  person.name := "Alberto";
+  println(person.name);
+}
     """.trimIndent(),
   )
 }

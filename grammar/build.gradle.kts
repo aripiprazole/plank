@@ -63,6 +63,10 @@ tasks {
     outputDirectory = File("$buildDir/generated-src/commonAntlr/kotlin")
   }
 
+  withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    dependsOn(generateGrammarSource)
+  }
+
   build {
     dependsOn(generateGrammarSource)
   }

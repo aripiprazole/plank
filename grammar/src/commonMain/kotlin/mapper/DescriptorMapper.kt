@@ -33,6 +33,7 @@ import com.gabrielleeg1.plank.grammar.element.PointerTypeRef
 import com.gabrielleeg1.plank.grammar.element.QualifiedPath
 import com.gabrielleeg1.plank.grammar.element.RefExpr
 import com.gabrielleeg1.plank.grammar.element.ReturnStmt
+import com.gabrielleeg1.plank.grammar.element.SetExpr
 import com.gabrielleeg1.plank.grammar.element.SizeofExpr
 import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StructDecl
@@ -333,6 +334,10 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     val name = ctx.name ?: error("No name received in assign expr holder context")
     val value = ctx.value ?: error("No value received in assign expr holder context")
 
+    ctx.findCallExpr()?.let { receiver ->
+      return SetExpr(visitCallExpr(receiver), name.identifier(), value.expr(), ctx.location())
+    }
+
     return AssignExpr(name.identifier(), value.expr(), ctx.location())
   }
 
@@ -442,7 +447,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitStringPrimary(ctx: StringPrimaryContext): Expr {
     val value = ctx.STRING() ?: error("No string received in string primary context")
 
-    return ConstExpr(value.text, ctx.location())
+    return ConstExpr(value.text.substring(1, value.text.length - 1), ctx.location())
   }
 
   override fun visitIdentifierPrimary(ctx: IdentifierPrimaryContext): Expr {

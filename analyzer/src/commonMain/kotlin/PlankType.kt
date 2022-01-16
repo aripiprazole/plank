@@ -8,6 +8,8 @@ import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.reflect.KProperty
 
 /**
@@ -25,7 +27,7 @@ import kotlin.reflect.KProperty
  * @see BoolType
  */
 sealed class PlankType {
-  open val name: Identifier? = null
+  abstract val name: Identifier
   open val isPrimitive = false
 
   abstract val size: Int
@@ -34,13 +36,26 @@ sealed class PlankType {
     return TypedConstExpr(value, this, Location.Generated)
   }
 
+  inline fun <reified A : PlankType> isInstance(): Boolean {
+    return when (this) {
+      is A -> true
+      is DelegateType -> value is A
+      else -> false
+    }
+  }
+
   inline fun <reified A : PlankType> cast(default: (PlankType) -> A): A {
     val type = cast<A>()
 
     return type ?: default(this)
   }
 
+  @OptIn(ExperimentalContracts::class)
   inline fun <reified A : PlankType> cast(): A? {
+    contract {
+      returns() implies (this@PlankType is A)
+    }
+
     return when (this) {
       is A -> this
       is DelegateType -> when (value) {
@@ -64,11 +79,11 @@ sealed class PlankType {
   }
 
   override fun toString(): String {
-    return name?.text ?: "Type ${this::class.simpleName}@${hashCode().toString(4)} of size $size"
+    return name.text
   }
 
   override fun hashCode(): Int {
-    var result = name?.hashCode() ?: 0
+    var result = name.hashCode()
     result = 31 * result + size
     return result
   }
@@ -105,6 +120,7 @@ class ModuleType(
 }
 
 data class PointerType(val inner: PlankType) : PlankType() {
+  override val name: Identifier = Identifier("PointerType")
   override val isPrimitive: Boolean = true
   override val size = 8
 
@@ -112,6 +128,7 @@ data class PointerType(val inner: PlankType) : PlankType() {
 }
 
 data class ArrayType(val inner: PlankType) : PlankType() {
+  override val name: Identifier = Identifier("ArrayType")
   override val isPrimitive: Boolean = true
   override val size get() = TODO("add size to arrays")
 
@@ -182,6 +199,8 @@ class FunctionType(val parameters: List<PlankType>, val returnType: PlankType) :
     returnType,
   )
 
+  override val name: Identifier = Identifier("FunctionType")
+
   override val isPrimitive: Boolean = true
   override val size = 8
 
@@ -220,6 +239,7 @@ val BoolType = IntType("Bool", 1)
  * Represents unknown type when compilers raise a violation or something
  */
 object Untyped : PlankType() {
+  override val name: Identifier = Identifier("Untyped")
   override val size: Int = -1
 
   override fun toString(): String = "Untyped"

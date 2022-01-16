@@ -5,6 +5,7 @@ import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.Module
 import com.gabrielleeg1.plank.analyzer.analyze
 import com.gabrielleeg1.plank.compiler.compile
+import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import pw.binom.io.file.nameWithoutExtension
@@ -42,13 +43,26 @@ private fun Package.generateObject(file: File): File {
 private fun Package.generateIR(file: PlankFile): File {
   val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
+  if (options.debug) {
+    println("AST:")
+    println(main.dumpTree())
+  }
+
   target.writeText(
-    compile(file, ::analyze)
+    compile(file, ::analyze, options.debug)
       .fold(
         ifRight = ::identity,
-        ifLeft = { (module, violations) -> throw IRDumpError(module, violations) },
+        ifLeft = { (module, violations) ->
+          throw IRDumpError(module, violations)
+        },
       )
-      .getAsString(),
+      .getAsString()
+      .also { ir ->
+        if (options.debug) {
+          println("Module:")
+          println(ir)
+        }
+      },
   )
 
   return target
