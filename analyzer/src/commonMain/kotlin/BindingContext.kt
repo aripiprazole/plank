@@ -71,10 +71,10 @@ import pw.binom.Stack
  * with typed declarations/statements/expressions.
  */
 fun analyze(file: PlankFile, tree: ModuleTree): ResolvedPlankFile {
-  return BindingContextImpl(tree).analyze(file)
+  return BindingContext(tree).analyze(file)
 }
 
-internal class BindingContextImpl(tree: ModuleTree) :
+internal class BindingContext(tree: ModuleTree) :
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,
   Pattern.Visitor<TypedPattern>,
