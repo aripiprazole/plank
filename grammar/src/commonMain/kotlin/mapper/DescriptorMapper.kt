@@ -305,7 +305,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
 
   override fun visitInstanceExpr(ctx: InstanceExprContext): Expr {
     val struct = ctx.type ?: error("No type received in instance expr context")
-    val arguments = ctx.findInstanceArgument().associate { argument ->
+    val arguments = ctx.body!!.findInstanceArgument().associate { argument ->
       val name = argument.name ?: error("No argument name received in instance expr context")
       val value = argument.value ?: error("No argument value received in instance expr context")
 

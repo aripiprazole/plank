@@ -17,7 +17,7 @@ data class Package(
   constructor(text: String, options: CompileOptions.() -> Unit = {}) : this(
     name = text,
     kind = Kind.Binary,
-    main = PlankFile.of(text),
+    main = PlankFile.of(text, debug = true),
     options = CompileOptions(Paths.get("").toAbsolutePath().toFile()).apply(options),
     logger = SimpleCompilerLogger(),
   )

@@ -24,11 +24,9 @@ private fun execBinary(code: String): Int {
 }
 
 fun main() {
-  execBinary(
-    """
-native fun println(message: *Char): Void
+  val code = """native fun println(message: *Char): Void
 
-type Person = {mutable name: *Char}
+type Person = {mutable name: *Char};
 
 fun person(): *Person {
   let p = Person{name: "Gabrielle"};
@@ -41,6 +39,7 @@ fun main(argc: Int32, argv: **Char): Void {
   person.name := "Alberto";
   println(person.name);
 }
-    """.trimIndent(),
-  )
+"""
+
+  execBinary(code)
 }

@@ -9,6 +9,7 @@ import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import com.strumenta.kotlinmultiplatform.BitSet
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.CharStreams
+import org.antlr.v4.kotlinruntime.CommonToken
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.Parser
 import org.antlr.v4.kotlinruntime.RecognitionException
@@ -41,7 +42,7 @@ data class PlankFile(
   override val location = Location.Generated
 
   companion object {
-    fun of(file: File): PlankFile {
+    fun of(file: File, debug: Boolean = false): PlankFile {
       return of(file.readText(), file.nameWithoutExtension, file.path)
         .copy(path = file.path)
         .let {
@@ -53,7 +54,12 @@ data class PlankFile(
         }
     }
 
-    fun of(text: String, module: String = "anonymous", path: String = module): PlankFile {
+    fun of(
+      text: String,
+      module: String = "anonymous",
+      path: String = module,
+      debug: Boolean = false,
+    ): PlankFile {
       val file = PlankFile(text, moduleName = QualifiedPath(module), path = path)
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
@@ -61,7 +67,9 @@ data class PlankFile(
       val syntaxErrorListener = SyntaxErrorListener(file)
       val parser = PlankParser(CommonTokenStream(lexer)).apply {
         addErrorListener(syntaxErrorListener)
-//        addErrorListener(PlankErrorListener)
+        if (debug) {
+          addErrorListener(PlankErrorListener)
+        }
       }
 
       return DescriptorMapper(file)
@@ -124,9 +132,11 @@ object PlankErrorListener : BaseErrorListener() {
     msg: String,
     e: RecognitionException?
   ) {
-    println("syntaxError--------------------------------------------")
-    println("  data = {recognizer: Recognizer<*, *>, offendingSymbol: $offendingSymbol, line: $line, charPositionInLine: $charPositionInLine, msg: $msg, e: $e}")
-    println("-------------------------------------------------------")
+    offendingSymbol as CommonToken
+
+    println(
+      "syntaxError: $msg at $offendingSymbol"
+    )
     println()
   }
 

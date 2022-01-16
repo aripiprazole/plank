@@ -58,12 +58,14 @@ pattern: type=qualifiedPath LPAREN (pattern (COMMA pattern)*)? RPAREN # NamedTup
 // exprs
 expr: assignExpr # AssignExprProvider
     | IF LPAREN cond=expr RPAREN thenBranch=expr elseBranch? # IfExpr
-    | type=typeReference LBRACE (instanceArgument (COMMA instanceArgument))* RBRACE # InstanceExpr
+    | type=typeReference LBRACE body=instanceBody RBRACE # InstanceExpr
     | SIZEOF type=typeReference # SizeofExpr
     | MATCH subject=expr LBRACE (matchPattern (COMMA matchPattern))? RBRACE  # MatchExpr
     ;
 
 matchPattern: pattern DOUBLE_ARROW_LEFT value=expr;
+
+instanceBody: instanceArgument (COMMA instanceArgument)*;
 
 instanceArgument: name=IDENTIFIER COLON value=expr;
 
