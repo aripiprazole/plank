@@ -23,25 +23,25 @@ ADD: '+';
 SUB: '-';
 DIV: '/';
 TIMES: '*';
-CONCAT: '++';
+CONCAT: ADD ADD;
 
 AMPERSTAND: '&';
 
 BANG: '!';
-ASSIGN: ':=';
+ASSIGN: COLON EQUAL;
 EQUAL: '=';
 
-EQ: '==';
-NEQ: '!=';
-GTE: '>=';
+EQ: EQUAL EQUAL;
+NEQ: BANG EQUAL;
+GTE: GT EQUAL;
 GT: '>';
 LT: '<';
-LTE: '<=';
+LTE: LT EQUAL;
 
 APOSTROPHE: '\'';
 
-DOUBLE_ARROW_LEFT : '=>' ;
-ARROW_LEFT : '->' ;
+DOUBLE_ARROW_LEFT : EQUAL GT ;
+ARROW_LEFT : SUB GT ;
 
 DOT : '.' ;
 
