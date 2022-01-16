@@ -75,8 +75,15 @@ class FunctionScope(
   override val enclosing: Scope? = null,
   override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
-  val parameters = function.parameters
-  val returnType = function.returnType
+  val returnType = run {
+    var current: PlankType = function.returnType
+
+    while (current is FunctionType) {
+      current = current.returnType
+    }
+
+    current
+  }
 }
 
 class ClosureScope(

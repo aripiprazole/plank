@@ -160,8 +160,11 @@ abstract class TreeWalker :
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef) {
-    visitTypeRefs(ref.parameters)
+    visit(ref.parameter)
     visit(ref.returnType)
+  }
+
+  override fun visitUnitTypeRef(ref: UnitTypeRef) {
   }
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern) {

@@ -180,16 +180,19 @@ fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
   return intCache.getOrPut(size) { IntType("Int$size", size, unsigned = unsigned) }
 }
 
-// TODO: use currying
-class FunctionType(val parameters: List<PlankType>, val returnType: PlankType) :
-  PlankType() {
-  constructor(returnType: PlankType, parameters: List<PlankType>) : this(parameters, returnType)
-  constructor(returnType: PlankType, vararg parameters: PlankType) : this(
-    parameters.toList(),
-    returnType,
-  )
-
+// FIXME: if we return a function type it can't return cause the
+//  scopes will get into the final return of the returned function
+class FunctionType(val parameter: PlankType, val returnType: PlankType) : PlankType() {
   override val name: Identifier = Identifier("FunctionType")
+
+  val parameters = buildList {
+    var current: PlankType = this@FunctionType
+
+    while (current is FunctionType) {
+      add(current.parameter)
+      current = current.returnType
+    }
+  }
 
   override val isPrimitive: Boolean = true
   override val size = 8
@@ -200,9 +203,21 @@ class FunctionType(val parameters: List<PlankType>, val returnType: PlankType) :
     return TypedCallExpr(callee, arguments, returnType, location)
   }
 
-  override fun toString(): String {
-    return "${parameters.joinToString(" -> ")} -> $returnType"
+  override fun toString(): String = buildString {
+    append(if (parameter is FunctionType) "($parameter)" else parameter.toString())
+    append(" -> ")
+    append(returnType)
   }
+}
+
+fun FunctionType(returnType: PlankType, parameters: List<PlankType>): FunctionType {
+  return parameters.fold(returnType) { acc, parameter ->
+    FunctionType(acc, parameter)
+  } as? FunctionType ?: FunctionType(returnType, UnitType)
+}
+
+fun FunctionType(returnType: PlankType, vararg parameters: PlankType): FunctionType {
+  return FunctionType(returnType, parameters.toList())
 }
 
 class DelegateType(var value: PlankType? = null) : PlankType() {

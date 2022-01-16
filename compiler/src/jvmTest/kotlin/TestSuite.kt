@@ -4,6 +4,32 @@ import org.junit.jupiter.api.Test
 
 class TestSuite {
   @Test
+  fun `test currying`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun print_full_name(name: *Char, surname: *Char): Void {
+          print(name);
+          print(" ");
+          println(surname);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          print_full_name("Isabela", "Freitas");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test hof`() {
     TestCompilation
       .of(
@@ -12,7 +38,7 @@ class TestSuite {
 
         import Std.IO;
 
-        fun hof(f: (*Char) -> Void): Void {
+        fun hof(f: *Char -> Void): Void {
           f("String (hof)");
         }
 

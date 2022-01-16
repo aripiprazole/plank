@@ -65,7 +65,16 @@ data class ResolvedFunDecl(
 ) : ResolvedDecl, TypedPlankElement {
   @DontDump
   val parameters = type.parameters
-  val returnType = type.returnType
+
+  val returnType = run {
+    var current: PlankType = type.returnType
+
+    while (current is FunctionType) {
+      current = current.returnType
+    }
+
+    current
+  }
 
   fun attribute(name: String): Attribute? {
     return attributes.find { it.name.text == name }

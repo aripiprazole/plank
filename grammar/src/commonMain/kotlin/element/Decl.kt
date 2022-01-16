@@ -33,10 +33,7 @@ data class FunDecl(
   val body: List<Stmt>,
   val realParameters: Map<Identifier, TypeRef>,
   override val location: Location
-) : Decl {
-  val parameters = type.parameters
-  val returnType = type.returnType
-}
+) : Decl
 
 data class LetDecl(
   val name: Identifier,

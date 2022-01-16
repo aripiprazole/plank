@@ -13,11 +13,15 @@ semis: SEMICOLON ws;
 ws: (NEWLINE | WS)*;
 
 // types
-typeReference: path=qualifiedPath # AccessTypeRef
-             | LPAREN (typeReference (COMMA typeReference)*)? RPAREN  ARROW_LEFT returnType=typeReference # FunctionTypeRef
-             | LBRACKET type=typeReference RBRACKET # ArrayTypeRef
-             | TIMES type=typeReference # PointerTypeRef
+typeReference: argument=typeReference ARROW_LEFT returnType=typeReference # FunctionTypeRef
+             | value=typePrimary # PrimaryTypeRef
              ;
+
+typePrimary: path=qualifiedPath # AccessTypeRef
+           | LBRACKET type=typePrimary RBRACKET # ArrayTypeRef
+           | TIMES type=typePrimary # PointerTypeRef
+           | LPAREN type=typeReference RPAREN # GroupTypeRef
+           ;
 
 parameter: name=IDENTIFIER COLON type=typeReference;
 

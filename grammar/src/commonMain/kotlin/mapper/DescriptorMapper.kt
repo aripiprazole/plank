@@ -43,6 +43,7 @@ import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StringAttributePrimary
 import com.gabrielleeg1.plank.grammar.element.StructDecl
 import com.gabrielleeg1.plank.grammar.element.TypeRef
+import com.gabrielleeg1.plank.grammar.element.UnitTypeRef
 import com.gabrielleeg1.plank.grammar.generated.PlankParser
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.AccessTypeRefContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ArrayTypeRefContext
@@ -73,6 +74,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.FunDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.FunctionTypeRefContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.GetArgumentContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.GroupPrimaryContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.GroupTypeRefContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.IdentPatternContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.IdentifierPrimaryContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.IfExprContext
@@ -89,6 +91,7 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser.ModuleDeclContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.NamedTuplePatternContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.PatternContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.PointerTypeRefContext
+import com.gabrielleeg1.plank.grammar.generated.PlankParser.PrimaryTypeRefContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.QualifiedPathContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.RefExprContext
 import com.gabrielleeg1.plank.grammar.generated.PlankParser.ReferenceContext
@@ -149,22 +152,49 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitFunctionTypeRef(ctx: FunctionTypeRefContext): TypeRef {
-    val parameters = ctx.findTypeReference().map { it.typeRef() }.dropLast(1)
+    val parameter = ctx.argument ?: error("No argument type received in function type ref")
     val returnType = ctx.returnType ?: error("No return type received in function type ref")
 
-    return FunctionTypeRef(parameters, returnType.typeRef(), ctx.location())
+    return FunctionTypeRef(parameter.typeRef(), returnType.typeRef(), ctx.location())
+  }
+
+  override fun visitGroupTypeRef(ctx: GroupTypeRefContext): TypeRef {
+    val type = ctx.type ?: error("No type received in group type ref")
+
+    return type.typeRef()
+  }
+
+  override fun visitPrimaryTypeRef(ctx: PrimaryTypeRefContext): TypeRef {
+    return when (val primary = ctx.findTypePrimary()) {
+      is AccessTypeRefContext -> visitAccessTypeRef(primary)
+      is ArrayTypeRefContext -> visitArrayTypeRef(primary)
+      is PointerTypeRefContext -> visitPointerTypeRef(primary)
+      is GroupTypeRefContext -> visitGroupTypeRef(primary)
+      null -> error("No primary type reference received in context")
+      else -> error("Unknown primary type reference type context ${primary::class.simpleName}")
+    }
+  }
+
+  private fun PlankParser.TypePrimaryContext.typeRef(): TypeRef {
+    return when(this) {
+      is AccessTypeRefContext -> visitAccessTypeRef(this)
+      is ArrayTypeRefContext -> visitArrayTypeRef(this)
+      is PointerTypeRefContext -> visitPointerTypeRef(this)
+      is GroupTypeRefContext -> visitGroupTypeRef(this)
+      else -> error("Unknown type primary reference type context ${this::class.simpleName}")
+    }
   }
 
   override fun visitPointerTypeRef(ctx: PointerTypeRefContext): TypeRef {
-    val typeRef = ctx.type ?: error("No type received in array type ref")
+    val type = ctx.type ?: error("No type received in array type ref")
 
-    return PointerTypeRef(typeRef.typeRef(), ctx.location())
+    return PointerTypeRef(type.typeRef(), ctx.location())
   }
 
   override fun visitArrayTypeRef(ctx: ArrayTypeRefContext): TypeRef {
-    val typeRef = ctx.type ?: error("No type received in array type ref")
+    val type = ctx.type ?: error("No type received in array type ref")
 
-    return ArrayTypeRef(typeRef.typeRef(), ctx.location())
+    return ArrayTypeRef(type.typeRef(), ctx.location())
   }
 
   override fun visitModuleDecl(ctx: ModuleDeclContext): Decl {
@@ -278,20 +308,22 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       name.identifier() to type.typeRef()
     }
 
-    val body = ctx.findFunctionBody()?.findStmt().orEmpty().map {
-      it.stmt()
-    }
-
+    val body = ctx.findFunctionBody()?.findStmt().orEmpty().map { it.stmt() }
     val modifiers = ctx.findAttribute().map(::visitAttribute)
 
-    val returnType = ctx.findFunctionReturn()
-      ?.returnType
-      ?: error("No return type received in fun decl context")
+    val returnType = ctx.findFunctionReturn()?.returnType?.typeRef()
+      ?: UnitTypeRef(Location.Generated)
+
     val name = ctx.name ?: error("No name received in fun decl context")
 
-    val type = FunctionTypeRef(parameters.values.toList(), returnType.typeRef(), ctx.location())
+    val type = parameters.values.fold(returnType) { acc, next ->
+      FunctionTypeRef(next, acc, next.location)
+    }
 
-    return FunDecl(modifiers, name.identifier(), type, body, parameters, ctx.location())
+    val functionType = type as? FunctionTypeRef
+      ?: FunctionTypeRef(UnitTypeRef(Location.Generated), returnType, ctx.location())
+
+    return FunDecl(modifiers, name.identifier(), functionType, body, parameters, ctx.location())
   }
 
   override fun visitDeclStmt(ctx: DeclStmtContext): Decl {
@@ -544,10 +576,8 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
 
   private fun TypeReferenceContext.typeRef(): TypeRef {
     return when (this) {
-      is ArrayTypeRefContext -> visitArrayTypeRef(this)
-      is PointerTypeRefContext -> visitPointerTypeRef(this)
       is FunctionTypeRefContext -> visitFunctionTypeRef(this)
-      is AccessTypeRefContext -> visitAccessTypeRef(this)
+      is PrimaryTypeRefContext -> visitPrimaryTypeRef(this)
       else -> error("Unknown type reference type context ${this::class.simpleName}")
     }
   }

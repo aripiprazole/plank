@@ -64,6 +64,7 @@ import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StructDecl
 import com.gabrielleeg1.plank.grammar.element.TypeRef
 import com.gabrielleeg1.plank.grammar.element.TreeWalker
+import com.gabrielleeg1.plank.grammar.element.UnitTypeRef
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import pw.binom.Stack
 
@@ -436,8 +437,7 @@ internal class BindingContext(tree: ModuleTree) :
 
     val attributes = decl.attributes // todo validate
 
-    val returnType = visit(decl.returnType) { UnitType }
-    val type = FunctionType(returnType, decl.parameters.map { visit(it) })
+    val type = visitFunctionTypeRef(decl.type)
 
     currentScope.declare(name, type, decl.location)
 
@@ -483,12 +483,16 @@ internal class BindingContext(tree: ModuleTree) :
     return ArrayType(visit(ref.type))
   }
 
-  override fun visitFunctionTypeRef(ref: FunctionTypeRef): PlankType {
-    val parameters = visitTypeRefs(ref.parameters)
+  override fun visitFunctionTypeRef(ref: FunctionTypeRef): FunctionType {
+    val parameter = visit(ref.parameter)
     // TODO: infer if hasn't user-defined type
     val returnType = visit(ref.returnType) { UnitType }
 
-    return FunctionType(parameters, returnType)
+    return FunctionType(parameter, returnType)
+  }
+
+  override fun visitUnitTypeRef(ref: UnitTypeRef): PlankType {
+    return UnitType
   }
 
   //
