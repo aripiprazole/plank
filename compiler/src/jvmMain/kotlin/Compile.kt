@@ -37,7 +37,7 @@ fun compile(
   val main = analyze(plainMain, tree).check()
 
   val module = Module(LLVMModuleCreateWithName(main.module.text))
-  val context = CompilerContext(debug, module, main).copy(moduleName = "Global")
+  val context = CompilerContext(debug, module, main).copy(contextName = "Global")
 
   if (debug) {
     println("Typed AST:")

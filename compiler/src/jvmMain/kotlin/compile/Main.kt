@@ -18,9 +18,20 @@ private fun execBinary(code: String): Int {
 
     return Runtime.getRuntime().exec(binary.absolutePath).printOutput().waitFor()
   } catch (error: BindingError) {
+    pkg.logger.severe("BindingError")
     error.violations.forEach { it.render(pkg.logger) }
   } catch (error: SyntaxError) {
+    pkg.logger.severe("SyntaxError")
     error.violations.forEach { it.render(pkg.logger) }
+  } catch (error: IRDumpError) {
+    pkg.logger.severe("IRDumpError")
+    error.violations.forEach {
+      pkg.logger.severe(it.render())
+    }
+    error.printStackTrace()
+  } catch (error: FailedCommand) {
+    error.printStackTrace()
+    return error.exitCode
   }
   return -1
 }
@@ -38,7 +49,12 @@ fun create_alfredo(): *Person {
   return &Person{name: "Alfredo"};
 }
 
+fun create_gerson(): Person {
+  return Person{name: "Gerson"};
+}
+
 fun main(argc: Int32, argv: **Char): Void {
+  println(create_gerson().name);
   let mutable person = *create_gabrielle();
   println(person.name);
   person := *create_alfredo();

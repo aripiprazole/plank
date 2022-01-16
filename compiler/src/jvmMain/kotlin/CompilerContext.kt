@@ -23,7 +23,7 @@ data class CompilerContext(
   val debug: Boolean,
   val module: Module,
   val currentFile: ResolvedPlankFile,
-  val moduleName: String = currentFile.module.text,
+  val contextName: String = currentFile.module.text,
   val context: Context = module.getContext(),
   val builder: IRBuilder = module.getContext().newIRBuilder(),
   val runtime: PlankRuntime = PlankRuntime(module),
@@ -64,13 +64,13 @@ data class CompilerContext(
   fun createFileScope(file: ResolvedPlankFile = currentFile): CompilerContext = copy(
     enclosing = this,
     currentFile = file,
-    moduleName = file.module.text,
+    contextName = file.module.text,
   )
 
   inline fun createNestedScope(
     moduleName: String,
     builder: CompilerContext.() -> Unit
-  ): CompilerContext = copy(enclosing = this, moduleName = moduleName).apply(builder)
+  ): CompilerContext = copy(enclosing = this, contextName = moduleName).apply(builder)
 
   fun addFunction(function: IRFunction): Either<CodegenViolation, Function> {
     functions[function.name] = function
@@ -82,7 +82,7 @@ data class CompilerContext(
 
   fun addFunction(decl: ResolvedFunDecl): Either<CodegenViolation, Function> {
     val name = decl.name.text
-    val mangledName = mangle(this, decl)
+    val mangledName = mangleFunction(decl)
     val function = IRNamedFunction(name, mangledName, decl)
 
     functions[name] = function
@@ -105,7 +105,7 @@ data class CompilerContext(
   }
 
   fun addModule(module: CompilerContext) {
-    modules[module.moduleName] = module
+    modules[module.contextName] = module
   }
 
   fun findModule(name: String): CompilerContext? {
@@ -139,6 +139,6 @@ data class CompilerContext(
   }
 
   override fun toString(): String {
-    return "PlankContext($moduleName, $enclosing)"
+    return "PlankContext($contextName, $enclosing)"
   }
 }

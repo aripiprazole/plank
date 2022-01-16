@@ -2,20 +2,21 @@ package com.gabrielleeg1.plank.compiler.instructions.expr
 
 import arrow.core.computations.either
 import arrow.core.left
-import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.StructType
 import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedGetExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.buildAlloca
 import com.gabrielleeg1.plank.compiler.buildLoad
+import com.gabrielleeg1.plank.compiler.buildStore
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.grammar.element.Identifier
-import org.llvm4j.llvm4j.PointerType
+import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Value
 
 class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction() {
@@ -29,25 +30,29 @@ class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction
         val instance = when (receiver) {
           is TypedAccessExpr -> {
             findVariable(receiver.name.text)
-              ?: unresolvedVariableError(receiver.name.text)
-                .left()
-                .bind<Value>()
+              ?: unresolvedVariableError(receiver.name.text).left().bind<Value>()
           }
           else -> receiver.toInstruction().codegen().bind()
         }
-        val struct = PointerType(instance.getType().ref).getSubtypes().first().getAsString()
 
-        val type = findType { (_, type) -> type.getAsString() == struct }
-          ?: unresolvedTypeError("unknown")
-            .left()
-            .bind<PlankType>()
+        val alloca = when (instance) {
+          is AllocaInstruction -> instance
+          else -> {
+            val alloca = buildAlloca(instance.getType(), "alloca.tmp")
+            buildStore(alloca, instance)
+            alloca
+          }
+        }
 
-        ensure(type.isInstance<StructType>()) { unresolvedTypeError(type.name.text) }
+        ensure(receiver.type.isInstance<StructType>()) {
+          unresolvedTypeError(receiver.type.name.text)
+        }
 
-        getField(
-          instance,
-          type.cast<StructType>()!!.properties.entries.indexOfFirst { it.key == name },
-        ).bind()
+        val propertyIndex = receiver.type
+          .cast<StructType>()!!.properties.entries
+          .indexOfFirst { it.key == name }
+
+        getField(alloca, propertyIndex).bind()
       }
   }
 }
