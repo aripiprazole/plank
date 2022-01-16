@@ -16,7 +16,10 @@ class TestSuite {
         }
         """.trimIndent()
       )
-      .expectSuccess()
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
   }
 
   @Test
@@ -35,7 +38,10 @@ class TestSuite {
         }
         """.trimIndent()
       )
-      .expectSuccess()
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
   }
 
   @Test
@@ -71,6 +77,9 @@ class TestSuite {
         }
         """.trimIndent()
       )
-      .expectSuccess()
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
   }
 }

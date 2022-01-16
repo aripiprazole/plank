@@ -7,11 +7,14 @@ import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.ModuleTree
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.compiler.compile.BindingError
+import com.gabrielleeg1.plank.compiler.compile.DebugOptions
 import com.gabrielleeg1.plank.compiler.compile.SyntaxError
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.EntryPoint
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.message.CompilerLogger
+import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import org.bytedeco.llvm.global.LLVM.LLVMModuleCreateWithName
 import org.llvm4j.llvm4j.Module
@@ -31,18 +34,20 @@ private fun ResolvedPlankFile.check(): ResolvedPlankFile = apply {
 fun compile(
   plainMain: PlankFile,
   analyze: (PlankFile, ModuleTree) -> ResolvedPlankFile,
-  debug: Boolean = false,
+  debug: DebugOptions,
   tree: ModuleTree = ModuleTree(),
+  logger: CompilerLogger = SimpleCompilerLogger(),
 ): Either<CompilerError, Module> {
   val main = analyze(plainMain, tree).check()
 
-  val module = Module(LLVMModuleCreateWithName(main.module.text))
-  val context = CompilerContext(debug, module, main).copy(contextName = "Global")
-
-  if (debug) {
-    println("Typed AST:")
-    println(main.dumpTree())
+  if (debug.resolvedAstDebug) {
+    logger.severe("Typed AST:")
+    logger.severe(main.dumpTree())
+    logger.severe()
   }
+
+  val module = Module(LLVMModuleCreateWithName(main.module.text))
+  val context = CompilerContext(debug.compilationDebug, module, main).copy(contextName = "Global")
 
   val violations = tree.dependencies
     .depthFirstSearch(main.module)

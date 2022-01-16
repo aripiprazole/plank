@@ -4,6 +4,7 @@ package com.gabrielleeg1.plank.compiler
 
 import com.gabrielleeg1.plank.analyzer.BindingViolation
 import com.gabrielleeg1.plank.compiler.compile.BindingError
+import com.gabrielleeg1.plank.compiler.compile.DebugOptions
 import com.gabrielleeg1.plank.compiler.compile.IRDumpError
 import com.gabrielleeg1.plank.compiler.compile.Package
 import com.gabrielleeg1.plank.compiler.compile.SyntaxError
@@ -67,15 +68,35 @@ class TestCompilation(
     }
   }
 
-  companion object {
-    fun of(code: String): TestCompilation {
+  class Builder(private val code: String) {
+    private val options = DebugOptions()
+
+    fun debugTree(): Builder = apply { options.treeDebug = true }
+    fun debugPlainAst(): Builder = apply { options.plainAstDebug = true }
+    fun debugResolvedAst(): Builder = apply { options.resolvedAstDebug = true }
+    fun debugLlvmIR(): Builder = apply { options.llvmIrDebug = true }
+    fun debugParser(): Builder = apply { options.parserDebug = true }
+    fun debugCompilation(): Builder = apply { options.compilationDebug = true }
+    fun linkerVerbose(): Builder = apply { options.linkerVerbose = true }
+
+    fun debugAll(): Builder = apply {
+      debugTree()
+      debugPlainAst()
+      debugResolvedAst()
+      debugLlvmIR()
+      debugParser()
+      debugCompilation()
+      linkerVerbose()
+    }
+
+    fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
       val pkg = Package(code, Paths.get("..").toAbsolutePath().toFile()) {
         linker =
           "/home/gabi/Programs/swift-5.3.1-RELEASE-ubuntu20.04/usr/bin/clang++" // todo change linker
         dist = createTempDirectory("plank-test").toFile()
         output = dist.resolve("main")
-        debug = true
-        logger = ColoredLogger(errWriter = System.out)
+        debug = options
+        logger = CompilerColoredLogger(debug = true, verbose = true, errWriter = System.out)
       }
 
       var syntaxViolations: List<SyntaxViolation> = emptyList()
@@ -96,6 +117,13 @@ class TestCompilation(
       }
 
       return TestCompilation(pkg, syntaxViolations, bindingViolations, codegenViolations, exitCode)
+        .apply(compilation)
+    }
+  }
+
+  companion object {
+    fun of(code: String): Builder {
+      return Builder(code)
     }
   }
 }

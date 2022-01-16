@@ -15,18 +15,22 @@ data class Package(
 ) {
   val logger: CompilerLogger get() = options.logger
 
-  constructor(text: String, home: File, options: CompileOptions.() -> Unit = {}) : this(
-    name = text,
-    kind = Kind.Binary,
-    main = PlankFile.of(text, debug = true),
-    options = CompileOptions(home).apply(options),
-  )
+  constructor(
+    text: String,
+    home: File = Paths.get(".").toAbsolutePath().toFile(),
+    builder: CompileOptions.() -> Unit = {},
+  ) : this(text, CompileOptions(home).apply(builder))
 
-  constructor(text: String, options: CompileOptions.() -> Unit = {}) : this(
-    name = text,
+  constructor(text: String, options: CompileOptions) : this(
+    name = "Anonymous",
     kind = Kind.Binary,
-    main = PlankFile.of(text, debug = true),
-    options = CompileOptions(Paths.get(".").toAbsolutePath().toFile()).apply(options),
+    options = options,
+    main = PlankFile.of(
+      text,
+      treeDebug = options.debug.treeDebug,
+      parserDebug = options.debug.parserDebug,
+      logger = options.logger,
+    )
   )
 
   enum class Kind { Binary, Library }

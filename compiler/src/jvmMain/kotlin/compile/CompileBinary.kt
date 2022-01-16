@@ -45,13 +45,14 @@ private fun Package.generateObject(file: File): File {
 private fun Package.generateIR(file: PlankFile): File {
   val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
-  if (options.debug) {
-    println("AST:")
-    println(main.dumpTree())
+  if (options.debug.plainAstDebug) {
+    logger.debug("Plain AST:")
+    logger.debug(main.dumpTree())
+    logger.debug()
   }
 
   target.writeText(
-    compile(file, ::analyze, options.debug)
+    compile(file, ::analyze, options.debug, tree, logger)
       .fold(
         ifRight = ::identity,
         ifLeft = { (module, violations) ->
@@ -60,9 +61,10 @@ private fun Package.generateIR(file: PlankFile): File {
       )
       .getAsString()
       .also { ir ->
-        if (options.debug) {
-          println("Module:")
-          println(ir)
+        if (options.debug.llvmIrDebug) {
+          logger.debug("Llvm IR:")
+          logger.debug(ir)
+          logger.debug()
         }
       },
   )
@@ -84,7 +86,7 @@ private fun Package.generateStdlibObjects() {
 
 private fun Package.cmd(command: String) {
   val process = Runtime.getRuntime().exec(command)
-  if (options.debug) {
+  if (options.debug.linkerVerbose) {
     process.printOutput(logger)
   }
 

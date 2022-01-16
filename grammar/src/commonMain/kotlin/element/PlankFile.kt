@@ -6,6 +6,9 @@ import com.gabrielleeg1.plank.grammar.generated.PlankParser
 import com.gabrielleeg1.plank.grammar.mapper.DescriptorMapper
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxErrorListener
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
+import com.gabrielleeg1.plank.grammar.message.CompilerLogger
+import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
+import com.gabrielleeg1.plank.grammar.tree.toParseTree
 import com.strumenta.kotlinmultiplatform.BitSet
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.CharStreams
@@ -54,8 +57,16 @@ data class PlankFile(
       return parser
     }
 
-    fun of(file: File, debug: Boolean = false): PlankFile {
-      return of(file.readText(), file.nameWithoutExtension, file.path, debug)
+    fun of(
+      file: File,
+      treeDebug: Boolean = false,
+      parserDebug: Boolean = false,
+      logger: CompilerLogger = SimpleCompilerLogger(),
+    ): PlankFile {
+      val module = file.nameWithoutExtension
+      val path = file.path
+
+      return of(file.readText(), module, path, treeDebug, parserDebug, logger)
         .copy(path = file.path)
         .let {
           if (it.moduleName == null) {
@@ -70,27 +81,34 @@ data class PlankFile(
       text: String,
       module: String = "anonymous",
       path: String = module,
-      debug: Boolean = false,
+      treeDebug: Boolean = false,
+      parserDebug: Boolean = false,
+      logger: CompilerLogger = SimpleCompilerLogger(),
     ): PlankFile {
       val file = PlankFile(text, moduleName = QualifiedPath(module), path = path)
 
       val syntaxErrorListener = SyntaxErrorListener(file)
       val parser = parser(text).apply {
         addErrorListener(syntaxErrorListener)
-        if (debug) {
-          addErrorListener(PlankErrorListener)
+        if (parserDebug) {
+          addErrorListener(PlankErrorListener(logger))
         }
       }
 
       return DescriptorMapper(file)
-        .visitFile(parser.file())
+        .visitFile(parser.file().also { tree ->
+          if (treeDebug) {
+            logger.debug("Parse tree:")
+            logger.debug(tree.toParseTree().multilineString())
+            logger.debug()
+          }
+        })
         .copy(violations = syntaxErrorListener.violations)
     }
   }
 }
 
-@Suppress("unused")
-object PlankErrorListener : BaseErrorListener() {
+class PlankErrorListener(private val logger: CompilerLogger) : BaseErrorListener() {
   override fun reportAmbiguity(
     recognizer: Parser,
     dfa: DFA,
@@ -100,10 +118,10 @@ object PlankErrorListener : BaseErrorListener() {
     ambigAlts: BitSet,
     configs: ATNConfigSet
   ) {
-    println("ambiguity----------------------------------------------")
-    println("  data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, exact: $exact, ambigAlts: $ambigAlts, configs: $configs}")
-    println("-------------------------------------------------------")
-    println()
+    logger.severe("===Ambiguity===")
+    logger.severe("  data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, exact: $exact, ambigAlts: $ambigAlts, configs: $configs}")
+    logger.severe("=============================")
+    logger.severe()
   }
 
   override fun reportAttemptingFullContext(
@@ -114,10 +132,10 @@ object PlankErrorListener : BaseErrorListener() {
     conflictingAlts: BitSet,
     configs: ATNConfigSet
   ) {
-    println("contextAttemptingFullContext---------------------------")
-    println(" data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, conflictingAlts: $conflictingAlts, configs: $configs}")
-    println("-------------------------------------------------------")
-    println()
+    logger.severe("===Attempting Full Context===")
+    logger.severe(" data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, conflictingAlts: $conflictingAlts, configs: $configs}")
+    logger.severe("=============================")
+    logger.severe()
   }
 
   override fun reportContextSensitivity(
@@ -128,10 +146,10 @@ object PlankErrorListener : BaseErrorListener() {
     prediction: Int,
     configs: ATNConfigSet
   ) {
-    println("contextSensitivity-------------------------------------")
-    println("  data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, prediction: $prediction, configs: $configs}")
-    println("-------------------------------------------------------")
-    println()
+    logger.severe("===Context Sensitivity===")
+    logger.severe("  data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, prediction: $prediction, configs: $configs}")
+    logger.severe("=============================")
+    logger.severe()
   }
 
   override fun syntaxError(
@@ -142,8 +160,10 @@ object PlankErrorListener : BaseErrorListener() {
     msg: String,
     e: RecognitionException?
   ) {
-    println("syntaxError: $msg at $offendingSymbol")
-    println()
+    logger.severe("===Syntax Error===")
+    logger.severe(" message = $msg at $offendingSymbol")
+    logger.severe("==================")
+    logger.severe()
   }
 
 }

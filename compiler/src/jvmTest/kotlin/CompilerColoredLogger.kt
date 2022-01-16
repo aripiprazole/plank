@@ -5,7 +5,7 @@ import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 import org.fusesource.jansi.Ansi
 import java.io.PrintStream
 
-class ColoredLogger(
+class CompilerColoredLogger(
   private val verbose: Boolean = false,
   private val debug: Boolean = false,
   private val flush: Boolean = false,
@@ -13,7 +13,7 @@ class ColoredLogger(
   private val errWriter: PrintStream = System.err,
 ) : CompilerLogger {
   override fun debug(message: String, location: Location?) {
-    if (!verbose) {
+    if (!debug) {
       return
     }
 

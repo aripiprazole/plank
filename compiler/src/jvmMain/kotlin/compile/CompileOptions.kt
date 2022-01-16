@@ -8,7 +8,8 @@ import kotlin.io.path.createTempDirectory
 import java.io.File
 
 data class CompileOptions(val plankHome: File) {
-  var debug = false
+  var debug = DebugOptions()
+
   var emitIR = false
   var logger: CompilerLogger = SimpleCompilerLogger()
 
@@ -27,6 +28,10 @@ data class CompileOptions(val plankHome: File) {
 
   /** TODO: remove ffi from stdlib */
   var runtime = plankHome.child("runtime")
+
+  fun debug(block: DebugOptions.() -> Unit) {
+    debug.block()
+  }
 
   override fun hashCode(): Int = super.hashCode()
 
