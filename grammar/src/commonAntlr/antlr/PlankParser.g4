@@ -3,9 +3,9 @@ parser grammar PlankParser;
 options {tokenVocab=PlankLexer;}
 
 // file
-fileModule: MODULE path=qualifiedPath SEMICOLON;
+file: fileModule? decl* ;
 
-file: decl* ;
+fileModule: MODULE path=qualifiedPath semis;
 
 // utils
 semis: SEMICOLON ws;

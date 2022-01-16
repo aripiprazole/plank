@@ -130,7 +130,10 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitFile(ctx: FileContext): PlankFile {
-    return file.copy(program = ctx.findDecl().map { it.decl() })
+    return file.copy(
+      moduleName = ctx.findFileModule()?.let(::visitFileModule),
+      program = ctx.findDecl().map { it.decl() },
+    )
   }
 
   override fun visitFileModule(ctx: FileModuleContext): QualifiedPath {

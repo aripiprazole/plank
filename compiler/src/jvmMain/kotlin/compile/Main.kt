@@ -38,6 +38,8 @@ private fun execBinary(code: String): Int {
 
 fun main() {
   val code = """
+module Main;
+
 @external("PLANK_INTERNAL_println")
 fun println(message: *Char): Void
 
