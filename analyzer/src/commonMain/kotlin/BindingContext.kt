@@ -13,6 +13,7 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStructDecl
 import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
+import com.gabrielleeg1.plank.analyzer.element.TypedAssignExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedDerefExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedErrorExpr
@@ -201,7 +202,7 @@ internal class BindingContext(tree: ModuleTree) :
 
     reference.value = value
 
-    return value
+    return TypedAssignExpr(reference.name, value, value.type, expr.location)
   }
 
   override fun visitSetExpr(expr: SetExpr): TypedExpr {
