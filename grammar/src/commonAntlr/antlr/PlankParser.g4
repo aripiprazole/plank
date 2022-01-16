@@ -72,8 +72,8 @@ instanceArgument: name=IDENTIFIER COLON value=expr;
 elseBranch: ELSE value=expr;
 
 // maybe use callExpr for delegate variables
-assignExpr: receiver=callExpr /* workaround */ ASSIGN value=assignExpr # SetExprHolder
-          | name=IDENTIFIER ASSIGN value=assignExpr # AssignExprHolder
+assignExpr: name=IDENTIFIER ASSIGN value=assignExpr # AssignExprHolder
+          | receiver=callExpr /* workaround */ ASSIGN value=assignExpr # SetExprHolder
           | value=logicalExpr # AssignValueHolder
           ;
 

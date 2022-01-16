@@ -180,7 +180,7 @@ internal class BindingContext(tree: ModuleTree) :
     val callable = visit(expr.callee)
 
     val function = callable.type.cast<FunctionType>()
-      ?: return violate("Can not call not function", callable)
+      ?: return violate("Can not call not function %s", callable)
 
     return function.call(callable, expr.location, visitExprs(expr.arguments))
   }

@@ -335,25 +335,20 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     val name = ctx.name ?: error("No name received in assign expr holder context")
     val value = ctx.value ?: error("No value received in assign expr holder context")
 
-//    ctx.findCallExpr()?.let { receiver ->
-//      return SetExpr(visitCallExpr(receiver), name.identifier(), value.expr(), ctx.location())
-//    }
-
     return AssignExpr(name.identifier(), value.expr(), ctx.location())
   }
 
   override fun visitSetExprHolder(ctx: SetExprHolderContext): Expr {
-    val get = ctx.receiver
+    val value = ctx.value ?: error("No value received in set expr holder context")
+    val property = ctx.receiver
       ?.let(::visitCallExpr)
       ?: error("No receiver received in set expr holder context")
 
-    if (get !is GetExpr) {
+    if (property !is GetExpr) {
       error("Receiver of set expr holder context must be get expr") // TODO: add support for delegate variables maybe
     }
 
-    val value = ctx.value ?: error("No value received in set expr holder context")
-
-    return SetExpr(get.receiver, get.property, value.expr(), ctx.location())
+    return SetExpr(property.receiver, property.property, value.expr(), ctx.location())
   }
 
   override fun visitAssignValueHolder(ctx: AssignValueHolderContext): Expr {

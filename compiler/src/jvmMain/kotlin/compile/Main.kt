@@ -1,5 +1,7 @@
 package com.gabrielleeg1.plank.compiler.compile
 
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.tree.toParseTree
 import kotlin.io.path.createTempDirectory
 
 private fun execBinary(code: String): Int {
@@ -28,17 +30,29 @@ fun main() {
 
 type Person = {mutable name: *Char};
 
-fun person(): *Person {
+fun create_gabrielle(): *Person {
   return &Person{name: "Gabrielle"};
 }
 
+fun create_alfredo(): *Person {
+  return &Person{name: "Alfredo"};
+}
+
 fun main(argc: Int32, argv: **Char): Void {
-  let person = *person();
+  let mutable person = *create_gabrielle();
+  println(person.name);
+  person := *create_alfredo();
   println(person.name);
   person.name := "Alberto";
   println(person.name);
 }
 """
+
+  PlankFile
+    .parser(code).file()
+    .toParseTree()
+    .multilineString()
+    .also(::println)
 
   execBinary(code)
 }
