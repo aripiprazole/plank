@@ -75,6 +75,8 @@ class FunctionScope(
   override val enclosing: Scope? = null,
   override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
+  override val isTopLevelScope: Boolean = false
+
   val returnType = run {
     var current: PlankType = function.returnType
 
@@ -90,12 +92,15 @@ class ClosureScope(
   override val name: Identifier,
   override val enclosing: Scope,
   override val moduleTree: ModuleTree = ModuleTree()
-) : Scope()
+) : Scope() {
+  override val isTopLevelScope: Boolean = false
+}
 
 sealed class Scope {
   abstract val name: Identifier
   abstract val enclosing: Scope?
   abstract val moduleTree: ModuleTree
+  open val isTopLevelScope: Boolean = true
   open val nested: Boolean get() = enclosing != null
 
   val variables = mutableMapOf<Identifier, Variable>()

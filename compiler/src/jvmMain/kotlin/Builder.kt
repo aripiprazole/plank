@@ -40,6 +40,14 @@ fun CompilerContext.buildStore(pointer: Value, value: Value): StoreInstruction {
 
 fun CompilerContext.buildCall(
   function: Function,
+  vararg arguments: Value,
+  name: String? = null
+): Value {
+  return builder.buildCall(function, *arguments, name = Option.of(name))
+}
+
+fun CompilerContext.buildCall(
+  function: Function,
   arguments: List<Value>,
   name: String? = null
 ): Value {

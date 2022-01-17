@@ -6,7 +6,11 @@ import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.Type
 import org.llvm4j.llvm4j.Value
 
-inline fun <reified A> Value.unsafeCast(): A {
+inline fun <reified A : Value> Value.unsafeCast(): A {
+  return A::class.constructors.first().call(ref)
+}
+
+inline fun <reified A : Type> Type.unsafeCast(): A {
   return A::class.constructors.first().call(ref)
 }
 

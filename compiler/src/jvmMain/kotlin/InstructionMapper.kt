@@ -27,6 +27,7 @@ import com.gabrielleeg1.plank.analyzer.element.TypedRefExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedSetExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedSizeofExpr
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.decl.ClosureFunctionInstruction
 import com.gabrielleeg1.plank.compiler.instructions.decl.EnumInstruction
 import com.gabrielleeg1.plank.compiler.instructions.decl.FunctionInstruction
 import com.gabrielleeg1.plank.compiler.instructions.decl.ImportInstruction
@@ -79,10 +80,10 @@ interface InstructionMapper :
     }
 
     override fun visitFunDecl(decl: ResolvedFunDecl): CompilerInstruction {
-      return if (decl.hasAttribute("external")) {
-        NativeFunctionInstruction(decl)
-      } else {
-        FunctionInstruction(decl)
+      return when {
+        decl.type.isClosure -> ClosureFunctionInstruction(decl)
+        decl.hasAttribute("external") -> NativeFunctionInstruction(decl)
+        else -> FunctionInstruction(decl)
       }
     }
 

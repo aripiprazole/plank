@@ -17,6 +17,7 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
+import com.gabrielleeg1.plank.compiler.mangleFunction
 import com.gabrielleeg1.plank.compiler.verify
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.BasicBlock

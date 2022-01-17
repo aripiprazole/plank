@@ -488,7 +488,7 @@ internal class BindingContext(tree: ModuleTree) :
     // TODO: infer if hasn't user-defined type
     val returnType = visit(ref.returnType) { UnitType }
 
-    return FunctionType(parameter, returnType)
+    return FunctionType(parameter, returnType, isClosure = !currentScope.isTopLevelScope)
   }
 
   override fun visitUnitTypeRef(ref: UnitTypeRef): PlankType {

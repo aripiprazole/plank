@@ -55,6 +55,30 @@ class TestSuite {
   }
 
   @Test
+  fun `test nested access`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let x = "Example String";
+          fun nested(): Void {
+            println(x);
+          }
+          nested();
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test function ref`() {
     TestCompilation
       .of(

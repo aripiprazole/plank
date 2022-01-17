@@ -3,11 +3,16 @@ package com.gabrielleeg1.plank.compiler
 import arrow.core.Either
 import arrow.core.computations.either
 import arrow.core.left
+import arrow.core.right
+import com.gabrielleeg1.plank.analyzer.CharType
+import com.gabrielleeg1.plank.analyzer.IntType
 import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.analyzer.PointerType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
+import com.gabrielleeg1.plank.compiler.builder.alloca
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
@@ -33,12 +38,19 @@ data class CompilerContext(
   private val mapper: InstructionMapper = InstructionMapper,
   private val enclosing: CompilerContext? = null,
 ) {
+  private val _references = LinkedHashMap<String, PlankType>().apply {
+    put("x", PointerType(CharType)) // TODO: remove me
+  }
+
   private val functions = mutableMapOf<String, IRFunction>()
   private val values = mutableMapOf<String, Pair<PlankType, AllocaInstruction>>()
   private val types = mutableMapOf<String, Pair<PlankType, NamedStructType>>()
 
   private val expanded = mutableListOf<CompilerContext>()
   private val modules = mutableMapOf<String, CompilerContext>()
+
+  val references: Map<String, PlankType>
+    get() = _references
 
   inline fun debug(action: DebugCompilerContext.() -> Unit) {
     if (debug) {
@@ -72,8 +84,22 @@ data class CompilerContext(
 
   inline fun createNestedScope(
     moduleName: String,
-    builder: CompilerContext.() -> Unit
+    builder: CompilerContext.() -> Unit = {},
   ): CompilerContext = copy(enclosing = this, contextName = moduleName).apply(builder)
+
+  inline operator fun invoke(builder: CompilerContext.() -> Unit): CompilerContext {
+    return apply(builder)
+  }
+
+  fun addFunction(
+    name: String,
+    mangledName: String,
+    descriptor: ResolvedFunDecl,
+  ): Either<CodegenViolation, Unit> {
+    functions[name] = IRNamedFunction(name, mangledName, descriptor)
+
+    return Unit.right()
+  }
 
   fun addFunction(function: IRFunction): Either<CodegenViolation, Function> {
     functions[function.name] = function
@@ -133,17 +159,11 @@ data class CompilerContext(
     findVariableAlloca(name)
       ?: findFunction(name)
         ?.accessIn(this@CompilerContext)
-        ?.let { function ->
-          val functionAlloca = buildAlloca(function.getType())
-          buildStore(functionAlloca, function)
-          functionAlloca
-        }
-      ?: unresolvedVariableError(name)
-        .left()
-        .bind<AllocaInstruction>()
+        ?.let(::alloca)
+      ?: unresolvedVariableError(name).left().bind<AllocaInstruction>()
   }
 
-  private fun findVariableAlloca(name: String): AllocaInstruction? {
+  fun findVariableAlloca(name: String): AllocaInstruction? {
     return values[name]?.second
       ?: enclosing?.findVariableAlloca(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariableAlloca(name) }

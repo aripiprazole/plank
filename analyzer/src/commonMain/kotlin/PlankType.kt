@@ -27,6 +27,7 @@ import kotlin.reflect.KProperty
 sealed class PlankType {
   abstract val name: Identifier
   open val isPrimitive = false
+  open val isClosure = false
 
   abstract val size: Int
 
@@ -182,7 +183,11 @@ fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
 
 // FIXME: if we return a function type it can't return cause the
 //  scopes will get into the final return of the returned function
-class FunctionType(val parameter: PlankType, val returnType: PlankType) : PlankType() {
+data class FunctionType(
+  val parameter: PlankType,
+  val returnType: PlankType,
+  override val isClosure: Boolean = false,
+) : PlankType() {
   override val name: Identifier = Identifier("FunctionType")
 
   val parameters = buildList {
@@ -202,6 +207,10 @@ class FunctionType(val parameter: PlankType, val returnType: PlankType) : PlankT
 
     return TypedCallExpr(callee, arguments, returnType, location)
   }
+
+  override fun hashCode(): Int = super.hashCode()
+
+  override fun equals(other: Any?): Boolean = super.equals(other)
 
   override fun toString(): String = buildString {
     append(if (parameter is FunctionType) "($parameter)" else parameter.toString())
