@@ -11,6 +11,7 @@ kotlin {
   jvm {
     testRuns["test"].executionTask.configure {
       useJUnitPlatform()
+      testLogging.showStandardStreams = true
     }
   }
 

@@ -27,6 +27,7 @@ import com.gabrielleeg1.plank.grammar.element.Identifier
 class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val mangledName = mangleFunction(descriptor)
+    val references = descriptor.references.mapKeys { (name) -> name.text }
     val parameters = descriptor.parameters
     val returnType = descriptor.returnType
 
@@ -36,14 +37,14 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
 
     val functionType = context.getFunctionType(
       descriptor.returnType.toType().bind(),
-      environmentType,
+      context.getPointerType(environmentType).unwrap(),
       *descriptor.realParameters.values.map { it.toType().bind() }.toTypedArray(),
     )
 
     val closureFunctionType = context.getNamedStructType("Closure_${mangledName}_Function").apply {
       setElementTypes(
         context.getPointerType(functionType).unwrap(),
-        environmentType,
+        context.getPointerType(environmentType).unwrap(),
         isPacked = false
       )
     }
@@ -56,10 +57,6 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
       builder.positionAfter(context.newBasicBlock("entry").also(function::addBasicBlock))
       val environment = function.getParameter(0).unwrap() // ENVIRONMENT PARAMETER
 
-      val instance = buildAlloca(environment.getType(), "Environment.Alloca.Tmp").also {
-        buildStore(it, environment)
-      }
-
       references.entries.forEachIndexed { index, (reference, type) ->
         val variable = buildAlloca(type.toType().bind(), reference)
 
@@ -71,14 +68,12 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
         val plankType = parameters.getOrNull(index)
           ?: unresolvedTypeError("type of parameter $index").left().bind<PlankType>()
 
-        val type = parameter.getType()
-
         val (name) = descriptor.realParameters.entries.toList().getOrElse(index) {
           unresolvedVariableError(parameter.getName()).left()
             .bind<Map.Entry<Identifier, PlankType>>()
         }
 
-        val variable = buildAlloca(type, name.text)
+        val variable = buildAlloca(parameter.getType(), name.text)
         buildStore(variable, parameter)
         addVariable(name.text, plankType, variable)
       }
@@ -87,8 +82,9 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
         it.toInstruction().codegen().bind()
       }
 
-      if (returnType == UnitType && descriptor.content.filterIsInstance<ResolvedReturnStmt>()
-          .isEmpty()
+      if (
+        returnType == UnitType &&
+        descriptor.content.filterIsInstance<ResolvedReturnStmt>().isEmpty()
       ) {
         buildReturn()
       }
@@ -103,9 +99,7 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
       .map { buildLoad(it) }
       .toTypedArray()
 
-    println(variables)
-
-    val environment = getInstance(environmentType, *variables, name = "Nested.Environment").bind()
+    val environment = getInstance(environmentType, *variables, isPointer = true).bind()
     val closure = getInstance(closureFunctionType, function, environment, isPointer = true).bind()
 
     addVariable(descriptor.name.text, descriptor.type, alloca(closure, "Closure.Pointer"))

@@ -60,6 +60,7 @@ data class ResolvedFunDecl(
   val content: List<ResolvedStmt>,
   val realParameters: Map<Identifier, PlankType>,
   val attributes: List<Attribute> = emptyList(),
+  val references: LinkedHashMap<Identifier, PlankType> = LinkedHashMap(),
   override val type: FunctionType,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {

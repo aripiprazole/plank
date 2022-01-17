@@ -431,7 +431,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   override fun visitFunDecl(decl: FunDecl): ResolvedStmt {
     val name = decl.name
-    val realParameters = decl.realParameters.mapValues { visit(it.value) }
+    val realParameters = decl.realParameters.mapValues { closureIfFunction(visit(it.value)) }
 
     val location = decl.location
 
@@ -446,13 +446,16 @@ internal class BindingContext(tree: ModuleTree) :
       decl.realParameters
         .mapKeys { it.key }
         .forEach { (name, type) ->
-          declare(name, visit(type))
+          declare(name, closureIfFunction(visit(type)))
         }
 
       visitStmts(decl.body)
     }
+    val references = LinkedHashMap<Identifier, PlankType>().apply {
+      put(Identifier("x"), PointerType(CharType)) // TODO remove me
+    }
 
-    return ResolvedFunDecl(name, content, realParameters, attributes, type, location)
+    return ResolvedFunDecl(name, content, realParameters, attributes, references, type, location)
   }
 
   override fun visitLetDecl(decl: LetDecl): ResolvedStmt {
@@ -543,6 +546,13 @@ internal class BindingContext(tree: ModuleTree) :
 
   private val currentScope get() = scopes.peekLast()
   private val currentModuleTree get() = scopes.peekLast().moduleTree
+
+  private fun closureIfFunction(type: PlankType): PlankType {
+    return when (type) {
+      is FunctionType -> type.copy(isClosure = true)
+      else -> type
+    }
+  }
 
   private fun findVariable(name: Identifier): Variable {
     return currentScope.findVariable(name)

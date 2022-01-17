@@ -44,7 +44,12 @@ class TestSuite {
 
         fun main(argc: Int32, argv: **Char): Void {
           println("String (outside hof)");
-          hof(println);
+
+          fun nested(value: *Char): Void {
+            println(value);
+          }
+
+          hof(nested);
         }
         """.trimIndent()
       )

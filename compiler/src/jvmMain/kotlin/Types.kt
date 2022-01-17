@@ -45,18 +45,42 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either.eager {
     is StructType -> {
       findStruct(type.name.text) ?: unresolvedTypeError(type.name.text).left().bind<Type>()
     }
-    is FunctionType -> {
-      val returnType = type.returnType.toType().bind()
-      val functionType = context.getFunctionType(
-        returnType,
-        parameters = type.parameters.traverseEither { it.toType() }.bind().toTypedArray()
-      )
+    is FunctionType ->
+      when (type.isClosure) {
+        true -> {
+          val name = "Closure_${type.hashCode()}_Function"
+          module.getTypeByName(name).toNullable()?.let { return@eager it }
 
-      when (val result = context.getPointerType(functionType)) {
-        is Ok -> result.value
-        is Err -> llvmError(result.error.message ?: "AssertionError").left().bind<Type>()
+          val returnType = type.returnType.toType().bind()
+          val environmentType = runtime.types.voidPtr
+
+          val functionType = context.getFunctionType(
+            returnType, environmentType, *type.parameters.map { it.toType().bind() }.toTypedArray(),
+          )
+
+          val struct = context.getNamedStructType(name).apply {
+            setElementTypes(
+              context.getPointerType(functionType).unwrap(),
+              runtime.types.voidPtr,
+              isPacked = false
+            )
+          }
+
+          context.getPointerType(struct).unwrap()
+        }
+        false -> {
+          val returnType = type.returnType.toType().bind()
+          val functionType = context.getFunctionType(
+            returnType,
+            parameters = type.parameters.traverseEither { it.toType() }.bind().toTypedArray()
+          )
+
+          when (val result = context.getPointerType(functionType)) {
+            is Ok -> result.value
+            is Err -> llvmError(result.error.message ?: "AssertionError").left().bind<Type>()
+          }
+        }
       }
-    }
     is PointerType -> {
       when (val result = toType(type.inner).map(context::getPointerType).bind()) {
         is Ok -> result.value
