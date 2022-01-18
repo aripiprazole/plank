@@ -1,4 +1,5 @@
 *
+!externalDependencies.xml
 !detekt.xml
 !.name
 !.gitignore
