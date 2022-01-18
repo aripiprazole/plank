@@ -1,6 +1,5 @@
 rootProject.name = "plank"
 
-enableFeaturePreview("GRADLE_METADATA")
 pluginManagement {
   repositories {
     google()
@@ -16,3 +15,4 @@ include("cli")
 include("lang-server")
 include("analyzer")
 include("shared")
+include("parser")

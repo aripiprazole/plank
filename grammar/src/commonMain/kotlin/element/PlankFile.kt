@@ -1,14 +1,14 @@
 package com.gabrielleeg1.plank.grammar.element
 
 import com.gabrielleeg1.plank.grammar.debug.DontDump
-import com.gabrielleeg1.plank.grammar.generated.PlankLexer
-import com.gabrielleeg1.plank.grammar.generated.PlankParser
 import com.gabrielleeg1.plank.grammar.mapper.DescriptorMapper
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxErrorListener
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
-import com.gabrielleeg1.plank.grammar.tree.toParseTree
+import com.gabrielleeg1.plank.grammar.parser.toParseTree
+import com.gabrielleeg1.plank.parser.PlankLexer
+import com.gabrielleeg1.plank.parser.PlankParser
 import com.strumenta.kotlinmultiplatform.BitSet
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.CharStreams
