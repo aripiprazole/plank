@@ -4,6 +4,7 @@
     <plugin id="com.nbadal.ktlint" />
     <plugin id="detekt" />
     <plugin id="org.antlr.intellij.plugin" />
+    <plugin id="org.editorconfig.editorconfigjetbrains" />
     <plugin id="org.jetbrains.kotlin" />
   </component>
 </project>
