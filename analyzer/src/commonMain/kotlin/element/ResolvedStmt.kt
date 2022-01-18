@@ -1,12 +1,11 @@
 package com.gabrielleeg1.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.UnitType
+import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.PlankElement
-import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 
-sealed interface ResolvedStmt  : PlankElement {
+sealed interface ResolvedStmt : PlankElement {
   interface Visitor<T> {
     fun visit(stmt: ResolvedStmt): T = stmt.accept(this)
 

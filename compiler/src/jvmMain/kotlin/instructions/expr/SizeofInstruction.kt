@@ -1,7 +1,6 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
 import arrow.core.computations.either
-import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.element.TypedSizeofExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.getSize

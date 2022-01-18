@@ -4,8 +4,8 @@ import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import pw.binom.io.file.binom
-import kotlin.io.path.createTempDirectory
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
 data class CompileOptions(val plankHome: File) {
   var debug = DebugOptions()

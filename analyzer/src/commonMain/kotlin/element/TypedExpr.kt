@@ -5,9 +5,9 @@ import com.gabrielleeg1.plank.analyzer.PointerType
 import com.gabrielleeg1.plank.analyzer.StructType
 import com.gabrielleeg1.plank.analyzer.Untyped
 import com.gabrielleeg1.plank.analyzer.Variable
+import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 
 sealed interface TypedExpr : TypedPlankElement {
   interface Visitor<T> {

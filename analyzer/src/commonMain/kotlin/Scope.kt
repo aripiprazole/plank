@@ -157,6 +157,7 @@ sealed class Scope {
   }
 
   // todo add usage tracker
+  @Suppress("UnusedPrivateMember")
   fun findVariableOn(scope: Scope, name: Identifier): Variable? {
     return variables[name]
   }

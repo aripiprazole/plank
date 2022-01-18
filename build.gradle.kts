@@ -1,6 +1,11 @@
 @file:Suppress("DSL_SCOPE_VIOLATION")
 
+import io.gitlab.arturbosch.detekt.DetektPlugin
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
+import org.jlleitschuh.gradle.ktlint.KtlintPlugin
 
 buildscript {
   repositories {
@@ -15,8 +20,8 @@ buildscript {
 
 plugins {
   alias(libs.plugins.kotlin) apply false
-  alias(libs.plugins.ktlint)
-  alias(libs.plugins.detekt)
+  alias(libs.plugins.ktlint) apply false
+  alias(libs.plugins.detekt) apply false
 }
 
 group = "com.gabrielleeg1"
@@ -27,12 +32,10 @@ repositories {
   jcenter()
 }
 
-dependencies {
-  ktlintRuleset(libs.pinterest.ktlint)
-}
-
 subprojects {
   apply(plugin = "org.jetbrains.kotlin.multiplatform")
+  apply<DetektPlugin>()
+  apply<KtlintPlugin>()
 
   repositories {
     mavenCentral()
@@ -48,6 +51,25 @@ subprojects {
   group = "com.gabrielleeg1"
   version = "1.0-SNAPSHOT"
 
+  configure<KtlintExtension> {
+    android.set(false)
+  }
+
+  configure<DetektExtension> {
+    buildUponDefaultConfig = true
+    allRules = false
+
+    config = files("${rootProject.projectDir}/config/detekt.yml")
+    baseline = file("${rootProject.projectDir}/config/baseline.xml")
+
+    reports {
+      html.enabled = true
+      xml.enabled = true
+      txt.enabled = true
+      sarif.enabled = true
+    }
+  }
+
   configure<KotlinMultiplatformExtension> {
     jvm {
       compilations.all {
@@ -60,23 +82,8 @@ subprojects {
       }
     }
   }
-}
 
-ktlint {
-  android.set(false)
-}
-
-detekt {
-  buildUponDefaultConfig = true
-  allRules = false
-
-  config = files("${rootProject.projectDir}/config/detekt.yml")
-  baseline = file("${rootProject.projectDir}/config/baseline.xml")
-
-  reports {
-    html.enabled = true
-    xml.enabled = true
-    txt.enabled = true
-    sarif.enabled = true
+  tasks.withType<KotlinCompile> {
+    kotlinOptions.freeCompilerArgs += "-Xskip-metadata-version-check"
   }
 }

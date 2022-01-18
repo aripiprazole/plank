@@ -96,13 +96,15 @@ data class PlankFile(
       }
 
       return DescriptorMapper(file)
-        .visitFile(parser.file().also { tree ->
-          if (treeDebug) {
-            logger.debug("Parse tree:")
-            logger.debug(tree.toParseTree().multilineString())
-            logger.debug()
+        .visitFile(
+          parser.file().also { tree ->
+            if (treeDebug) {
+              logger.debug("Parse tree:")
+              logger.debug(tree.toParseTree().multilineString())
+              logger.debug()
+            }
           }
-        })
+        )
         .copy(violations = syntaxErrorListener.violations)
     }
   }
@@ -165,5 +167,4 @@ class PlankErrorListener(private val logger: CompilerLogger) : BaseErrorListener
     logger.severe("==================")
     logger.severe()
   }
-
 }

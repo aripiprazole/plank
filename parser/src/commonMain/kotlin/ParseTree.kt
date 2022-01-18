@@ -16,7 +16,7 @@ class ParseTreeLeaf(val text: String) : ParseTreeElement {
   override fun multilineString(ident: String): String = ident + "T[$text]\n"
 }
 
-class ParseTreeNode(val name: String): ParseTreeElement {
+class ParseTreeNode(val name: String) : ParseTreeElement {
   val children = LinkedList<ParseTreeElement>()
 
   fun child(element: ParseTreeElement): ParseTreeNode {

@@ -176,7 +176,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   private fun PlankParser.TypePrimaryContext.typeRef(): TypeRef {
-    return when(this) {
+    return when (this) {
       is AccessTypeRefContext -> visitAccessTypeRef(this)
       is ArrayTypeRefContext -> visitArrayTypeRef(this)
       is PointerTypeRefContext -> visitPointerTypeRef(this)

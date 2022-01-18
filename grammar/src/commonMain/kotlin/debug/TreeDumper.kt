@@ -12,9 +12,11 @@ fun dumpInline(map: Map<String, Any?>, prefix: String = "", name: Any = "Element
     append(prefix)
     append(name)
     if (map.isNotEmpty()) {
-      append(map.entries.reversed().joinToString(", ", prefix = "(", postfix = ")") { (a, b) ->
-        "$a: $b"
-      })
+      append(
+        map.entries.reversed().joinToString(", ", prefix = "(", postfix = ")") { (a, b) ->
+          "$a: $b"
+        }
+      )
     }
     append('\n')
   }

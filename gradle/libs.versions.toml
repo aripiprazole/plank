@@ -1,5 +1,5 @@
 [versions]
-ktx = "1.4.2"
+ktx = "1.6.0"
 ktlint = "0.40.0"
 lsp4j = "0.10.0"
 binom = "0.1.32"

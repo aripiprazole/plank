@@ -62,8 +62,8 @@ import com.gabrielleeg1.plank.grammar.element.SetExpr
 import com.gabrielleeg1.plank.grammar.element.SizeofExpr
 import com.gabrielleeg1.plank.grammar.element.Stmt
 import com.gabrielleeg1.plank.grammar.element.StructDecl
-import com.gabrielleeg1.plank.grammar.element.TypeRef
 import com.gabrielleeg1.plank.grammar.element.TreeWalker
+import com.gabrielleeg1.plank.grammar.element.TypeRef
 import com.gabrielleeg1.plank.grammar.element.UnitTypeRef
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import pw.binom.Stack
@@ -76,6 +76,7 @@ fun analyze(file: PlankFile, tree: ModuleTree): ResolvedPlankFile {
   return BindingContext(tree).analyze(file)
 }
 
+@Suppress("UnusedPrivateMember")
 internal class BindingContext(tree: ModuleTree) :
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,

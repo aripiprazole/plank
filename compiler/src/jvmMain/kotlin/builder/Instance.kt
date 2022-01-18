@@ -21,7 +21,7 @@ fun CompilerContext.getInstance(
   val instance = buildAlloca(struct, name)
 
   arguments.forEachIndexed { index, value ->
-    val field = getField(instance, index, name = "${name}.GET.$index").bind()
+    val field = getField(instance, index, name = "$name.GET.$index").bind()
 
     buildStore(field, value)
   }
@@ -29,7 +29,7 @@ fun CompilerContext.getInstance(
   if (isPointer) {
     instance
   } else {
-    buildLoad(instance, "${name}.value")
+    buildLoad(instance, "$name.value")
   }
 }
 
