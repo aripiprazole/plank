@@ -1,25 +1,9 @@
-import com.gabrielleeg1.plank.build.Dependencies
-
-plugins {
-  kotlin("multiplatform")
-}
-
-group = "com.gabrielleeg1"
-version = "1.0-SNAPSHOT"
-
-repositories {
-  mavenCentral()
-  maven("https://repo.binom.pw/releases")
-}
-
 kotlin {
-  jvm()
-
   sourceSets {
     val commonMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
-        api(Dependencies.Binom.File)
+        api(libs.binom.file)
       }
     }
 

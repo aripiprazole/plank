@@ -1,5 +1,7 @@
 rootProject.name = "plank"
 
+enableFeaturePreview("VERSION_CATALOGS")
+
 pluginManagement {
   repositories {
     google()
@@ -8,7 +10,6 @@ pluginManagement {
   }
 }
 
-includeBuild("composite-build")
 include("compiler")
 include("grammar")
 include("cli")

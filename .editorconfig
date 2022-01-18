@@ -11,10 +11,6 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
-[*.{yml, yaml}]
-indent_size = 2
-
+# noinspection EditorConfigKeyCorrectness
 [*.{kt, kts}]
-indent_size = 2
-insert_final_newline = true
-# disabled_rules = no-wildcard-imports, experimental:annotation, my-custom-ruleset
+disabled_rules=no-wildcard-imports

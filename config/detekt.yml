@@ -276,8 +276,8 @@ formatting:
   Indentation:
     active: false
     autoCorrect: true
-    indentSize: 4
-    continuationIndentSize: 4
+    indentSize: 2
+    continuationIndentSize: 2
   MaximumLineLength:
     active: true
     maxLineLength: 120
@@ -328,7 +328,7 @@ formatting:
   ParameterListWrapping:
     active: true
     autoCorrect: true
-    indentSize: 4
+    indentSize: 2
   SpacingAroundAngleBrackets:
     active: false
     autoCorrect: true
@@ -603,7 +603,7 @@ style:
     active: true
     maxJumpCount: 1
   MagicNumber:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     ignoreNumbers: ['-1', '0', '1', '2']
     ignoreHashCodeFunction: true
@@ -699,6 +699,7 @@ style:
   UnusedPrivateMember:
     active: true
     allowedNames: '(_|ignored|expected|serialVersionUID)'
+    excludes: [ '**/build.gradle.kts' ]
   UseArrayLiteralsInAnnotations:
     active: false
   UseCheckNotNull:

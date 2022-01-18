@@ -1,25 +1,9 @@
-import com.gabrielleeg1.plank.build.Dependencies
-
-plugins {
-  id("org.jetbrains.kotlin.multiplatform")
-}
-
-group = "com.gabrielleeg1"
-version = "1.0-SNAPSHOT"
-
 kotlin {
-  jvm {
-    testRuns["test"].executionTask.configure {
-      useJUnitPlatform()
-      testLogging.showStandardStreams = true
-    }
-  }
-
   sourceSets {
     val commonMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
-        compileOnly(Dependencies.Arrow.Core)
+        compileOnly(libs.arrow.core)
       }
     }
     val commonTest by getting {
@@ -31,10 +15,8 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        compileOnly(Dependencies.ByteDeco.LLVMPlatform)
-        compileOnly(Dependencies.LLVM4J.LLVM4J) {
-          exclude(group = "org.bytedeco")
-        }
+        compileOnly(libs.bytedeco.llvmplatform)
+        compileOnly(libs.llvm4j)
         implementation(kotlin("reflect"))
         implementation(project(":grammar"))
         implementation(project(":shared"))
@@ -44,17 +26,15 @@ kotlin {
     val jvmTest by getting {
       dependencies {
         implementation(kotlin("reflect"))
-        implementation(Dependencies.ByteDeco.LLVMPlatform)
-        implementation(Dependencies.Arrow.Core)
-        implementation(Dependencies.LLVM4J.LLVM4J) {
-          exclude("org.bytedeco")
-        }
+        implementation(libs.bytedeco.llvmplatform)
+        implementation(libs.arrow.core)
+        implementation(libs.llvm4j)
 
-        implementation(Dependencies.Jansi.Jansi)
+        implementation(libs.jansi)
 
         implementation(kotlin("test-junit"))
-        implementation(Dependencies.JUnit.JupiterApi)
-        implementation(Dependencies.JUnit.JupiterEngine)
+        implementation(libs.jupiter.api)
+        implementation(libs.jupiter.engine)
       }
     }
   }

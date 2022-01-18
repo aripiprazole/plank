@@ -1,0 +1,93 @@
+[versions]
+ktx = "1.4.2"
+ktlint = "0.40.0"
+lsp4j = "0.10.0"
+binom = "0.1.32"
+antlr4 = "4.7.1"
+antlr-kotlin-target = "0ad2c42952"
+antlr-kotlin-gradle = "-SNAPSHOT"
+llvm4j = "0.1.0-SNAPSHOT"
+llvmplatform = "11.1.0-1.5.5"
+arrow = "1.0.1"
+jupiter = "5.6.0"
+jansi = "2.0.1"
+clikt = "3.1.0"
+
+# Libraries
+
+[libraries.ktx-coroutines-core]
+module = "org.jetbrains.kotlinx:kotlinx-coroutines-core"
+version.ref = "ktx"
+
+[libraries.ktx-coroutines-jdk8]
+module = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8"
+version.ref = "ktx"
+
+[libraries.pinterest-ktlint]
+module = "com.pinterest:ktlint"
+version.ref = "ktlint"
+
+[libraries.lsp4j-lsp4j]
+module = "org.eclipse.lsp4j:org.eclipse.lsp4j"
+version.ref = "lsp4j"
+
+[libraries.lsp4j-jsonrpc]
+module = "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc"
+version.ref = "lsp4j"
+
+[libraries.binom-file]
+module = "pw.binom.io:file"
+version.ref = "binom"
+
+[libraries.antlr4]
+module = "org.antlr:antlr4"
+version.ref = "antlr4"
+
+[libraries.antlr-kotlin-gradle]
+module = "com.strumenta.antlr-kotlin:antlr-kotlin-gradle-plugin"
+version.ref = "antlr-kotlin-gradle"
+
+[libraries.antlr-kotlin-target]
+module = "com.strumenta.antlr-kotlin:antlr-kotlin-target"
+version.ref = "antlr-kotlin-target"
+
+[libraries.llvm4j]
+module = "org.llvm4j:llvm4j"
+version.ref = "llvm4j"
+
+[libraries.bytedeco-llvmplatform]
+module = "org.bytedeco:llvm-platform"
+version.ref = "llvmplatform"
+
+[libraries.arrow-core]
+module = "io.arrow-kt:arrow-core"
+version.ref = "arrow"
+
+[libraries.jupiter-api]
+module = "org.junit.jupiter:junit-jupiter-api"
+version.ref = "jupiter"
+
+[libraries.jupiter-engine]
+module = "org.junit.jupiter:junit-jupiter-engine"
+version.ref = "jupiter"
+
+[libraries.jansi]
+module = "org.fusesource.jansi:jansi"
+version.ref = "jansi"
+
+[libraries.clikt]
+module = "com.github.ajalt.clikt:clikt"
+version.ref = "clikt"
+
+# Plugins
+[plugins.kotlin]
+id = "org.jetbrains.kotlin.multiplatform"
+version = "1.6.10"
+
+[plugins.ktlint]
+id = "org.jlleitschuh.gradle.ktlint"
+version = "10.0.0"
+
+[plugins.detekt]
+id = "io.gitlab.arturbosch.detekt"
+version = "1.16.0"

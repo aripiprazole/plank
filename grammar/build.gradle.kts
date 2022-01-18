@@ -1,19 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-plugins {
-  id("org.jetbrains.kotlin.multiplatform")
-}
-
-group = "com.gabrielleeg1"
-version = "1.0-SNAPSHOT"
-
-repositories {
-  mavenCentral()
-  maven("https://jitpack.io")
-}
-
 kotlin {
   jvm()
 

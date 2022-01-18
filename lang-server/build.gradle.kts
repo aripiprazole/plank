@@ -1,22 +1,9 @@
-import com.gabrielleeg1.plank.build.Dependencies
-
 plugins {
-  kotlin("multiplatform")
   id("com.github.johnrengelman.shadow") version "6.1.0"
   java
 }
 
-group = "com.gabrielleeg1"
-version = "1.0-SNAPSHOT"
-
 kotlin {
-  jvm()
-
-  /*
-   * Targets configuration omitted.
-   * To find out how to configure the targets, please follow the link:
-   * https://kotlinlang.org/docs/reference/building-mpp-with-gradle.html#setting-up-targets
-   */
   sourceSets {
     val commonMain by getting {
       dependencies {
@@ -36,10 +23,10 @@ kotlin {
         implementation(project(":grammar"))
         implementation(project(":shared"))
         implementation(project(":analyzer"))
-        implementation(Dependencies.Kotlin.Coroutines)
-        implementation(Dependencies.Kotlin.CoroutinesJdk8)
-        implementation(Dependencies.Eclipse4J.LSP4J)
-        implementation(Dependencies.Eclipse4J.JsonRPC)
+        implementation(libs.ktx.coroutines.core)
+        implementation(libs.ktx.coroutines.jdk8)
+        implementation(libs.lsp4j.lsp4j)
+        implementation(libs.lsp4j.jsonrpc)
       }
     }
   }

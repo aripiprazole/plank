@@ -1,27 +1,13 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.gabrielleeg1.plank.build.Dependencies
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 
 plugins {
-  id("org.jetbrains.kotlin.multiplatform")
   java
   distribution
 }
 
-group = "com.gabrielleeg1"
-version = "1.0-SNAPSHOT"
-
-repositories {
-  mavenCentral()
-}
-
 kotlin {
-  jvm {
-    java.sourceCompatibility = JavaVersion.VERSION_11
-    java.targetCompatibility = JavaVersion.VERSION_11
-  }
-
   sourceSets {
     val commonMain by getting
     val commonTest by getting
@@ -29,13 +15,11 @@ kotlin {
     val jvmMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
-        implementation(Dependencies.Clikt.Clikt)
-        implementation(Dependencies.Jansi.Jansi)
-        implementation(Dependencies.ByteDeco.LLVMPlatform)
-        implementation(Dependencies.Arrow.Core)
-        implementation(Dependencies.LLVM4J.LLVM4J) {
-          exclude("org.bytedeco")
-        }
+        implementation(libs.clikt)
+        implementation(libs.jansi)
+        implementation(libs.bytedeco.llvmplatform)
+        implementation(libs.arrow.core)
+        implementation(libs.llvm4j)
         implementation(project(":grammar"))
         implementation(project(":compiler"))
         implementation(project(":shared"))

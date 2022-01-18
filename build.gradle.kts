@@ -1,5 +1,6 @@
-import com.gabrielleeg1.plank.build.Dependencies
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
+@file:Suppress("DSL_SCOPE_VIOLATION")
+
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 buildscript {
   repositories {
@@ -8,15 +9,14 @@ buildscript {
   }
 
   dependencies {
-    classpath("com.strumenta.antlr-kotlin:antlr-kotlin-gradle-plugin:-SNAPSHOT")
+    classpath(libs.antlr.kotlin.gradle)
   }
 }
 
 plugins {
-  kotlin("multiplatform") version "1.6.10" apply false
-  id("org.jlleitschuh.gradle.ktlint") version "10.0.0"
-  id("io.gitlab.arturbosch.detekt") version "1.16.0"
-  id("composite-build")
+  alias(libs.plugins.kotlin) apply false
+  alias(libs.plugins.ktlint)
+  alias(libs.plugins.detekt)
 }
 
 group = "com.gabrielleeg1"
@@ -28,44 +28,55 @@ repositories {
 }
 
 dependencies {
-  ktlintRuleset(Dependencies.Pinterest.Ktlint)
+  ktlintRuleset(libs.pinterest.ktlint)
 }
 
 subprojects {
-  apply(plugin = "org.jlleitschuh.gradle.ktlint")
-  apply(plugin = "io.gitlab.arturbosch.detekt")
-  apply(plugin = "composite-build")
+  apply(plugin = "org.jetbrains.kotlin.multiplatform")
 
   repositories {
     mavenCentral()
     mavenLocal()
     jcenter()
     maven("https://repo.binom.pw")
+    maven("https://repo.binom.pw/releases")
     maven("https://jitpack.io")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
   }
 
-  ktlint {
-    android.set(false)
-  }
+  group = "com.gabrielleeg1"
+  version = "1.0-SNAPSHOT"
 
-  detekt {
-    buildUponDefaultConfig = true
-    allRules = false
+  configure<KotlinMultiplatformExtension> {
+    jvm {
+      compilations.all {
+        kotlinOptions.jvmTarget = "11"
+      }
 
-    config = files("${rootProject.projectDir}/config/detekt.yml")
-    baseline = file("${rootProject.projectDir}/config/baseline.xml")
-
-    reports {
-      html.enabled = true
-      xml.enabled = true
-      txt.enabled = true
-      sarif.enabled = true
+      testRuns["test"].executionTask.configure {
+        useJUnitPlatform()
+        testLogging.showStandardStreams = true
+      }
     }
   }
+}
 
-  tasks.withType<KotlinJvmCompile> {
-    kotlinOptions.jvmTarget = "11"
+ktlint {
+  android.set(false)
+}
+
+detekt {
+  buildUponDefaultConfig = true
+  allRules = false
+
+  config = files("${rootProject.projectDir}/config/detekt.yml")
+  baseline = file("${rootProject.projectDir}/config/baseline.xml")
+
+  reports {
+    html.enabled = true
+    xml.enabled = true
+    txt.enabled = true
+    sarif.enabled = true
   }
 }

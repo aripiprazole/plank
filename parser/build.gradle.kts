@@ -1,24 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.gabrielleeg1.plank.build.Dependencies
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins {
-  id("org.jetbrains.kotlin.multiplatform")
-}
-
-group = "com.gabrielleeg1"
-version = "1.0-SNAPSHOT"
-
-repositories {
-  mavenCentral()
-  maven("https://jitpack.io")
-}
-
 kotlin {
-  jvm()
-
   sourceSets {
     val commonAntlr by creating {
       dependencies {
@@ -48,10 +33,15 @@ kotlin {
 }
 
 tasks {
+  val antlr4Version = libs.versions.antlr4.get()
+  val antlrKotlinTargetVersion = libs.versions.antlr.kotlin.target.get()
+
   val generateKotlinGrammarSource = register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+    val dependencies = project.dependencies
+
     antlrClasspath = configurations.detachedConfiguration(
-      project.dependencies.create(Dependencies.Antlr.Antlr4),
-      project.dependencies.create(Dependencies.Antlr.AntlrKotlinTarget)
+      dependencies.create("org.antlr:antlr4:$antlr4Version"),
+      dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinTargetVersion")
     )
     maxHeapSize = "64m"
     packageName = "com.gabrielleeg1.plank.parser"
