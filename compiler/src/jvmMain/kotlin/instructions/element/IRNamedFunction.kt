@@ -2,10 +2,12 @@ package com.gabrielleeg1.plank.compiler.instructions.element
 
 import arrow.core.Either
 import arrow.core.computations.either
+import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import org.llvm4j.llvm4j.Function
+import org.llvm4j.llvm4j.PointerType
 
 class IRNamedFunction(
   override val name: String,
@@ -22,7 +24,11 @@ class IRNamedFunction(
       context.getFunctionType(
         returnType = descriptor.returnType.toType().bind(),
         *descriptor.realParameters.values
-          .map { it.toType().bind() }
+          .map { type ->
+            type.cast<FunctionType>()?.copy(isClosure = true)?.toType()
+              ?.map { if (it is PointerType) it else context.getPointerType(it).unwrap() }?.bind()
+              ?: type.toType().bind()
+          }
           .toTypedArray(),
         isVariadic = false,
       ),

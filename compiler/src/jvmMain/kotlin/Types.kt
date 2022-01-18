@@ -24,6 +24,7 @@ import org.llvm4j.optional.Ok
 
 typealias TypegenResult = Either<CodegenViolation, Type>
 
+@Suppress("Detekt.LongMethod", "Detekt.ComplexMethod")
 fun CompilerContext.toType(type: PlankType?): TypegenResult = either.eager {
   when (type) {
     UnitType -> runtime.types.void
@@ -45,7 +46,14 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either.eager {
     is StructType -> {
       findStruct(type.name.text) ?: unresolvedTypeError(type.name.text).left().bind<Type>()
     }
-    is FunctionType ->
+    is FunctionType -> {
+      val parameters = type.parameters
+        .map { type ->
+          type.cast<FunctionType>()?.copy(isClosure = true)?.toType()?.bind()
+            ?: type.toType().bind()
+        }
+        .toTypedArray()
+
       when (type.isClosure) {
         true -> {
           val name = "Closure_${type.hashCode()}_Function"
@@ -54,9 +62,7 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either.eager {
           val returnType = type.returnType.toType().bind()
           val environmentType = runtime.types.voidPtr
 
-          val functionType = context.getFunctionType(
-            returnType, environmentType, *type.parameters.map { it.toType().bind() }.toTypedArray(),
-          )
+          val functionType = context.getFunctionType(returnType, environmentType, *parameters)
 
           val struct = context.getNamedStructType(name).apply {
             setElementTypes(
@@ -81,6 +87,7 @@ fun CompilerContext.toType(type: PlankType?): TypegenResult = either.eager {
           }
         }
       }
+    }
     is PointerType -> {
       when (val result = toType(type.inner).map(context::getPointerType).bind()) {
         is Ok -> result.value

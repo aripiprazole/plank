@@ -217,7 +217,7 @@ class TestSuite {
   }
 
   @Test
-  fun `test nesting hof access`() { // FIXME: failing when run all tests
+  fun `test nesting hof access`() {
     TestCompilation
       .of(
         """
@@ -225,7 +225,7 @@ class TestSuite {
 
         import Std.IO;
 
-        fun hof(f: *Char -> Void): Void {
+        fun hof_nesting(f: *Char -> Void): Void {
           f("String (hof)");
         }
 
@@ -239,7 +239,7 @@ class TestSuite {
             println(value);
           }
 
-          hof(nested);
+          hof_nesting(nested);
         }
         """.trimIndent()
       )
