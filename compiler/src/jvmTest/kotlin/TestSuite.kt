@@ -215,4 +215,37 @@ class TestSuite {
         expectSuccess()
       }
   }
+
+  @Test
+  fun `test nesting hof access`() { // FIXME: failing when run all tests
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          println("String (outside hof)");
+
+          let x = "Example String";
+
+          fun nested(value: *Char): Void {
+            println(x);
+            println(value);
+          }
+
+          hof(nested);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
 }
