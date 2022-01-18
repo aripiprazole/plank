@@ -3,8 +3,8 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
-        implementation(project(":grammar"))
-        implementation(project(":shared"))
+        implementation(projects.grammar)
+        implementation(projects.shared)
       }
     }
 

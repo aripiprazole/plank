@@ -20,10 +20,10 @@ kotlin {
         implementation(libs.bytedeco.llvmplatform)
         implementation(libs.arrow.core)
         implementation(libs.llvm4j)
-        implementation(project(":grammar"))
-        implementation(project(":compiler"))
-        implementation(project(":shared"))
-        implementation(project(":analyzer"))
+        implementation(projects.grammar)
+        implementation(projects.compiler)
+        implementation(projects.shared)
+        implementation(projects.analyzer)
       }
     }
   }

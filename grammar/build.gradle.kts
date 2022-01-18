@@ -1,18 +1,16 @@
 kotlin {
-  jvm()
-
   sourceSets {
     val commonMain by getting {
       dependencies {
-        implementation(project(":parser"))
-        implementation(project(":shared"))
+        implementation(projects.parser)
+        implementation(projects.shared)
       }
     }
     val commonTest by getting
 
     val jvmMain by getting {
       dependencies {
-        implementation(kotlin("reflect"))
+        implementation(libs.kt.reflect)
       }
     }
     val jvmTest by getting

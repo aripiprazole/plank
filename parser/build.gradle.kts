@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -7,8 +5,7 @@ kotlin {
   sourceSets {
     val commonAntlr by creating {
       dependencies {
-        api(kotlin("stdlib-common"))
-        api("com.strumenta.antlr-kotlin:antlr-kotlin-runtime:6304d5c1c4")
+        api(libs.antlr.kotlin.runtime)
       }
     }
 
@@ -16,7 +13,7 @@ kotlin {
       dependsOn(commonAntlr)
 
       dependencies {
-        implementation(project(":shared"))
+        implementation(projects.shared)
       }
 
       kotlin.srcDir("$buildDir/generated-src/commonAntlr/kotlin")
@@ -25,7 +22,7 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        implementation(kotlin("reflect"))
+        implementation(libs.kt.reflect)
       }
     }
     val jvmTest by getting
@@ -34,14 +31,14 @@ kotlin {
 
 tasks {
   val antlr4Version = libs.versions.antlr4.get()
-  val antlrKotlinTargetVersion = libs.versions.antlr.kotlin.target.get()
+  val antlrKotlinVersion = libs.versions.antlr.kotlin.get()
 
   val generateKotlinGrammarSource = register<AntlrKotlinTask>("generateKotlinGrammarSource") {
     val dependencies = project.dependencies
 
     antlrClasspath = configurations.detachedConfiguration(
       dependencies.create("org.antlr:antlr4:$antlr4Version"),
-      dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinTargetVersion")
+      dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinVersion")
     )
     maxHeapSize = "64m"
     packageName = "com.gabrielleeg1.plank.parser"
