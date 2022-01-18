@@ -20,7 +20,7 @@ sealed interface TypeRef : PlankElement {
   }
 }
 
-data class UnitTypeRef(override val location: Location) : TypeRef
+data class UnitTypeRef(override val location: Location = Location.Generated) : TypeRef
 
 data class AccessTypeRef(val path: QualifiedPath, override val location: Location) : TypeRef
 

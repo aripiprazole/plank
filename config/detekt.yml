@@ -321,7 +321,7 @@ formatting:
     active: true
     autoCorrect: true
   NoWildcardImports:
-    active: true
+    active: false
   PackageName:
     active: true
     autoCorrect: true
@@ -731,6 +731,6 @@ style:
   VarCouldBeVal:
     active: true
   WildcardImport:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     excludeImports: ['java.util.*', 'kotlinx.android.synthetic.*']

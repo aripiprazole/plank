@@ -37,7 +37,9 @@ class ParseTreeNode(val name: String) : ParseTreeElement {
 }
 
 fun ParserRuleContext.toParseTree(): ParseTreeNode {
-  val tree = ParseTreeNode(this::class.simpleName ?: error("Unknown name for parse context: $this"))
+  val nodeName = this::class.simpleName?.removeSuffix("Context")
+    ?: error("Unknown name for parse context: $this")
+  val tree = ParseTreeNode(nodeName)
   children.orEmpty().forEach { element ->
     when (element) {
       is ParserRuleContext -> tree.child(element.toParseTree())
