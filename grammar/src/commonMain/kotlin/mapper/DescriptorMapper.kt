@@ -56,21 +56,37 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitFunDecl(ctx: FunDeclContext): FunDecl {
-    val params = ctx.findParam().associate { param ->
-      visitToken(param.name!!) to visitTypeRef(param.type!!)
+    val parameters = ctx.findParam().associate { param ->
+      visitToken(param.name!!) to when (val type = visitTypeRef(param.type!!)) {
+        is FunctionTypeRef -> type.copy(
+          realParameters = buildMap {
+            var current: TypeRef = type
+            var index = 0
+
+            while (current is FunctionTypeRef) {
+              put(Identifier(index.toString()), current.parameter)
+              current = current.returnType
+              index++
+            }
+          },
+          isClosure = true,
+        )
+        else -> type
+      }
     }
 
     val returnType = ctx.returnType?.let(::visitTypeRef) ?: UnitTypeRef()
-    val functionType = params.values.fold(returnType) { acc, next ->
-      FunctionTypeRef(next, acc, next.location)
-    } as? FunctionTypeRef ?: FunctionTypeRef(UnitTypeRef(), returnType, ctx.location)
+    val functionType = parameters.values
+      .fold(returnType) { acc, next ->
+        FunctionTypeRef(next, acc, returnType, parameters, null, next.location)
+      } as? FunctionTypeRef
+      ?: FunctionTypeRef(UnitTypeRef(), returnType, returnType, parameters, null, ctx.location)
 
     return FunDecl(
       attributes = ctx.findAttr().map(::visitAttr),
       name = visitToken(ctx.name!!),
       type = functionType,
       body = ctx.findStmt().map(::visitStmt),
-      realParameters = params,
       location = ctx.location
     )
   }
@@ -317,7 +333,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return FunctionTypeRef(
       visitTypeRef(ctx.parameter!!),
       visitTypeRef(ctx.returnType!!),
-      ctx.location,
+      location = ctx.location,
     )
   }
 

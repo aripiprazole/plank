@@ -75,17 +75,9 @@ class FunctionScope(
   override val enclosing: Scope? = null,
   override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
+  val returnType get() = function.actualReturnType
+
   override val isTopLevelScope: Boolean = false
-
-  val returnType = run {
-    var current: PlankType = function.returnType
-
-    while (current is FunctionType) {
-      current = current.returnType
-    }
-
-    current
-  }
 }
 
 class ClosureScope(
@@ -138,7 +130,7 @@ sealed class Scope {
   fun create(type: PlankType) {
     requireNotNull(type.name) { "type.name must be not null" }
 
-    types[type.name!!] = type
+    types[type.name] = type
   }
 
   fun create(name: Identifier, type: PlankType) {

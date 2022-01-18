@@ -65,7 +65,7 @@ data class ResolvedFunDecl(
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
   @DontDump
-  val parameters = type.parameters
+  val parameters = type.parameters.toList()
 
   val returnType = run {
     var current: PlankType = type.returnType

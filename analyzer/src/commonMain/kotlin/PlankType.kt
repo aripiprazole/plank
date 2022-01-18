@@ -181,23 +181,15 @@ fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
   return intCache.getOrPut(size) { IntType("Int$size", size, unsigned = unsigned) }
 }
 
-// FIXME: if we return a function type it can't return cause the
-//  scopes will get into the final return of the returned function
 data class FunctionType(
   val parameter: PlankType,
   val returnType: PlankType,
+  val actualReturnType: PlankType = returnType,
+  val realParameters: Map<Identifier, PlankType> = emptyMap(),
+  override val name: Identifier = Identifier("FunctionType"),
   override val isClosure: Boolean = false,
 ) : PlankType() {
-  override val name: Identifier = Identifier("FunctionType")
-
-  val parameters = buildList {
-    var current: PlankType = this@FunctionType
-
-    while (current is FunctionType) {
-      add(current.parameter)
-      current = current.returnType
-    }
-  }
+  val parameters get() = realParameters.values.toList()
 
   override val isPrimitive: Boolean = true
   override val size = 8
