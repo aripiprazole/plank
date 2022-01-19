@@ -66,7 +66,7 @@ fun compile(
         .run {
           val instructions = plankModule.program.map { it.toInstruction().codegen() }
 
-          if (currentFile == main) {
+          if (currentFile.module == main.module) { // FIXME: running twice the type check
             instructions + EntryPoint().codegen()
           } else {
             instructions

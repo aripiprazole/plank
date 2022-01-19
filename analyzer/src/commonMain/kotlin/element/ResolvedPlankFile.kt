@@ -30,4 +30,12 @@ data class ResolvedPlankFile(
   val isValid = delegate.isValid && bindingViolations.isEmpty()
 
   override val location = delegate.location
+
+  override fun equals(other: Any?): Boolean {
+    return delegate == other
+  }
+
+  override fun hashCode(): Int {
+    return delegate.hashCode()
+  }
 }
