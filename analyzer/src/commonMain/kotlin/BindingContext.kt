@@ -110,8 +110,17 @@ internal class BindingContext(tree: ModuleTree) :
   }
 
   override fun visitAccessExpr(expr: AccessExpr): TypedExpr {
-    val variable = currentScope.findVariable(expr.path.toIdentifier())
-      ?: return violate("Unknown identifier %s", expr.path.toIdentifier())
+    val variable = findVariable(expr.path.toIdentifier())
+
+    if (
+      !variable.isInScope &&
+      variable.declaredIn !is FileScope &&
+      variable.declaredIn !is GlobalScope
+    ) {
+      (currentScope as? FunctionScope)?.apply {
+        references[variable.name] = variable
+      }
+    }
 
     return TypedAccessExpr(variable, expr.location)
   }
@@ -389,8 +398,8 @@ internal class BindingContext(tree: ModuleTree) :
 
       visitStmts(decl.body)
     }
-    val references = LinkedHashMap<Identifier, PlankType>().apply {
-      put(Identifier("x"), PointerType(CharType)) // TODO remove me
+    val references = scope.references.mapValuesTo(LinkedHashMap()) { (_, variable) ->
+      variable.value.type
     }
 
     return ResolvedFunDecl(name, content, realParameters, attributes, references, type, location)
@@ -503,7 +512,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   private fun findVariable(name: Identifier): Variable {
     return currentScope.findVariable(name)
-      ?: Variable(false, name, violate("Unknown variable", name))
+      ?: Variable(false, name, violate("Unknown variable", name), currentScope)
   }
 
   private inline fun <T> scoped(scope: Scope, body: Scope.() -> T): T {

@@ -5,7 +5,17 @@ import com.gabrielleeg1.plank.grammar.element.Identifier
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 
-data class Variable(val mutable: Boolean, val name: Identifier, var value: TypedExpr)
+data class Variable(
+  val mutable: Boolean,
+  val name: Identifier,
+  var value: TypedExpr,
+  val declaredIn: Scope,
+  val isInScope: Boolean = false,
+) {
+  override fun toString(): String {
+    return "Variable(mutable=$mutable, name=$name, value=$value, isInScope=$isInScope)"
+  }
+}
 
 class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
   /**
@@ -96,6 +106,7 @@ sealed class Scope {
   open val nested: Boolean get() = enclosing != null
 
   val variables = mutableMapOf<Identifier, Variable>()
+  val references = LinkedHashMap<Identifier, Variable>()
 
   private val types = mutableMapOf<Identifier, PlankType>()
   private val expanded = mutableListOf<Scope>()
@@ -107,18 +118,18 @@ sealed class Scope {
   }
 
   fun declare(name: Identifier, type: PlankType, location: Location, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, type.const().copy(location = location))
+    variables[name] = Variable(mutable, name, type.const().copy(location = location), this)
   }
 
   /**
    * Declares a compiler-defined variable with type [type] in the context
    */
   fun declare(name: Identifier, type: PlankType, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, type.const())
+    variables[name] = Variable(mutable, name, type.const(), this)
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, value)
+    variables[name] = Variable(mutable, name, value, this)
   }
 
   fun getOrCreate(name: Identifier): PlankType {
@@ -155,9 +166,10 @@ sealed class Scope {
   }
 
   fun findVariable(name: Identifier): Variable? {
-    return variables[name]
-      ?: enclosing?.findVariable(name)
+    return variables[name]?.copy(isInScope = true)
+      ?: enclosing?.findVariable(name)?.copy(isInScope = false)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
+        ?.copy(isInScope = false)
   }
 
   fun findFunction(name: Identifier): FunctionType? {

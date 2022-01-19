@@ -181,6 +181,8 @@ fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
   return intCache.getOrPut(size) { IntType("Int$size", size, unsigned = unsigned) }
 }
 
+data class VariableAccess(val name: String, val type: PlankType)
+
 data class FunctionType(
   val parameter: PlankType,
   val returnType: PlankType,
