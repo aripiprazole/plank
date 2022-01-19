@@ -1,6 +1,6 @@
 package com.gabrielleeg1.plank.analyzer
 
-import com.gabrielleeg1.plank.analyzer.element.*
+import com.gabrielleeg1.plank.analyzer.element.* // ktlint-disable no-unused-imports
 import com.gabrielleeg1.plank.grammar.element.*
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import pw.binom.Stack
