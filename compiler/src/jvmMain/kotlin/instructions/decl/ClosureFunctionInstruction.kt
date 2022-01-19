@@ -8,11 +8,11 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.buildAlloca
-import com.gabrielleeg1.plank.compiler.buildGlobalStringPtr
 import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.buildReturn
 import com.gabrielleeg1.plank.compiler.buildStore
 import com.gabrielleeg1.plank.compiler.builder.alloca
+import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.insertionBlock
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
@@ -25,6 +25,7 @@ import com.gabrielleeg1.plank.compiler.verify
 import com.gabrielleeg1.plank.grammar.element.Identifier
 
 class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
+  @Suppress("Detekt.LongMethod")
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val mangledName = mangleFunction(descriptor)
     val references = descriptor.references.mapKeys { (name) -> name.text }
@@ -60,7 +61,7 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
       references.entries.forEachIndexed { index, (reference, type) ->
         val variable = buildAlloca(type.toType().bind(), reference)
 
-        buildStore(variable, buildGlobalStringPtr("Example String", "str"))
+        buildStore(variable, buildLoad(getField(environment, index).bind()))
         addVariable(reference, type, variable)
       }
 
