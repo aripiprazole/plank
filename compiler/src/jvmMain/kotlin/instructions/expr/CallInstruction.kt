@@ -25,7 +25,7 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
     val arguments = descriptor.arguments.mapIndexed { index, expr ->
       when (val functionType = type.parameters[index].cast<FunctionType>()) {
         is FunctionType -> {
-          val closureType = functionType.copy(isClosure = true).toType().bind().let {
+          val closureType = functionType.copy(isClosure = true).convertType().bind().let {
             context.getPointerType(it).unwrap()
           }
 

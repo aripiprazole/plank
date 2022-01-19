@@ -33,13 +33,16 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
     val returnType = descriptor.returnType
 
     val environmentType = context.getNamedStructType("Closure_${mangledName}_Environment").apply {
-      setElementTypes(*references.map { it.value.toType().bind() }.toTypedArray(), isPacked = false)
+      setElementTypes(
+        *references.map { it.value.convertType().bind() }.toTypedArray(),
+        isPacked = false
+      )
     }
 
     val functionType = context.getFunctionType(
-      descriptor.returnType.toType().bind(),
+      descriptor.returnType.convertType().bind(),
       context.getPointerType(environmentType).unwrap(),
-      *descriptor.realParameters.values.map { it.toType().bind() }.toTypedArray(),
+      *descriptor.realParameters.values.map { it.convertType().bind() }.toTypedArray(),
     )
 
     val closureFunctionType = context.getNamedStructType("Closure_${mangledName}_Function").apply {
@@ -59,7 +62,7 @@ class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : Comp
       val environment = function.getParameter(0).unwrap() // ENVIRONMENT PARAMETER
 
       references.entries.forEachIndexed { index, (reference, type) ->
-        val variable = buildAlloca(type.toType().bind(), reference)
+        val variable = buildAlloca(type.convertType().bind(), reference)
 
         buildStore(variable, buildLoad(getField(environment, index).bind()))
         addVariable(reference, type, variable)

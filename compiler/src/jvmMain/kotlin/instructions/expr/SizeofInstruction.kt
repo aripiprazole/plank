@@ -9,6 +9,6 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
 class SizeofInstruction(private val descriptor: TypedSizeofExpr) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    descriptor.type.toType().bind().getSize()
+    descriptor.type.convertType().bind().getSize()
   }
 }

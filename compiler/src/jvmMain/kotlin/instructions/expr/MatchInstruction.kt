@@ -25,7 +25,7 @@ class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruc
     val targetType = descriptor.type
     val subjectType = descriptor.subject.type
 
-    val target = buildAlloca(targetType.toType().bind(), "match")
+    val target = buildAlloca(targetType.convertType().bind(), "match")
 
     val subject = descriptor.subject.toInstruction().codegen().bind()
 

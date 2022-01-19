@@ -12,7 +12,7 @@ class StructInstruction(private val descriptor: ResolvedStructDecl) : CompilerIn
     val struct = context.getNamedStructType(name).also { struct ->
       struct.setElementTypes(
         *descriptor.properties
-          .map { (_, property) -> property.type.toType().bind() }
+          .map { (_, property) -> property.type.convertType().bind() }
           .toTypedArray(),
         isPacked = false
       )

@@ -45,7 +45,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
 
   companion object {
     fun CompilerContext.createAnd(lhs: Value, rhs: Value): CodegenResult = either.eager {
-      val variable = buildAlloca(BoolType.toType().bind())
+      val variable = buildAlloca(BoolType.convertType().bind())
       val thenStmts = { listOf(buildStore(variable, rhs)).right() }
       val elseStmts = { listOf(buildStore(variable, runtime.falseConstant)).right() }
 
@@ -112,7 +112,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction()
       builder.positionAfter(mergeBranch)
 
       if (thenRet != null && elseRet != null) {
-        val phiType = type.toType().bind()
+        val phiType = type.convertType().bind()
 
         return@eager buildPhi(phiType, "if.tmp").apply {
           addIncoming(thenBranch to thenRet)

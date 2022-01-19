@@ -22,12 +22,12 @@ class IRNamedFunction(
     module.addFunction(
       mangledName,
       context.getFunctionType(
-        returnType = descriptor.returnType.toType().bind(),
+        returnType = descriptor.returnType.convertType().bind(),
         *descriptor.realParameters.values
           .map { type ->
-            type.cast<FunctionType>()?.copy(isClosure = true)?.toType()
+            type.cast<FunctionType>()?.copy(isClosure = true)?.convertType()
               ?.map { if (it is PointerType) it else context.getPointerType(it).unwrap() }?.bind()
-              ?: type.toType().bind()
+              ?: type.convertType().bind()
           }
           .toTypedArray(),
         isVariadic = false,
