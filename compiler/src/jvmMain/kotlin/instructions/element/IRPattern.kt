@@ -31,7 +31,7 @@ import org.llvm4j.llvm4j.NamedStructType
 import org.llvm4j.llvm4j.PointerType
 import org.llvm4j.llvm4j.Value
 
-sealed class IRPattern : CompilerInstruction() {
+sealed interface IRPattern : CompilerInstruction {
   companion object {
     fun of(
       pattern: TypedPattern,
@@ -53,7 +53,7 @@ class IRIdentPattern(
   private val subject: Value,
   private val type: PlankType,
   private val member: EnumMember? = null
-) : IRPattern() {
+) : IRPattern {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     type.cast<EnumType>()?.let cast@{ enum ->
       if (member == null || member.fields.isNotEmpty()) {
@@ -78,7 +78,7 @@ class IRNamedTuplePattern(
   private val pattern: TypedNamedTuplePattern,
   private val subject: Value,
   private val type: PlankType,
-) : IRPattern() {
+) : IRPattern {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val enum = type.cast()
       ?: llvmError("could not match named tuple without enum type")
@@ -97,7 +97,7 @@ class IRNamedTuplePattern(
         ?: unresolvedVariableError("pattern $index").left().bind<PlankType>()
 
       val value =
-        of(pattern, buildLoad(getField(instance, index + 1).bind()), type, member)
+        IRPattern.of(pattern, buildLoad(getField(instance, index + 1).bind()), type, member)
           .codegen()
           .bind()
 

@@ -16,7 +16,7 @@ import com.gabrielleeg1.plank.compiler.instructions.element.IRPattern
 import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction.Companion.createIf
 import org.llvm4j.llvm4j.Value
 
-class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruction() {
+class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     debug {
       printf("=>> MATCH")

@@ -6,7 +6,7 @@ import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class StructInstruction(private val descriptor: ResolvedStructDecl) : CompilerInstruction() {
+class StructInstruction(private val descriptor: ResolvedStructDecl) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val name = descriptor.name.text
     val struct = context.getNamedStructType(name).also { struct ->

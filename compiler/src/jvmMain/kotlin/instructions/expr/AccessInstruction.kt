@@ -7,7 +7,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class AccessInstruction(private val descriptor: TypedAccessExpr) : CompilerInstruction() {
+class AccessInstruction(private val descriptor: TypedAccessExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     buildLoad(findVariable(descriptor.name.text).bind())
   }

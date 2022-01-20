@@ -9,7 +9,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
 import com.gabrielleeg1.plank.compiler.mangleFunction
 
-class EntryPoint : CompilerInstruction() {
+class EntryPoint : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val name = currentFile.program
       .filterIsInstance<ResolvedFunDecl>()

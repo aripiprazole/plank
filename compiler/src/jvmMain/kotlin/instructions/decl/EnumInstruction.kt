@@ -8,7 +8,7 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IREnumConstructor
 
 // enums implements tagged unions
-class EnumInstruction(val descriptor: ResolvedEnumDecl) : CompilerInstruction() {
+class EnumInstruction(val descriptor: ResolvedEnumDecl) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val type = descriptor.type
     val union = context.getNamedStructType(descriptor.name.text).also { enum ->

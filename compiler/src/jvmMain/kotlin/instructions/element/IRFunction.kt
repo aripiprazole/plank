@@ -33,15 +33,15 @@ import org.llvm4j.llvm4j.BasicBlock
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.PointerType
 
-abstract class IRFunction : IRElement() {
-  abstract val name: String
-  abstract val mangledName: String
+interface IRFunction : IRElement {
+  val name: String
+  val mangledName: String
 
   /** Access the function in the [context] */
-  abstract fun accessIn(context: CompilerContext): AllocaInstruction?
+  fun accessIn(context: CompilerContext): AllocaInstruction?
 
   /** Generates the function in the [this] */
-  abstract override fun CompilerContext.codegen(): Either<CodegenViolation, Function>
+  override fun CompilerContext.codegen(): Either<CodegenViolation, Function>
 }
 
 class IRNamedFunction(
@@ -51,7 +51,7 @@ class IRNamedFunction(
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
   private val generateBody: (CompilerContext.(List<Argument>) -> Unit)? = null,
-) : IRFunction() {
+) : IRFunction {
   override fun accessIn(context: CompilerContext): AllocaInstruction? {
     return context.module
       .getFunction(mangledName)
@@ -108,7 +108,7 @@ class IRClosure(
   private val realParameters: Map<Identifier, PlankType>,
   private val generateBody: CompilerContext.(List<Argument>) -> Unit,
   private val descriptor: ResolvedFunDecl? = null,
-) : IRFunction() {
+) : IRFunction {
   override fun accessIn(context: CompilerContext): AllocaInstruction {
     return context.findVariableAlloca(mangledName)!!
   }

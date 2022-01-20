@@ -8,7 +8,7 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.addIrFunction
 import com.gabrielleeg1.plank.compiler.instructions.element.generateBody
 
-class FunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
+class FunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager codegen@{
     addIrFunction(descriptor, generateBody(descriptor)).bind()
   }

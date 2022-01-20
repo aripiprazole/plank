@@ -8,7 +8,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class LetInstruction(private val descriptor: ResolvedLetDecl) : CompilerInstruction() {
+class LetInstruction(private val descriptor: ResolvedLetDecl) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val name = descriptor.name.text
 

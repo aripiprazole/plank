@@ -23,7 +23,7 @@ import org.llvm4j.llvm4j.BasicBlock
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
 
-class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction() {
+class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val cond = descriptor.cond.codegen().bind()
 

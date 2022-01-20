@@ -25,7 +25,7 @@ import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.LoadInstruction
 
-class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstruction() {
+class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val type = descriptor.callee.type.cast<FunctionType>()!!
 

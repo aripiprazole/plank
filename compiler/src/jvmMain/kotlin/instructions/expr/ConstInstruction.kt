@@ -8,7 +8,7 @@ import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.invalidConstantError
 
-class ConstInstruction(private val descriptor: TypedConstExpr) : CompilerInstruction() {
+class ConstInstruction(private val descriptor: TypedConstExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult {
     return Either.Right(
       when (val value = descriptor.value) {

@@ -8,7 +8,7 @@ import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.expr.GetInstruction.Companion.findField
 
-class SetInstruction(private val descriptor: TypedSetExpr) : CompilerInstruction() {
+class SetInstruction(private val descriptor: TypedSetExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val value = descriptor.value.codegen().bind()
     val field = findField(descriptor.receiver, descriptor.member).bind()

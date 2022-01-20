@@ -11,7 +11,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class RefInstruction(private val descriptor: TypedRefExpr) : CompilerInstruction() {
+class RefInstruction(private val descriptor: TypedRefExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult {
     return findReference(descriptor.expr)
   }

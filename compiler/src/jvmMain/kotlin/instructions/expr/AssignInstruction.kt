@@ -7,7 +7,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class AssignInstruction(private val descriptor: TypedAssignExpr) : CompilerInstruction() {
+class AssignInstruction(private val descriptor: TypedAssignExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val value = descriptor.value.codegen().bind()
     val variable = findVariable(descriptor.name.text).bind()

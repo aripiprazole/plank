@@ -16,7 +16,7 @@ import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.AllocaInstruction
 
-class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction() {
+class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     buildLoad(findField(descriptor.receiver, descriptor.member).bind(), "load.tmp")
   }

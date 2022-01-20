@@ -6,6 +6,6 @@ import org.llvm4j.llvm4j.Value
 
 typealias CodegenResult = Either<CodegenViolation, Value>
 
-abstract class CompilerInstruction internal constructor() {
-  abstract fun CompilerContext.codegen(): CodegenResult
+interface CompilerInstruction {
+  fun CompilerContext.codegen(): CodegenResult
 }

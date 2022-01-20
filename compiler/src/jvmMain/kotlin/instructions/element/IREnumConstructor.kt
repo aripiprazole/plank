@@ -22,7 +22,7 @@ import org.llvm4j.llvm4j.NamedStructType
 class IREnumConstructor(
   private val member: EnumMember,
   private val descriptor: ResolvedEnumDecl,
-) : IRFunction() {
+) : IRFunction {
   override val name = member.name.text
   override val mangledName = "${descriptor.name.text}_$name" // TODO: mangle properly
 

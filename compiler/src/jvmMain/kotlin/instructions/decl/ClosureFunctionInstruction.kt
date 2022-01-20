@@ -8,7 +8,7 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.addIrClosure
 import com.gabrielleeg1.plank.compiler.instructions.element.generateBody
 
-class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction() {
+class ClosureFunctionInstruction(private val descriptor: ResolvedFunDecl) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     addIrClosure(descriptor, generateBody(descriptor)).bind()
   }

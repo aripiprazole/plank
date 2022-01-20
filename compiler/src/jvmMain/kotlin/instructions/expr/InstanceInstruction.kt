@@ -16,7 +16,7 @@ import org.llvm4j.llvm4j.NamedStructType
 class InstanceInstruction(
   private val descriptor: TypedInstanceExpr,
   private val isPointer: Boolean = false,
-) : CompilerInstruction() {
+) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val struct = descriptor.type.convertType().bind()
 

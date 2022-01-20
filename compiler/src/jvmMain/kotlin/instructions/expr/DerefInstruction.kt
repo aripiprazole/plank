@@ -7,7 +7,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
-class DerefInstruction(private val descriptor: TypedDerefExpr) : CompilerInstruction() {
+class DerefInstruction(private val descriptor: TypedDerefExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     buildLoad(descriptor.expr.codegen().bind(), "value.tmp")
   }
