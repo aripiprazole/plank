@@ -2,6 +2,8 @@
 
 package com.gabrielleeg1.plank.compiler
 
+import com.gabrielleeg1.plank.compiler.builder.buildCall
+import com.gabrielleeg1.plank.compiler.builder.buildGlobalStringPtr
 import org.llvm4j.llvm4j.Value
 
 class DebugCompilerContext(private val context: CompilerContext) {

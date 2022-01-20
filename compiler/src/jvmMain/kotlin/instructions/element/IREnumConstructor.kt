@@ -7,9 +7,9 @@ import com.gabrielleeg1.plank.analyzer.EnumMember
 import com.gabrielleeg1.plank.analyzer.EnumType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildBitcast
-import com.gabrielleeg1.plank.compiler.buildLoad
-import com.gabrielleeg1.plank.compiler.buildReturn
+import com.gabrielleeg1.plank.compiler.builder.buildBitcast
+import com.gabrielleeg1.plank.compiler.builder.buildLoad
+import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation

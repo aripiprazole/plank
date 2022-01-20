@@ -3,7 +3,7 @@ package com.gabrielleeg1.plank.compiler.instructions.expr
 import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.element.TypedAssignExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 

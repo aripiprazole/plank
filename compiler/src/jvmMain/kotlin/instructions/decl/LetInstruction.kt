@@ -3,8 +3,8 @@ package com.gabrielleeg1.plank.compiler.instructions.decl
 import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.element.ResolvedLetDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildAlloca
-import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.builder.buildAlloca
+import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 

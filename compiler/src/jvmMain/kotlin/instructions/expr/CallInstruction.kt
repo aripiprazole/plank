@@ -5,10 +5,10 @@ import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildBitcast
-import com.gabrielleeg1.plank.compiler.buildCall
-import com.gabrielleeg1.plank.compiler.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.alloca
+import com.gabrielleeg1.plank.compiler.builder.buildBitcast
+import com.gabrielleeg1.plank.compiler.builder.buildCall
+import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction

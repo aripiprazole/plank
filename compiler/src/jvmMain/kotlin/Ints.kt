@@ -4,6 +4,8 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.PlankType
+import com.gabrielleeg1.plank.compiler.builder.buildFPToUI
+import com.gabrielleeg1.plank.compiler.builder.buildUIToFP
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.expectedTypeError
 import org.llvm4j.llvm4j.TypeKind

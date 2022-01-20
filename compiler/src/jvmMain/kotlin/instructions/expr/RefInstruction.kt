@@ -6,8 +6,8 @@ import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedRefExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildAlloca
-import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.builder.buildAlloca
+import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 

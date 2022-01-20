@@ -3,12 +3,12 @@ package com.gabrielleeg1.plank.compiler.instructions.expr
 import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.element.TypedMatchExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildAlloca
-import com.gabrielleeg1.plank.compiler.buildBr
-import com.gabrielleeg1.plank.compiler.buildLoad
-import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.builder.buildAlloca
+import com.gabrielleeg1.plank.compiler.builder.buildBr
+import com.gabrielleeg1.plank.compiler.builder.buildLoad
+import com.gabrielleeg1.plank.compiler.builder.buildStore
+import com.gabrielleeg1.plank.compiler.builder.currentFunction
 import com.gabrielleeg1.plank.compiler.builder.getField
-import com.gabrielleeg1.plank.compiler.currentFunction
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction

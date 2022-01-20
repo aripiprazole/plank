@@ -6,9 +6,9 @@ import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedGetExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildAlloca
-import com.gabrielleeg1.plank.compiler.buildLoad
-import com.gabrielleeg1.plank.compiler.buildStore
+import com.gabrielleeg1.plank.compiler.builder.buildAlloca
+import com.gabrielleeg1.plank.compiler.builder.buildLoad
+import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction

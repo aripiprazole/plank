@@ -4,8 +4,8 @@ import arrow.core.computations.either
 import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildCall
-import com.gabrielleeg1.plank.compiler.buildReturn
+import com.gabrielleeg1.plank.compiler.builder.buildCall
+import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.mangleFunction
 
 class EntryPoint : CompilerInstruction() {

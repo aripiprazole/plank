@@ -1,10 +1,11 @@
 @file:Suppress("DuplicatedCode")
 
-package com.gabrielleeg1.plank.compiler
+package com.gabrielleeg1.plank.compiler.builder
 
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
 import org.bytedeco.llvm.global.LLVM

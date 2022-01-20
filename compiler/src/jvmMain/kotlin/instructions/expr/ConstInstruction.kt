@@ -3,7 +3,7 @@ package com.gabrielleeg1.plank.compiler.instructions.expr
 import arrow.core.Either
 import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildGlobalStringPtr
+import com.gabrielleeg1.plank.compiler.builder.buildGlobalStringPtr
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.invalidConstantError

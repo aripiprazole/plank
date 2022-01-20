@@ -12,13 +12,13 @@ import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.buildLoad
-import com.gabrielleeg1.plank.compiler.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.alloca
+import com.gabrielleeg1.plank.compiler.builder.buildLoad
+import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
+import com.gabrielleeg1.plank.compiler.builder.insertionBlock
 import com.gabrielleeg1.plank.compiler.builder.pointerType
-import com.gabrielleeg1.plank.compiler.insertionBlock
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
