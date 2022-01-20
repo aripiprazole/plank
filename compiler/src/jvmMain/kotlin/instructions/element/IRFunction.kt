@@ -24,6 +24,7 @@ import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.compiler.mangleFunction
+import com.gabrielleeg1.plank.compiler.unsafeCast
 import com.gabrielleeg1.plank.compiler.verify
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.AllocaInstruction
@@ -49,7 +50,7 @@ class IRNamedFunction(
   override val mangledName: String,
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
-  private val generateBody: (CompilerContext.() -> Unit)? = null,
+  private val generateBody: (CompilerContext.(List<Argument>) -> Unit)? = null,
 ) : IRFunction() {
   override fun accessIn(context: CompilerContext): AllocaInstruction? {
     return context.module
@@ -85,7 +86,7 @@ class IRNamedFunction(
         .mapIndexed(generateParameter(realParameters, this))
         .traverseEither(::identity).bind()
 
-      generateBody.invoke(this)
+      generateBody.invoke(this, function.getParameters().toList())
 
       ensure(function.verify()) { invalidFunctionError(function) }
     }
@@ -105,10 +106,11 @@ class IRClosure(
   private val references: LinkedHashMap<Identifier, PlankType>,
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
-  private val generateBody: CompilerContext.() -> Unit,
+  private val generateBody: CompilerContext.(List<Argument>) -> Unit,
+  private val descriptor: ResolvedFunDecl? = null,
 ) : IRFunction() {
-  override fun accessIn(context: CompilerContext): AllocaInstruction? {
-    return context.findVariableAlloca(mangledName)
+  override fun accessIn(context: CompilerContext): AllocaInstruction {
+    return context.findVariableAlloca(mangledName)!!
   }
 
   override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
@@ -152,11 +154,13 @@ class IRClosure(
         addVariable(reference, type, variable)
       }
 
-      function.getParameters().drop(1)
+      val parameters = function.getParameters().drop(1)
+
+      parameters
         .mapIndexed(generateParameter(realParameters, this))
         .traverseEither(::identity).bind()
 
-      generateBody.invoke(this)
+      generateBody.invoke(this, parameters)
 
       ensure(function.verify()) { invalidFunctionError(function) }
     }
@@ -171,13 +175,13 @@ class IRClosure(
     val environment = getInstance(environmentType, *variables, isPointer = true).bind()
     val closure = getInstance(closureFunctionType, function, environment, isPointer = true).bind()
 
-    addVariable(mangledName, type, alloca(closure, "Closure.Pointer"))
+    addVariable(mangledName, type, closure.unsafeCast())
 
     function
   }
 }
 
-fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.() -> Unit = {
+fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) -> Unit = {
   either.eager<CodegenViolation, Unit> {
     descriptor.content.map {
       it.toInstruction().codegen().bind()
@@ -203,8 +207,28 @@ fun generateParameter(realParameters: Map<Identifier, PlankType>, context: Compi
   }
 
 fun CompilerContext.addIrClosure(
+  name: String,
+  type: FunctionType,
+  generateBody: CompilerContext.(List<Argument>) -> Unit,
+): Either<CodegenViolation, IRClosure> = either.eager {
+  val closure = IRClosure(
+    name = name,
+    mangledName = name,
+    type = type,
+    references = LinkedHashMap(),
+    returnType = type.actualReturnType,
+    realParameters = type.realParameters,
+    generateBody = generateBody,
+  )
+
+  addFunction(closure).bind()
+
+  closure
+}
+
+fun CompilerContext.addIrClosure(
   descriptor: ResolvedFunDecl,
-  generateBody: CompilerContext.() -> Unit,
+  generateBody: CompilerContext.(List<Argument>) -> Unit,
 ): Either<CodegenViolation, Function> = addFunction(
   IRClosure(
     name = descriptor.name.text,
@@ -219,7 +243,7 @@ fun CompilerContext.addIrClosure(
 
 fun CompilerContext.addIrFunction(
   descriptor: ResolvedFunDecl,
-  generateBody: (CompilerContext.() -> Unit)? = null,
+  generateBody: (CompilerContext.(List<Argument>) -> Unit)? = null,
 ): Either<CodegenViolation, Function> = addFunction(
   IRNamedFunction(
     name = descriptor.name.text,

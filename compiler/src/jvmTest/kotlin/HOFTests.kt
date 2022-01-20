@@ -34,7 +34,7 @@ class HOFTests {
   }
 
   @Test
-  fun `test passing hof with closure`() {
+  fun `test passing hof closure`() {
     TestCompilation
       .of(
         """
@@ -57,6 +57,30 @@ class HOFTests {
           }
 
           hof_nesting(nested);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test passing hof closure with non closure`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof_nesting(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          hof_nesting(println);
         }
         """.trimIndent()
       )
