@@ -15,18 +15,19 @@ import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.grammar.element.Identifier
+import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.NamedStructType
 
 class IREnumConstructor(
   private val member: EnumMember,
-  override val descriptor: ResolvedEnumDecl,
+  private val descriptor: ResolvedEnumDecl,
 ) : IRFunction() {
   override val name = member.name.text
   override val mangledName = "${descriptor.name.text}_$name" // TODO: mangle properly
 
-  override fun accessIn(context: CompilerContext): Function? {
-    return context.module.getFunction(mangledName).toNullable()
+  override fun accessIn(context: CompilerContext): AllocaInstruction? {
+    TODO()
   }
 
   override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {

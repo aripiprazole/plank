@@ -3,18 +3,14 @@ package com.gabrielleeg1.plank.compiler
 import arrow.core.Either
 import arrow.core.computations.either
 import arrow.core.left
-import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.compiler.builder.alloca
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRFunction
-import com.gabrielleeg1.plank.compiler.instructions.element.IRNamedFunction
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.grammar.element.PlankElement
 import org.llvm4j.llvm4j.AllocaInstruction
@@ -81,30 +77,8 @@ data class CompilerContext(
     return apply(builder)
   }
 
-  fun addFunction(
-    name: String,
-    mangledName: String,
-    descriptor: ResolvedFunDecl,
-  ): Either<CodegenViolation, Unit> {
-    functions[name] = IRNamedFunction(name, mangledName, descriptor)
-
-    return Unit.right()
-  }
-
   fun addFunction(function: IRFunction): Either<CodegenViolation, Function> {
     functions[function.name] = function
-
-    return with(function) {
-      this@CompilerContext.codegen()
-    }
-  }
-
-  fun addFunction(decl: ResolvedFunDecl): Either<CodegenViolation, Function> {
-    val name = decl.name.text
-    val mangledName = mangleFunction(decl)
-    val function = IRNamedFunction(name, mangledName, decl)
-
-    functions[name] = function
 
     return with(function) {
       this@CompilerContext.codegen()
@@ -147,9 +121,7 @@ data class CompilerContext(
 
   fun findVariable(name: String): Either<CodegenViolation, AllocaInstruction> = either.eager {
     findVariableAlloca(name)
-      ?: findFunction(name)
-        ?.accessIn(this@CompilerContext)
-        ?.let(::alloca)
+      ?: findFunction(name)?.accessIn(this@CompilerContext)
       ?: unresolvedVariableError(name).left().bind<AllocaInstruction>()
   }
 
