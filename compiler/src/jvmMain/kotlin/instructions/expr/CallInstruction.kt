@@ -14,6 +14,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildCall
 import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
+import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
@@ -45,16 +46,14 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
                 }
               }.bind().accessIn(this@codegen)
 
-            val closureType = functionType.copy(isClosure = true).convertType().bind().let {
-              context.getPointerType(it).unwrap()
-            }
+            val closureType = functionType.copy(isClosure = true).convertType()
+              .bind().let { unsafePointerType(it) }
 
             buildBitcast(closure, closureType)
           }
           true -> {
-            val closureType = functionType.copy(isClosure = true).convertType().bind().let {
-              context.getPointerType(it).unwrap()
-            }
+            val closureType = functionType.copy(isClosure = true).convertType()
+              .bind().let { unsafePointerType(it) }
 
             buildBitcast(alloca(expr.codegen().bind()), closureType)
           }

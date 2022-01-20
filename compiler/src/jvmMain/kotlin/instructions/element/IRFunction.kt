@@ -18,7 +18,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.builder.insertionBlock
-import com.gabrielleeg1.plank.compiler.builder.pointerType
+import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
@@ -125,14 +125,14 @@ class IRClosure(
 
     val functionType = context.getFunctionType(
       returnType.convertType().bind(),
-      pointerType(environmentType),
+      unsafePointerType(environmentType),
       *realParameters.values.toList().map { type -> type.convertType().bind() }.toTypedArray(),
     )
 
     val closureFunctionType = context.getNamedStructType("Closure_${mangledName}_Function").apply {
       setElementTypes(
-        pointerType(functionType),
-        pointerType(environmentType),
+        unsafePointerType(functionType),
+        unsafePointerType(environmentType),
         isPacked = false
       )
     }

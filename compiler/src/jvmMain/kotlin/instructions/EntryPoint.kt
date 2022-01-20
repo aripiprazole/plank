@@ -6,6 +6,7 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.builder.buildCall
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
+import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
 import com.gabrielleeg1.plank.compiler.mangleFunction
 
 class EntryPoint : CompilerInstruction() {
@@ -22,7 +23,7 @@ class EntryPoint : CompilerInstruction() {
     val mainFunctionType = context.getFunctionType(
       runtime.types.int,
       runtime.types.int,
-      context.getPointerType(runtime.types.string).unwrap(),
+      unsafePointerType(runtime.types.string),
       isVariadic = false
     )
 

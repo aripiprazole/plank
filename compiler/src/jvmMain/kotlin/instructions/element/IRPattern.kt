@@ -17,6 +17,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildICmp
 import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.builder.getField
+import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
@@ -133,7 +134,7 @@ fun CompilerContext.compareEnumPatterns(
 
   val instance = buildAlloca(memberType, "instance.match.instance")
   val bitcast =
-    buildBitcast(subject, context.getPointerType(memberType).unwrap(), "instance.match.cast")
+    buildBitcast(subject, unsafePointerType(memberType), "instance.match.cast")
 
   buildStore(instance, buildLoad(bitcast))
 

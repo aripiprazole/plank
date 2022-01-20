@@ -16,6 +16,7 @@ import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.PointerType
 import com.gabrielleeg1.plank.analyzer.StructType
 import com.gabrielleeg1.plank.analyzer.UnitType
+import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
@@ -79,13 +80,13 @@ private fun CompilerContext.convertType(type: FunctionType): Either<CodegenViola
 
         val struct = context.getNamedStructType(name).apply {
           setElementTypes(
-            context.getPointerType(functionType).unwrap(),
+            unsafePointerType(functionType),
             runtime.types.voidPtr,
             isPacked = false
           )
         }
 
-        context.getPointerType(struct).unwrap()
+        unsafePointerType(struct)
       }
       false -> {
         val returnType = type.returnType.convertType().bind()
@@ -94,10 +95,7 @@ private fun CompilerContext.convertType(type: FunctionType): Either<CodegenViola
           parameters = type.parameters.traverseEither { it.convertType() }.bind().toTypedArray()
         )
 
-        when (val result = context.getPointerType(functionType)) {
-          is Ok -> result.value
-          is Err -> llvmError(result.error.message ?: "AssertionError").left().bind<Type>()
-        }
+        unsafePointerType(functionType)
       }
     }
   }
