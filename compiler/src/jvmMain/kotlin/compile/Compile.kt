@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.compiler
+package com.gabrielleeg1.plank.compiler.compile
 
 import arrow.core.Either
 import arrow.core.left
@@ -6,9 +6,7 @@ import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.ModuleTree
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
-import com.gabrielleeg1.plank.compiler.compile.BindingError
-import com.gabrielleeg1.plank.compiler.compile.DebugOptions
-import com.gabrielleeg1.plank.compiler.compile.SyntaxError
+import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.EntryPoint
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
@@ -18,8 +16,6 @@ import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import org.bytedeco.llvm.global.LLVM.LLVMModuleCreateWithName
 import org.llvm4j.llvm4j.Module
-
-data class CompilerError(val module: Module, val violations: List<CodegenViolation>)
 
 private fun ResolvedPlankFile.check(): ResolvedPlankFile = apply {
   if (syntaxViolations.isNotEmpty()) {

@@ -4,7 +4,6 @@ import arrow.core.identity
 import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.Module
 import com.gabrielleeg1.plank.analyzer.analyze
-import com.gabrielleeg1.plank.compiler.compile
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.shared.depthFirstSearch
@@ -22,7 +21,7 @@ fun Package.compileBinary(): File {
     .mapNotNull(tree::findModule)
     .map(Module::scope)
     .filterIsInstance<FileScope>()
-    .map(FileScope::file) // TODO VALIDATE
+    .map(FileScope::file)
     .map { generateIR(it) }
     .map { generateObject(it) }
     .toList()
@@ -92,6 +91,6 @@ private fun Package.cmd(command: String) {
 
   val exitCode = process.waitFor()
   if (exitCode != 0) {
-    throw FailedCommand(command, exitCode)
+    throw FailedCommandError(command, exitCode)
   }
 }
