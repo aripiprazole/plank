@@ -9,6 +9,6 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
 class ReturnInstruction(private val descriptor: ResolvedReturnStmt) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    buildReturn(descriptor.value?.toInstruction()?.codegen()?.bind())
+    buildReturn(descriptor.value?.codegen()?.bind())
   }
 }

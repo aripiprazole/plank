@@ -183,9 +183,7 @@ class IRClosure(
 
 fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) -> Unit = {
   either.eager<CodegenViolation, Unit> {
-    descriptor.content.map {
-      it.toInstruction().codegen().bind()
-    }
+    descriptor.content.map { it.codegen().bind() }
 
     if (descriptor.returnType != UnitType) return@eager
     if (descriptor.content.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()) return@eager

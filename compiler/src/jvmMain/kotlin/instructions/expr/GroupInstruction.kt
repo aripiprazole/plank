@@ -7,6 +7,6 @@ import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 
 class GroupInstruction(private val descriptor: TypedGroupExpr) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult {
-    return descriptor.expr.toInstruction().codegen()
+    return descriptor.expr.codegen()
   }
 }

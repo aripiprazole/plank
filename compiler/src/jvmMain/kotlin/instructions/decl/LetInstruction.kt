@@ -16,7 +16,7 @@ class LetInstruction(private val descriptor: ResolvedLetDecl) : CompilerInstruct
       addVariable(name, descriptor.type, it)
     }
 
-    val value = descriptor.value.toInstruction().codegen().bind()
+    val value = descriptor.value.codegen().bind()
 
     buildStore(variable, value)
   }

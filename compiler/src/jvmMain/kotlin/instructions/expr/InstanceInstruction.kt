@@ -29,7 +29,7 @@ class InstanceInstruction(
             .left()
             .bind<Map.Entry<Identifier, TypedExpr>>()
 
-        value.toInstruction().codegen().bind()
+        value.codegen().bind()
       }
       .toTypedArray()
 

@@ -25,19 +25,19 @@ import org.llvm4j.llvm4j.Value
 
 class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    val cond = descriptor.cond.toInstruction().codegen().bind()
+    val cond = descriptor.cond.codegen().bind()
 
     createIf(
       descriptor.type,
       cond,
       thenStmts = {
         either.eager {
-          listOf(descriptor.thenBranch.toInstruction().codegen().bind())
+          listOf(descriptor.thenBranch.codegen().bind())
         }
       },
       elseStmts = {
         either.eager {
-          listOf(descriptor.elseBranch!!.toInstruction().codegen().bind())
+          listOf(descriptor.elseBranch!!.codegen().bind())
         }
       },
     ).bind()

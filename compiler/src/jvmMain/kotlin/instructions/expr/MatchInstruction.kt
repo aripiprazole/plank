@@ -27,7 +27,7 @@ class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruc
 
     val target = buildAlloca(targetType.convertType().bind(), "match")
 
-    val subject = descriptor.subject.toInstruction().codegen().bind()
+    val subject = descriptor.subject.codegen().bind()
 
     debug {
       printf("tag in subject %d", buildLoad(getField(subject, 0).bind()))
@@ -43,7 +43,7 @@ class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruc
     descriptor.patterns.forEach { (pattern, value) ->
       val thenStmts = {
         either.eager<CodegenViolation, List<Value>> {
-          val instruction = value.toInstruction().codegen().bind()
+          val instruction = value.codegen().bind()
           val store = buildStore(target, instruction)
 
           listOf(instruction, store)

@@ -26,7 +26,7 @@ class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction
       either.eager {
         val instance = when (receiver) {
           is TypedAccessExpr -> findVariable(receiver.name.text).bind()
-          else -> receiver.toInstruction().codegen().bind()
+          else -> receiver.codegen().bind()
         }
 
         val alloca = when (instance) {

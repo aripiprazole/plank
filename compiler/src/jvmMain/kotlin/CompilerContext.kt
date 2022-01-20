@@ -49,15 +49,13 @@ data class CompilerContext(
   }
 
   fun CompilerInstruction.codegen(): CodegenResult {
-    return this@CompilerContext.run {
-      codegen()
-    }
+    return this@CompilerContext.run { codegen() }
   }
 
-  fun PlankElement.toInstruction(): CompilerInstruction {
+  fun PlankElement.codegen(): CodegenResult {
     return when (this) {
-      is TypedExpr -> mapper.visit(this)
-      is ResolvedStmt -> mapper.visit(this)
+      is TypedExpr -> mapper.visit(this).codegen()
+      is ResolvedStmt -> mapper.visit(this).codegen()
       else -> TODO("Not implemented mapping for ${this::class.simpleName}")
     }
   }

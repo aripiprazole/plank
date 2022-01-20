@@ -56,16 +56,16 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
               context.getPointerType(it).unwrap()
             }
 
-            buildBitcast(alloca(expr.toInstruction().codegen().bind()), closureType)
+            buildBitcast(alloca(expr.codegen().bind()), closureType)
           }
         }
-        else -> expr.toInstruction().codegen().bind()
+        else -> expr.codegen().bind()
       }
     }
 
     when (descriptor.callee.type.isClosure) {
       true -> {
-        var closure = descriptor.callee.toInstruction().codegen().bind()
+        var closure = descriptor.callee.codegen().bind()
 
         if (!closure.getType().isPointerType()) {
           closure = alloca(closure)
@@ -89,7 +89,7 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
   companion object {
     fun CompilerContext.callee(descriptor: TypedExpr): Either<CodegenViolation, Function> =
       either.eager {
-        when (val callee = descriptor.toInstruction().codegen().bind()) {
+        when (val callee = descriptor.codegen().bind()) {
           is Function -> callee
           is LoadInstruction -> callee.unsafeCast()
           is AllocaInstruction -> buildLoad(callee).unsafeCast()

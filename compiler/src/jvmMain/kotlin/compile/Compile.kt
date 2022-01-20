@@ -60,7 +60,7 @@ fun compile(
         .createFileScope(plankModule)
         .also(context::addModule)
         .run {
-          val instructions = plankModule.program.map { it.toInstruction().codegen() }
+          val instructions = plankModule.program.map { it.codegen() }
 
           if (currentFile.module == main.module) { // FIXME: running twice the type check
             instructions + EntryPoint().codegen()

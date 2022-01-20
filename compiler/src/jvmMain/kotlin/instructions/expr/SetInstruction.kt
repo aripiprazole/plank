@@ -10,7 +10,7 @@ import com.gabrielleeg1.plank.compiler.instructions.expr.GetInstruction.Companio
 
 class SetInstruction(private val descriptor: TypedSetExpr) : CompilerInstruction() {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    val value = descriptor.value.toInstruction().codegen().bind()
+    val value = descriptor.value.codegen().bind()
     val field = findField(descriptor.receiver, descriptor.member).bind()
 
     buildStore(field, value)

@@ -12,7 +12,7 @@ class ModuleInstruction(private val descriptor: ResolvedModuleDecl) : CompilerIn
       this@codegen.addModule(this@nestedScope)
 
       descriptor.content.forEach {
-        it.toInstruction().codegen().bind()
+        it.codegen().bind()
       }
     }
 
