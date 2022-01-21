@@ -44,8 +44,8 @@ data class CompilerContext(
     }
   }
 
-  fun PlankType.convertType(): TypegenResult {
-    return convertType(this)
+  fun PlankType.typegen(): TypegenResult {
+    return typegen(this)
   }
 
   fun CompilerInstruction.codegen(): CodegenResult {

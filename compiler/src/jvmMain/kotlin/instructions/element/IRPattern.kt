@@ -65,7 +65,7 @@ class IRIdentPattern(
       return@eager (cmp)
     }
 
-    val variable = buildAlloca(type.convertType().bind(), "${pattern.name.text}.alloca")
+    val variable = buildAlloca(type.typegen().bind(), "${pattern.name.text}.alloca")
     buildStore(variable, subject)
 
     addVariable(pattern.name.text, type, variable)

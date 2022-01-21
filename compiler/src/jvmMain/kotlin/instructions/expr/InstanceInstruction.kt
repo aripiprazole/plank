@@ -18,7 +18,7 @@ class InstanceInstruction(
   private val isPointer: Boolean = false,
 ) : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    val struct = descriptor.type.convertType().bind()
+    val struct = descriptor.type.typegen().bind()
 
     ensure(struct is NamedStructType) { llvmError("TODO") }
 

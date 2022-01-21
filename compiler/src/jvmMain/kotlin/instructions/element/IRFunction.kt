@@ -63,12 +63,12 @@ class IRNamedFunction(
     val function = module.addFunction(
       mangledName,
       context.getFunctionType(
-        returnType = returnType.convertType().bind(),
+        returnType = returnType.typegen().bind(),
         *realParameters.values
           .map { type ->
-            type.cast<FunctionType>()?.copy(isClosure = true)?.convertType()
+            type.cast<FunctionType>()?.copy(isClosure = true)?.typegen()
               ?.map { if (it is PointerType) it else context.getPointerType(it).unwrap() }?.bind()
-              ?: type.convertType().bind()
+              ?: type.typegen().bind()
           }
           .toTypedArray(),
         isVariadic = false,
@@ -118,15 +118,15 @@ class IRClosure(
 
     val environmentType = context.getNamedStructType("Closure_${mangledName}_Environment").apply {
       setElementTypes(
-        *references.map { it.value.convertType().bind() }.toTypedArray(),
+        *references.map { it.value.typegen().bind() }.toTypedArray(),
         isPacked = false
       )
     }
 
     val functionType = context.getFunctionType(
-      returnType.convertType().bind(),
+      returnType.typegen().bind(),
       unsafePointerType(environmentType),
-      *realParameters.values.toList().map { type -> type.convertType().bind() }.toTypedArray(),
+      *realParameters.values.toList().map { type -> type.typegen().bind() }.toTypedArray(),
     )
 
     val closureFunctionType = context.getNamedStructType("Closure_${mangledName}_Function").apply {

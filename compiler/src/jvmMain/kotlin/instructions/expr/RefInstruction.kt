@@ -22,7 +22,7 @@ class RefInstruction(private val descriptor: TypedRefExpr) : CompilerInstruction
         is TypedInstanceExpr -> InstanceInstruction(descriptor, isPointer = true).codegen().bind()
         is TypedAccessExpr -> findVariable(descriptor.name.text).bind()
         else -> {
-          val type = descriptor.type.convertType().bind()
+          val type = descriptor.type.typegen().bind()
           val value = descriptor.codegen().bind()
 
           val reference = buildAlloca(type, "ref.alloca.tmp")

@@ -12,7 +12,7 @@ class LetInstruction(private val descriptor: ResolvedLetDecl) : CompilerInstruct
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
     val name = descriptor.name.text
 
-    val variable = buildAlloca(descriptor.type.convertType().bind(), name).also {
+    val variable = buildAlloca(descriptor.type.typegen().bind(), name).also {
       addVariable(name, descriptor.type, it)
     }
 

@@ -46,13 +46,13 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
                 }
               }.bind().accessIn(this@codegen)
 
-            val closureType = functionType.copy(isClosure = true).convertType()
+            val closureType = functionType.copy(isClosure = true).typegen()
               .bind().let { unsafePointerType(it) }
 
             buildBitcast(closure, closureType)
           }
           true -> {
-            val closureType = functionType.copy(isClosure = true).convertType()
+            val closureType = functionType.copy(isClosure = true).typegen()
               .bind().let { unsafePointerType(it) }
 
             buildBitcast(alloca(expr.codegen().bind()), closureType)

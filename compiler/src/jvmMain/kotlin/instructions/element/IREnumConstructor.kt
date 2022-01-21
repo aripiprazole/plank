@@ -31,7 +31,7 @@ class IREnumConstructor(
   }
 
   override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
-    val parameters = member.fields.map { it.convertType().bind() }
+    val parameters = member.fields.map { it.typegen().bind() }
 
     val enum = descriptor.type.cast()
       ?: unresolvedTypeError(name)
@@ -39,7 +39,7 @@ class IREnumConstructor(
         .bind<EnumType>()
 
     val functionType = context.getFunctionType(
-      enum.convertType().bind(),
+      enum.typegen().bind(),
       *parameters.toTypedArray(),
       isVariadic = false
     )
@@ -59,7 +59,7 @@ class IREnumConstructor(
       val index = runtime.types.tag.getConstant(enum.tag(Identifier(name)))
       val instance = getInstance(struct, index, *arguments, isPointer = true).bind()
 
-      val bitcast = buildBitcast(instance, enum.convertType().bind())
+      val bitcast = buildBitcast(instance, enum.typegen().bind())
 
       debug {
         printf(

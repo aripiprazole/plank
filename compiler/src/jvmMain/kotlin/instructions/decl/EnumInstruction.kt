@@ -26,7 +26,7 @@ class EnumInstruction(val descriptor: ResolvedEnumDecl) : CompilerInstruction {
       val struct = context.getNamedStructType(mangledName).also { struct ->
         struct.setElementTypes(
           runtime.types.tag, // type tag
-          *member.fields.map { it.convertType().bind() }.toTypedArray(), // enum member's fields
+          *member.fields.map { it.typegen().bind() }.toTypedArray(), // enum member's fields
           isPacked = false
         )
       }
