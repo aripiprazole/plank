@@ -3,6 +3,7 @@ package com.gabrielleeg1.plank.compiler
 import arrow.core.Either
 import arrow.core.computations.either
 import arrow.core.left
+import arrow.core.traverseEither
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
@@ -19,6 +20,7 @@ import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.IRBuilder
 import org.llvm4j.llvm4j.Module
 import org.llvm4j.llvm4j.NamedStructType
+import org.llvm4j.llvm4j.Value
 
 data class CompilerContext(
   val debug: Boolean,
@@ -50,6 +52,16 @@ data class CompilerContext(
 
   fun CompilerInstruction.codegen(): CodegenResult {
     return this@CompilerContext.run { codegen() }
+  }
+
+  @JvmName("instructionsCodegen")
+  fun Collection<CompilerInstruction>.codegen(): Either<CodegenViolation, List<Value>> {
+    return traverseEither { it.codegen() }
+  }
+
+  @JvmName("elementsCodegen")
+  fun Collection<PlankElement>.codegen(): Either<CodegenViolation, List<Value>> {
+    return traverseEither { it.codegen() }
   }
 
   fun PlankElement.codegen(): CodegenResult {
