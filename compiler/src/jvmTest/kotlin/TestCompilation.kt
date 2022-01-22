@@ -94,8 +94,8 @@ class TestCompilation(
       val pkg = Package(code, Paths.get("..").toAbsolutePath().toFile()) {
         linker =
           "/home/gabi/Programs/swift-5.3.1-RELEASE-ubuntu20.04/usr/bin/clang++" // todo change linker
-        dist = createTempDirectory("plank-test").toFile()
-        output = dist.resolve("main")
+        workingDir = createTempDirectory("plank-test").toFile()
+        output = workingDir.resolve("main")
         debug = options
         logger = ColoredCompilerLogger(debug = true, verbose = true)
       }

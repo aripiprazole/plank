@@ -12,6 +12,7 @@ import java.io.File
 
 fun Package.compileBinary(): File {
   logger.info("Selected home: ${options.plankHome}")
+  logger.info("Current workdir: ${options.workingDir}")
 
   generateStdlibObjects()
 

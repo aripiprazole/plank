@@ -16,10 +16,10 @@ data class CompileOptions(val plankHome: File) {
   var linker = "clang++"
   var output = File("main")
 
-  var dist: File = createTempDirectory().toFile()
+  var workingDir: File = createTempDirectory().toFile()
 
-  val objects by lazy { dist.child("objects", recreate = true, dir = true) }
-  val ir by lazy { dist.child("ir", recreate = true, dir = true) }
+  val objects by lazy { workingDir.child("objects", recreate = true, dir = true) }
+  val ir by lazy { workingDir.child("ir", recreate = true, dir = true) }
 
   /** TODO: use a package manager */
   val stdlib = plankHome.child("stdlib").children
