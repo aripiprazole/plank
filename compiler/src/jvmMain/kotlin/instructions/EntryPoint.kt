@@ -11,7 +11,7 @@ import com.gabrielleeg1.plank.compiler.mangleFunction
 
 class EntryPoint : CompilerInstruction {
   override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    val name = currentFile.program
+    val name = file.program
       .filterIsInstance<ResolvedFunDecl>()
       .find { it.name.text == "main" }
       ?: unresolvedVariableError("main")

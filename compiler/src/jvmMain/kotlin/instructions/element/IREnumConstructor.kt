@@ -12,6 +12,8 @@ import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
+import com.gabrielleeg1.plank.compiler.createScopeContext
+import com.gabrielleeg1.plank.compiler.debug
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.grammar.element.Identifier
@@ -49,7 +51,7 @@ class IREnumConstructor(
 
     val function = module.addFunction(mangledName, functionType)
 
-    createNestedScope(descriptor.name.text) {
+    createScopeContext(descriptor.name.text) {
       context.newBasicBlock("entry")
         .also(function::addBasicBlock)
         .also(builder::positionAfter)

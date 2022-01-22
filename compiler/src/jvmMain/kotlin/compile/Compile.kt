@@ -6,7 +6,7 @@ import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.ModuleTree
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
-import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.ScopeContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.EntryPoint
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
@@ -43,7 +43,7 @@ fun compile(
   }
 
   val module = Module(LLVMModuleCreateWithName(main.module.text))
-  val context = CompilerContext(debug.compilationDebug, module, main).copy(name = "Global")
+  val context = ScopeContext(debug.compilationDebug, module, main).copy(name = "Global")
 
   val violations = tree.dependencies
     .depthFirstSearch(main.module)
@@ -59,7 +59,7 @@ fun compile(
       context.createFileScope(plankModule).also(context::addModule).run {
         val instructions = plankModule.program.map { it.codegen() }
 
-        if (currentFile == main) {
+        if (file == main) {
           instructions + EntryPoint().codegen()
         } else {
           instructions

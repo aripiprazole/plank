@@ -19,6 +19,7 @@ import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.builder.insertionBlock
 import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
+import com.gabrielleeg1.plank.compiler.createScopeContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
@@ -79,7 +80,7 @@ class IRNamedFunction(
 
     val enclosingBlock = insertionBlock
 
-    createNestedScope(name) {
+    createScopeContext(name) {
       builder.positionAfter(context.newBasicBlock("entry").also(function::addBasicBlock))
 
       function.getParameters()
@@ -110,7 +111,7 @@ class IRClosure(
   private val descriptor: ResolvedFunDecl? = null,
 ) : IRFunction {
   override fun accessIn(context: CompilerContext): AllocaInstruction {
-    return context.findVariableAlloca(mangledName)!!
+    return context.findAlloca(mangledName)!!
   }
 
   override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
@@ -141,7 +142,7 @@ class IRClosure(
 
     val enclosingBlock = insertionBlock.bind() // All closures are nested
 
-    createNestedScope(name) {
+    createScopeContext(name) {
       builder.positionAfter(context.newBasicBlock("entry").also(function::addBasicBlock))
 
       val environment = function.getParameter(0).unwrap().apply {
@@ -168,7 +169,7 @@ class IRClosure(
     builder.positionAfter(enclosingBlock)
 
     val variables = references.keys
-      .mapNotNull { findVariableAlloca(it) }
+      .mapNotNull { findAlloca(it) }
       .map { buildLoad(it) }
       .toTypedArray()
 

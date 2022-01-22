@@ -20,7 +20,7 @@ val FLOAT_TYPES = listOf(
 
 val INT_TYPES = listOf(TypeKind.Integer)
 
-fun CompilerContext.convertToFloat(value: Value): Either<CodegenViolation, Value> {
+fun ScopeContext.convertToFloat(value: Value): Either<CodegenViolation, Value> {
   val type = value.getType().getTypeKind()
   if (type in FLOAT_TYPES) {
     return value.right()
@@ -32,7 +32,7 @@ fun CompilerContext.convertToFloat(value: Value): Either<CodegenViolation, Value
   }
 }
 
-fun CompilerContext.convertToInt(value: Value): Either<CodegenViolation, Value> {
+fun ScopeContext.convertToInt(value: Value): Either<CodegenViolation, Value> {
   val type = value.getType().getTypeKind()
   if (type in INT_TYPES) {
     return value.right()

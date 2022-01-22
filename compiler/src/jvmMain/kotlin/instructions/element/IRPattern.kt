@@ -18,6 +18,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
+import com.gabrielleeg1.plank.compiler.debug
 import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction

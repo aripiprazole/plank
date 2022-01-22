@@ -21,7 +21,7 @@ data class InvalidFunction(
   override val message: String = "Invalid function %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(function.getName()), context.currentFile.location)
+    logger.severe(message.format(function.getName()), context.location)
     logger.debug(context.module.getAsString())
   }
 }
@@ -33,7 +33,7 @@ data class UnresolvedTypeViolation(
   override val message: String = "Unresolved type %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(name), context.currentFile.location)
+    logger.severe(message.format(name), context.location)
   }
 }
 
@@ -55,7 +55,7 @@ data class UnresolvedVariableViolation(
   override val message: String = "Unresolved variable %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(name), context.currentFile.location)
+    logger.severe(message.format(name), context.location)
   }
 }
 
@@ -66,7 +66,7 @@ data class InvalidConstantViolation(
   override val message: String = "Invalid const %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(value), context.currentFile.location)
+    logger.severe(message.format(value), context.location)
   }
 }
 
@@ -77,7 +77,7 @@ data class UnresolvedModuleViolation(
   override val message: String = "Unresolved module %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(name), context.currentFile.location)
+    logger.severe(message.format(name), context.location)
   }
 }
 
@@ -88,7 +88,7 @@ data class ExpectedType(
   override val message: String = "Expected type %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(expected.simpleName), context.currentFile.location)
+    logger.severe(message.format(expected.simpleName), context.location)
   }
 }
 
@@ -100,7 +100,7 @@ data class MismatchTypes(
   override val message: String = "Mismatch types. Expected %s, got %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(expected, actual), context.currentFile.location)
+    logger.severe(message.format(expected, actual), context.location)
   }
 }
 
@@ -123,7 +123,7 @@ data class UnresolvedFieldViolation(
   override val message: String = "Unresolved field error %s in type %s"
 
   override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(field, struct), context.currentFile.location)
+    logger.severe(message.format(field, struct), context.location)
   }
 }
 
