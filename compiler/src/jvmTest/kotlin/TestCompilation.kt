@@ -107,7 +107,10 @@ class TestCompilation(
       try {
         val binary = pkg.compileBinary()
 
-        exitCode = Runtime.getRuntime().exec(binary.absolutePath).printOutput(pkg.logger).waitFor()
+        exitCode = java.lang.Runtime.getRuntime()
+          .exec(binary.absolutePath)
+          .printOutput(pkg.logger)
+          .waitFor()
       } catch (error: BindingError) {
         bindingViolations = error.violations
       } catch (error: SyntaxError) {

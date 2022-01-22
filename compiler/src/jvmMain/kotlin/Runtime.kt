@@ -6,7 +6,7 @@ import org.llvm4j.llvm4j.Linkage
 import org.llvm4j.llvm4j.Module
 import org.llvm4j.llvm4j.Value
 
-class PlankRuntime(private val module: Module) {
+class Runtime(private val module: Module) {
   val types = Types(module.getContext())
 
   val trueConstant: Value = types.i1.getConstant(1)
