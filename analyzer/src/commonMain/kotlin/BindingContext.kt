@@ -139,7 +139,7 @@ internal class BindingContext(tree: ModuleTree) :
     val value = visit(expr.value)
 
     if (!reference.mutable) {
-      return expr.violate("Can not reassign immutable variable ${reference.name.text}")
+      return expr.violate("Can not reassign immutable variable `${reference.name.text}`")
     }
 
     if (reference.value.type != value.type) {
@@ -156,13 +156,13 @@ internal class BindingContext(tree: ModuleTree) :
     val value = visit(expr.value)
 
     val struct = receiver.type.cast<StructType>()
-      ?: return receiver.violate("Can not set property ${expr.property.text} from type ${receiver.type} because it is not a struct")
+      ?: return receiver.violate("Can not set property `${expr.property.text}` from type ${receiver.type} because it is not a struct")
 
     val property = struct.property(expr.property)
-      ?: return expr.property.violate("Unresolved property ${expr.property.text} in struct $struct")
+      ?: return expr.property.violate("Unresolved property `${expr.property.text}` in struct $struct")
 
     if (!property.mutable) {
-      return expr.violate("Can not reassign immutable property ${property.name.text} of struct $struct")
+      return expr.violate("Can not reassign immutable property `${property.name.text}` of struct $struct")
     }
 
     if (property.type != value.type) {
@@ -176,10 +176,10 @@ internal class BindingContext(tree: ModuleTree) :
     val receiver = visit(expr.receiver)
 
     val struct = receiver.type.cast<StructType>()
-      ?: return receiver.violate("Can not get property ${expr.property.text} from type ${receiver.type} because it is not a struct")
+      ?: return receiver.violate("Can not get property `${expr.property.text}` from type ${receiver.type} because it is not a struct")
 
     val property = struct.property(expr.property)
-      ?: return expr.property.violate("Unresolved property ${expr.property.text} in struct $struct")
+      ?: return expr.property.violate("Unresolved property `${expr.property.text}` in struct $struct")
 
     return TypedGetExpr(receiver, property.name, property.type, expr.location)
   }
@@ -198,7 +198,7 @@ internal class BindingContext(tree: ModuleTree) :
     val arguments = expr.arguments.mapValues { (name, expr) ->
       val value = visit(expr)
       val property = struct.property(name)
-        ?: return name.violate("Unresolved property ${name.text} in struct $struct")
+        ?: return name.violate("Unresolved property `${name.text}` in struct $struct")
 
       if (property.type != value.type) {
         return value.violate("Mismatch types: expecting ${property.type} but got ${value.type}")
@@ -298,7 +298,7 @@ internal class BindingContext(tree: ModuleTree) :
 
     val functionScope = currentScope as? FunctionScope
       ?: return stmt
-        .violate("Can not return in not function scope ${currentScope.name.text}")
+        .violate("Can not return in not function scope `${currentScope.name.text}`")
         .stmt()
 
     if (functionScope.returnType != expr.type) {
@@ -316,7 +316,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   override fun visitImportDecl(decl: ImportDecl): ResolvedStmt {
     val module = currentScope.findModule(decl.path.toIdentifier())
-      ?: return decl.violate("Unresolved module ${decl.path.text}").stmt()
+      ?: return decl.violate("Unresolved module `${decl.path.text}`").stmt()
 
     return ResolvedImportDecl(module, decl.location)
   }
@@ -416,7 +416,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   override fun visitAccessTypeRef(ref: AccessTypeRef): PlankType {
     return currentScope.findType(ref.path.toIdentifier())
-      ?: return ref.violate("Unresolved type reference ${ref.path.text}").type
+      ?: return ref.violate("Unresolved type reference `${ref.path.text}`").type
   }
 
   override fun visitPointerTypeRef(ref: PointerTypeRef): PlankType {
@@ -466,12 +466,12 @@ internal class BindingContext(tree: ModuleTree) :
         }
 
         val member = enum.member(pattern.type.toIdentifier()) ?: return run {
-          pattern.type.violate("Unresolved enum variant ${pattern.type.text} of $name")
+          pattern.type.violate("Unresolved enum variant `${pattern.type.text}` of `${name.text}`")
         }
 
         pattern.fields.forEachIndexed { index, subPattern ->
           val subType = member.fields.getOrNull(index) ?: return run {
-            subPattern.violate("Expecting ${member.fields.size} fields when matching ${member.name.text}, but got $index fields instead")
+            subPattern.violate("Expecting ${member.fields.size} fields when matching `${member.name.text}`, but got $index fields instead")
           }
 
           deconstruct(subPattern, undeclared(subType), enum)
@@ -504,7 +504,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   private fun findVariable(name: Identifier): Variable {
     return currentScope.findVariable(name)
-      ?: Variable(false, name, name.violate("Unresolved variable $name"), currentScope)
+      ?: Variable(false, name, name.violate("Unresolved variable `${name.text}`"), currentScope)
   }
 
   private inline fun <T> scoped(scope: Scope, body: Scope.() -> T): T {
