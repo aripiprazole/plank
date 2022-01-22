@@ -8,7 +8,7 @@ fun CompilerContext.mangleFunction(function: ResolvedFunDecl): String {
   }
 
   return buildString {
-    append(contextName)
+    append(name)
     append(".")
     append(function.name.text)
   }

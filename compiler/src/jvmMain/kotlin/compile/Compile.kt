@@ -43,7 +43,7 @@ fun compile(
   }
 
   val module = Module(LLVMModuleCreateWithName(main.module.text))
-  val context = CompilerContext(debug.compilationDebug, module, main).copy(contextName = "Global")
+  val context = CompilerContext(debug.compilationDebug, module, main).copy(name = "Global")
 
   val violations = tree.dependencies
     .depthFirstSearch(main.module)

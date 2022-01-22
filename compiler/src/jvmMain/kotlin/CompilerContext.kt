@@ -24,7 +24,7 @@ data class CompilerContext(
   val debug: Boolean,
   val module: Module,
   val currentFile: ResolvedPlankFile,
-  val contextName: String = currentFile.module.text,
+  val name: String = currentFile.module.text,
   val context: Context = module.getContext(),
   val builder: IRBuilder = module.getContext().newIRBuilder(),
   val runtime: PlankRuntime = PlankRuntime(module),
@@ -63,13 +63,13 @@ data class CompilerContext(
   fun createFileScope(file: ResolvedPlankFile = currentFile): CompilerContext = copy(
     enclosing = this,
     currentFile = file,
-    contextName = file.module.text,
+    name = file.module.text,
   )
 
   inline fun createNestedScope(
     moduleName: String,
     builder: CompilerContext.() -> Unit = {},
-  ): CompilerContext = copy(enclosing = this, contextName = moduleName).apply(builder)
+  ): CompilerContext = copy(enclosing = this, name = moduleName).apply(builder)
 
   inline operator fun invoke(builder: CompilerContext.() -> Unit): CompilerContext {
     return apply(builder)
@@ -96,7 +96,7 @@ data class CompilerContext(
   }
 
   fun addModule(module: CompilerContext) {
-    modules[module.contextName] = module
+    modules[module.name] = module
   }
 
   fun findModule(name: String): CompilerContext? {
@@ -130,6 +130,6 @@ data class CompilerContext(
   }
 
   override fun toString(): String {
-    return "PlankContext($contextName, $enclosing)"
+    return "PlankContext($name, $enclosing)"
   }
 }
