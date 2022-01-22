@@ -54,20 +54,17 @@ fun compile(
     .map(FileScope::file)
     .toList()
     .asReversed() // reverse order
-    .map { analyze(it, tree).check() }
+    .map { if (it.moduleName == plainMain.moduleName) main else analyze(it, tree).check() }
     .flatMap { plankModule ->
-      context
-        .createFileScope(plankModule)
-        .also(context::addModule)
-        .run {
-          val instructions = plankModule.program.map { it.codegen() }
+      context.createFileScope(plankModule).also(context::addModule).run {
+        val instructions = plankModule.program.map { it.codegen() }
 
-          if (currentFile.module == main.module) { // FIXME: running twice the type check
-            instructions + EntryPoint().codegen()
-          } else {
-            instructions
-          }
+        if (currentFile == main) {
+          instructions + EntryPoint().codegen()
+        } else {
+          instructions
         }
+      }
     }
     .filterIsInstance<Either.Left<CodegenViolation>>()
     .map { it.value }
