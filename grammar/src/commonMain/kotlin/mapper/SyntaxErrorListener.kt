@@ -5,6 +5,7 @@ import com.gabrielleeg1.plank.grammar.element.PlankFile
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Recognizer
+import org.antlr.v4.kotlinruntime.Token
 
 class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
   private val _violations = mutableListOf<SyntaxViolation>()
@@ -19,8 +20,8 @@ class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
     msg: String,
     e: RecognitionException?
   ) {
-    if (e != null) {
-      _violations += RecognitionViolation(msg, Location(e.offendingToken!!, file))
+    if (offendingSymbol is Token) {
+      _violations += SyntaxViolation(msg, Location(offendingSymbol, file))
     }
   }
 }

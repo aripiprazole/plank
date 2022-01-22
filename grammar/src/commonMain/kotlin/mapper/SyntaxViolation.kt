@@ -3,34 +3,15 @@ package com.gabrielleeg1.plank.grammar.mapper
 import com.gabrielleeg1.plank.grammar.element.Location
 import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 
-sealed class SyntaxViolation : RuntimeException() {
-  abstract val location: Location
-
-  abstract fun render(renderer: CompilerLogger)
-
-  override fun toString(): String = message ?: "SyntaxViolation"
-}
-
-data class ExpectingViolation(
-  val expected: String,
-  val actual: String,
-  override val location: Location
-) : SyntaxViolation() {
-  override val message: String
-    get() = "Expecting $expected, but found $actual"
-
-  override fun render(renderer: CompilerLogger) {
-    renderer.warning(message)
-  }
-}
-
-data class RecognitionViolation(
+data class SyntaxViolation(
   override val message: String,
-  override val location: Location
-) : SyntaxViolation() {
-  override fun render(renderer: CompilerLogger) {
-    renderer.severe(message, location)
+  val location: Location
+) : RuntimeException() {
+  fun render(logger: CompilerLogger) {
+    logger.severe(message, location)
   }
+
+  override fun toString(): String = message
 }
 
 fun List<SyntaxViolation>.render(renderer: CompilerLogger) {

@@ -20,6 +20,7 @@ class SimpleCompilerLogger(val debug: Boolean = false, val verbose: Boolean = fa
 
   override fun log(level: LogLevel, message: String, location: Location?) {
     message.split(lineSeparator).forEach { lineMessage ->
+      terminal.println(bold(level.color(level.prefix) + brightWhite(": $lineMessage")))
       when (location) {
         is Location.Range -> {
           val dump = table {
@@ -43,7 +44,8 @@ class SimpleCompilerLogger(val debug: Boolean = false, val verbose: Boolean = fa
             }
 
             body {
-              val line = location.lines.first()
+              val lines = location.lines.filterNot { it.isBlank() || it.isEmpty() }
+              val line = lines.first()
 
               row("", "-->", location) { borders = Borders.NONE }
               row("", "|", "") { borders = Borders.NONE }
@@ -51,7 +53,7 @@ class SimpleCompilerLogger(val debug: Boolean = false, val verbose: Boolean = fa
                 borders = Borders.NONE
               }
 
-              if (location.lines.size > 1) {
+              if (lines.size > 1) {
                 row("", "|", "") { borders = Borders.NONE }
               } else {
                 val errorIndicator = MutableList(line.length) { " " }
@@ -69,7 +71,7 @@ class SimpleCompilerLogger(val debug: Boolean = false, val verbose: Boolean = fa
 
           terminal.println(dump)
         }
-        else -> terminal.println(bold(level.color(level.prefix) + brightWhite(": $lineMessage")))
+        else -> {}
       }
     }
   }

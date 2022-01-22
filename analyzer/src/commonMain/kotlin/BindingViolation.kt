@@ -7,4 +7,6 @@ data class BindingViolation(val message: String, val location: Location) {
   fun render(logger: CompilerLogger) {
     logger.severe(message, location)
   }
+
+  override fun toString(): String = message
 }

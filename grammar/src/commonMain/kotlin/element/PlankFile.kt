@@ -9,16 +9,10 @@ import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import com.gabrielleeg1.plank.grammar.parser.toParseTree
 import com.gabrielleeg1.plank.parser.PlankLexer
 import com.gabrielleeg1.plank.parser.PlankParser
-import com.strumenta.kotlinmultiplatform.BitSet
-import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
-import org.antlr.v4.kotlinruntime.Parser
-import org.antlr.v4.kotlinruntime.RecognitionException
-import org.antlr.v4.kotlinruntime.Recognizer
-import org.antlr.v4.kotlinruntime.atn.ATNConfigSet
+import org.antlr.v4.kotlinruntime.DiagnosticErrorListener
 import org.antlr.v4.kotlinruntime.atn.PredictionMode
-import org.antlr.v4.kotlinruntime.dfa.DFA
 import pw.binom.io.file.File
 import pw.binom.io.file.name
 import pw.binom.io.file.nameWithoutExtension
@@ -91,7 +85,7 @@ data class PlankFile(
       val parser = parser(text).apply {
         addErrorListener(syntaxErrorListener)
         if (parserDebug) {
-          addErrorListener(PlankErrorListener(logger))
+          addErrorListener(DiagnosticErrorListener())
         }
       }
 
@@ -107,64 +101,5 @@ data class PlankFile(
         )
         .copy(violations = syntaxErrorListener.violations)
     }
-  }
-}
-
-class PlankErrorListener(private val logger: CompilerLogger) : BaseErrorListener() {
-  override fun reportAmbiguity(
-    recognizer: Parser,
-    dfa: DFA,
-    startIndex: Int,
-    stopIndex: Int,
-    exact: Boolean,
-    ambigAlts: BitSet,
-    configs: ATNConfigSet
-  ) {
-    logger.severe("===Ambiguity===")
-    logger.severe("  data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, exact: $exact, ambigAlts: $ambigAlts, configs: $configs}")
-    logger.severe("=============================")
-    logger.severe()
-  }
-
-  override fun reportAttemptingFullContext(
-    recognizer: Parser,
-    dfa: DFA,
-    startIndex: Int,
-    stopIndex: Int,
-    conflictingAlts: BitSet,
-    configs: ATNConfigSet
-  ) {
-    logger.severe("===Attempting Full Context===")
-    logger.severe(" data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, conflictingAlts: $conflictingAlts, configs: $configs}")
-    logger.severe("=============================")
-    logger.severe()
-  }
-
-  override fun reportContextSensitivity(
-    recognizer: Parser,
-    dfa: DFA,
-    startIndex: Int,
-    stopIndex: Int,
-    prediction: Int,
-    configs: ATNConfigSet
-  ) {
-    logger.severe("===Context Sensitivity===")
-    logger.severe("  data = {recognizer: Parser, dfa: DFA, startIndex: $startIndex, stopIndex: $stopIndex, prediction: $prediction, configs: $configs}")
-    logger.severe("=============================")
-    logger.severe()
-  }
-
-  override fun syntaxError(
-    recognizer: Recognizer<*, *>,
-    offendingSymbol: Any?,
-    line: Int,
-    charPositionInLine: Int,
-    msg: String,
-    e: RecognitionException?
-  ) {
-    logger.severe("===Syntax Error===")
-    logger.severe(" message = $msg at $offendingSymbol")
-    logger.severe("==================")
-    logger.severe()
   }
 }

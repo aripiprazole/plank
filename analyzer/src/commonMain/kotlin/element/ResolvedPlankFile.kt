@@ -12,7 +12,7 @@ import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 data class ResolvedPlankFile(
   @DontDump val delegate: PlankFile,
   val program: List<ResolvedDecl>,
-  @DontDump val syntaxViolations: List<SyntaxViolation> = emptyList(),
+  @DontDump val syntaxViolations: List<SyntaxViolation> = delegate.violations,
   @DontDump val bindingViolations: List<BindingViolation> = emptyList(),
   @DontDump val dependencies: List<ResolvedPlankFile> = emptyList(),
 ) : ResolvedPlankElement {
