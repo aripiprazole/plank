@@ -9,8 +9,8 @@ llvm4j = "0.1.0-SNAPSHOT"
 llvmplatform = "11.1.0-1.5.5"
 arrow = "1.0.1"
 jupiter = "5.6.0"
-jansi = "2.0.1"
 clikt = "3.1.0"
+mordant = "2.0.0-beta4"
 
 # Libraries
 [libraries.kt-reflect]
@@ -85,13 +85,13 @@ version.ref = "jupiter"
 module = "org.junit.jupiter:junit-jupiter-engine"
 version.ref = "jupiter"
 
-[libraries.jansi]
-module = "org.fusesource.jansi:jansi"
-version.ref = "jansi"
-
 [libraries.clikt]
 module = "com.github.ajalt.clikt:clikt"
 version.ref = "clikt"
+
+[libraries.mordant]
+module = "com.github.ajalt.mordant:mordant"
+version.ref = "mordant"
 
 # Plugins
 [plugins.kotlin]

@@ -16,7 +16,6 @@ kotlin {
       dependencies {
         implementation(kotlin("stdlib-common"))
         implementation(libs.clikt)
-        implementation(libs.jansi)
         implementation(libs.bytedeco.llvmplatform)
         implementation(libs.arrow.core)
         implementation(libs.llvm4j)

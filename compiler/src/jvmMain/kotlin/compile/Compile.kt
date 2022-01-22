@@ -37,9 +37,9 @@ fun compile(
   val main = analyze(plainMain, tree).check()
 
   if (debug.resolvedAstDebug) {
-    logger.severe("Typed AST:")
-    logger.severe(main.dumpTree())
-    logger.severe()
+    logger.debug("Typed AST:")
+    logger.debug(main.dumpTree())
+    logger.debug()
   }
 
   val module = Module(LLVMModuleCreateWithName(main.module.text))

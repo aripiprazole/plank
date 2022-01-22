@@ -29,8 +29,6 @@ kotlin {
         implementation(libs.arrow.core)
         implementation(libs.llvm4j)
 
-        implementation(libs.jansi)
-
         implementation(libs.kt.test.junit)
         implementation(libs.jupiter.api)
         implementation(libs.jupiter.engine)

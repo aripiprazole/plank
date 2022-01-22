@@ -12,6 +12,7 @@ import com.gabrielleeg1.plank.compiler.compile.compileBinary
 import com.gabrielleeg1.plank.compiler.compile.printOutput
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
+import com.gabrielleeg1.plank.grammar.message.ColoredCompilerLogger
 import java.nio.file.Paths
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertEquals
@@ -96,7 +97,7 @@ class TestCompilation(
         dist = createTempDirectory("plank-test").toFile()
         output = dist.resolve("main")
         debug = options
-        logger = CompilerColoredLogger(debug = true, verbose = true, errWriter = System.out)
+        logger = ColoredCompilerLogger(debug = true, verbose = true)
       }
 
       var syntaxViolations: List<SyntaxViolation> = emptyList()

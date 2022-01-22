@@ -22,8 +22,4 @@ class SimpleCompilerLogger : CompilerLogger {
   override fun info(message: String) {
     println("INFO: $message")
   }
-
-  override fun close() {
-    // nothing to do
-  }
 }
