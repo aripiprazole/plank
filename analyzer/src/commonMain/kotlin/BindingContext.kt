@@ -13,7 +13,7 @@ fun analyze(file: PlankFile, tree: ModuleTree): ResolvedPlankFile {
   return BindingContext(tree).analyze(file)
 }
 
-@Suppress("UnusedPrivateMember")
+@Suppress("UnusedPrivateMember", "MaxLineLength", "MaximumLineLength")
 internal class BindingContext(tree: ModuleTree) :
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,
@@ -103,7 +103,7 @@ internal class BindingContext(tree: ModuleTree) :
       is Byte -> IntType(8)
       is Double -> FloatType(32)
       is Long, Float -> FloatType(64)
-      else -> return violate("Unknown type %s", expr.value::class.simpleName)
+      else -> return expr.violate("Unresolved type ${expr.value::class.simpleName}")
     }
 
     return TypedConstExpr(expr.value, type, expr.location)
@@ -129,7 +129,7 @@ internal class BindingContext(tree: ModuleTree) :
     val callable = visit(expr.callee)
 
     val function = callable.type.cast<FunctionType>()
-      ?: return violate("Can not call not function %s", callable)
+      ?: return callable.violate("Type ${callable.type} is not callable")
 
     return function.call(callable, expr.location, visitExprs(expr.arguments))
   }
@@ -139,13 +139,11 @@ internal class BindingContext(tree: ModuleTree) :
     val value = visit(expr.value)
 
     if (!reference.mutable) {
-      return violate("Can not change immutable variable %s", reference)
+      return expr.violate("Can not reassign immutable variable ${reference.name.text}")
     }
 
     if (reference.value.type != value.type) {
-      return violate(
-        "Mismatch types, expecting %s but got %s in assignment", reference.value.type, value.type
-      )
+      return value.violate("Mismatch types: expecting ${reference.value.type} but got ${value.type}")
     }
 
     reference.value = value
@@ -158,15 +156,17 @@ internal class BindingContext(tree: ModuleTree) :
     val value = visit(expr.value)
 
     val struct = receiver.type.cast<StructType>()
-      ?: return violate("Can not update a property from non-struct expression %s", receiver)
+      ?: return receiver.violate("Can not set property ${expr.property.text} from type ${receiver.type} because it is not a struct")
 
     val property = struct.property(expr.property)
-      ?: return violate("Unknown property %s in struct %s", expr.property, struct)
+      ?: return expr.property.violate("Unresolved property ${expr.property.text} in struct $struct")
+
+    if (!property.mutable) {
+      return expr.violate("Can not reassign immutable property ${property.name.text} of struct $struct")
+    }
 
     if (property.type != value.type) {
-      return violate(
-        "Mismatch types, expecting %s but got %s in set expression", property.type, value.type
-      )
+      return value.violate("Mismatch types: expecting ${property.type} but got ${value.type}")
     }
 
     return TypedSetExpr(receiver, property.name, value, value.type, expr.location)
@@ -176,10 +176,10 @@ internal class BindingContext(tree: ModuleTree) :
     val receiver = visit(expr.receiver)
 
     val struct = receiver.type.cast<StructType>()
-      ?: return violate("Can not get a property from non-struct expression %s", receiver)
+      ?: return receiver.violate("Can not get property ${expr.property.text} from type ${receiver.type} because it is not a struct")
 
     val property = struct.property(expr.property)
-      ?: return violate("Unknown property %s in struct %s", expr.property, struct)
+      ?: return expr.property.violate("Unresolved property ${expr.property.text} in struct $struct")
 
     return TypedGetExpr(receiver, property.name, property.type, expr.location)
   }
@@ -192,19 +192,16 @@ internal class BindingContext(tree: ModuleTree) :
 
   override fun visitInstanceExpr(expr: InstanceExpr): TypedExpr {
     val struct = visit(expr.type).cast<StructType> {
-      return violate("Can not get a instance from non-struct type %s", it)
+      return expr.type.violate("Type $it can not be instantiated")
     }
 
     val arguments = expr.arguments.mapValues { (name, expr) ->
       val value = visit(expr)
       val property = struct.property(name)
-        ?: return violate("Unknown property %s in struct %s", name, struct)
+        ?: return name.violate("Unresolved property ${name.text} in struct $struct")
 
       if (property.type != value.type) {
-        return violate(
-          "Mismatch types, expecting %s but got %s in set expression",
-          property.type, value.type
-        )
+        return value.violate("Mismatch types: expecting ${property.type} but got ${value.type}")
       }
 
       value
@@ -229,7 +226,7 @@ internal class BindingContext(tree: ModuleTree) :
     val ref = visit(expr.ref)
 
     val type = ref.type.cast<PointerType> {
-      return violate("Can not deref from non-pointer type %s", it)
+      return expr.violate("Type ${ref.type} can not be dereferenced")
     }
 
     return TypedDerefExpr(ref, type.inner, expr.location)
@@ -252,15 +249,15 @@ internal class BindingContext(tree: ModuleTree) :
         }
       }
 
-    val type = patterns.values.map { it.type }.reduce { acc, next ->
-      if (acc != next) {
-        return violate("Mismatch types, expecting %s but got %s in match expression", acc, next)
+    val value = patterns.values.reduce { acc, next ->
+      if (acc.type != next.type) {
+        return next.violate("Mismatch types: expecting ${acc.type}, but got ${next.type}")
       }
 
       next
     }
 
-    return TypedMatchExpr(subject, patterns, type, expr.location)
+    return TypedMatchExpr(subject, patterns, value.type, expr.location)
   }
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern): TypedPattern {
@@ -275,7 +272,7 @@ internal class BindingContext(tree: ModuleTree) :
     val cond = visit(expr.cond)
 
     if (cond.type != BoolType) {
-      return violate("Mismatch types, expecting bool value but got %s in if condition", cond)
+      return cond.violate("Mismatch types: expecting $BoolType, but got ${cond.type}")
     }
 
     val thenBranch = visit(expr.thenBranch)
@@ -286,11 +283,7 @@ internal class BindingContext(tree: ModuleTree) :
     }
 
     if (thenBranch.type != elseBranch.type) {
-      return violate(
-        "Mismatch types, expecting %s but got %s in if expression",
-        thenBranch.type,
-        elseBranch.type
-      )
+      return expr.violate("Mismatch types: expecting if type ${thenBranch.type}, but got ${elseBranch.type}")
     }
 
     return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.type, expr.location)
@@ -304,13 +297,14 @@ internal class BindingContext(tree: ModuleTree) :
     val expr = stmt.value?.let(::visit) ?: UnitType.const()
 
     val functionScope = currentScope as? FunctionScope
-      ?: return violate("Can not return in not function scope %s", currentScope).stmt()
+      ?: return stmt
+        .violate("Can not return in not function scope ${currentScope.name.text}")
+        .stmt()
 
     if (functionScope.returnType != expr.type) {
-      return violate(
-        "Mismatch types, expecting %s but got %s in return statement",
-        functionScope.returnType, expr.type
-      ).stmt()
+      return stmt
+        .violate("Mismatch types: expecting return type ${functionScope.returnType}, but got ${expr.type}")
+        .stmt()
     }
 
     return ResolvedReturnStmt(expr, stmt.location)
@@ -322,7 +316,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   override fun visitImportDecl(decl: ImportDecl): ResolvedStmt {
     val module = currentScope.findModule(decl.path.toIdentifier())
-      ?: return violate("Unresolved module %s", decl.path.toIdentifier()).stmt()
+      ?: return decl.violate("Unresolved module ${decl.path.text}").stmt()
 
     return ResolvedImportDecl(module, decl.location)
   }
@@ -422,7 +416,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   override fun visitAccessTypeRef(ref: AccessTypeRef): PlankType {
     return currentScope.findType(ref.path.toIdentifier())
-      ?: return violate("Unresolved type reference to %s", ref.path.toIdentifier()).type
+      ?: return ref.violate("Unresolved type reference ${ref.path.text}").type
   }
 
   override fun visitPointerTypeRef(ref: PointerTypeRef): PlankType {
@@ -468,18 +462,16 @@ internal class BindingContext(tree: ModuleTree) :
       }
       is NamedTuplePattern -> {
         val enum = subject.type.cast<EnumType>() ?: return run {
-          violate(
-            "Expecting enum when deconstructing named tuple in pattern but got %s", subject.type
-          )
+          subject.violate("Expecting a enum type with named tuple pattern, but got ${subject.type}")
         }
 
         val member = enum.member(pattern.type.toIdentifier()) ?: return run {
-          violate("Unknown enum member of %s: %s", enum.name, subject.type)
+          pattern.type.violate("Unresolved enum variant ${pattern.type.text} of $name")
         }
 
         pattern.fields.forEachIndexed { index, subPattern ->
           val subType = member.fields.getOrNull(index) ?: return run {
-            violate("Unknown property %d of member %s", index, member.name)
+            subPattern.violate("Expecting ${member.fields.size} fields when matching ${member.name.text}, but got $index fields instead")
           }
 
           deconstruct(subPattern, undeclared(subType), enum)
@@ -488,10 +480,10 @@ internal class BindingContext(tree: ModuleTree) :
     }
   }
 
-  private fun violate(message: String, vararg values: Any?): TypedExpr {
-    violations = violations + BindingViolation(message, values.toList())
+  private fun PlankElement.violate(message: String): TypedExpr {
+    violations = violations + BindingViolation(message, location)
 
-    return TypedConstExpr(Unit, Untyped, Location.Generated)
+    return TypedConstExpr(Unit, Untyped, location)
   }
 
   private fun undeclared(type: PlankType): TypedExpr {
@@ -512,7 +504,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   private fun findVariable(name: Identifier): Variable {
     return currentScope.findVariable(name)
-      ?: Variable(false, name, violate("Unknown variable", name), currentScope)
+      ?: Variable(false, name, name.violate("Unresolved variable $name"), currentScope)
   }
 
   private inline fun <T> scoped(scope: Scope, body: Scope.() -> T): T {

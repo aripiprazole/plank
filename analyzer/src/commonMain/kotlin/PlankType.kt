@@ -247,10 +247,10 @@ val BoolType = IntType("Bool", 1)
  * Represents unknown type when compilers raise a violation or something
  */
 object Untyped : PlankType() {
-  override val name: Identifier = Identifier("Untyped")
+  override val name: Identifier = Identifier("???")
   override val size: Int = -1
 
-  override fun toString(): String = "Untyped"
+  override fun toString(): String = "???"
 }
 
 data class EnumMember(val name: Identifier, val fields: List<PlankType>)
