@@ -3,6 +3,7 @@ package com.gabrielleeg1.plank.grammar.mapper
 import com.gabrielleeg1.plank.grammar.element.*
 import com.gabrielleeg1.plank.parser.PlankParser.*
 import com.gabrielleeg1.plank.parser.PlankParserBaseVisitor
+import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.RuleContext
 import org.antlr.v4.kotlinruntime.Token
 import org.antlr.v4.kotlinruntime.misc.Interval
@@ -381,8 +382,11 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return Identifier(text, Location(token.startIndex, token.stopIndex, file))
   }
 
-  private val Interval.location get() = Location(a, b, file)
+  private val Interval.location
+    get() = Location(a, b, file)
   private val RuleContext.location get() = sourceInterval.location
+  private val ParserRuleContext.location
+    get() = Location(start!!.startIndex, stop!!.stopIndex, file)
 
   private fun Identifier.asAccessExpr(): AccessExpr {
     return AccessExpr(QualifiedPath(this), location)
