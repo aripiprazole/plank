@@ -2,13 +2,7 @@ package com.gabrielleeg1.plank.grammar.element
 
 sealed interface TypeRef : PlankElement {
   interface Visitor<T> {
-    fun visit(typeDef: TypeRef): T = when (typeDef) {
-      is AccessTypeRef -> visitAccessTypeRef(typeDef)
-      is PointerTypeRef -> visitPointerTypeRef(typeDef)
-      is ArrayTypeRef -> visitArrayTypeRef(typeDef)
-      is FunctionTypeRef -> visitFunctionTypeRef(typeDef)
-      is UnitTypeRef -> visitUnitTypeRef(typeDef)
-    }
+    fun visit(ref: TypeRef): T = ref.accept(this)
 
     fun visitAccessTypeRef(ref: AccessTypeRef): T
     fun visitPointerTypeRef(ref: PointerTypeRef): T
@@ -18,15 +12,33 @@ sealed interface TypeRef : PlankElement {
 
     fun visitTypeRefs(many: List<TypeRef>): List<T> = many.map(::visit)
   }
+
+  fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class UnitTypeRef(override val location: Location = Location.Generated) : TypeRef
+data class UnitTypeRef(override val location: Location = Location.Generated) : TypeRef {
+  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
+    return visitor.visitUnitTypeRef(this)
+  }
+}
 
-data class AccessTypeRef(val path: QualifiedPath, override val location: Location) : TypeRef
+data class AccessTypeRef(val path: QualifiedPath, override val location: Location) : TypeRef {
+  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
+    return visitor.visitAccessTypeRef(this)
+  }
+}
 
-data class PointerTypeRef(val type: TypeRef, override val location: Location) : TypeRef
+data class PointerTypeRef(val type: TypeRef, override val location: Location) : TypeRef {
+  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
+    return visitor.visitPointerTypeRef(this)
+  }
+}
 
-data class ArrayTypeRef(val type: TypeRef, override val location: Location) : TypeRef
+data class ArrayTypeRef(val type: TypeRef, override val location: Location) : TypeRef {
+  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
+    return visitor.visitArrayTypeRef(this)
+  }
+}
 
 data class FunctionTypeRef(
   val parameter: TypeRef,
@@ -35,4 +47,8 @@ data class FunctionTypeRef(
   val realParameters: Map<Identifier, TypeRef> = emptyMap(),
   val isClosure: Boolean? = false,
   override val location: Location,
-) : TypeRef
+) : TypeRef {
+  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
+    return visitor.visitFunctionTypeRef(this)
+  }
+}
