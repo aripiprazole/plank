@@ -107,7 +107,7 @@ class ModuleType(
 ) : PlankType() {
   override val size = 0
 
-  override fun toString(): String = "ModuleType(${name.text})"
+  override fun toString(): String = "(module ${name.text})"
 }
 
 data class PointerType(val inner: PlankType) : PlankType() {
@@ -144,7 +144,7 @@ class StructType(
     acc + property.type.size
   }
 
-  override fun toString(): String = "StructType(${name.text}, size = $size)"
+  override fun toString(): String = name.text
 }
 
 class IntType internal constructor(
@@ -180,8 +180,6 @@ fun FloatType(size: Int = 32, unsigned: Boolean = false): IntType {
 fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
   return intCache.getOrPut(size) { IntType("Int$size", size, unsigned = unsigned) }
 }
-
-data class VariableAccess(val name: String, val type: PlankType)
 
 @Suppress("EqualsOrHashCode")
 data class FunctionType(
@@ -220,7 +218,13 @@ data class FunctionType(
   override fun equals(other: Any?): Boolean = super.equals(other)
 
   override fun toString(): String = buildString {
-    append(if (parameter is FunctionType) "($parameter)" else parameter.toString())
+    append(
+      when (parameter) {
+        is FunctionType -> "($parameter)"
+        is Untyped -> "()"
+        else -> parameter.toString()
+      }
+    )
     append(" -> ")
     append(returnType)
   }
@@ -249,10 +253,10 @@ class DelegateType(var value: PlankType? = null) : PlankType() {
     value = plankType
   }
 
-  override fun toString() = "DelegateType(${value!!})"
+  override fun toString() = value!!.toString()
 }
 
-val UnitType = IntType("Void", 8)
+val UnitType = IntType("()", 8)
 val CharType = IntType("Char", 8)
 val BoolType = IntType("Bool", 1)
 
