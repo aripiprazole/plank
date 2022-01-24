@@ -244,4 +244,76 @@ class ClosureTests {
         expectSuccess()
       }
   }
+
+  @Test
+  fun `test calling a parameterized closure function with one level of nesting`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          fun nested(x: *Char): Void {
+            println(x);
+          }
+          nested("Hello, world");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test calling a two parameterized closure function with one level of nesting`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          fun nested(x: *Char, y: *Char): Void {
+          }
+          nested("Hello")("world");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test calling a two parameterized closure function with one level of nesting accessing a variable from the enclosing scope`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let outside = "Example String";
+          fun nested(x: *Char, y: *Char): Void {
+            println(outside);
+            print(x);
+            print(" ");
+            println(y);
+          }
+          nested("Hello", "world");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
 }

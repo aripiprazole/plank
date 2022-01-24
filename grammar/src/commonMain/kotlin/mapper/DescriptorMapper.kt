@@ -66,7 +66,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       .fold(returnType) { acc, next ->
         FunctionTypeRef(next, acc, returnType, parameters, null, next.location)
       } as? FunctionTypeRef
-      ?: FunctionTypeRef(UnitTypeRef(), returnType, returnType, parameters, null, ctx.location)
+      ?: FunctionTypeRef(null, returnType, returnType, parameters, null, ctx.location)
 
     return FunDecl(
       attributes = ctx.findAttr().map(::visitAttr),
@@ -380,9 +380,11 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   private fun callFold(acc: Expr, next: ArgContext): Expr {
     return when (next) {
       is GetArgContext -> GetExpr(acc, visitToken(next.name!!), next.location)
-      is CallArgContext -> next.findExpr().fold(acc) { callee, arg ->
-        CallExpr(callee, listOf(visitExpr(arg)), arg.location)
-      }
+      is CallArgContext -> next.findExpr()
+        .ifEmpty { return CallExpr(acc, emptyList(), next.location) }
+        .fold(acc) { callee, arg ->
+          CallExpr(callee, listOf(visitExpr(arg)), arg.location)
+        }
       else -> error("Unsupported arg ${next::class.simpleName}")
     }
   }

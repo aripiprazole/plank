@@ -131,7 +131,9 @@ internal class BindingContext(tree: ModuleTree) :
     val function = callable.type.cast<FunctionType>()
       ?: return callable.violate("Type ${callable.type} is not callable")
 
-    return function.call(callable, expr.location, visitExprs(expr.arguments))
+    val arguments = visitExprs(expr.arguments)
+
+    return function.call(callable, expr.location, arguments)
   }
 
   override fun visitAssignExpr(expr: AssignExpr): TypedExpr {
@@ -429,7 +431,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   // TODO: infer if hasn't user-defined type
   override fun visitFunctionTypeRef(ref: FunctionTypeRef): FunctionType {
-    val parameter = visit(ref.parameter)
+    val parameter = visit(ref.parameter) { Untyped }
     val returnType = visit(ref.returnType) { UnitType }
 
     val actualReturnType = visit(ref.actualReturnType) { UnitType }

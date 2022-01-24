@@ -11,12 +11,14 @@ import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
 import com.gabrielleeg1.plank.grammar.element.Location
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Context
-import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.IRBuilder
 import org.llvm4j.llvm4j.Module
 import org.llvm4j.llvm4j.NamedStructType
 import org.llvm4j.llvm4j.Type
 import org.llvm4j.llvm4j.Value
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 sealed interface CompilerContext {
   val name: String
@@ -30,7 +32,7 @@ sealed interface CompilerContext {
   val enclosing: CompilerContext?
   val location: Location
 
-  fun addFunction(function: IRFunction): Function
+  fun addFunction(function: IRFunction): Value
   fun addStruct(name: String, type: PlankType, struct: NamedStructType)
   fun addVariable(name: String, type: PlankType, variable: AllocaInstruction)
   fun expand(module: ScopeContext)
@@ -70,6 +72,7 @@ data class CodegenContext(
 
 data class ExecutionContext(
   override val enclosing: ScopeContext,
+  val returnType: Type,
   val parameters: MutableMap<String, Value> = LinkedHashMap(),
 ) : CompilerContext by enclosing
 
@@ -102,10 +105,10 @@ data class ScopeContext(
   )
 
   @Suppress("UNCHECKED_CAST")
-  override fun addFunction(function: IRFunction): Function {
+  override fun addFunction(function: IRFunction): Value {
     functions[function.name] = function
 
-    return function.codegen() as Function
+    return function.codegen()
   }
 
   override fun addStruct(name: String, type: PlankType, struct: NamedStructType) {
@@ -166,13 +169,20 @@ fun CompilerContext.scopeContext(): ScopeContext {
   }
 }
 
+@OptIn(ExperimentalContracts::class)
 inline fun CompilerContext.createScopeContext(
   moduleName: String,
   builder: ScopeContext.() -> Unit = {}
-): ScopeContext = when (this) {
-  is ScopeContext -> copy(enclosing = this, name = moduleName).apply(builder)
-  is CodegenContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
-  is ExecutionContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
+): ScopeContext {
+  contract {
+    callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
+  }
+
+  return when (this) {
+    is ScopeContext -> copy(enclosing = this, name = moduleName).apply(builder)
+    is CodegenContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
+    is ExecutionContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
+  }
 }
 
 inline fun CompilerContext.debug(action: DebugCompilerContext.() -> Unit) {

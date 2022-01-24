@@ -160,7 +160,7 @@ abstract class TreeWalker :
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef) {
-    visit(ref.parameter)
+    ref.parameter?.let { visit(it) }
     visit(ref.returnType)
   }
 

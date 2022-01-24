@@ -41,7 +41,7 @@ data class ArrayTypeRef(val type: TypeRef, override val location: Location) : Ty
 }
 
 data class FunctionTypeRef(
-  val parameter: TypeRef,
+  val parameter: TypeRef?,
   val returnType: TypeRef,
   val actualReturnType: TypeRef = returnType,
   val realParameters: Map<Identifier, TypeRef> = emptyMap(),
