@@ -51,7 +51,8 @@ class IRCurried(
   private val generateBody: ExecutionContext.(List<Argument>) -> Unit,
 ) : IRFunction {
   private val parameters = type.realParameters.entries.toList().map { it.toPair() }
-  private val references = variableReferences + parameters.toList().dropLast(1).associate(::identity)
+  private val references =
+    variableReferences + parameters.toList().dropLast(1).associate(::identity)
 
   private fun generateNesting(
     index: Int,
@@ -194,7 +195,10 @@ class IRClosure(
     val functionType = context.getFunctionType(
       returnType,
       pointerType(environmentType),
-      *realParameters.values.toList().map { type -> type.typegen() }.toTypedArray(),
+      *realParameters.values
+        .toList()
+        .map { type -> type.typegen() }
+        .toTypedArray(),
     )
 
     val closureFunctionType = context.getNamedStructType("Closure_${mangledName}_Function").apply {
@@ -278,7 +282,12 @@ fun ExecutionContext.generateParameter(realParameters: Map<Identifier, PlankType
 
     parameters[name] = argument
     argument.setName(name)
-    addVariable(name, plankType, alloca(argument, "parameter.$name"))
+
+    if (plankType.isClosure) {
+      addVariable(name, plankType, argument.unsafeCast())
+    } else {
+      addVariable(name, plankType, alloca(argument, "parameter.$name"))
+    }
   }
 
 fun CompilerContext.addGlobalFunction(

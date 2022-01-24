@@ -76,6 +76,59 @@ class CurryingTests {
   }
 
   @Test
+  fun `test partial apply curried function`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun print_full_name(name: *Char, surname: *Char) {
+          print(name);
+          print(" ");
+          println(surname);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let print_surname = print_full_name("Isabela");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test call partial applied curried function`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun print_full_name(name: *Char, surname: *Char) {
+          print(name);
+          print(" ");
+          println(surname);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let print_surname = print_full_name("Isabela");
+          print_surname("Freitas");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test basic currying with empty parameters function`() {
     TestCompilation
       .of(
