@@ -53,7 +53,7 @@ private fun CompilerContext.typegen(type: FunctionType): Type {
   return when (type.isClosure) {
     true -> {
       val name = "Closure_${type.hashCode()}_Function"
-      module.getTypeByName(name).toNullable()?.let { return it }
+      module.getTypeByName(name).toNullable()?.let { return pointerType(it) }
 
       val returnType = type.returnType.typegen()
       val environmentType = runtime.types.voidPtr

@@ -9,6 +9,7 @@ import com.gabrielleeg1.plank.compiler.compile.Package
 import com.gabrielleeg1.plank.compiler.compile.SyntaxError
 import com.gabrielleeg1.plank.compiler.compile.compileBinary
 import com.gabrielleeg1.plank.compiler.compile.printOutput
+import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import java.nio.file.Paths
@@ -101,6 +102,10 @@ class TestCompilation(
         bindingViolations = error.violations
       } catch (error: SyntaxError) {
         syntaxViolations = error.violations
+      } catch (error: CodegenViolation) {
+        pkg.logger.severe("Codegen violation:")
+        pkg.logger.severe(error.context.module.getAsString())
+        throw error
       }
 
       return TestCompilation(pkg, syntaxViolations, bindingViolations, exitCode)

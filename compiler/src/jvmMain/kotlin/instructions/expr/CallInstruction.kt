@@ -1,6 +1,5 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
@@ -11,9 +10,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildBitcast
 import com.gabrielleeg1.plank.compiler.builder.buildCall
 import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
-import com.gabrielleeg1.plank.compiler.builder.getField
-import com.gabrielleeg1.plank.compiler.builder.pointerType
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
+import com.gabrielleeg1.plank.compiler.builder.callClosure
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.addIrClosure
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedFunctionError
@@ -33,25 +30,21 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
           false -> {
             val closure =
               addIrClosure("Closure_${hashCode()}_$index", expr.type as FunctionType) { arguments ->
-                either.eager<CodegenViolation, Unit> {
-                  val value = buildCall(callee(expr), arguments)
+                val value = buildCall(callee(expr), arguments)
 
-                  if (functionType.actualReturnType == UnitType) {
-                    buildReturn()
-                  } else {
-                    buildReturn(value)
-                  }
+                if (functionType.actualReturnType == UnitType) {
+                  buildReturn()
+                } else {
+                  buildReturn(value)
                 }
               }.accessIn(this@codegen)
 
             val closureType = functionType.copy(isClosure = true).typegen()
-              .let { pointerType(it) }
 
             buildBitcast(closure, closureType)
           }
           true -> {
             val closureType = functionType.copy(isClosure = true).typegen()
-              .let { pointerType(it) }
 
             buildBitcast(alloca(expr.codegen()), closureType)
           }
@@ -61,24 +54,8 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
     }
 
     return when (descriptor.callee.type.isClosure) {
-      true -> {
-        var closure = descriptor.callee.codegen()
-
-        if (!closure.getType().isPointerType()) {
-          closure = alloca(closure)
-        }
-
-        val function = getField(closure, 0, "Closure.Function")
-          .let(::buildLoad)
-          .unsafeCast<Function>()
-
-        val environment = getField(closure, 1, "Closure.Environment").let(::buildLoad)
-
-        buildCall(function, environment, *arguments.toTypedArray())
-      }
-      false -> {
-        buildCall(callee(descriptor.callee), arguments)
-      }
+      true -> callClosure(callee(descriptor.callee), *arguments.toTypedArray())
+      false -> buildCall(callee(descriptor.callee), arguments)
     }
   }
 

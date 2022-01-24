@@ -1,6 +1,5 @@
 package com.gabrielleeg1.plank.compiler.instructions.element
 
-import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.UnitType
@@ -15,7 +14,6 @@ import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.builder.insertionBlock
 import com.gabrielleeg1.plank.compiler.builder.pointerType
 import com.gabrielleeg1.plank.compiler.createScopeContext
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
@@ -177,16 +175,15 @@ class IRClosure(
   }
 }
 
-fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) -> Unit = {
-  either.eager<CodegenViolation, Unit> {
+fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) -> Unit =
+  fun CompilerContext.(_: List<Argument>) {
     descriptor.content.codegen()
 
-    if (descriptor.returnType != UnitType) return@eager
-    if (descriptor.content.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()) return@eager
+    if (descriptor.returnType != UnitType) return
+    if (descriptor.content.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()) return
 
     buildReturn()
   }
-}
 
 fun generateParameter(realParameters: Map<Identifier, PlankType>, context: CompilerContext) =
   fun(index: Int, parameter: Argument) {
