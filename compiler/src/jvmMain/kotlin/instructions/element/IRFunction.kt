@@ -1,12 +1,16 @@
 package com.gabrielleeg1.plank.compiler.instructions.element
 
+import arrow.core.identity
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
 import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.ExecutionContext
 import com.gabrielleeg1.plank.compiler.builder.alloca
+import com.gabrielleeg1.plank.compiler.builder.buildBitcast
+import com.gabrielleeg1.plank.compiler.builder.buildCall
 import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
@@ -24,7 +28,6 @@ import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Argument
 import org.llvm4j.llvm4j.Function
-import org.llvm4j.llvm4j.PointerType
 
 interface IRFunction : IRElement {
   val name: String
@@ -43,45 +46,89 @@ class IRNamedFunction(
   override val mangledName: String,
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
-  private val generateBody: (CompilerContext.(List<Argument>) -> Unit)? = null,
+  private val generateBody: ExecutionContext.(List<Argument>) -> Unit,
 ) : IRFunction {
+
+  private val parameters = type.realParameters.entries.toList().map { it.toPair() }
+  private val references = parameters.toList().dropLast(1).associate(::identity)
+
+  private fun generateNesting(
+    index: Int,
+    builder: ExecutionContext.(PlankType, List<Argument>) -> Unit = { _, arguments ->
+      generateBody(arguments)
+    }
+  ): IRClosure {
+    val type = FunctionType(
+      parameters[index].second,
+      when (val returnType = type.nest(index)) {
+        is FunctionType -> returnType.copy(isClosure = true)
+        else -> returnType
+      }
+    )
+
+    val mangledName = "$mangledName-$index"
+
+    return IRClosure(
+      name = mangledName,
+      mangledName = "$mangledName-{{closure}}",
+      type = type,
+      references = references,
+      returnType = type.returnType,
+      realParameters = mapOf(parameters[index]),
+      generateBody = { builder(type.returnType, it) },
+    )
+  }
+
   override fun accessIn(context: CompilerContext): AllocaInstruction? {
     return context.module
       .getFunction(mangledName)
-      .map { context.alloca(it, "function_access_$name") }
+      .map { context.alloca(context.buildCall(it), "function_access_$name") }
       .toNullable()
   }
 
   override fun CompilerContext.codegen(): Function {
-    val function = module.addFunction(
-      mangledName,
-      context.getFunctionType(
-        returnType = returnType.typegen(),
-        *realParameters.values
-          .map { type ->
-            type.cast<FunctionType>()?.copy(isClosure = true)?.typegen()
-              ?.let { if (it is PointerType) it else context.getPointerType(it).unwrap() }
-              ?: type.typegen()
-          }
-          .toTypedArray(),
-        isVariadic = false,
-      ),
-    )
+    val reversedParameters = type.realParameters.keys
 
-    if (generateBody == null) return function
+    val closureReturnType = type.typegen()
 
     val enclosingBlock = runCatching { insertionBlock }
+    val toplevelFunction = context
+      .getFunctionType(closureReturnType)
+      .let { module.addFunction(mangledName, it) }
+
+    val entry = context.newBasicBlock("entry").also(toplevelFunction::addBasicBlock)
 
     createScopeContext(name) {
-      builder.positionAfter(context.newBasicBlock("entry").also(function::addBasicBlock))
+      builder.positionAfter(entry)
 
-      function.getParameters()
-        .mapIndexed(generateParameter(realParameters, this))
+      val closure = if (parameters.isNotEmpty()) {
+        List(parameters.size - 1, ::identity)
+          .reversed()
+          .fold(generateNesting(reversedParameters.size - 1)) { acc, i ->
+            generateNesting(i) { returnType, _ ->
+              val closure = acc.also { it.codegen() }.accessIn(this)
 
-      generateBody.invoke(this, function.getParameters().toList())
+              if (returnType == UnitType) {
+                buildReturn()
+              } else {
+                val closureType = returnType.cast<FunctionType>()!!.copy(isClosure = true).typegen()
 
-      if (!function.verify()) {
-        invalidFunctionError(function)
+                buildReturn(buildBitcast(closure, closureType))
+              }
+            }
+          }
+          .also { it.codegen() }
+          .accessIn(this)
+      } else {
+        addIrClosure(name, type, generateBody).also { it.codegen() }.accessIn(this)
+      }
+
+      builder.positionAfter(entry)
+
+      buildReturn(buildBitcast(closure, closureReturnType))
+
+      if (!toplevelFunction.verify()) {
+        invalidFunctionError(toplevelFunction)
       }
     }
 
@@ -89,7 +136,7 @@ class IRNamedFunction(
       builder.positionAfter(enclosingBlock.getOrThrow())
     }
 
-    return function
+    return toplevelFunction
   }
 }
 
@@ -97,10 +144,10 @@ class IRClosure(
   val type: FunctionType,
   override val name: String,
   override val mangledName: String,
-  private val references: LinkedHashMap<Identifier, PlankType>,
+  private val references: Map<Identifier, PlankType>,
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
-  private val generateBody: CompilerContext.(List<Argument>) -> Unit,
+  private val generateBody: ExecutionContext.(List<Argument>) -> Unit,
   private val descriptor: ResolvedFunDecl? = null,
 ) : IRFunction {
   override fun accessIn(context: CompilerContext): AllocaInstruction {
@@ -142,17 +189,23 @@ class IRClosure(
         setName("closure_environment")
       }
 
-      references.entries.forEachIndexed { index, (reference, type) ->
-        val variable = alloca(buildLoad(getField(environment, index)), "ENV.$reference")
+      val executionContext = ExecutionContext(this)
 
-        addVariable(reference, type, variable)
+      with(executionContext) {
+        references.entries.forEachIndexed { index, (reference, type) ->
+          val variable = alloca(buildLoad(getField(environment, index)), "ENV.$reference")
+
+          parameters[reference] = variable
+          addVariable(reference, type, variable)
+        }
+
+        val parameters = function.getParameters().drop(1)
+
+        parameters
+          .forEachIndexed(generateParameter(realParameters))
+
+        generateBody(parameters)
       }
-
-      val parameters = function.getParameters().drop(1)
-
-      parameters.forEachIndexed(generateParameter(realParameters, this))
-
-      generateBody(parameters)
 
       if (!function.verify()) {
         invalidFunctionError(function)
@@ -175,7 +228,7 @@ class IRClosure(
   }
 }
 
-fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) -> Unit =
+fun generateBody(descriptor: ResolvedFunDecl): ExecutionContext.(List<Argument>) -> Unit =
   fun CompilerContext.(_: List<Argument>) {
     descriptor.content.codegen()
 
@@ -185,22 +238,23 @@ fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) 
     buildReturn()
   }
 
-fun generateParameter(realParameters: Map<Identifier, PlankType>, context: CompilerContext) =
-  fun(index: Int, parameter: Argument) {
+fun ExecutionContext.generateParameter(realParameters: Map<Identifier, PlankType>) =
+  fun(index: Int, argument: Argument) {
     val plankType = realParameters.values.toList().getOrNull(index)
-      ?: context.unresolvedTypeError("type of parameter $index")
+      ?: unresolvedTypeError("type of parameter $index")
 
     val (name) = realParameters.keys.toList().getOrElse(index) {
-      context.unresolvedVariableError(parameter.getName())
+      unresolvedVariableError(argument.getName())
     }
 
-    context.addVariable(name, plankType, context.alloca(parameter, "parameter.$name"))
+    parameters[name] = argument
+    addVariable(name, plankType, alloca(argument, "parameter.$name"))
   }
 
 fun CompilerContext.addIrClosure(
   name: String,
   type: FunctionType,
-  generateBody: CompilerContext.(List<Argument>) -> Unit,
+  generateBody: ExecutionContext.(List<Argument>) -> Unit,
 ): IRClosure {
   val closure = IRClosure(
     name = name,
@@ -219,7 +273,7 @@ fun CompilerContext.addIrClosure(
 
 fun CompilerContext.addIrClosure(
   descriptor: ResolvedFunDecl,
-  generateBody: CompilerContext.(List<Argument>) -> Unit,
+  generateBody: ExecutionContext.(List<Argument>) -> Unit,
 ): Function = addFunction(
   IRClosure(
     name = descriptor.name.text,
@@ -234,7 +288,7 @@ fun CompilerContext.addIrClosure(
 
 fun CompilerContext.addIrFunction(
   descriptor: ResolvedFunDecl,
-  generateBody: (CompilerContext.(List<Argument>) -> Unit)? = null,
+  generateBody: ExecutionContext.(List<Argument>) -> Unit,
 ): Function = addFunction(
   IRNamedFunction(
     name = descriptor.name.text,

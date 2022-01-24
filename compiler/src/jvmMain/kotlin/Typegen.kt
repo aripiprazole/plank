@@ -43,43 +43,28 @@ private fun CompilerContext.typegen(type: StructType): Type =
   findStruct(type.name.text) ?: unresolvedTypeError(type.name.text)
 
 private fun CompilerContext.typegen(type: FunctionType): Type {
-  val parameters = type.parameters
-    .map { param ->
-      param.cast<FunctionType>()?.copy(isClosure = true)?.typegen()
-        ?: param.typegen()
-    }
-    .toTypedArray()
+  val name = "Closure_${type}_${type.hashCode()}_Function"
+  module.getTypeByName(name).toNullable()?.let { return pointerType(it) }
 
-  return when (type.isClosure) {
-    true -> {
-      val name = "Closure_${type.hashCode()}_Function"
-      module.getTypeByName(name).toNullable()?.let { return pointerType(it) }
+  val parameter = type.parameter.typegen()
+  val returnType = type.returnType.typegen()
+  val environmentType = runtime.types.voidPtr
 
-      val returnType = type.returnType.typegen()
-      val environmentType = runtime.types.voidPtr
-
-      val functionType = context.getFunctionType(returnType, environmentType, *parameters)
-
-      val struct = context.getNamedStructType(name).apply {
-        setElementTypes(
-          pointerType(functionType),
-          runtime.types.voidPtr,
-          isPacked = false
-        )
-      }
-
-      pointerType(struct)
-    }
-    false -> {
-      val returnType = type.returnType.typegen()
-      val functionType = context.getFunctionType(
-        returnType,
-        parameters = type.parameters.map { it.typegen() }.toTypedArray()
-      )
-
-      pointerType(functionType)
-    }
+  val functionType = if (parameter.isVoidType()) {
+    context.getFunctionType(returnType, environmentType)
+  } else {
+    context.getFunctionType(returnType, environmentType, parameter)
   }
+
+  val struct = context.getNamedStructType(name).apply {
+    setElementTypes(
+      pointerType(functionType),
+      runtime.types.voidPtr,
+      isPacked = false
+    )
+  }
+
+  return pointerType(struct)
 }
 
 private fun CompilerContext.typegen(type: PointerType): Type = pointerType(typegen(type.inner))

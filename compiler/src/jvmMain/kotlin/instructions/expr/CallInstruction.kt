@@ -3,21 +3,15 @@ package com.gabrielleeg1.plank.compiler.instructions.expr
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.builder.alloca
 import com.gabrielleeg1.plank.compiler.builder.buildBitcast
 import com.gabrielleeg1.plank.compiler.builder.buildCall
-import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.callClosure
+import com.gabrielleeg1.plank.compiler.builder.callee
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.addIrClosure
-import com.gabrielleeg1.plank.compiler.instructions.unresolvedFunctionError
-import com.gabrielleeg1.plank.compiler.unsafeCast
-import org.llvm4j.llvm4j.AllocaInstruction
-import org.llvm4j.llvm4j.Function
-import org.llvm4j.llvm4j.LoadInstruction
 import org.llvm4j.llvm4j.Value
 
 class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstruction {
@@ -53,19 +47,6 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
       }
     }
 
-    return when (descriptor.callee.type.isClosure) {
-      true -> callClosure(callee(descriptor.callee), *arguments.toTypedArray())
-      false -> buildCall(callee(descriptor.callee), arguments)
-    }
-  }
-
-  companion object {
-    fun CompilerContext.callee(descriptor: TypedExpr): Function =
-      when (val callee = descriptor.codegen()) {
-        is Function -> callee
-        is LoadInstruction -> callee.unsafeCast()
-        is AllocaInstruction -> buildLoad(callee).unsafeCast()
-        else -> unresolvedFunctionError(descriptor)
-      }
+    return callClosure(descriptor.callee.codegen(), *arguments.toTypedArray())
   }
 }

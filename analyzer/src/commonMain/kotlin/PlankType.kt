@@ -183,6 +183,7 @@ fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
 
 data class VariableAccess(val name: String, val type: PlankType)
 
+@Suppress("EqualsOrHashCode")
 data class FunctionType(
   val parameter: PlankType,
   val returnType: PlankType,
@@ -193,6 +194,20 @@ data class FunctionType(
 ) : PlankType() {
   val parameters get() = realParameters.values.toList()
 
+  fun nest(index: Int): PlankType {
+    var i = 0
+    var current = returnType
+
+    while (index > i) {
+      if (current is FunctionType) {
+        current = current.returnType
+      }
+      i++
+    }
+
+    return current
+  }
+
   override val isPrimitive: Boolean = true
   override val size = 8
 
@@ -201,8 +216,6 @@ data class FunctionType(
 
     return TypedCallExpr(callee, arguments, returnType, location)
   }
-
-  override fun hashCode(): Int = super.hashCode()
 
   override fun equals(other: Any?): Boolean = super.equals(other)
 

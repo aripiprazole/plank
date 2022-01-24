@@ -68,6 +68,11 @@ data class CodegenContext(
   inline operator fun invoke(builder: CodegenContext.() -> Unit): CodegenContext = apply(builder)
 }
 
+data class ExecutionContext(
+  override val enclosing: ScopeContext,
+  val parameters: MutableMap<String, Value> = LinkedHashMap(),
+) : CompilerContext by enclosing
+
 data class ScopeContext(
   override val debug: Boolean,
   override val module: Module,
@@ -156,6 +161,7 @@ data class ScopeContext(
 fun CompilerContext.scopeContext(): ScopeContext {
   return when (this) {
     is CodegenContext -> enclosing
+    is ExecutionContext -> enclosing
     is ScopeContext -> this
   }
 }
@@ -166,6 +172,7 @@ inline fun CompilerContext.createScopeContext(
 ): ScopeContext = when (this) {
   is ScopeContext -> copy(enclosing = this, name = moduleName).apply(builder)
   is CodegenContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
+  is ExecutionContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
 }
 
 inline fun CompilerContext.debug(action: DebugCompilerContext.() -> Unit) {
