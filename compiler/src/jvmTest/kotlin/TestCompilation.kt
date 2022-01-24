@@ -5,12 +5,10 @@ package com.gabrielleeg1.plank.compiler
 import com.gabrielleeg1.plank.analyzer.BindingViolation
 import com.gabrielleeg1.plank.compiler.compile.BindingError
 import com.gabrielleeg1.plank.compiler.compile.DebugOptions
-import com.gabrielleeg1.plank.compiler.compile.IRDumpError
 import com.gabrielleeg1.plank.compiler.compile.Package
 import com.gabrielleeg1.plank.compiler.compile.SyntaxError
 import com.gabrielleeg1.plank.compiler.compile.compileBinary
 import com.gabrielleeg1.plank.compiler.compile.printOutput
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import java.nio.file.Paths
@@ -23,7 +21,6 @@ class TestCompilation(
   private val pkg: Package,
   private val syntaxViolations: List<SyntaxViolation>,
   private val bindingViolations: List<BindingViolation>,
-  private val codegenViolations: List<CodegenViolation>,
   private val exitCode: Int,
 ) {
   fun expectSyntaxViolation(message: String): TestCompilation = apply {
@@ -34,22 +31,11 @@ class TestCompilation(
     assertNotNull(bindingViolations.find { it.message == message })
   }
 
-  fun expectCodegenViolation(message: String): TestCompilation = apply {
-//    assertNotNull(codegenViolations.find { it.message == message })
-    TODO()
-  }
-
   fun expectExitCode(actual: Int): TestCompilation = apply {
     assertEquals(actual, exitCode)
   }
 
   fun expectSuccess(): TestCompilation = apply {
-    if (codegenViolations.isNotEmpty()) {
-      pkg.logger.severe("Codegen violations:")
-      codegenViolations.forEach { it.render(pkg.logger) }
-      pkg.logger.severe()
-    }
-
     if (syntaxViolations.isNotEmpty()) {
       pkg.logger.severe("Syntax violations:")
       syntaxViolations.forEach { it.render(pkg.logger) }
@@ -64,7 +50,7 @@ class TestCompilation(
 
     expectExitCode(0)
 
-    if (bindingViolations.isNotEmpty() || codegenViolations.isNotEmpty() || syntaxViolations.isNotEmpty()) {
+    if (bindingViolations.isNotEmpty() || syntaxViolations.isNotEmpty()) {
       fail("Compilation failed")
     }
   }
@@ -102,7 +88,6 @@ class TestCompilation(
 
       var syntaxViolations: List<SyntaxViolation> = emptyList()
       var bindingViolations: List<BindingViolation> = emptyList()
-      var codegenViolations: List<CodegenViolation> = emptyList()
       var exitCode = -1
 
       try {
@@ -116,11 +101,9 @@ class TestCompilation(
         bindingViolations = error.violations
       } catch (error: SyntaxError) {
         syntaxViolations = error.violations
-      } catch (error: IRDumpError) {
-        codegenViolations = error.violations
       }
 
-      return TestCompilation(pkg, syntaxViolations, bindingViolations, codegenViolations, exitCode)
+      return TestCompilation(pkg, syntaxViolations, bindingViolations, exitCode)
         .apply(compilation)
     }
   }

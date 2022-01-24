@@ -1,8 +1,6 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import arrow.core.Either
 import arrow.core.computations.either
-import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
@@ -14,8 +12,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildCall
 import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
-import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
-import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
+import com.gabrielleeg1.plank.compiler.builder.pointerType
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.addIrClosure
@@ -24,9 +21,10 @@ import com.gabrielleeg1.plank.compiler.unsafeCast
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.LoadInstruction
+import org.llvm4j.llvm4j.Value
 
 class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstruction {
-  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+  override fun CompilerContext.codegen(): Value {
     val type = descriptor.callee.type.cast<FunctionType>()!!
 
     val arguments = descriptor.arguments.mapIndexed { index, expr ->
@@ -36,7 +34,7 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
             val closure =
               addIrClosure("Closure_${hashCode()}_$index", expr.type as FunctionType) { arguments ->
                 either.eager<CodegenViolation, Unit> {
-                  val value = buildCall(callee(expr).bind(), arguments)
+                  val value = buildCall(callee(expr), arguments)
 
                   if (functionType.actualReturnType == UnitType) {
                     buildReturn()
@@ -44,56 +42,53 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
                     buildReturn(value)
                   }
                 }
-              }.bind().accessIn(this@codegen)
+              }.accessIn(this@codegen)
 
             val closureType = functionType.copy(isClosure = true).typegen()
-              .bind().let { unsafePointerType(it) }
+              .let { pointerType(it) }
 
             buildBitcast(closure, closureType)
           }
           true -> {
             val closureType = functionType.copy(isClosure = true).typegen()
-              .bind().let { unsafePointerType(it) }
+              .let { pointerType(it) }
 
-            buildBitcast(alloca(expr.codegen().bind()), closureType)
+            buildBitcast(alloca(expr.codegen()), closureType)
           }
         }
-        else -> expr.codegen().bind()
+        else -> expr.codegen()
       }
     }
 
-    when (descriptor.callee.type.isClosure) {
+    return when (descriptor.callee.type.isClosure) {
       true -> {
-        var closure = descriptor.callee.codegen().bind()
+        var closure = descriptor.callee.codegen()
 
         if (!closure.getType().isPointerType()) {
           closure = alloca(closure)
         }
 
         val function = getField(closure, 0, "Closure.Function")
-          .map(::buildLoad).bind()
+          .let(::buildLoad)
           .unsafeCast<Function>()
 
-        val environment = getField(closure, 1, "Closure.Environment")
-          .map(::buildLoad).bind()
+        val environment = getField(closure, 1, "Closure.Environment").let(::buildLoad)
 
         buildCall(function, environment, *arguments.toTypedArray())
       }
       false -> {
-        buildCall(callee(descriptor.callee).bind(), arguments)
+        buildCall(callee(descriptor.callee), arguments)
       }
     }
   }
 
   companion object {
-    fun CompilerContext.callee(descriptor: TypedExpr): Either<CodegenViolation, Function> =
-      either.eager {
-        when (val callee = descriptor.codegen().bind()) {
-          is Function -> callee
-          is LoadInstruction -> callee.unsafeCast()
-          is AllocaInstruction -> buildLoad(callee).unsafeCast()
-          else -> unresolvedFunctionError(descriptor).left().bind<Function>()
-        }
+    fun CompilerContext.callee(descriptor: TypedExpr): Function =
+      when (val callee = descriptor.codegen()) {
+        is Function -> callee
+        is LoadInstruction -> callee.unsafeCast()
+        is AllocaInstruction -> buildLoad(callee).unsafeCast()
+        else -> unresolvedFunctionError(descriptor)
       }
   }
 }

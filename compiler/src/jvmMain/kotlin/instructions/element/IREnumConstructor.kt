@@ -1,8 +1,5 @@
 package com.gabrielleeg1.plank.compiler.instructions.element
 
-import arrow.core.Either
-import arrow.core.computations.either
-import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.EnumMember
 import com.gabrielleeg1.plank.analyzer.EnumType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
@@ -14,12 +11,10 @@ import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.createScopeContext
 import com.gabrielleeg1.plank.compiler.debug
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Function
-import org.llvm4j.llvm4j.NamedStructType
 
 class IREnumConstructor(
   private val member: EnumMember,
@@ -32,22 +27,18 @@ class IREnumConstructor(
     TODO()
   }
 
-  override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
-    val parameters = member.fields.map { it.typegen().bind() }
+  override fun CompilerContext.codegen(): Function {
+    val parameters = member.fields.map { it.typegen() }
 
-    val enum = descriptor.type.cast()
-      ?: unresolvedTypeError(name)
-        .left()
-        .bind<EnumType>()
+    val enum = descriptor.type.cast<EnumType>() ?: unresolvedTypeError(name)
 
     val functionType = context.getFunctionType(
-      enum.typegen().bind(),
+      enum.typegen(),
       *parameters.toTypedArray(),
       isVariadic = false
     )
 
-    val struct = findStruct(mangledName)
-      ?: unresolvedTypeError(name).left().bind<NamedStructType>()
+    val struct = findStruct(mangledName) ?: unresolvedTypeError(name)
 
     val function = module.addFunction(mangledName, functionType)
 
@@ -59,14 +50,14 @@ class IREnumConstructor(
       val arguments = function.getParameters()
 
       val index = runtime.types.tag.getConstant(enum.tag(Identifier(name)))
-      val instance = getInstance(struct, index, *arguments, isPointer = true).bind()
+      val instance = getInstance(struct, index, *arguments, isPointer = true)
 
-      val bitcast = buildBitcast(instance, enum.typegen().bind())
+      val bitcast = buildBitcast(instance, enum.typegen())
 
       debug {
         printf(
           "Creating enum member $name with tag %d (%d) of ${enum.name}",
-          buildLoad(getField(bitcast, 0).bind()),
+          buildLoad(getField(bitcast, 0)),
           index
         )
       }
@@ -74,6 +65,6 @@ class IREnumConstructor(
       buildReturn(bitcast)
     }
 
-    function
+    return function
   }
 }

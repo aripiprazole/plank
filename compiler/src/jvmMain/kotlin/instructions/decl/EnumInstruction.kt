@@ -1,15 +1,14 @@
 package com.gabrielleeg1.plank.compiler.instructions.decl
 
-import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.element.ResolvedEnumDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IREnumConstructor
+import org.llvm4j.llvm4j.Value
 
 // enums implements tagged unions
 class EnumInstruction(val descriptor: ResolvedEnumDecl) : CompilerInstruction {
-  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+  override fun CompilerContext.codegen(): Value {
     val type = descriptor.type
     val union = context.getNamedStructType(descriptor.name.text).also { enum ->
       enum.setElementTypes(
@@ -26,16 +25,16 @@ class EnumInstruction(val descriptor: ResolvedEnumDecl) : CompilerInstruction {
       val struct = context.getNamedStructType(mangledName).also { struct ->
         struct.setElementTypes(
           runtime.types.tag, // type tag
-          *member.fields.map { it.typegen().bind() }.toTypedArray(), // enum member's fields
+          *member.fields.map { it.typegen() }.toTypedArray(), // enum member's fields
           isPacked = false
         )
       }
 
       // TODO: mangle name to not clash with another type
       addStruct(mangledName, type, struct)
-      addFunction(IREnumConstructor(member, descriptor)).bind()
+      addFunction(IREnumConstructor(member, descriptor))
     }
 
-    runtime.nullConstant
+    return runtime.nullConstant
   }
 }

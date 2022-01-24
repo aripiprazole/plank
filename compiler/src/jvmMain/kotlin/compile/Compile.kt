@@ -1,13 +1,9 @@
 package com.gabrielleeg1.plank.compiler.compile
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.ModuleTree
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.compiler.ScopeContext
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.EntryPoint
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
@@ -33,7 +29,7 @@ fun compile(
   debug: DebugOptions,
   tree: ModuleTree = ModuleTree(),
   logger: CompilerLogger = SimpleCompilerLogger(),
-): Either<CompilerError, Module> {
+): Module {
   val main = analyze(plainMain, tree).check()
 
   if (debug.resolvedAstDebug) {
@@ -45,7 +41,7 @@ fun compile(
   val module = Module(LLVMModuleCreateWithName(main.module.text))
   val context = ScopeContext(debug.compilationDebug, module, main).copy(name = "Global")
 
-  val violations = tree.dependencies
+  tree.dependencies
     .depthFirstSearch(main.module)
     .asSequence()
     .mapNotNull(tree::findModule)
@@ -66,9 +62,6 @@ fun compile(
         }
       }
     }
-    .filterIsInstance<Either.Left<CodegenViolation>>()
-    .map { it.value }
-    .ifEmpty { return module.right() }
 
-  return CompilerError(module, violations).left()
+  return module
 }

@@ -1,16 +1,10 @@
 package com.gabrielleeg1.plank.compiler
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
-import arrow.core.traverseEither
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankElement
 import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRFunction
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedVariableError
@@ -21,6 +15,7 @@ import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.IRBuilder
 import org.llvm4j.llvm4j.Module
 import org.llvm4j.llvm4j.NamedStructType
+import org.llvm4j.llvm4j.Type
 import org.llvm4j.llvm4j.Value
 
 sealed interface CompilerContext {
@@ -35,7 +30,7 @@ sealed interface CompilerContext {
   val enclosing: CompilerContext?
   val location: Location
 
-  fun addFunction(function: IRFunction): Either<CodegenViolation, Function>
+  fun addFunction(function: IRFunction): Function
   fun addStruct(name: String, type: PlankType, struct: NamedStructType)
   fun addVariable(name: String, type: PlankType, variable: AllocaInstruction)
   fun expand(module: ScopeContext)
@@ -43,18 +38,18 @@ sealed interface CompilerContext {
   fun findModule(name: String): ScopeContext?
   fun findFunction(name: String): IRFunction?
   fun findStruct(name: String): NamedStructType?
-  fun findVariable(name: String): Either<CodegenViolation, AllocaInstruction>
+  fun findVariable(name: String): AllocaInstruction
   fun findAlloca(name: String): AllocaInstruction?
 
-  fun PlankType.typegen(): TypegenResult = typegen(this)
+  fun PlankType.typegen(): Type = typegen(this)
 
-  fun CompilerInstruction.codegen(): CodegenResult = this@CompilerContext.run { codegen() }
+  fun CompilerInstruction.codegen(): Value = this@CompilerContext.run { codegen() }
 
-  fun Collection<ResolvedPlankElement>.codegen(): Either<CodegenViolation, List<Value>> {
-    return traverseEither { it.codegen() }
+  fun Collection<ResolvedPlankElement>.codegen(): List<Value> {
+    return map { it.codegen() }
   }
 
-  fun ResolvedPlankElement.codegen(name: String = "CodegenContext"): CodegenResult =
+  fun ResolvedPlankElement.codegen(name: String = "CodegenContext"): Value =
     CodegenContext(this, scopeContext()).let { context ->
       when (context.descriptor) {
         is TypedExpr -> mapper.visit(context.descriptor).run { context.codegen() }
@@ -102,10 +97,10 @@ data class ScopeContext(
   )
 
   @Suppress("UNCHECKED_CAST")
-  override fun addFunction(function: IRFunction): Either<CodegenViolation, Function> {
+  override fun addFunction(function: IRFunction): Function {
     functions[function.name] = function
 
-    return function.codegen() as Either<CodegenViolation, Function>
+    return function.codegen() as Function
   }
 
   override fun addStruct(name: String, type: PlankType, struct: NamedStructType) {
@@ -142,10 +137,10 @@ data class ScopeContext(
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findStruct(name) }
   }
 
-  override fun findVariable(name: String): Either<CodegenViolation, AllocaInstruction> =
-    findAlloca(name)?.right()
-      ?: findFunction(name)?.accessIn(this@ScopeContext)?.right()
-      ?: unresolvedVariableError(name).left()
+  override fun findVariable(name: String): AllocaInstruction =
+    findAlloca(name)
+      ?: findFunction(name)?.accessIn(this@ScopeContext)
+      ?: unresolvedVariableError(name)
 
   override fun findAlloca(name: String): AllocaInstruction? {
     return values[name]?.second

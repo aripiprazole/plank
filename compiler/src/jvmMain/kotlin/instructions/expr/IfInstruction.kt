@@ -1,9 +1,5 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import arrow.core.Either
-import arrow.core.computations.either
-import arrow.core.left
-import arrow.core.right
 import com.gabrielleeg1.plank.analyzer.BoolType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
@@ -15,52 +11,45 @@ import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildPhi
 import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.builder.currentFunction
-import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
-import org.llvm4j.llvm4j.BasicBlock
 import org.llvm4j.llvm4j.TypeKind
 import org.llvm4j.llvm4j.Value
 
 class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
-  override fun CompilerContext.codegen(): CodegenResult = either.eager {
-    val cond = descriptor.cond.codegen().bind()
+  override fun CompilerContext.codegen(): Value {
+    val cond = descriptor.cond.codegen()
 
-    createIf(
+    return createIf(
       descriptor.type,
       cond,
       thenStmts = {
-        either.eager {
-          listOf(descriptor.thenBranch.codegen().bind())
-        }
+        listOf(descriptor.thenBranch.codegen())
       },
       elseStmts = {
-        either.eager {
-          listOf(descriptor.elseBranch!!.codegen().bind())
-        }
+        listOf(descriptor.elseBranch!!.codegen())
       },
-    ).bind()
+    )
   }
 
   companion object {
-    fun CompilerContext.createAnd(lhs: Value, rhs: Value): CodegenResult = either.eager {
-      val variable = buildAlloca(BoolType.typegen().bind())
-      val thenStmts = { listOf(buildStore(variable, rhs)).right() }
-      val elseStmts = { listOf(buildStore(variable, runtime.falseConstant)).right() }
+    fun CompilerContext.createAnd(lhs: Value, rhs: Value): Value {
+      val variable = buildAlloca(BoolType.typegen())
+      val thenStmts = { listOf(buildStore(variable, rhs)) }
+      val elseStmts = { listOf(buildStore(variable, runtime.falseConstant)) }
 
-      createIf(BoolType, lhs, thenStmts, elseStmts).bind()
+      createIf(BoolType, lhs, thenStmts, elseStmts)
 
-      buildLoad(variable)
+      return buildLoad(variable)
     }
 
     fun CompilerContext.createIf(
       type: PlankType,
       cond: Value,
-      thenStmts: () -> Either<CodegenViolation, List<Value>>,
-      elseStmts: () -> Either<CodegenViolation, List<Value>> = { emptyList<Value>().right() },
-    ): CodegenResult = either.eager {
-      val currentFunction = currentFunction.bind()
+      thenStmts: () -> List<Value>,
+      elseStmts: () -> List<Value> = { emptyList<Value>() },
+    ): Value {
+      val currentFunction = currentFunction
 
       val thenBranch = context.newBasicBlock("then").also(currentFunction::addBasicBlock)
       var elseBranch = context.newBasicBlock("else")
@@ -75,7 +64,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
       thenBranch.also { br ->
         builder.positionAfter(br) // emit then
 
-        thenRet = thenStmts().bind().lastOrNull()
+        thenRet = thenStmts().lastOrNull()
           ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
           ?.takeIf { it.getType() != runtime.types.void }
           ?.also {
@@ -91,7 +80,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
         currentFunction.addBasicBlock(br)
         builder.positionAfter(br) // emit else
 
-        elseRet = elseStmts().bind().lastOrNull()
+        elseRet = elseStmts().lastOrNull()
           ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
           ?.takeIf { it.getType() != runtime.types.void }
           ?.also {
@@ -105,22 +94,20 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
 
       elseBranch = builder.getInsertionBlock().toNullable()
         ?: llvmError("insertion block is null")
-          .left()
-          .bind<BasicBlock>()
 
       currentFunction.addBasicBlock(mergeBranch)
       builder.positionAfter(mergeBranch)
 
       if (thenRet != null && elseRet != null) {
-        val phiType = type.typegen().bind()
+        val phiType = type.typegen()
 
-        return@eager buildPhi(phiType, "if.tmp").apply {
+        return buildPhi(phiType, "if.tmp").apply {
           addIncoming(thenBranch to thenRet)
           addIncoming(elseBranch to elseRet)
         }
       }
 
-      condBr
+      return condBr
     }
   }
 }

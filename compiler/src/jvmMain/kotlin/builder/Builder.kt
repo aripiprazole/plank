@@ -2,29 +2,12 @@
 
 package com.gabrielleeg1.plank.compiler.builder
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
 import com.gabrielleeg1.plank.compiler.CompilerContext
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
 import org.bytedeco.llvm.global.LLVM
 import org.bytedeco.llvm.global.LLVM.LLVMBuildStructGEP
-import org.llvm4j.llvm4j.AllocaInstruction
-import org.llvm4j.llvm4j.BasicBlock
-import org.llvm4j.llvm4j.BranchInstruction
-import org.llvm4j.llvm4j.FloatPredicate
-import org.llvm4j.llvm4j.FloatingPointType
+import org.llvm4j.llvm4j.*
 import org.llvm4j.llvm4j.Function
-import org.llvm4j.llvm4j.IntPredicate
-import org.llvm4j.llvm4j.IntegerType
-import org.llvm4j.llvm4j.LoadInstruction
-import org.llvm4j.llvm4j.PhiInstruction
-import org.llvm4j.llvm4j.ReturnInstruction
-import org.llvm4j.llvm4j.StoreInstruction
-import org.llvm4j.llvm4j.Type
-import org.llvm4j.llvm4j.Value
-import org.llvm4j.llvm4j.WrapSemantics
 import org.llvm4j.optional.Option
 
 fun CompilerContext.buildReturn(value: Value? = null): ReturnInstruction {
@@ -167,16 +150,12 @@ fun CompilerContext.buildBitcast(op: Value, type: Type, name: String? = null): V
   return builder.buildBitCast(op, type, Option.of(name))
 }
 
-val CompilerContext.insertionBlock: Either<CodegenViolation, BasicBlock>
-  get() =
-    builder.getInsertionBlock().toNullable()
-      ?.right()
-      ?: llvmError("can not reach function in this context").left()
+val CompilerContext.insertionBlock: BasicBlock
+  get() = builder.getInsertionBlock().toNullable()
+    ?: llvmError("can not reach function in this context")
 
-val CompilerContext.currentFunction: Either<CodegenViolation, Function>
-  get() =
-    builder.getInsertionBlock().toNullable()
-      ?.getFunction()
-      ?.toNullable()
-      ?.right()
-      ?: llvmError("can not reach function in this context").left()
+val CompilerContext.currentFunction: Function
+  get() = builder.getInsertionBlock().toNullable()
+    ?.getFunction()
+    ?.toNullable()
+    ?: llvmError("can not reach function in this context")

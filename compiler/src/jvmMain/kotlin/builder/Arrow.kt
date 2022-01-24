@@ -29,3 +29,10 @@ fun <A> LlvmOption<A>.arrow(): arrow.core.Option<A> = when (this) {
   is LlvmSome -> Some(value)
   is LlvmNone -> None
 }
+
+fun <B> Either<*, B>.unwrap(): B {
+  return when (this) {
+    is Right -> value
+    is Left -> error("Called `Either.unwrap()` on a `Left` value")
+  }
+}

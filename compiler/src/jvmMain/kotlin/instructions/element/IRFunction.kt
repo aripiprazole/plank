@@ -1,11 +1,6 @@
 package com.gabrielleeg1.plank.compiler.instructions.element
 
-import arrow.core.Either
-import arrow.core.Either.Right
 import arrow.core.computations.either
-import arrow.core.identity
-import arrow.core.left
-import arrow.core.traverseEither
 import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.UnitType
@@ -18,7 +13,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.builder.insertionBlock
-import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
+import com.gabrielleeg1.plank.compiler.builder.pointerType
 import com.gabrielleeg1.plank.compiler.createScopeContext
 import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.invalidFunctionError
@@ -30,7 +25,6 @@ import com.gabrielleeg1.plank.compiler.verify
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.AllocaInstruction
 import org.llvm4j.llvm4j.Argument
-import org.llvm4j.llvm4j.BasicBlock
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.PointerType
 
@@ -42,7 +36,7 @@ interface IRFunction : IRElement {
   fun accessIn(context: CompilerContext): AllocaInstruction?
 
   /** Generates the function in the [this] */
-  override fun CompilerContext.codegen(): Either<CodegenViolation, Function>
+  override fun CompilerContext.codegen(): Function
 }
 
 class IRNamedFunction(
@@ -60,43 +54,44 @@ class IRNamedFunction(
       .toNullable()
   }
 
-  override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
+  override fun CompilerContext.codegen(): Function {
     val function = module.addFunction(
       mangledName,
       context.getFunctionType(
-        returnType = returnType.typegen().bind(),
+        returnType = returnType.typegen(),
         *realParameters.values
           .map { type ->
             type.cast<FunctionType>()?.copy(isClosure = true)?.typegen()
-              ?.map { if (it is PointerType) it else context.getPointerType(it).unwrap() }?.bind()
-              ?: type.typegen().bind()
+              ?.let { if (it is PointerType) it else context.getPointerType(it).unwrap() }
+              ?: type.typegen()
           }
           .toTypedArray(),
         isVariadic = false,
       ),
     )
 
-    if (generateBody == null) return@eager function
+    if (generateBody == null) return function
 
-    val enclosingBlock = insertionBlock
+    val enclosingBlock = runCatching { insertionBlock }
 
     createScopeContext(name) {
       builder.positionAfter(context.newBasicBlock("entry").also(function::addBasicBlock))
 
       function.getParameters()
         .mapIndexed(generateParameter(realParameters, this))
-        .traverseEither(::identity).bind()
 
       generateBody.invoke(this, function.getParameters().toList())
 
-      ensure(function.verify()) { invalidFunctionError(function) }
+      if (!function.verify()) {
+        invalidFunctionError(function)
+      }
     }
 
-    if (enclosingBlock is Right<BasicBlock>) {
-      builder.positionAfter(enclosingBlock.value)
+    if (enclosingBlock.isSuccess) {
+      builder.positionAfter(enclosingBlock.getOrThrow())
     }
 
-    function
+    return function
   }
 }
 
@@ -114,33 +109,33 @@ class IRClosure(
     return context.findAlloca(mangledName)!!
   }
 
-  override fun CompilerContext.codegen(): Either<CodegenViolation, Function> = either.eager {
+  override fun CompilerContext.codegen(): Function {
     val references = references.mapKeys { (name) -> name.text }
 
     val environmentType = context.getNamedStructType("Closure_${mangledName}_Environment").apply {
       setElementTypes(
-        *references.map { it.value.typegen().bind() }.toTypedArray(),
+        *references.map { it.value.typegen() }.toTypedArray(),
         isPacked = false
       )
     }
 
     val functionType = context.getFunctionType(
-      returnType.typegen().bind(),
-      unsafePointerType(environmentType),
-      *realParameters.values.toList().map { type -> type.typegen().bind() }.toTypedArray(),
+      returnType.typegen(),
+      pointerType(environmentType),
+      *realParameters.values.toList().map { type -> type.typegen() }.toTypedArray(),
     )
 
     val closureFunctionType = context.getNamedStructType("Closure_${mangledName}_Function").apply {
       setElementTypes(
-        unsafePointerType(functionType),
-        unsafePointerType(environmentType),
+        pointerType(functionType),
+        pointerType(environmentType),
         isPacked = false
       )
     }
 
     val function = module.addFunction(mangledName, functionType)
 
-    val enclosingBlock = insertionBlock.bind() // All closures are nested
+    val enclosingBlock = insertionBlock // All closures are nested
 
     createScopeContext(name) {
       builder.positionAfter(context.newBasicBlock("entry").also(function::addBasicBlock))
@@ -150,20 +145,20 @@ class IRClosure(
       }
 
       references.entries.forEachIndexed { index, (reference, type) ->
-        val variable = alloca(buildLoad(getField(environment, index).bind()), "ENV.$reference")
+        val variable = alloca(buildLoad(getField(environment, index)), "ENV.$reference")
 
         addVariable(reference, type, variable)
       }
 
       val parameters = function.getParameters().drop(1)
 
-      parameters
-        .mapIndexed(generateParameter(realParameters, this))
-        .traverseEither(::identity).bind()
+      parameters.forEachIndexed(generateParameter(realParameters, this))
 
-      generateBody.invoke(this, parameters)
+      generateBody(parameters)
 
-      ensure(function.verify()) { invalidFunctionError(function) }
+      if (!function.verify()) {
+        invalidFunctionError(function)
+      }
     }
 
     builder.positionAfter(enclosingBlock)
@@ -173,18 +168,18 @@ class IRClosure(
       .map { buildLoad(it) }
       .toTypedArray()
 
-    val environment = getInstance(environmentType, *variables, isPointer = true).bind()
-    val closure = getInstance(closureFunctionType, function, environment, isPointer = true).bind()
+    val environment = getInstance(environmentType, *variables, isPointer = true)
+    val closure = getInstance(closureFunctionType, function, environment, isPointer = true)
 
     addVariable(mangledName, type, closure.unsafeCast())
 
-    function
+    return function
   }
 }
 
 fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) -> Unit = {
   either.eager<CodegenViolation, Unit> {
-    descriptor.content.codegen().bind()
+    descriptor.content.codegen()
 
     if (descriptor.returnType != UnitType) return@eager
     if (descriptor.content.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()) return@eager
@@ -194,12 +189,12 @@ fun generateBody(descriptor: ResolvedFunDecl): CompilerContext.(List<Argument>) 
 }
 
 fun generateParameter(realParameters: Map<Identifier, PlankType>, context: CompilerContext) =
-  fun(index: Int, parameter: Argument): Either<CodegenViolation, Unit> = either.eager {
+  fun(index: Int, parameter: Argument) {
     val plankType = realParameters.values.toList().getOrNull(index)
-      ?: context.unresolvedTypeError("type of parameter $index").left().bind<PlankType>()
+      ?: context.unresolvedTypeError("type of parameter $index")
 
     val (name) = realParameters.keys.toList().getOrElse(index) {
-      context.unresolvedVariableError(parameter.getName()).left().bind<Identifier>()
+      context.unresolvedVariableError(parameter.getName())
     }
 
     context.addVariable(name, plankType, context.alloca(parameter, "parameter.$name"))
@@ -209,7 +204,7 @@ fun CompilerContext.addIrClosure(
   name: String,
   type: FunctionType,
   generateBody: CompilerContext.(List<Argument>) -> Unit,
-): Either<CodegenViolation, IRClosure> = either.eager {
+): IRClosure {
   val closure = IRClosure(
     name = name,
     mangledName = name,
@@ -220,15 +215,15 @@ fun CompilerContext.addIrClosure(
     generateBody = generateBody,
   )
 
-  addFunction(closure).bind()
+  addFunction(closure)
 
-  closure
+  return closure
 }
 
 fun CompilerContext.addIrClosure(
   descriptor: ResolvedFunDecl,
   generateBody: CompilerContext.(List<Argument>) -> Unit,
-): Either<CodegenViolation, Function> = addFunction(
+): Function = addFunction(
   IRClosure(
     name = descriptor.name.text,
     mangledName = mangleFunction(descriptor),
@@ -243,7 +238,7 @@ fun CompilerContext.addIrClosure(
 fun CompilerContext.addIrFunction(
   descriptor: ResolvedFunDecl,
   generateBody: (CompilerContext.(List<Argument>) -> Unit)? = null,
-): Either<CodegenViolation, Function> = addFunction(
+): Function = addFunction(
   IRNamedFunction(
     name = descriptor.name.text,
     mangledName = mangleFunction(descriptor),

@@ -1,6 +1,5 @@
 package com.gabrielleeg1.plank.compiler.compile
 
-import arrow.core.identity
 import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.Module
 import com.gabrielleeg1.plank.analyzer.analyze
@@ -51,23 +50,16 @@ private fun Package.generateIR(file: PlankFile): File {
     logger.debug()
   }
 
-  target.writeText(
-    compile(file, ::analyze, options.debug, tree, logger)
-      .fold(
-        ifRight = ::identity,
-        ifLeft = { (module, violations) ->
-          throw IRDumpError(module, violations)
-        },
-      )
-      .getAsString()
-      .also { ir ->
-        if (options.debug.llvmIrDebug) {
-          logger.debug("Llvm IR:")
-          logger.debug(ir)
-          logger.debug()
-        }
-      },
-  )
+  compile(file, ::analyze, options.debug, tree, logger)
+    .getAsString()
+    .also { ir ->
+      if (options.debug.llvmIrDebug) {
+        logger.debug("Llvm IR:")
+        logger.debug(ir)
+        logger.debug()
+      }
+    }
+    .also(target::writeText)
 
   return target
 }

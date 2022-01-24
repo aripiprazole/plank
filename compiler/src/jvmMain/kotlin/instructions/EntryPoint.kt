@@ -1,29 +1,26 @@
 package com.gabrielleeg1.plank.compiler.instructions
 
-import arrow.core.computations.either
-import arrow.core.left
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.builder.buildCall
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
-import com.gabrielleeg1.plank.compiler.builder.unsafePointerType
+import com.gabrielleeg1.plank.compiler.builder.pointerType
 import com.gabrielleeg1.plank.compiler.mangleFunction
+import org.llvm4j.llvm4j.Value
 
 class EntryPoint : CompilerInstruction {
-  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+  override fun CompilerContext.codegen(): Value {
     val name = file.program
       .filterIsInstance<ResolvedFunDecl>()
       .find { it.name.text == "main" }
       ?: unresolvedVariableError("main")
-        .left()
-        .bind<ResolvedFunDecl>()
 
     val main = module.getFunction(mangleFunction(name)).toNullable()
 
     val mainFunctionType = context.getFunctionType(
       runtime.types.int,
       runtime.types.int,
-      unsafePointerType(runtime.types.string),
+      pointerType(runtime.types.string),
       isVariadic = false
     )
 
@@ -42,6 +39,6 @@ class EntryPoint : CompilerInstruction {
       buildReturn(runtime.types.int.getConstant(0))
     }
 
-    runtime.nullConstant
+    return runtime.nullConstant
   }
 }

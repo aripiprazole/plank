@@ -1,6 +1,5 @@
 package com.gabrielleeg1.plank.compiler.instructions.expr
 
-import arrow.core.computations.either
 import com.gabrielleeg1.plank.analyzer.element.TypedMatchExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.builder.buildAlloca
@@ -10,15 +9,13 @@ import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.builder.currentFunction
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.debug
-import com.gabrielleeg1.plank.compiler.instructions.CodegenResult
-import com.gabrielleeg1.plank.compiler.instructions.CodegenViolation
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRPattern
 import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction.Companion.createIf
 import org.llvm4j.llvm4j.Value
 
 class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruction {
-  override fun CompilerContext.codegen(): CodegenResult = either.eager {
+  override fun CompilerContext.codegen(): Value {
     debug {
       printf("=>> MATCH")
     }
@@ -26,42 +23,40 @@ class MatchInstruction(private val descriptor: TypedMatchExpr) : CompilerInstruc
     val targetType = descriptor.type
     val subjectType = descriptor.subject.type
 
-    val target = buildAlloca(targetType.typegen().bind(), "match")
+    val target = buildAlloca(targetType.typegen(), "match")
 
-    val subject = descriptor.subject.codegen().bind()
+    val subject = descriptor.subject.codegen()
 
     debug {
-      printf("tag in subject %d", buildLoad(getField(subject, 0).bind()))
-      printf("subject string", buildLoad(getField(subject, 0).bind()))
+      printf("tag in subject %d", buildLoad(getField(subject, 0)))
+      printf("subject string", buildLoad(getField(subject, 0)))
     }
 
     val matchBr = context.newBasicBlock("match_br")
-      .also { currentFunction.bind().addBasicBlock(it) }
+      .also { currentFunction.addBasicBlock(it) }
 
     buildBr(matchBr)
     builder.positionAfter(matchBr)
 
     descriptor.patterns.forEach { (pattern, value) ->
       val thenStmts = {
-        either.eager<CodegenViolation, List<Value>> {
-          val instruction = value.codegen().bind()
-          val store = buildStore(target, instruction)
+        val instruction = value.codegen()
+        val store = buildStore(target, instruction)
 
-          listOf(instruction, store)
-        }
+        listOf(instruction, store)
       }
 
       createIf(
         targetType,
-        IRPattern.of(pattern, subject, subjectType).codegen().bind(),
+        IRPattern.of(pattern, subject, subjectType).codegen(),
         thenStmts,
-      ).bind()
+      )
     }
 
     debug {
       printf("<<= MATCH")
     }
 
-    buildLoad(target, "match.target")
+    return buildLoad(target, "match.target")
   }
 }

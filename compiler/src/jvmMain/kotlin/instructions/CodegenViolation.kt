@@ -7,162 +7,51 @@ import com.gabrielleeg1.plank.grammar.message.CompilerLogger
 import org.llvm4j.llvm4j.Function
 import kotlin.reflect.KClass
 
-sealed interface CodegenViolation {
-  val context: CompilerContext
-  val message: String
-
-  fun render(logger: CompilerLogger)
-}
-
-data class InvalidFunction(
-  val function: Function,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Invalid function %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(function.getName()), context.location)
-    logger.debug(context.module.getAsString())
+class CodegenViolation(
+  override val message: String,
+  val context: CompilerContext,
+) : RuntimeException() {
+  fun render(logger: CompilerLogger) {
+    logger.severe(message, context.location)
   }
 }
 
-data class UnresolvedTypeViolation(
-  val name: String,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Unresolved type %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(name), context.location)
-  }
+fun CompilerContext.unresolvedFunctionError(callee: TypedExpr): Nothing {
+  throw CodegenViolation("Unresolved function `$callee`", this)
 }
 
-data class UnresolvedFunctionViolation(
-  val callee: TypedExpr,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Unresolved callable %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(callee), callee.location)
-  }
+fun CompilerContext.invalidFunctionError(function: Function): Nothing {
+  throw CodegenViolation("Invalid function `${function.getName()}`", this)
 }
 
-data class UnresolvedVariableViolation(
-  val name: String,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Unresolved variable %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(name), context.location)
-  }
+fun CompilerContext.unresolvedVariableError(name: String): Nothing {
+  throw CodegenViolation("Unresolved variable `$name`", this)
 }
 
-data class InvalidConstantViolation(
-  val value: Any,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Invalid const %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(value), context.location)
-  }
+fun CompilerContext.invalidConstantError(value: Any): Nothing {
+  throw CodegenViolation("Invalid constant $value", this)
 }
 
-data class UnresolvedModuleViolation(
-  val name: String,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Unresolved module %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(name), context.location)
-  }
+fun CompilerContext.unresolvedTypeError(name: String): Nothing {
+  throw CodegenViolation("Unresolved type `$name`", this)
 }
 
-data class ExpectedType(
-  val expected: KClass<out PlankType>,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Expected type %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(expected.simpleName), context.location)
-  }
+fun CompilerContext.unresolvedFieldError(name: String, struct: PlankType): Nothing {
+  throw CodegenViolation("Unresolved property error `$name` in type $struct", this)
 }
 
-data class MismatchTypes(
-  val actual: PlankType,
-  val expected: PlankType,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Mismatch types. Expected %s, got %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(expected, actual), context.location)
-  }
+fun CompilerContext.expectedTypeError(expected: KClass<out PlankType>): Nothing {
+  throw CodegenViolation("Expected type `${expected.simpleName}`", this)
 }
 
-data class LlvmViolation(
-  val value: String,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Unknown llvm error. %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(value))
-  }
+fun CompilerContext.mismatchTypesError(actual: PlankType, expected: PlankType): Nothing {
+  throw CodegenViolation("Mismatch types. expected $expected, but got $actual", this)
 }
 
-data class UnresolvedFieldViolation(
-  val field: String,
-  val struct: PlankType,
-  override val context: CompilerContext
-) : CodegenViolation {
-  override val message: String = "Unresolved field error %s in type %s"
-
-  override fun render(logger: CompilerLogger) {
-    logger.severe(message.format(field, struct), context.location)
-  }
+fun CompilerContext.unresolvedModuleError(name: String): Nothing {
+  throw CodegenViolation("Unresolved module `$name`", this)
 }
 
-fun CompilerContext.unresolvedFunctionError(callee: TypedExpr): CodegenViolation {
-  return UnresolvedFunctionViolation(callee, this)
-}
-
-fun CompilerContext.invalidFunctionError(function: Function): CodegenViolation {
-  return InvalidFunction(function, this)
-}
-
-fun CompilerContext.unresolvedVariableError(name: String): CodegenViolation {
-  return UnresolvedVariableViolation(name, this)
-}
-
-fun CompilerContext.invalidConstantError(value: Any): CodegenViolation {
-  return InvalidConstantViolation(value, this)
-}
-
-fun CompilerContext.unresolvedTypeError(name: String): CodegenViolation {
-  return UnresolvedTypeViolation(name, this)
-}
-
-fun CompilerContext.unresolvedFieldError(name: String, struct: PlankType): CodegenViolation {
-  return UnresolvedFieldViolation(name, struct, this)
-}
-
-fun CompilerContext.expectedTypeError(expected: KClass<out PlankType>): CodegenViolation {
-  return ExpectedType(expected, this)
-}
-
-fun CompilerContext.mismatchTypesError(actual: PlankType, expected: PlankType): CodegenViolation {
-  return MismatchTypes(actual, expected, this)
-}
-
-fun CompilerContext.unresolvedModuleError(name: String): CodegenViolation {
-  return UnresolvedModuleViolation(name, this)
-}
-
-fun CompilerContext.llvmError(message: String): CodegenViolation {
-  return LlvmViolation(message, this)
+fun CompilerContext.llvmError(message: String): Nothing {
+  throw CodegenViolation(message, this)
 }
