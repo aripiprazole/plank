@@ -4,8 +4,10 @@ import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
 import com.gabrielleeg1.plank.compiler.builder.buildBitcast
+import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.callClosure
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
+import com.gabrielleeg1.plank.compiler.instructions.element.IRCurried
 import org.llvm4j.llvm4j.Value
 
 class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstruction {
@@ -13,11 +15,35 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
     val type = descriptor.callee.type.cast<FunctionType>()!!
 
     val arguments = descriptor.arguments.mapIndexed { index, expr ->
-      when (val functionType = type.parameters[index].cast<FunctionType>()) {
-        is FunctionType -> {
-          val closureType = functionType.copy().typegen()
+      val functionType = expr.type.cast<FunctionType>()
+      when {
+        functionType != null && functionType.isClosure -> {
+          buildBitcast(expr.codegen(), type.parameters[index].typegen())
+        }
+        functionType != null && !functionType.isClosure -> { // FIXME: access function with lazy
+          val name = "Wrapper_${descriptor.hashCode()}_${descriptor.callee.type}_$index"
+          val f = addFunction(
+            IRCurried(
+              name = name,
+              mangledName = name,
+              type = functionType,
+              returnType = functionType.actualReturnType,
+              realParameters = functionType.realParameters,
+              variableReferences = emptyMap(),
+              nested = true,
+              generateBody = {
+                val value = callClosure(expr.codegen(), *parameters.values.toTypedArray())
 
-          buildBitcast(expr.codegen(), closureType)
+                if (value.getType().isVoidType()) {
+                  buildReturn()
+                } else {
+                  buildReturn(value)
+                }
+              }
+            )
+          )
+
+          buildBitcast(f, type.parameters[index].typegen())
         }
         else -> expr.codegen()
       }

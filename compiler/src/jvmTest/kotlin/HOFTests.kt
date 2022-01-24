@@ -80,6 +80,7 @@ class HOFTests {
         }
 
         fun main(argc: Int32, argv: **Char): Void {
+          println("Hello");
           hof_nesting(println);
         }
         """.trimIndent()
