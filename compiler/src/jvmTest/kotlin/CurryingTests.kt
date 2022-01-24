@@ -24,6 +24,58 @@ class CurryingTests {
   }
 
   @Test
+  fun `test call currying without call chain`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun print_full_name(name: *Char, surname: *Char) {
+          print(name);
+          print(" ");
+          println(surname);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          print_full_name("Isabela", "Freitas");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test call currying`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun print_full_name(name: *Char, surname: *Char) {
+          print(name);
+          print(" ");
+          println(surname);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          print_full_name("Isabela")("Freitas");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test basic currying with empty parameters function`() {
     TestCompilation
       .of(

@@ -380,7 +380,9 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   private fun callFold(acc: Expr, next: ArgContext): Expr {
     return when (next) {
       is GetArgContext -> GetExpr(acc, visitToken(next.name!!), next.location)
-      is CallArgContext -> CallExpr(acc, next.findExpr().map(::visitExpr), next.location)
+      is CallArgContext -> next.findExpr().fold(acc) { callee, arg ->
+        CallExpr(callee, listOf(visitExpr(arg)), arg.location)
+      }
       else -> error("Unsupported arg ${next::class.simpleName}")
     }
   }
