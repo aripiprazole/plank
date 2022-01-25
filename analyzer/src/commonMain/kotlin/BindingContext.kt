@@ -13,6 +13,7 @@ fun analyze(file: PlankFile, tree: ModuleTree): ResolvedPlankFile {
   return BindingContext(tree).analyze(file)
 }
 
+// TODO: add call parameters check
 @Suppress("UnusedPrivateMember", "MaxLineLength", "MaximumLineLength")
 internal class BindingContext(tree: ModuleTree) :
   Expr.Visitor<TypedExpr>,
@@ -118,7 +119,7 @@ internal class BindingContext(tree: ModuleTree) :
       variable.declaredIn !is GlobalScope
     ) {
       (currentScope as? FunctionScope)?.apply {
-        references[variable.name] = variable
+        references[variable.name] = variable.value.type
       }
     }
 
@@ -380,11 +381,12 @@ internal class BindingContext(tree: ModuleTree) :
 
     val attributes = decl.attributes // todo validate
 
-    val type = visitFunctionTypeRef(decl.type)
+    val references = LinkedHashMap<Identifier, PlankType>()
+    val type = visitFunctionTypeRef(decl.type).copy(references = references)
 
     currentScope.declare(name, type, decl.location)
 
-    val scope = FunctionScope(type, name, currentScope, currentModuleTree)
+    val scope = FunctionScope(type, name, currentScope, currentModuleTree, references)
     val content = scoped(name, scope) {
       decl.realParameters
         .mapKeys { it.key }
@@ -393,9 +395,6 @@ internal class BindingContext(tree: ModuleTree) :
         }
 
       visitStmts(decl.body)
-    }
-    val references = scope.references.mapValuesTo(LinkedHashMap()) { (_, variable) ->
-      variable.value.type
     }
 
     return ResolvedFunDecl(name, content, realParameters, attributes, references, type, location)

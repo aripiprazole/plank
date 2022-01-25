@@ -90,4 +90,65 @@ class HOFTests {
         expectSuccess()
       }
   }
+
+  @Test
+  fun `test passing hof closure with currying directly`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun prefixed(prefix: *Char, message: *Char): Void {
+          print(prefix);
+          print(" => ");
+          println(message);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          hof(prefixed("info"));
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test passing hof closure with currying by reference`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun prefixed(prefix: *Char, message: *Char): Void {
+          print(prefix);
+          print(" => ");
+          println(message);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let f = prefixed("info");
+          hof(f);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
 }

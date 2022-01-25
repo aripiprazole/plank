@@ -84,6 +84,7 @@ class FunctionScope(
   override val name: Identifier,
   override val enclosing: Scope? = null,
   override val moduleTree: ModuleTree = ModuleTree(),
+  override val references: LinkedHashMap<Identifier, PlankType> = LinkedHashMap(),
 ) : Scope() {
   val returnType get() = function.actualReturnType
 
@@ -106,7 +107,7 @@ sealed class Scope {
   open val nested: Boolean get() = enclosing != null
 
   val variables = mutableMapOf<Identifier, Variable>()
-  val references = LinkedHashMap<Identifier, Variable>()
+  open val references = LinkedHashMap<Identifier, PlankType>()
 
   private val types = mutableMapOf<Identifier, PlankType>()
   private val expanded = mutableListOf<Scope>()

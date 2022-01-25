@@ -29,7 +29,7 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
               type = functionType,
               returnType = functionType.actualReturnType,
               realParameters = functionType.realParameters,
-              variableReferences = emptyMap(),
+              variableReferences = functionType.references,
               nested = true,
               generateBody = {
                 val value = callClosure(expr.codegen(), *parameters.values.toTypedArray())
@@ -49,6 +49,8 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
       }
     }
 
-    return callClosure(descriptor.callee.codegen(), *arguments.toTypedArray())
+    val callee = descriptor.callee.codegen()
+
+    return callClosure(callee, *arguments.toTypedArray())
   }
 }
