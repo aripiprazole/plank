@@ -33,6 +33,9 @@ fun <A> LlvmOption<A>.arrow(): arrow.core.Option<A> = when (this) {
 fun <B> Either<*, B>.unwrap(): B {
   return when (this) {
     is Right -> value
-    is Left -> error("Called `Either.unwrap()` on a `Left` value")
+    is Left -> {
+      (value as? Throwable)?.printStackTrace()
+      error("Called `Either.unwrap()` on a `Left` value")
+    }
   }
 }

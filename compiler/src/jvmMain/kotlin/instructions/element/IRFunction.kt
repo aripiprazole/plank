@@ -13,6 +13,7 @@ import com.gabrielleeg1.plank.compiler.builder.buildBitcast
 import com.gabrielleeg1.plank.compiler.builder.buildCall
 import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildReturn
+import com.gabrielleeg1.plank.compiler.builder.buildReturnUnit
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.builder.insertionBlock
@@ -99,13 +100,9 @@ class IRCurried(
             generateNesting(i) { returnType, _ ->
               val func = acc.also { it.codegen() }.accessIn(this)
 
-              if (returnType == UnitType) {
-                buildReturn()
-              } else {
-                val closureType = returnType.cast<FunctionType>()!!.copy(isClosure = true).typegen()
+              val type = returnType.cast<FunctionType>()!!.copy(isClosure = true).typegen()
 
-                buildReturn(buildBitcast(func, closureType))
-              }
+              buildReturn(buildBitcast(func, type))
             }
           }
           .also { it.codegen() }
@@ -268,7 +265,7 @@ fun generateBody(descriptor: ResolvedFunDecl): ExecutionContext.(List<Argument>)
     if (descriptor.returnType != UnitType) return
     if (descriptor.content.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()) return
 
-    buildReturn()
+    buildReturnUnit()
   }
 
 fun ExecutionContext.generateParameter(realParameters: Map<Identifier, PlankType>) =

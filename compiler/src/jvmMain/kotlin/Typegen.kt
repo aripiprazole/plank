@@ -11,13 +11,14 @@ import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.PointerType
 import com.gabrielleeg1.plank.analyzer.StructType
 import com.gabrielleeg1.plank.analyzer.UnitType
+import com.gabrielleeg1.plank.compiler.builder.getOrCreateStruct
 import com.gabrielleeg1.plank.compiler.builder.pointerType
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import org.llvm4j.llvm4j.Type
 
 fun CompilerContext.typegen(type: PlankType?): Type {
   return when (type) {
-    UnitType -> runtime.types.void
+    UnitType -> getOrCreateStruct("Unit") { setElementTypes(runtime.types.i8) }
     BoolType -> runtime.types.i1
     CharType -> runtime.types.i8
     is IntType -> if (type.floatingPoint) runtime.types.float else runtime.types.int // TODO
@@ -32,7 +33,7 @@ fun CompilerContext.typegen(type: PlankType?): Type {
 }
 
 private fun CompilerContext.typegen(type: DelegateType): Type {
-  return type.value?.let(::typegen) ?: unresolvedTypeError("delegate $type")
+  return type.value?.typegen() ?: unresolvedTypeError("delegate $type")
 }
 
 private fun CompilerContext.typegen(type: EnumType): Type {
@@ -43,9 +44,6 @@ private fun CompilerContext.typegen(type: StructType): Type =
   findStruct(type.name.text) ?: unresolvedTypeError(type.name.text)
 
 private fun CompilerContext.typegen(type: FunctionType): Type {
-  val name = "Closure_${type}_${type.hashCode()}_Function"
-  module.getTypeByName(name).toNullable()?.let { return pointerType(it) }
-
   val parameter = type.parameter.typegen()
   val returnType = type.returnType.typegen()
   val environmentType = runtime.types.voidPtr
@@ -56,7 +54,7 @@ private fun CompilerContext.typegen(type: FunctionType): Type {
     context.getFunctionType(returnType, environmentType, parameter)
   }
 
-  val struct = context.getNamedStructType(name).apply {
+  val struct = getOrCreateStruct("Closure_${type}_${type.hashCode()}_Function") {
     setElementTypes(
       pointerType(functionType),
       runtime.types.voidPtr,

@@ -23,11 +23,7 @@ class NativeFunctionInstruction(private val descriptor: ResolvedFunDecl) : Compi
     return addGlobalFunction(descriptor) {
       val value = buildCall(function, parameters.values.toList())
 
-      if (value.getType().isVoidType()) {
-        buildReturn()
-      } else {
-        buildReturn(value)
-      }
+      buildReturn(value)
     }
   }
 }

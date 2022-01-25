@@ -34,11 +34,7 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
               generateBody = {
                 val value = callClosure(expr.codegen(), *parameters.values.toTypedArray())
 
-                if (value.getType().isVoidType()) {
-                  buildReturn()
-                } else {
-                  buildReturn(value)
-                }
+                buildReturn(value)
               }
             )
           )
