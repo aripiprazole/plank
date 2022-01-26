@@ -17,26 +17,6 @@ data class QualifiedPath(val fullPath: List<Identifier>, override val location: 
   val text: String get() = fullPath.joinToString(".") { it.text }
 
   fun toIdentifier(): Identifier {
-    return Identifier(text)
-  }
-
-  companion object {
-    @Deprecated(
-      message = "Replace with constructor calling",
-      replaceWith = ReplaceWith("QualifiedPath(identifier)"),
-      level = DeprecationLevel.ERROR,
-    )
-    fun from(identifier: Identifier): QualifiedPath {
-      return QualifiedPath(identifier)
-    }
-
-    @Deprecated(
-      message = "Replace with constructor calling",
-      replaceWith = ReplaceWith("QualifiedPath(stringPath, location)"),
-      level = DeprecationLevel.ERROR,
-    )
-    fun from(stringPath: String, location: Location = Location.Generated): QualifiedPath {
-      return QualifiedPath(stringPath, location)
-    }
+    return Identifier(text, location)
   }
 }
