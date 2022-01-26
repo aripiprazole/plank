@@ -81,7 +81,7 @@ interface InstructionMapper :
 
     override fun visitFunDecl(decl: ResolvedFunDecl): CompilerInstruction {
       return when {
-        decl.type.isClosure -> ClosureFunctionInstruction(decl)
+        decl.type.isNested -> ClosureFunctionInstruction(decl)
         decl.hasAttribute("external") -> NativeFunctionInstruction(decl)
         else -> FunctionInstruction(decl)
       }

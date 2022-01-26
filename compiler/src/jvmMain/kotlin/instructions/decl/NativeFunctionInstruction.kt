@@ -18,7 +18,7 @@ class NativeFunctionInstruction(private val descriptor: ResolvedFunDecl) : Compi
     val function = module.addFunction(
       externalName,
       context.getFunctionType(
-        returnType = descriptor.returnType.typegen(),
+        returnType = descriptor.type.actualReturnType.typegen(),
         *descriptor.realParameters.values.typegen().toTypedArray(),
         isVariadic = false,
       ),

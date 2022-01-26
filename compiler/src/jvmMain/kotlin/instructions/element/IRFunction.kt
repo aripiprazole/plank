@@ -64,7 +64,7 @@ class IRCurried(
     val type = FunctionType(
       parameters[index].second,
       when (val returnType = type.nest(index)) {
-        is FunctionType -> returnType.copy(isClosure = true)
+        is FunctionType -> returnType.copy(isNested = true)
         else -> returnType
       }
     )
@@ -98,7 +98,7 @@ class IRCurried(
             generateNesting(i) { returnType, _ ->
               val func = acc.also { it.codegen() }.accessIn(this)
 
-              val type = returnType.cast<FunctionType>()!!.copy(isClosure = true).typegen()
+              val type = returnType.unsafeCast<FunctionType>().typegen()
 
               buildReturn(buildBitcast(func, type))
             }
@@ -257,7 +257,7 @@ fun generateBody(descriptor: ResolvedFunDecl): ExecutionContext.(List<Argument>)
   fun CompilerContext.(_: List<Argument>) {
     descriptor.content.codegen()
 
-    if (descriptor.returnType != UnitType) return
+    if (descriptor.type.actualReturnType != UnitType) return
     if (descriptor.content.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()) return
 
     buildReturnUnit()
@@ -275,7 +275,7 @@ fun ExecutionContext.generateParameter(realParameters: Map<Identifier, PlankType
     parameters[name] = argument
     argument.setName(name)
 
-    if (plankType.isClosure) {
+    if (plankType.isNested) {
       addVariable(name, plankType, argument.unsafeCast())
     } else {
       addVariable(name, plankType, alloca(argument, "parameter.$name"))
@@ -332,7 +332,7 @@ fun CompilerContext.addIrCurriedFunction(
     name = descriptor.name.text,
     mangledName = mangleFunction(descriptor),
     type = descriptor.type,
-    returnType = descriptor.returnType,
+    returnType = descriptor.type.actualReturnType,
     realParameters = descriptor.realParameters,
     generateBody = generateBody,
     nested = nested,

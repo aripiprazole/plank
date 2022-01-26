@@ -8,10 +8,9 @@ import org.llvm4j.llvm4j.Value
 
 class AccessInstruction(private val descriptor: TypedAccessExpr) : CompilerInstruction {
   override fun CompilerContext.codegen(): Value {
-    return if (descriptor.type.isClosure) {
-      findVariable(descriptor.name.text)
-    } else {
-      buildLoad(findVariable(descriptor.name.text))
+    return when {
+      descriptor.type.isNested -> findVariable(descriptor.name.text)
+      else -> buildLoad(findVariable(descriptor.name.text))
     }
   }
 }

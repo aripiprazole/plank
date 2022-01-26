@@ -17,10 +17,13 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
     val arguments = descriptor.arguments.mapIndexed { index, expr ->
       val functionType = expr.type.cast<FunctionType>()
       when {
-        functionType != null && functionType.isClosure -> {
+        functionType != null && functionType.isNested -> {
           buildBitcast(expr.codegen(), type.parameters[index].typegen())
         }
-        functionType != null && !functionType.isClosure -> { // FIXME: access function with lazy
+//        functionType != null && functionType.isPartialApplied -> {
+//          buildBitcast(expr.codegen(), type.parameters[index].typegen())
+//        }
+        functionType != null && !functionType.isNested -> { // FIXME: access function with lazy
           val name = "_Zclosure.wrap.(${descriptor.callee.type})$$index"
           val f = addFunction(
             IRCurried(
@@ -32,9 +35,7 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
               variableReferences = functionType.references,
               nested = true,
               generateBody = {
-                val value = callClosure(expr.codegen(), *parameters.values.toTypedArray())
-
-                buildReturn(value)
+                buildReturn(callClosure(expr.codegen(), *parameters.values.toTypedArray()))
               }
             )
           )

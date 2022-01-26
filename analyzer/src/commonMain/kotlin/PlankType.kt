@@ -27,7 +27,8 @@ import kotlin.reflect.KProperty
 sealed class PlankType {
   abstract val name: Identifier
   open val isPrimitive = false
-  open val isClosure = false
+  open val isNested = false
+  open val isPartialApplied = false
 
   abstract val size: Int
 
@@ -47,6 +48,10 @@ sealed class PlankType {
     val type = cast<A>()
 
     return type ?: default(this)
+  }
+
+  inline fun <reified A : PlankType> unsafeCast(): A {
+    return cast() ?: error("$this is not ${A::class.simpleName}")
   }
 
   inline fun <reified A : PlankType> cast(): A? {
@@ -188,7 +193,8 @@ data class FunctionType(
   val actualReturnType: PlankType = returnType,
   val realParameters: Map<Identifier, PlankType> = emptyMap(),
   override val name: Identifier = Identifier("undefined"),
-  override val isClosure: Boolean = false,
+  override val isNested: Boolean = false,
+  override val isPartialApplied: Boolean = false,
   val references: Map<Identifier, PlankType> = emptyMap(),
 ) : PlankType() {
   val parameters get() = realParameters.values.toList()
@@ -212,6 +218,14 @@ data class FunctionType(
 
   fun call(callee: TypedExpr, location: Location, arguments: List<TypedExpr>): TypedExpr {
     // TODO: add constant evaluation in compile-time if arguments are constants
+
+    val returnType = when (returnType) {
+      is FunctionType -> returnType.copy(
+        realParameters = realParameters.entries.drop(arguments.size).associate { it.toPair() },
+        isPartialApplied = true
+      )
+      else -> returnType
+    }
 
     return TypedCallExpr(callee, arguments, returnType, location)
   }

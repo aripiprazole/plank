@@ -5,7 +5,6 @@ import com.gabrielleeg1.plank.analyzer.FunctionType
 import com.gabrielleeg1.plank.analyzer.Module
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.StructProperty
-import com.gabrielleeg1.plank.grammar.debug.DontDump
 import com.gabrielleeg1.plank.grammar.element.Attribute
 import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
 import com.gabrielleeg1.plank.grammar.element.Identifier
@@ -64,19 +63,6 @@ data class ResolvedFunDecl(
   override val type: FunctionType,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
-  @DontDump
-  val parameters = type.parameters.toList()
-
-  val returnType = run {
-    var current: PlankType = type.returnType
-
-    while (current is FunctionType) {
-      current = current.returnType
-    }
-
-    current
-  }
-
   fun attribute(name: String): Attribute? {
     return attributes.find { it.name.text == name }
   }

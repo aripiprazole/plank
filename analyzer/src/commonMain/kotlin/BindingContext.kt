@@ -441,7 +441,7 @@ internal class BindingContext(tree: ModuleTree) :
       returnType,
       actualReturnType,
       realParameters,
-      isClosure = if (ref.isClosure == null) !currentScope.isTopLevelScope else ref.isClosure!!
+      isNested = if (ref.isClosure == null) !currentScope.isTopLevelScope else ref.isClosure!!
     )
   }
 
@@ -498,7 +498,7 @@ internal class BindingContext(tree: ModuleTree) :
 
   private fun closureIfFunction(type: PlankType): PlankType {
     return when (type) {
-      is FunctionType -> type.copy(isClosure = true)
+      is FunctionType -> type.copy(isNested = true)
       else -> type
     }
   }
