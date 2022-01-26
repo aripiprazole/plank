@@ -4,12 +4,14 @@ import com.gabrielleeg1.plank.analyzer.BoolType
 import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.element.TypedIfExpr
 import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.builder.alloca
 import com.gabrielleeg1.plank.compiler.builder.buildAlloca
 import com.gabrielleeg1.plank.compiler.builder.buildBr
 import com.gabrielleeg1.plank.compiler.builder.buildCondBr
 import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildPhi
 import com.gabrielleeg1.plank.compiler.builder.buildStore
+import com.gabrielleeg1.plank.compiler.builder.buildUnitValue
 import com.gabrielleeg1.plank.compiler.builder.currentFunction
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
@@ -27,7 +29,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
         listOf(descriptor.thenBranch.codegen())
       },
       elseStmts = {
-        listOf(descriptor.elseBranch!!.codegen())
+        listOf(descriptor.elseBranch?.codegen() ?: buildUnitValue())
       },
     )
   }
@@ -47,7 +49,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
       type: PlankType,
       cond: Value,
       thenStmts: () -> List<Value>,
-      elseStmts: () -> List<Value> = { emptyList<Value>() },
+      elseStmts: () -> List<Value> = { emptyList() },
     ): Value {
       val currentFunction = currentFunction
 
@@ -67,11 +69,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
         thenRet = thenStmts().lastOrNull()
           ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
           ?.takeIf { it.getType() != runtime.types.void }
-          ?.also {
-            val variable = buildAlloca(it.getType(), "then.v")
-
-            buildStore(it, variable)
-          }
+          ?.also { alloca(it, "then.v") }
 
         buildBr(mergeBranch)
       }
@@ -83,11 +81,7 @@ class IfInstruction(private val descriptor: TypedIfExpr) : CompilerInstruction {
         elseRet = elseStmts().lastOrNull()
           ?.takeIf { it.getType().getTypeKind() != TypeKind.Void }
           ?.takeIf { it.getType() != runtime.types.void }
-          ?.also {
-            val variable = buildAlloca(it.getType(), "else.v")
-
-            buildStore(it, variable)
-          }
+          ?.also { alloca(it, "else.v") }
 
         buildBr(mergeBranch)
       }

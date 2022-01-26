@@ -12,8 +12,12 @@ import org.llvm4j.llvm4j.*
 import org.llvm4j.llvm4j.Function
 import org.llvm4j.optional.Option
 
+fun CompilerContext.buildUnitValue(): Value {
+  return getInstance(UnitType.typegen().unsafeCast())
+}
+
 fun CompilerContext.buildReturnUnit(): ReturnInstruction {
-  return buildReturn(getInstance(UnitType.typegen().unsafeCast()))
+  return buildReturn(buildUnitValue())
 }
 
 fun CompilerContext.buildReturn(value: Value? = null): ReturnInstruction {

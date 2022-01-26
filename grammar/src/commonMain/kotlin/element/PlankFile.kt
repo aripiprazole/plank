@@ -89,17 +89,21 @@ data class PlankFile(
         }
       }
 
-      return DescriptorMapper(file)
-        .visitFile(
-          parser.file().also { tree ->
-            if (treeDebug) {
-              logger.debug("Parse tree:")
-              logger.debug(tree.toParseTree().multilineString())
-              logger.debug()
+      return runCatching {
+        DescriptorMapper(file)
+          .visitFile(
+            parser.file().also { tree ->
+              if (treeDebug) {
+                logger.debug("Parse tree:")
+                logger.debug(tree.toParseTree().multilineString())
+                logger.debug()
+              }
             }
-          }
-        )
-        .copy(violations = syntaxErrorListener.violations)
+          )
+          .copy(violations = syntaxErrorListener.violations)
+      }.getOrElse {
+        file.copy(violations = syntaxErrorListener.violations)
+      }
     }
   }
 }
