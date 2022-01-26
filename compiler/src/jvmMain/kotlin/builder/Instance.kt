@@ -4,16 +4,17 @@ import com.gabrielleeg1.plank.compiler.CompilerContext
 import org.llvm4j.llvm4j.NamedStructType
 import org.llvm4j.llvm4j.Value
 
-fun CompilerContext.getInstance(
+inline fun CompilerContext.getInstance(
   struct: NamedStructType,
   vararg arguments: Value,
   isPointer: Boolean = false,
-  name: String = "${struct.getName()}.instance",
+  name: String = "v.${struct.getName()}",
+  generateGEPName: (Int, String) -> String = { index, value -> "$value.[$index]" }
 ): Value {
   val instance = buildAlloca(struct, name)
 
   arguments.forEachIndexed { index, value ->
-    val field = getField(instance, index, name = "$name.GET.$index")
+    val field = getField(instance, index, name = generateGEPName(index, name))
 
     buildStore(field, value)
   }
@@ -21,14 +22,14 @@ fun CompilerContext.getInstance(
   return if (isPointer) {
     instance
   } else {
-    buildLoad(instance, "$name.value")
+    buildLoad(instance, "load.$name")
   }
 }
 
 fun CompilerContext.getField(
   value: Value,
   index: Int,
-  name: String = "struct.gep.tmp",
+  name: String? = null,
 ): Value {
   val indices = listOf(
     runtime.types.int.getConstant(0),

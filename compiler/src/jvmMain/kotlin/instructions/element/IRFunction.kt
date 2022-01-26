@@ -69,12 +69,10 @@ class IRCurried(
       }
     )
 
-    val mangledName = "$mangledName-$index"
-
     return IRClosure(
-      name = mangledName,
-      mangledName = "$mangledName-{{closure}}",
-      type = type,
+      name = "$mangledName#$index",
+      mangledName = "$mangledName{{closure}}#$index",
+      type = type.copy(name = Identifier("$mangledName#$index")),
       references = references,
       realParameters = mapOf(parameters[index]),
       generateBody = { builder(type.returnType, it) },
@@ -182,7 +180,7 @@ class IRClosure(
     val returnType = type.actualReturnType.typegen()
     val references = references.mapKeys { (name) -> name.text }
 
-    val environmentType = context.getNamedStructType("Closure_${mangledName}_Environment").apply {
+    val environmentType = context.getNamedStructType("closure.env.$mangledName").apply {
       setElementTypes(
         *references.map { it.value.typegen() }.toTypedArray(),
         isPacked = false
@@ -192,13 +190,10 @@ class IRClosure(
     val functionType = context.getFunctionType(
       returnType,
       pointerType(environmentType),
-      *realParameters.values
-        .toList()
-        .map { type -> type.typegen() }
-        .toTypedArray(),
+      *realParameters.values.toList().typegen().toTypedArray(),
     )
 
-    val closureFunctionType = context.getNamedStructType("Closure_${mangledName}_Function").apply {
+    val closureFunctionType = context.getNamedStructType("closure.fn.$mangledName").apply {
       setElementTypes(
         pointerType(functionType),
         pointerType(environmentType),
@@ -214,14 +209,14 @@ class IRClosure(
       builder.positionAfter(context.newBasicBlock("entry").also(function::addBasicBlock))
 
       val environment = function.getParameter(0).unwrap().apply {
-        setName("closure_environment")
+        setName("env")
       }
 
       val executionContext = ExecutionContext(this, returnType)
 
       with(executionContext) {
         references.entries.forEachIndexed { index, (reference, type) ->
-          val variable = alloca(buildLoad(getField(environment, index)), "ENV.$reference")
+          val variable = alloca(buildLoad(getField(environment, index)), "env.$reference")
 
           if (reference in realParameters.keys.map { it.text }) {
             parameters[reference] = variable

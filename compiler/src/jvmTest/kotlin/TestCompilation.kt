@@ -68,13 +68,13 @@ class TestCompilation(
     fun linkerVerbose(): Builder = apply { options.linkerVerbose = true }
 
     fun debugAll(): Builder = apply {
-      debugTree()
-      debugPlainAst()
-      debugResolvedAst()
+//      debugTree()
+//      debugPlainAst()
+//      debugResolvedAst()
       debugLlvmIR()
-      debugParser()
-      debugCompilation()
-      linkerVerbose()
+//      debugParser()
+//      debugCompilation()
+//      linkerVerbose()
     }
 
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {

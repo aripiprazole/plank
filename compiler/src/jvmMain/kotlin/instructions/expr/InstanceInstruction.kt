@@ -29,6 +29,8 @@ class InstanceInstruction(
       }
       .toTypedArray()
 
-    return getInstance(struct, *arguments, isPointer = isPointer)
+    return getInstance(struct, *arguments, isPointer = isPointer) { index, value ->
+      "$value.${descriptor.type.properties.keys.elementAt(index).text}"
+    }
   }
 }

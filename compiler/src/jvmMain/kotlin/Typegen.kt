@@ -18,7 +18,7 @@ import org.llvm4j.llvm4j.Type
 
 fun CompilerContext.typegen(type: PlankType?): Type {
   return when (type) {
-    UnitType -> getOrCreateStruct("Unit") { setElementTypes(runtime.types.i8) }
+    UnitType -> getOrCreateStruct("unit") { setElementTypes(runtime.types.i8) }
     BoolType -> runtime.types.i1
     CharType -> runtime.types.i8
     is IntType -> if (type.floatingPoint) runtime.types.float else runtime.types.int // TODO
@@ -54,7 +54,7 @@ private fun CompilerContext.typegen(type: FunctionType): Type {
     context.getFunctionType(returnType, environmentType, parameter)
   }
 
-  val struct = getOrCreateStruct("Closure_${type}_${type.hashCode()}_Function") {
+  val struct = getOrCreateStruct("closure.anonymous.($type)") {
     setElementTypes(
       pointerType(functionType),
       runtime.types.voidPtr,

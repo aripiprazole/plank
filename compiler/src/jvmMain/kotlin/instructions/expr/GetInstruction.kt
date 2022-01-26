@@ -22,6 +22,11 @@ class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction
 
   companion object {
     fun CompilerContext.findField(receiver: TypedExpr, name: Identifier): Value {
+      val struct = when (receiver) {
+        is TypedAccessExpr -> receiver.name.text
+        else -> receiver.type.name.text
+      }
+
       val instance = when (receiver) {
         is TypedAccessExpr -> findVariable(receiver.name.text)
         else -> receiver.codegen()
@@ -44,7 +49,7 @@ class GetInstruction(private val descriptor: TypedGetExpr) : CompilerInstruction
         .cast<StructType>()!!.properties.entries
         .indexOfFirst { it.key == name }
 
-      return getField(alloca, propertyIndex)
+      return getField(alloca, propertyIndex, "$struct.${name.text}")
     }
   }
 }

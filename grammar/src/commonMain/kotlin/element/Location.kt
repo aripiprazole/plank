@@ -21,6 +21,29 @@ sealed interface Location {
       return "${file.path}:${start.line}:${start.column}"
     }
 
+    override fun equals(other: Any?): Boolean {
+      if (this === other) return true
+      if (javaClass != other?.javaClass) return false
+
+      other as Range
+
+      if (a != other.a) return false
+      if (b != other.b) return false
+      if (file != other.file) return false
+
+      return true
+    }
+
+    override fun hashCode(): Int {
+      var result = a
+      result = 31 * result + b
+      result = 31 * result + file.hashCode()
+      result = 31 * result + start.hashCode()
+      result = 31 * result + end.hashCode()
+      result = 31 * result + lines.hashCode()
+      return result
+    }
+
     @Suppress("ConvertSecondaryConstructorToPrimary")
     inner class Point {
       val line: Int
@@ -61,7 +84,7 @@ sealed interface Location {
     override val file: PlankFile
       get() = error("Should not get location of generated code")
 
-    override fun toString(): String = "Location.Generated"
+    override fun toString(): String = "Generated"
   }
 }
 

@@ -1,17 +1,29 @@
 package com.gabrielleeg1.plank.compiler
 
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
+import com.gabrielleeg1.plank.grammar.element.QualifiedPath
+import java.math.BigInteger
+import java.security.MessageDigest
 
-fun CompilerContext.mangleFunction(function: ResolvedFunDecl, isNative: Boolean = false): String {
-  function.attribute("external")?.takeIf { it.arguments.isNotEmpty() }?.let {
-    if (isNative) {
-      return it.argument(0) ?: error("TODO handle mangle errors")
+private fun sha256(identifier: String): String {
+  val sha256 = MessageDigest.getInstance("SHA-256")
+  sha256.reset()
+  sha256.update(identifier.toByteArray())
+  return "%064x".format(BigInteger(1, sha256.digest()))
+}
+
+fun CompilerContext.mangleFunction(function: ResolvedFunDecl): String {
+  val module = QualifiedPath(name)
+
+  val name = buildString {
+    append("_Z")
+    module.fullPath.reversed().forEach { (name) ->
+      append(name.length)
+      append(name)
     }
-  }
-
-  return buildString {
-    append(name)
-    append(".")
+    append(function.name.text.length)
     append(function.name.text)
   }
+
+  return name + 5 + sha256(name).substring(0, 5)
 }

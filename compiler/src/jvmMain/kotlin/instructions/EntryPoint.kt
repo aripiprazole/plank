@@ -31,10 +31,10 @@ class EntryPoint : CompilerInstruction {
         .also(mainFunction::addBasicBlock)
         .also(builder::positionAfter)
 
-      val argc = mainFunction.getParameter(0).unwrap()
-      val argv = mainFunction.getParameter(1).unwrap()
+      val argc = mainFunction.getParameter(0).unwrap().apply { setName("argc") }
+      val argv = mainFunction.getParameter(1).unwrap().apply { setName("argv") }
 
-      callClosure(callClosure(buildCall(main), argc), argv)
+      callClosure(callClosure(buildCall(main), argc, name = null), argv, name = null)
 
       buildReturn(runtime.types.int.getConstant(0))
     }

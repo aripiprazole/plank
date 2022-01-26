@@ -9,18 +9,20 @@ import org.llvm4j.llvm4j.Function
 import org.llvm4j.llvm4j.LoadInstruction
 import org.llvm4j.llvm4j.Value
 
-fun CompilerContext.callClosure(value: Value, vararg arguments: Value): Value {
+fun CompilerContext.callClosure(value: Value, vararg arguments: Value, name: String? = ""): Value {
   var closure = value
 
   if (!closure.getType().isPointerType()) {
     closure = alloca(closure)
   }
 
-  val function = getField(closure, 0, "Closure.Function")
+  val prefix = if (name.isNullOrBlank()) "" else "$name."
+
+  val function = getField(closure, 0, if (name != null) "${prefix}fn" else null)
     .let(::buildLoad)
     .unsafeCast<Function>()
 
-  val environment = getField(closure, 1, "Closure.Environment")
+  val environment = getField(closure, 1, if (name != null) "${prefix}env" else null)
     .let(::buildLoad)
 
   return buildCall(function, environment, *arguments)

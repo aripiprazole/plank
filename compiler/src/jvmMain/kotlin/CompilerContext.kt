@@ -45,6 +45,8 @@ sealed interface CompilerContext {
 
   fun PlankType.typegen(): Type = typegen(this)
 
+  fun Collection<PlankType>.typegen(): List<Type> = map { it.typegen() }
+
   fun CompilerInstruction.codegen(): Value = this@CompilerContext.run { codegen() }
 
   fun Collection<ResolvedPlankElement>.codegen(): List<Value> {

@@ -21,7 +21,7 @@ class CallInstruction(private val descriptor: TypedCallExpr) : CompilerInstructi
           buildBitcast(expr.codegen(), type.parameters[index].typegen())
         }
         functionType != null && !functionType.isClosure -> { // FIXME: access function with lazy
-          val name = "Wrapper_${descriptor.hashCode()}_${descriptor.callee.type}_$index"
+          val name = "_Zclosure.wrap.(${descriptor.callee.type})$$index"
           val f = addFunction(
             IRCurried(
               name = name,

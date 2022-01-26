@@ -187,7 +187,7 @@ data class FunctionType(
   val returnType: PlankType,
   val actualReturnType: PlankType = returnType,
   val realParameters: Map<Identifier, PlankType> = emptyMap(),
-  override val name: Identifier = Identifier("FunctionType"),
+  override val name: Identifier = Identifier("undefined"),
   override val isClosure: Boolean = false,
   val references: Map<Identifier, PlankType> = emptyMap(),
 ) : PlankType() {
