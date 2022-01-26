@@ -10,8 +10,8 @@ import pw.binom.io.file.nameWithoutExtension
 import java.io.File
 
 fun Package.compileBinary(): File {
-  logger.info("Selected home: ${options.plankHome}")
-  logger.info("Current workdir: ${options.workingDir}")
+  logger.verbose("Selected home: ${options.plankHome}")
+  logger.verbose("Current workdir: ${options.workingDir}")
 
   generateStdlibObjects()
 
@@ -36,7 +36,7 @@ private fun Package.generateObject(file: File): File {
 
   cmd(linkCommand(options.linker, file, obj))
 
-  logger.info("Generated ${file.nameWithoutExtension}.o")
+  logger.verbose("Generated ${file.nameWithoutExtension}.o")
 
   return obj
 }
@@ -73,7 +73,7 @@ private fun Package.generateStdlibObjects() {
       cmd(compileStdlibFile(options.linker, file, target))
     }
 
-  logger.info("Successfully generated stdlib objects")
+  logger.verbose("Successfully generated stdlib objects")
 }
 
 private fun Package.cmd(command: String) {
