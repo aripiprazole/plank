@@ -73,7 +73,7 @@ class TestCompilation(
 //      debugResolvedAst()
       debugLlvmIR()
 //      debugParser()
-//      debugCompilation()
+      debugCompilation()
 //      linkerVerbose()
     }
 

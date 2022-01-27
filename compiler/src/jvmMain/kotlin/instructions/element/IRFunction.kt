@@ -44,16 +44,14 @@ interface IRFunction : IRElement {
 class IRCurried(
   val type: FunctionType,
   val nested: Boolean,
-  val variableReferences: Map<Identifier, PlankType>,
+  val references: Map<Identifier, PlankType>,
   override val name: String,
   override val mangledName: String,
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
   private val generateBody: ExecutionContext.(List<Argument>) -> Unit,
 ) : IRFunction {
-  private val parameters = type.realParameters.entries.toList().map { it.toPair() }
-  private val references =
-    variableReferences + parameters.toList().dropLast(1).associate(::identity)
+  private val parameters = realParameters.entries.toList().map { it.toPair() }
 
   private fun generateNesting(
     index: Int,
@@ -73,7 +71,7 @@ class IRCurried(
       name = "$mangledName#$index",
       mangledName = "$mangledName{{closure}}#$index",
       type = type.copy(name = Identifier("$mangledName#$index")),
-      references = references,
+      references = references + parameters,
       realParameters = mapOf(parameters[index]),
       generateBody = { builder(type.returnType, it) },
     )
@@ -82,12 +80,12 @@ class IRCurried(
   override fun accessIn(context: CompilerContext): AllocaInstruction? {
     return context.module
       .getFunction(mangledName)
-      .map { context.alloca(context.buildCall(it), "function_access_$name") }
+      .map { context.alloca(context.buildCall(it), "curry.$name") }
       .toNullable()
   }
 
   override fun CompilerContext.codegen(): Value {
-    val reversedParameters = type.realParameters.keys
+    val reversedParameters = realParameters.keys
     val closure: Value
 
     createScopeContext(name) {
@@ -97,7 +95,6 @@ class IRCurried(
           .fold(generateNesting(reversedParameters.size - 1)) { acc, i ->
             generateNesting(i) { returnType, _ ->
               val func = acc.also { it.codegen() }.accessIn(this)
-
               val type = returnType.unsafeCast<FunctionType>().typegen()
 
               buildReturn(buildBitcast(func, type))
@@ -129,7 +126,7 @@ class IRGlobalFunction(
   override fun accessIn(context: CompilerContext): AllocaInstruction? {
     return context.module
       .getFunction(mangledName)
-      .map { context.alloca(context.buildCall(it), "function_access_$name") }
+      .map { context.alloca(context.buildCall(it), name) }
       .toNullable()
   }
 
@@ -336,6 +333,6 @@ fun CompilerContext.addIrCurriedFunction(
     realParameters = descriptor.realParameters,
     generateBody = generateBody,
     nested = nested,
-    variableReferences = descriptor.references,
+    references = descriptor.references,
   )
 )

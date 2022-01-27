@@ -191,14 +191,13 @@ data class FunctionType(
   val parameter: PlankType,
   val returnType: PlankType,
   val actualReturnType: PlankType = returnType,
-  val realParameters: Map<Identifier, PlankType> = emptyMap(),
+  val parameters: Map<Identifier, PlankType> = emptyMap(),
+  val realParameters: Map<Identifier, PlankType> = parameters,
   override val name: Identifier = Identifier("undefined"),
   override val isNested: Boolean = false,
   override val isPartialApplied: Boolean = false,
   val references: Map<Identifier, PlankType> = emptyMap(),
 ) : PlankType() {
-  val parameters get() = realParameters.values.toList()
-
   fun nest(index: Int): PlankType {
     var i = 0
     var current = returnType

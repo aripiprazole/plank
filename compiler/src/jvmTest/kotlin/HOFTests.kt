@@ -122,6 +122,101 @@ class HOFTests {
   }
 
   @Test
+  fun `test passing hof with many parameters`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(write: *Char -> *Char -> Void): Void {
+          write("String", "(hof)");
+          write("String2", "(hof)2");
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          fun write(message: *Char, prefix: *Char): Void {
+            print(prefix);
+            print(" => ");
+            println(message);
+          }
+
+          hof(write);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test passing hof closure with many parameters with closure referencing outside`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> *Char -> Void): Void {
+          f("(hof)", "String");
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let scope = "info";
+          fun prefixed(prefix: *Char, message: *Char): Void {
+            print(scope);
+            print(" => ");
+            print(prefix);
+            print(" => ");
+            println(message);
+          }
+
+          hof(prefixed);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test passing hof closure with closure referencing outside`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let prefix = "info";
+          fun prefixed(message: *Char): Void {
+            print(prefix);
+            print(" => ");
+            println(message);
+          }
+
+          hof(prefixed);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test passing hof closure with currying by reference`() {
     TestCompilation
       .of(
