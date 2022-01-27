@@ -61,6 +61,12 @@ sealed interface CompilerContext {
         else -> error("No available value mapping for ${this::class.simpleName}")
       }
     }
+
+  fun debug(action: DebugCompilerContext.() -> Unit) {
+    if (debug) {
+      action(DebugCompilerContext(this))
+    }
+  }
 }
 
 data class CodegenContext(
@@ -75,6 +81,7 @@ data class CodegenContext(
 data class ExecutionContext(
   override val enclosing: ScopeContext,
   val returnType: Type,
+  val internals: MutableMap<String, Value> = LinkedHashMap(),
   val parameters: MutableMap<String, Value> = LinkedHashMap(),
 ) : CompilerContext by enclosing
 
@@ -184,11 +191,5 @@ inline fun CompilerContext.createScopeContext(
     is ScopeContext -> copy(enclosing = this, name = moduleName).apply(builder)
     is CodegenContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
     is ExecutionContext -> enclosing.copy(enclosing = enclosing, name = moduleName).apply(builder)
-  }
-}
-
-inline fun CompilerContext.debug(action: DebugCompilerContext.() -> Unit) {
-  if (debug) {
-    action(DebugCompilerContext(this))
   }
 }

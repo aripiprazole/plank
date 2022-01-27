@@ -10,7 +10,6 @@ import com.gabrielleeg1.plank.compiler.builder.buildReturn
 import com.gabrielleeg1.plank.compiler.builder.getField
 import com.gabrielleeg1.plank.compiler.builder.getInstance
 import com.gabrielleeg1.plank.compiler.createScopeContext
-import com.gabrielleeg1.plank.compiler.debug
 import com.gabrielleeg1.plank.compiler.instructions.unresolvedTypeError
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.llvm4j.llvm4j.AllocaInstruction

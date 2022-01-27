@@ -8,7 +8,6 @@ import com.gabrielleeg1.plank.compiler.builder.buildLoad
 import com.gabrielleeg1.plank.compiler.builder.buildStore
 import com.gabrielleeg1.plank.compiler.builder.currentFunction
 import com.gabrielleeg1.plank.compiler.builder.getField
-import com.gabrielleeg1.plank.compiler.debug
 import com.gabrielleeg1.plank.compiler.instructions.CompilerInstruction
 import com.gabrielleeg1.plank.compiler.instructions.element.IRPattern
 import com.gabrielleeg1.plank.compiler.instructions.expr.IfInstruction.Companion.createIf
