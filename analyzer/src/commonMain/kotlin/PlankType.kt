@@ -120,7 +120,10 @@ data class PointerType(val inner: PlankType) : PlankType() {
   override val isPrimitive: Boolean = true
   override val size = 8
 
-  override fun toString(): String = "*$inner"
+  override fun toString(): String = when (inner) {
+    is FunctionType -> "*($inner)"
+    else -> "*$inner"
+  }
 }
 
 data class ArrayType(val inner: PlankType) : PlankType() {
