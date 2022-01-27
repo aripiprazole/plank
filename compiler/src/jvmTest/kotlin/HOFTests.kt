@@ -186,37 +186,6 @@ class HOFTests {
   }
 
   @Test
-  fun `test passing hof closure with closure referencing outside`() {
-    TestCompilation
-      .of(
-        """
-        module Main;
-
-        import Std.IO;
-
-        fun hof(f: *Char -> Void): Void {
-          f("String (hof)");
-        }
-
-        fun main(argc: Int32, argv: **Char): Void {
-          let prefix = "info";
-          fun prefixed(message: *Char): Void {
-            print(prefix);
-            print(" => ");
-            println(message);
-          }
-
-          hof(prefixed);
-        }
-        """.trimIndent()
-      )
-      .debugAll()
-      .runTest {
-        expectSuccess()
-      }
-  }
-
-  @Test
   fun `test passing hof closure with currying by reference`() {
     TestCompilation
       .of(
@@ -238,6 +207,101 @@ class HOFTests {
         fun main(argc: Int32, argv: **Char): Void {
           let f = prefixed("info");
           hof(f);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test passing hof closure with currying by reference 2 times`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun prefixed(prefix: *Char, message: *Char): Void {
+          print(prefix);
+          print(" => ");
+          println(message);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let f = prefixed("info");
+          hof(f);
+          hof(f);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+  @Test
+  fun `test passing hof closure with currying by reference and exec the reference before hof`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun prefixed(prefix: *Char, message: *Char): Void {
+          print(prefix);
+          print(" => ");
+          println(message);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let f = prefixed("info");
+          f("hello before");
+          hof(f);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test passing hof closure with currying by reference and exec the reference after hof`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun hof(f: *Char -> Void): Void {
+          f("String (hof)");
+        }
+
+        fun prefixed(prefix: *Char, message: *Char): Void {
+          print(prefix);
+          print(" => ");
+          println(message);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let f = prefixed("info");
+          hof(f);
+          f("hello after");
         }
         """.trimIndent()
       )
