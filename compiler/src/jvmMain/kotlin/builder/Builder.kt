@@ -4,6 +4,7 @@ package com.gabrielleeg1.plank.compiler.builder
 
 import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.compiler.CompilerContext
+import com.gabrielleeg1.plank.compiler.getNamedConstant
 import com.gabrielleeg1.plank.compiler.instructions.llvmError
 import com.gabrielleeg1.plank.compiler.unsafeCast
 import org.bytedeco.llvm.global.LLVM
@@ -13,7 +14,9 @@ import org.llvm4j.llvm4j.Function
 import org.llvm4j.optional.Option
 
 fun CompilerContext.buildUnitValue(): Value {
-  return getInstance(UnitType.typegen().unsafeCast())
+  return UnitType.typegen()
+    .unsafeCast<NamedStructType>()
+    .getNamedConstant(runtime.types.i8.getConstant(0))
 }
 
 fun CompilerContext.buildReturnUnit(): ReturnInstruction {
