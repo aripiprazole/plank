@@ -11,6 +11,7 @@ arrow = "1.0.1"
 jupiter = "5.6.0"
 clikt = "3.1.0"
 mordant = "2.0.0-beta4"
+llvm4k = "dev"
 
 # Libraries
 [libraries.kt-reflect]
@@ -72,6 +73,18 @@ version.ref = "llvm4j"
 [libraries.bytedeco-llvmplatform]
 module = "org.bytedeco:llvm-platform"
 version.ref = "llvmplatform"
+
+[libraries.llvm4k-common]
+module = "org.plank.llvm4k:llvm4k"
+version.ref = "llvm4k"
+
+[libraries.llvm4k-native]
+module = "org.plank.llvm4k:llvm4k-native"
+version.ref = "llvm4k"
+
+[libraries.llvm4k-jvm]
+module = "org.plank.llvm4k:llvm4k-jvm"
+version.ref = "llvm4k"
 
 [libraries.arrow-core]
 module = "io.arrow-kt:arrow-core"

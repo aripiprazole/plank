@@ -46,6 +46,7 @@ subprojects {
     maven("https://jitpack.io")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://plank.jfrog.io/artifactory/default-gradle-dev-local/")
   }
 
   group = "com.gabrielleeg1"
@@ -71,6 +72,9 @@ subprojects {
   }
 
   configure<KotlinMultiplatformExtension> {
+    val hostOs: String = System.getProperty("os.name")
+    val isMingwX64: Boolean = hostOs.startsWith("Windows")
+
     jvm {
       compilations.all {
         kotlinOptions.jvmTarget = "11"
@@ -80,6 +84,13 @@ subprojects {
         useJUnitPlatform()
         testLogging.showStandardStreams = true
       }
+    }
+
+    when {
+      hostOs == "Mac OS X" -> macosX64("native")
+      hostOs == "Linux" -> linuxX64("native")
+      isMingwX64 -> mingwX64("native")
+      else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
     }
   }
 
