@@ -20,9 +20,11 @@ data class CompileOptions(val plankHome: File) {
   val ir by lazy { workingDir.child("ir", recreate = true, dir = true) }
 
   /** TODO: use a package manager */
-  val stdlib = plankHome.child("stdlib").list()
-    .filter { it.path.endsWith(".plank") }
-    .map { PlankFile.of(it) }
+  val stdlib by lazy {
+    plankHome.child("stdlib").list()
+      .filter { it.path.endsWith(".plank") }
+      .map { PlankFile.of(it) }
+  }
 
   /** TODO: remove ffi from stdlib */
   var runtime = plankHome.child("runtime")

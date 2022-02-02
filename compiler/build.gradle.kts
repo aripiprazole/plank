@@ -3,9 +3,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Properties
 
-val hostOs: String = System.getProperty("os.name")
-val isMingwX64: Boolean = hostOs.startsWith("Windows")
-
 val localProperties: Properties = rootProject.file("local.properties").let { file ->
   val properties = Properties()
 
@@ -26,7 +23,7 @@ fun locateLlvmConfig(): File {
       }
     }
     .map(Paths::get)
-    .singleOrNull { path -> Files.exists(path.resolve("llvm-config")) }
+    .firstOrNull { path -> Files.exists(path.resolve("llvm-config")) }
     ?.resolve("llvm-config")
     ?.toFile()
     ?: error("No suitable version of LLVM was found.")
@@ -69,14 +66,6 @@ kotlin {
         linkerOpts.addAll(cmd("--ldflags").split(" ").filter { it.isNotBlank() })
         linkerOpts.addAll(cmd("--system-libs").split(" ").filter { it.isNotBlank() })
         linkerOpts.addAll(cmd("--libs").split(" ").filter { it.isNotBlank() })
-      }
-
-      executable("plank") {
-        linkerOpts.addAll(cmd("--ldflags").split(" ").filter { it.isNotBlank() })
-        linkerOpts.addAll(cmd("--system-libs").split(" ").filter { it.isNotBlank() })
-        linkerOpts.addAll(cmd("--libs").split(" ").filter { it.isNotBlank() })
-
-        entryPoint = "com.gabrielleeg1.plank.compiler.main"
       }
     }
   }

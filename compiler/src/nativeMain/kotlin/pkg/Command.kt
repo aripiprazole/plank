@@ -1,7 +1,7 @@
 package com.gabrielleeg1.plank.compiler.pkg
 
-import kotlinx.cinterop.toKString
-import platform.posix.getenv
+import pw.binom.Environment
+import pw.binom.getEnv
 import pw.binom.io.file.File
 import pw.binom.io.file.isExist
 
@@ -29,13 +29,15 @@ data class Command(val executable: File, private val args: MutableList<String> =
     }
   }
 }
+
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
 class CommandFailedException(val command: String, val exitCode: Int) : RuntimeException() {
   override val message: String = "Command $command failed with exit code $exitCode"
 }
 
 fun locateBinary(name: String): File {
-  return getenv("PATH")!!.toKString().split(":")
+  return Environment.getEnv("PATH")!!
+    .split(pathSeparator)
     .map { path ->
       if (path.startsWith("'") || path.startsWith("\"")) {
         path.substring(1, path.length - 1)
@@ -44,7 +46,7 @@ fun locateBinary(name: String): File {
       }
     }
     .map { File(it) }
-    .singleOrNull { directory -> File(directory, name).isExist }
+    .firstOrNull { directory -> File(directory, name).isExist }
     ?.let { File(it, name) }
     ?: error("Could not find `$name` in PATH")
 }
