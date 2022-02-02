@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.testing.KotlinTaskTestRun
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Properties
@@ -57,6 +58,12 @@ kotlin {
   val mingwX64 = mingwX64("mingwX64")
 
   configure(listOf(linuxX64, mingwX64)) {
+    val test: KotlinTaskTestRun<*, *> by testRuns
+
+    test.executionTask.configure {
+      testLogging.showStandardStreams = true
+    }
+
     binaries {
       getTest("debug").apply {
         linkerOpts.addAll(cmd("--ldflags").split(" ").filter { it.isNotBlank() })
