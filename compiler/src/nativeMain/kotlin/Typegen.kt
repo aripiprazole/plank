@@ -11,6 +11,7 @@ import com.gabrielleeg1.plank.analyzer.PlankType
 import com.gabrielleeg1.plank.analyzer.PointerType
 import com.gabrielleeg1.plank.analyzer.StructType
 import com.gabrielleeg1.plank.analyzer.UnitType
+import com.gabrielleeg1.plank.analyzer.Untyped
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 
@@ -46,6 +47,7 @@ fun CodegenContext.typegen(type: PlankType): Type {
     }
     is ArrayType -> type.inner.typegen().pointer()
     is PointerType -> type.inner.typegen().pointer()
+    is Untyped -> void
     else -> codegenError("Unsupported type: $type")
   }
 }

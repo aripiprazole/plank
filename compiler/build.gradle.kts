@@ -111,7 +111,6 @@ kotlin {
         implementation(libs.arrow.core)
         implementation(libs.llvm4j)
 
-        implementation(libs.kt.test.junit)
         implementation(libs.jupiter.api)
         implementation(libs.jupiter.engine)
       }

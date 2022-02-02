@@ -25,8 +25,8 @@ class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
 fun CodegenContext.createAnd(lhs: Value, rhs: Value): Value {
   val variable = createAlloca(BoolType.typegen())
 
-  val thenStmts = { listOf(createStore(variable, rhs)) }
-  val elseStmts = { listOf(createStore(variable, i1.getConstant(0))) }
+  val thenStmts = { listOf(createStore(rhs, variable)) }
+  val elseStmts = { listOf(createStore(i1.getConstant(0), variable)) }
 
   createIf(BoolType, lhs, thenStmts, elseStmts)
 
@@ -75,7 +75,7 @@ fun CodegenContext.createIf(
     createBr(mergeBranch)
   }
 
-  elseBranch = insertionBlock
+  elseBranch = this.insertionBlock!!
 
   currentFunction.appendBasicBlock(mergeBranch)
   positionAfter(mergeBranch)

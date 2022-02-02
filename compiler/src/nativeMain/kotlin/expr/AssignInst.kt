@@ -10,6 +10,6 @@ class AssignInst(private val descriptor: TypedAssignExpr) : CodegenInstruction {
     val value = descriptor.value.codegen()
     val variable = findSymbol(descriptor.name.text)
 
-    return createStore(variable, value)
+    return createStore(value, variable)
   }
 }
