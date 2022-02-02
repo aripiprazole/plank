@@ -1,13 +1,25 @@
 package com.gabrielleeg1.plank.compiler
 
 import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class HelloWorldTests {
   @Test
   fun `test hello world`() {
-    println("hello, world")
+    TestCompilation
+      .of(
+        """
+        module Main;
 
-    assertTrue(true)
+        import Std.IO;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          println("Hello, world!");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
   }
 }

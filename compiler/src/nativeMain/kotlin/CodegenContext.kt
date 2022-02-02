@@ -20,10 +20,10 @@ import kotlin.contracts.contract
 
 sealed interface CodegenContext : Context, IRBuilder {
   val scope: String
-  val currentModule: Module
   val file: ResolvedPlankFile
-  val mapper: InstructionMapper
   val debug: Boolean // TODO: add more debug options
+  val currentModule: Module
+  val mapper: InstructionMapper
   val location: Location
   val enclosing: CodegenContext?
 
@@ -71,12 +71,12 @@ class DescriptorContext(
 
 data class ScopeContext(
   private val llvm: Context,
-  private val irBuilder: IRBuilder,
-  override val scope: String,
-  override val currentModule: Module,
   override val file: ResolvedPlankFile,
-  override val mapper: InstructionMapper = InstructionMapper,
   override val debug: Boolean = true,
+  override val scope: String = file.module.text,
+  override val currentModule: Module = llvm.createModule(file.module.text),
+  private val irBuilder: IRBuilder = llvm.createIRBuilder(),
+  override val mapper: InstructionMapper = InstructionMapper,
   override val location: Location = file.location,
   override val enclosing: CodegenContext? = null,
 ) : IRBuilder by irBuilder, Context by llvm, CodegenContext {
@@ -147,3 +147,6 @@ inline fun CodegenContext.createScopeContext(
     is ExecContext -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
   }
 }
+
+fun CodegenContext.createFileContext(file: ResolvedPlankFile = this.file): ScopeContext =
+  scopeContext().copy(enclosing = this, file = file, scope = file.module.text)

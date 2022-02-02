@@ -1,0 +1,105 @@
+package com.gabrielleeg1.plank.compiler.pkg
+
+import com.gabrielleeg1.plank.analyzer.FileScope
+import com.gabrielleeg1.plank.analyzer.analyze
+import com.gabrielleeg1.plank.grammar.debug.dumpTree
+import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.shared.depthFirstSearch
+import pw.binom.io.file.File
+import pw.binom.io.file.extension
+import pw.binom.io.file.nameWithoutExtension
+import pw.binom.io.file.rewrite
+
+fun Package.compileBinary(): File {
+  verbose("Selected home: ${options.plankHome}")
+  verbose("Current workdir: ${options.workingDir}")
+
+  generateStdlibObjects()
+
+  tree.dependencies
+    .depthFirstSearch(main.module)
+    .asSequence()
+    .mapNotNull(tree::findModule)
+    .map(com.gabrielleeg1.plank.analyzer.Module::scope)
+    .filterIsInstance<FileScope>()
+    .map(FileScope::file)
+    .map { generateIR(it) }
+    .map { generateObject(it) }
+    .toList()
+
+  cmd(compileCommand(options.objects.list(), options.output.path))
+
+  return options.output
+}
+
+private fun Package.generateObject(file: File): File {
+  val obj = options.objects.child("${file.nameWithoutExtension}.o")
+
+  cmd(linkCommand(file, obj))
+
+  logger.verbose("Generated ${file.nameWithoutExtension}.o")
+
+  return obj
+}
+
+private fun Package.generateIR(file: PlankFile): File {
+  val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
+
+  if (options.debug.plainAstDebug) {
+    logger.debug("Plain AST:")
+    logger.debug(main.dumpTree())
+    logger.debug()
+  }
+
+  compile(file, ::analyze, options.debug, tree, logger).toString()
+    .also { ir ->
+      if (options.debug.llvmIrDebug) {
+        logger.debug("Llvm IR:")
+        logger.debug(ir)
+        logger.debug()
+      }
+    }
+    .also(target::rewrite)
+
+  return target
+}
+
+private fun Package.generateStdlibObjects() {
+  options.runtime.list()
+    .filter { it.extension == "cpp" }
+    .forEach { file ->
+      val target = options.objects.child("${file.nameWithoutExtension}.o")
+
+      cmd(compileStdlibFile(file, target))
+    }
+
+  logger.verbose("Successfully generated stdlib objects")
+}
+
+fun Package.compileStdlibFile(file: File, target: File): Command {
+  return Command.of(options.linker)
+    .arg("-g")
+    .arg("-O3")
+    .arg("-c ${file.path}")
+    .arg("-o ${target.path}")
+}
+
+fun Package.linkCommand(file: File, target: File): Command {
+  return Command.of(options.linker)
+    .arg("-c ${file.path}")
+    .arg("-o ${target.path}")
+}
+
+fun Package.compileCommand(files: List<File>, name: String): Command {
+  return Command.of(options.linker)
+    .arg("-o $name")
+    .arg("-v ${files.joinToString(" ")}")
+}
+
+private fun Package.cmd(command: Command) {
+  val output = command.exec()
+
+  if (options.debug.linkerVerbose) {
+    verbose(output)
+  }
+}
