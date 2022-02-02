@@ -16,6 +16,7 @@ import com.gabrielleeg1.plank.compiler.pkg.exec
 import com.gabrielleeg1.plank.compiler.pkg.locateBinary
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
+import com.gabrielleeg1.plank.grammar.message.lineSeparator
 import org.plank.llvm4k.LLVMError
 import pw.binom.io.file.File
 import kotlin.test.assertEquals
@@ -98,7 +99,12 @@ class TestCompilation(
       try {
         val binary = pkg.compileBinary()
 
-        pkg.info(Command.of(binary).exec())
+        Command
+          .of(binary).exec()
+          .split(lineSeparator)
+          .forEach {
+            pkg.info(it)
+          }
       } catch (error: CommandFailedException) {
         exitCode = error.exitCode
       } catch (error: AnalyzerError) {

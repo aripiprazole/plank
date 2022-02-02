@@ -4,6 +4,7 @@ import com.gabrielleeg1.plank.analyzer.FileScope
 import com.gabrielleeg1.plank.analyzer.analyze
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
+import com.gabrielleeg1.plank.grammar.message.lineSeparator
 import com.gabrielleeg1.plank.shared.depthFirstSearch
 import pw.binom.io.file.File
 import pw.binom.io.file.extension
@@ -100,6 +101,8 @@ private fun Package.cmd(command: Command) {
   val output = command.exec()
 
   if (options.debug.linkerVerbose) {
-    verbose(output)
+    output.split(lineSeparator).forEach {
+      verbose(it)
+    }
   }
 }
