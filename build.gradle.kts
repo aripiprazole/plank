@@ -62,13 +62,6 @@ subprojects {
 
     config = files("${rootProject.projectDir}/config/detekt.yml")
     baseline = file("${rootProject.projectDir}/config/baseline.xml")
-
-    reports {
-      html.enabled = true
-      xml.enabled = true
-      txt.enabled = true
-      sarif.enabled = true
-    }
   }
 
   configure<KotlinMultiplatformExtension> {
