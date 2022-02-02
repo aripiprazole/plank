@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="llvm compiler tests" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="llvm compiler tests linux" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$/compiler" />
@@ -10,8 +10,8 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":compiler:cleanJvmTest" />
-          <option value=":compiler:jvmTest" />
+          <option value=":compiler:cleanLinuxX64Test" />
+          <option value=":compiler:linuxX64Test" />
         </list>
       </option>
       <option name="vmOptions" />
