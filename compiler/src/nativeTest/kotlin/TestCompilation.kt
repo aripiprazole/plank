@@ -106,14 +106,14 @@ class TestCompilation(
       } catch (error: SyntaxError) {
         syntaxViolations = error.violations
       } catch (error: CodegenError) {
-        error.printStackTrace()
-        pkg.severe("Codegen error:")
+        pkg.severe("Codegen Error ${error.message}:")
         pkg.severe(error.context.currentModule.toString())
         pkg.severe()
         pkg.severe("LLVM Error:")
         (runCatching { error.context.currentModule.verify() }.exceptionOrNull() as? LLVMError)?.let { llvmError ->
           pkg.severe(llvmError.message)
         }
+        fail(error.message)
       } catch (error: Throwable) {
         error.printStackTrace()
         throw error

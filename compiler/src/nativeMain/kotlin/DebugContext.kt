@@ -15,7 +15,7 @@ class DebugContext(private val context: CodegenContext) {
   }
 
   fun println(message: String, vararg args: Value) {
-    val debug by context.createGlobalString(message)
+    val debug by context.createGlobalStringPtr(message)
 
     context.createCall(printf, debug, *args)
   }

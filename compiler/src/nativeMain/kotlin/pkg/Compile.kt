@@ -30,7 +30,6 @@ fun compile(
   }
 
   val llvm = Context()
-  val module = llvm.createModule("Plank")
   val context = ScopeContext(llvm, main, debug.compilationDebug).copy(scope = "Global")
 
   tree.dependencies
@@ -55,7 +54,7 @@ fun compile(
       }
     }
 
-  return module
+  return context.currentModule
 }
 
 private fun ResolvedPlankFile.check(): ResolvedPlankFile = apply {

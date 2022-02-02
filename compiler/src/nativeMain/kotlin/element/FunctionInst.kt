@@ -46,6 +46,6 @@ fun ExecContext.generateParameter(parameters: Map<Identifier, PlankType>) =
     if (type.isNested) {
       setSymbol(name.text, type, AllocaInst(argument.ref))
     } else {
-      setSymbol(name.text, type, alloca(argument, "parameter.$name"))
+      setSymbol(name.text, type, alloca(argument, "parameter.${name.text}"))
     }
   }

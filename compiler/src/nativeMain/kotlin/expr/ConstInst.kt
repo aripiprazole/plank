@@ -15,7 +15,7 @@ class ConstInst(private val descriptor: TypedConstExpr) : CodegenInstruction {
       is Float -> float.getConstant(value)
       is Double -> double.getConstant(value)
       is Boolean -> if (value) i1.getConstant(1) else i1.getConstant(0)
-      is String -> createGlobalString(value, "string-constant") // add `Named` interface
+      is String -> createGlobalStringPtr(value, "string-constant") // add `Named` interface
       else -> codegenError("Unsupported constant type: ${value::class.simpleName}")
     }
   }
