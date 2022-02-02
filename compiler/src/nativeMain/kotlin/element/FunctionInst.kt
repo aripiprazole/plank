@@ -17,6 +17,8 @@ import org.plank.llvm4k.ir.Argument
 typealias GenerateBody = ExecContext.() -> Unit
 
 sealed interface FunctionInst : CodegenInstruction {
+  val name: String
+
   fun CodegenContext.access(): AllocaInst?
 }
 

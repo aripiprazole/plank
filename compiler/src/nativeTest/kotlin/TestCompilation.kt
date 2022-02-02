@@ -16,6 +16,7 @@ import com.gabrielleeg1.plank.compiler.pkg.exec
 import com.gabrielleeg1.plank.compiler.pkg.locateBinary
 import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
 import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
+import org.plank.llvm4k.LLVMError
 import pw.binom.io.file.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -105,9 +106,14 @@ class TestCompilation(
       } catch (error: SyntaxError) {
         syntaxViolations = error.violations
       } catch (error: CodegenError) {
+        error.printStackTrace()
         pkg.severe("Codegen error:")
         pkg.severe(error.context.currentModule.toString())
-        fail(error.message)
+        pkg.severe()
+        pkg.severe("LLVM Error:")
+        (runCatching { error.context.currentModule.verify() }.exceptionOrNull() as? LLVMError)?.let { llvmError ->
+          pkg.severe(llvmError.message)
+        }
       } catch (error: Throwable) {
         error.printStackTrace()
         throw error

@@ -7,7 +7,7 @@ import org.plank.llvm4k.ir.Value
 
 class DebugContext(private val context: CodegenContext) {
   private val printf: Function by lazy {
-    FunctionType(context.void, context.i8.pointer())
+    FunctionType(context.void, context.i8.pointer(), isVarargs = true)
       .let { context.currentModule.addFunction("printf", it) }
       .apply {
         linkage = Linkage.External

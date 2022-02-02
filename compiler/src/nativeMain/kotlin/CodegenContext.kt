@@ -35,10 +35,11 @@ sealed interface CodegenContext : Context, IRBuilder {
 
   fun setSymbol(name: String, type: PlankType, variable: AllocaInst)
 
+  fun findFunction(name: String): FunctionInst?
   fun findModule(name: String): ScopeContext?
   fun findStruct(name: String): StructType?
-  fun findSymbol(name: String): AllocaInst
   fun findAlloca(name: String): AllocaInst?
+  fun findSymbol(name: String): AllocaInst
 
   fun FunctionInst.access(): AllocaInst? = with(this@CodegenContext) { access() }
 
@@ -67,7 +68,9 @@ class ExecContext(
 class DescriptorContext(
   val descriptor: ResolvedPlankElement,
   override val enclosing: ScopeContext,
-) : CodegenContext by enclosing
+) : CodegenContext by enclosing {
+  override val location: Location = descriptor.location
+}
 
 data class ScopeContext(
   private val llvm: Context,
@@ -80,40 +83,63 @@ data class ScopeContext(
   override val location: Location = file.location,
   override val enclosing: CodegenContext? = null,
 ) : IRBuilder by irBuilder, Context by llvm, CodegenContext {
+  private val functions = mutableMapOf<String, FunctionInst>()
+  private val symbols = mutableMapOf<String, Pair<PlankType, AllocaInst>>()
+  private val structs = mutableMapOf<String, Pair<PlankType, StructType>>()
+
+  private val expanded = mutableListOf<ScopeContext>()
+  private val modules = mutableMapOf<String, ScopeContext>()
+
   override fun expand(scope: ScopeContext) {
-    TODO("Not yet implemented")
+    expanded += scope
   }
 
   override fun addModule(module: ScopeContext) {
-    TODO("Not yet implemented")
+    modules[module.scope] = module
   }
 
   override fun addFunction(function: FunctionInst): Value {
-    TODO("Not yet implemented")
+    functions[function.name] = function
+
+    return function.codegen()
   }
 
   override fun addStruct(name: String, type: PlankType, struct: StructType) {
-    TODO("Not yet implemented")
+    structs[name] = type to struct
   }
 
   override fun setSymbol(name: String, type: PlankType, variable: AllocaInst) {
-    TODO("Not yet implemented")
+    symbols[name] = type to variable
+  }
+
+  override fun findFunction(name: String): FunctionInst? {
+    return functions[name]
+      ?: enclosing?.findFunction(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findFunction(name) }
   }
 
   override fun findModule(name: String): ScopeContext? {
-    TODO("Not yet implemented")
+    return modules[name]
+      ?: enclosing?.findModule(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findModule(name) }
   }
 
   override fun findStruct(name: String): StructType? {
-    TODO("Not yet implemented")
-  }
-
-  override fun findSymbol(name: String): AllocaInst {
-    TODO("Not yet implemented")
+    return structs[name]?.second
+      ?: enclosing?.findStruct(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findStruct(name) }
   }
 
   override fun findAlloca(name: String): AllocaInst? {
-    TODO("Not yet implemented")
+    return symbols[name]?.second
+      ?: enclosing?.findAlloca(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findAlloca(name) }
+  }
+
+  override fun findSymbol(name: String): AllocaInst {
+    return findAlloca(name)
+      ?: findFunction(name)?.run { access() }
+      ?: codegenError("Unresolved symbol `$name`")
   }
 
   override fun toString(): String = "ScopeContext(scope=$scope, enclosing=$enclosing)"

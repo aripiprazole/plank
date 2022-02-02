@@ -1,16 +1,20 @@
 package com.gabrielleeg1.plank.compiler
 
+import com.gabrielleeg1.plank.analyzer.UnitType
 import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
 import org.plank.llvm4k.ir.StructType
-import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
 
 fun CodegenContext.createUnit(): Constant {
-  TODO()
+  return (UnitType.typegen() as StructType).getConstant(i8.getConstant(0))
+}
+
+fun CodegenContext.getOrCreateStruct(name: String, builder: StructType.() -> Unit): StructType {
+  return currentModule.getTypeByName(name) ?: createNamedStruct(name, builder)
 }
 
 fun CodegenContext.alloca(value: Value, name: String? = null): AllocaInst {

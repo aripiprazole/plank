@@ -13,7 +13,7 @@ class GlobalFunctionInst(
   private val descriptor: ResolvedFunDecl,
   private val mangled: String,
   private val generate: GenerateBody,
-  private val name: String = descriptor.name.text,
+  override val name: String = descriptor.name.text,
 ) : FunctionInst {
   override fun CodegenContext.access(): AllocaInst? {
     return currentModule.getFunction(mangled)?.let {

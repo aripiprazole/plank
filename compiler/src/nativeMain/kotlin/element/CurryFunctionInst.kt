@@ -17,7 +17,7 @@ class CurryFunctionInst(
   private val type: FunctionType,
   private val nested: Boolean,
   private val references: Map<Identifier, PlankType>,
-  private val name: String,
+  override val name: String,
   private val mangled: String,
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
