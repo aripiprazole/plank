@@ -86,15 +86,48 @@ subprojects {
       }
     }
 
-    when {
-      hostOs == "Mac OS X" -> macosX64("native")
-      hostOs == "Linux" -> linuxX64("native")
-      isMingwX64 -> mingwX64("native")
-      else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+    linuxX64("linuxX64")
+    mingwX64("mingwX64")
+
+    sourceSets {
+      val commonMain by getting
+      val commonTest by getting {
+        dependencies {
+          implementation(kotlin("test"))
+        }
+      }
+
+      val linuxX64Main by getting
+      val linuxX64Test by getting
+
+      val mingwX64Main by getting
+      val mingwX64Test by getting
+
+      val nativeMain by creating {
+        dependsOn(commonMain)
+        linuxX64Main.dependsOn(this)
+        mingwX64Main.dependsOn(this)
+      }
+      val nativeTest by creating {
+        dependsOn(commonTest)
+        linuxX64Test.dependsOn(this)
+        mingwX64Test.dependsOn(this)
+      }
     }
   }
 
   tasks.withType<KotlinCompile> {
     kotlinOptions.freeCompilerArgs += "-Xskip-metadata-version-check"
+  }
+
+  afterEvaluate {
+    val kotlin: KotlinMultiplatformExtension by extensions
+    val compilation = kotlin.targets["metadata"].compilations["nativeMain"]
+
+    compilation.compileKotlinTask.doFirst {
+      compilation.compileDependencyFiles = compilation.compileDependencyFiles
+        .filterNot { it.absolutePath.endsWith("klib/common/stdlib") }
+        .let { files(it) }
+    }
   }
 }

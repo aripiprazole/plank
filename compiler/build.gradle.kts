@@ -53,14 +53,10 @@ fun String.absolutePath(): String {
 }
 
 kotlin {
-  val nativeTarget = when {
-    hostOs == "Mac OS X" -> macosX64("native")
-    hostOs == "Linux" -> linuxX64("native")
-    isMingwX64 -> mingwX64("native")
-    else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
-  }
+  val linuxX64 = linuxX64("linuxX64")
+  val mingwX64 = mingwX64("mingwX64")
 
-  nativeTarget.apply {
+  configure(listOf(linuxX64, mingwX64)) {
     binaries {
       getTest("debug").apply {
         linkerOpts.addAll(cmd("--ldflags").split(" ").filter { it.isNotBlank() })
@@ -81,7 +77,7 @@ kotlin {
   sourceSets {
     val commonMain by getting {
       dependencies {
-        compileOnly(libs.arrow.core)
+        implementation(libs.arrow.core)
       }
     }
     val commonTest by getting {
@@ -116,7 +112,22 @@ kotlin {
 
     val nativeMain by getting {
       dependencies {
-        implementation(libs.llvm4k.native)
+        implementation(projects.grammar)
+        implementation(projects.shared)
+        implementation(projects.analyzer)
+        implementation(libs.llvm4k.common)
+      }
+    }
+
+    val linuxX64Main by getting {
+      dependencies {
+        implementation(libs.llvm4k.linuxX64)
+      }
+    }
+
+    val mingwX64Main by getting {
+      dependencies {
+        implementation(libs.llvm4k.mingwX64)
       }
     }
   }

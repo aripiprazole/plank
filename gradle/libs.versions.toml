@@ -78,8 +78,12 @@ version.ref = "llvmplatform"
 module = "org.plank.llvm4k:llvm4k"
 version.ref = "llvm4k"
 
-[libraries.llvm4k-native]
-module = "org.plank.llvm4k:llvm4k-native"
+[libraries.llvm4k-linuxX64]
+module = "org.plank.llvm4k:llvm4k-linuxx64"
+version.ref = "llvm4k"
+
+[libraries.llvm4k-mingwX64]
+module = "org.plank.llvm4k:llvm4k-mingwx64"
 version.ref = "llvm4k"
 
 [libraries.llvm4k-jvm]
