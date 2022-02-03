@@ -7,6 +7,7 @@ import com.gabrielleeg1.plank.compiler.CodegenContext
 import com.gabrielleeg1.plank.compiler.CodegenInstruction
 import com.gabrielleeg1.plank.compiler.alloca
 import com.gabrielleeg1.plank.compiler.codegenError
+import com.gabrielleeg1.plank.compiler.createScopeContext
 import com.gabrielleeg1.plank.compiler.createUnit
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
@@ -25,10 +26,12 @@ class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
 fun CodegenContext.createAnd(lhs: Value, rhs: Value): Value {
   val variable = createAlloca(BoolType.typegen())
 
-  val thenStmts = { listOf(createStore(rhs, variable)) }
-  val elseStmts = { listOf(createStore(i1.getConstant(0), variable)) }
-
-  createIf(BoolType, lhs, thenStmts, elseStmts)
+  createIf(
+    BoolType,
+    lhs,
+    thenStmts = { listOf(createStore(rhs, variable)) },
+    elseStmts = { listOf(createStore(i1.getConstant(0), variable)) }
+  )
 
   return createLoad(variable)
 }
@@ -36,8 +39,8 @@ fun CodegenContext.createAnd(lhs: Value, rhs: Value): Value {
 fun CodegenContext.createIf(
   type: PlankType,
   cond: Value,
-  thenStmts: () -> List<Value>,
-  elseStmts: () -> List<Value> = ::emptyList,
+  thenStmts: CodegenContext.() -> List<Value>,
+  elseStmts: CodegenContext.() -> List<Value> = { emptyList() },
 ): Value {
   val insertionBlock = insertionBlock ?: codegenError("No block in context")
   val currentFunction = insertionBlock.function ?: codegenError("No function in context")
@@ -52,8 +55,8 @@ fun CodegenContext.createIf(
   val thenRet: Value?
   val elseRet: Value?
 
-  thenBranch.also { br ->
-    positionAfter(br) // emit then
+  createScopeContext("then") { // todo: change to descriptor context
+    positionAfter(thenBranch) // emit then
 
     thenRet = thenStmts().lastOrNull()
       ?.takeIf { it.type.kind != Type.Kind.Void }
@@ -63,9 +66,8 @@ fun CodegenContext.createIf(
     createBr(mergeBranch)
   }
 
-  elseBranch.also { br ->
-    currentFunction.appendBasicBlock(br)
-    positionAfter(br) // emit else
+  createScopeContext("else") { // todo: change to descriptor context
+    positionAfter(elseBranch.also(currentFunction::appendBasicBlock)) // emit else
 
     elseRet = elseStmts().lastOrNull()
       ?.takeIf { it.type.kind != Type.Kind.Void }

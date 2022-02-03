@@ -41,6 +41,8 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun findAlloca(name: String): AllocaInst?
   fun findSymbol(name: String): AllocaInst
 
+  fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
+
   fun FunctionInst.access(): AllocaInst? = with(this@CodegenContext) { access() }
 
   fun PlankType.typegen(): Type = typegen(this)
@@ -86,6 +88,7 @@ data class ScopeContext(
   private val functions = mutableMapOf<String, FunctionInst>()
   private val symbols = mutableMapOf<String, Pair<PlankType, AllocaInst>>()
   private val structs = mutableMapOf<String, Pair<PlankType, StructType>>()
+  private val lazy = mutableMapOf<String, AllocaInst>()
 
   private val expanded = mutableListOf<ScopeContext>()
   private val modules = mutableMapOf<String, ScopeContext>()
@@ -140,6 +143,18 @@ data class ScopeContext(
     return findAlloca(name)
       ?: findFunction(name)?.run { access() }
       ?: codegenError("Unresolved symbol `$name`")
+  }
+
+  override fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst? {
+    return lazy[name] ?: run {
+      val value = builder()
+
+      if (value != null) {
+        lazy[name] = value
+      }
+
+      value
+    }
   }
 
   override fun toString(): String = "ScopeContext(scope=$scope, enclosing=$enclosing)"

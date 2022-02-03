@@ -26,31 +26,11 @@ class CurryFunctionInst(
 ) : FunctionInst {
   private val parameters = realParameters.entries.toList().map { it.toPair() }
 
-  private fun generateNesting(
-    index: Int,
-    builder: ExecContext.(returnType: PlankType) -> Unit = { generate() }
-  ): ClosureFunctionInst {
-    val type = FunctionType(
-      parameters[index].second,
-      when (val returnType = type.nest(index)) {
-        is FunctionType -> returnType.copy(isNested = true)
-        else -> returnType
-      }
-    )
-
-    return ClosureFunctionInst(
-      name = "$mangled#$index",
-      mangled = "$mangled{{closure}}#$index",
-      type = type.copy(name = Identifier("$mangled#$index")),
-      references = references + parameters,
-      parameters = mapOf(parameters[index]),
-      generate = { builder(type.returnType) },
-    )
-  }
-
   override fun CodegenContext.access(): AllocaInst? {
-    return currentModule.getFunction(mangled)?.let {
-      alloca(createCall(it), "curry.$name") // get instance of curried function
+    return lazyLocal("curry.$name") {
+      currentModule.getFunction(mangled)?.let {
+        alloca(createCall(it), "curry.$name") // get instance of curried function
+      }
     }
   }
 
@@ -84,6 +64,28 @@ class CurryFunctionInst(
     }
 
     return closure
+  }
+
+  private fun generateNesting(
+    index: Int,
+    builder: ExecContext.(returnType: PlankType) -> Unit = { generate() }
+  ): ClosureFunctionInst {
+    val type = FunctionType(
+      parameters[index].second,
+      when (val returnType = type.nest(index)) {
+        is FunctionType -> returnType.copy(isNested = true)
+        else -> returnType
+      }
+    )
+
+    return ClosureFunctionInst(
+      name = "$mangled#$index",
+      mangled = "$mangled{{closure}}#$index",
+      type = type.copy(name = Identifier("$mangled#$index")),
+      references = references + parameters,
+      parameters = mapOf(parameters[index]),
+      generate = { builder(type.returnType) },
+    )
   }
 }
 

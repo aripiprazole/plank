@@ -17,8 +17,10 @@ class GlobalFunctionInst(
   override val name: String = descriptor.name.text,
 ) : FunctionInst {
   override fun CodegenContext.access(): AllocaInst? {
-    return currentModule.getFunction(mangled)?.let {
-      alloca(createCall(it), name)
+    return lazyLocal(name) {
+      currentModule.getFunction(mangled)?.let {
+        alloca(createCall(it), name)
+      }
     }
   }
 
