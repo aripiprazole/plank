@@ -49,7 +49,7 @@ subprojects {
     maven("https://plank.jfrog.io/artifactory/default-gradle-dev-local/")
   }
 
-  group = "org"
+  group = "org.plank"
   version = "1.0-SNAPSHOT"
 
   configure<KtlintExtension> {
