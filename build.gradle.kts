@@ -54,6 +54,7 @@ subprojects {
 
   configure<KtlintExtension> {
     android.set(false)
+    additionalEditorconfigFile.set(rootProject.file(".editorconfig"))
   }
 
   configure<DetektExtension> {
