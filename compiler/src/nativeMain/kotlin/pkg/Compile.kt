@@ -6,6 +6,8 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.compiler.Entrypoint
 import com.gabrielleeg1.plank.compiler.ScopeContext
 import com.gabrielleeg1.plank.compiler.createFileContext
+import com.gabrielleeg1.plank.compiler.intrinsics.DefaultIntrinsics
+import com.gabrielleeg1.plank.compiler.intrinsics.Intrinsics
 import com.gabrielleeg1.plank.grammar.debug.dumpTree
 import com.gabrielleeg1.plank.grammar.element.PlankFile
 import com.gabrielleeg1.plank.grammar.message.CompilerLogger
@@ -20,6 +22,7 @@ fun compile(
   debug: DebugOptions,
   tree: ModuleTree = ModuleTree(),
   logger: CompilerLogger = SimpleCompilerLogger(),
+  intrinsics: Intrinsics = DefaultIntrinsics,
 ): Module {
   val main = analyze(plainMain, tree).check()
 
@@ -30,7 +33,9 @@ fun compile(
   }
 
   val llvm = Context()
-  val context = ScopeContext(llvm, main, debug.compilationDebug).copy(scope = "Global")
+  val context = ScopeContext(llvm, main, debug.compilationDebug).copy(scope = "Global").apply {
+    addIntrinsics(intrinsics)
+  }
 
   tree.dependencies
     .depthFirstSearch(main.module)

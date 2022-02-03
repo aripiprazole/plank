@@ -6,11 +6,15 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
 import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
 import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.compiler.element.FunctionInst
+import com.gabrielleeg1.plank.compiler.intrinsics.IntrinsicFunction
+import com.gabrielleeg1.plank.compiler.intrinsics.Intrinsics
 import com.gabrielleeg1.plank.grammar.element.Location
+import com.gabrielleeg1.plank.grammar.element.QualifiedPath
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.IRBuilder
 import org.plank.llvm4k.Module
 import org.plank.llvm4k.ir.AllocaInst
+import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
@@ -25,7 +29,10 @@ sealed interface CodegenContext : Context, IRBuilder {
   val currentModule: Module
   val mapper: InstructionMapper
   val location: Location
+  val path: QualifiedPath
   val enclosing: CodegenContext?
+
+  val unit: StructType
 
   fun expand(scope: ScopeContext)
   fun addModule(module: ScopeContext)
@@ -39,6 +46,7 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun findModule(name: String): ScopeContext?
   fun findStruct(name: String): StructType?
   fun findAlloca(name: String): AllocaInst?
+  fun findIntrinsic(name: String): IntrinsicFunction?
   fun findSymbol(name: String): AllocaInst
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
@@ -63,6 +71,7 @@ sealed interface CodegenContext : Context, IRBuilder {
 
 class ExecContext(
   override val enclosing: ScopeContext,
+  val function: Function,
   val returnType: Type,
   val arguments: MutableMap<String, Value> = linkedMapOf(),
 ) : CodegenContext by enclosing
@@ -78,6 +87,7 @@ data class ScopeContext(
   private val llvm: Context,
   override val file: ResolvedPlankFile,
   override val debug: Boolean = true,
+  private val intrinsics: MutableMap<String, IntrinsicFunction> = linkedMapOf(),
   override val scope: String = file.module.text,
   override val currentModule: Module = llvm.createModule(file.module.text),
   private val irBuilder: IRBuilder = llvm.createIRBuilder(),
@@ -85,6 +95,13 @@ data class ScopeContext(
   override val location: Location = file.location,
   override val enclosing: CodegenContext? = null,
 ) : IRBuilder by irBuilder, Context by llvm, CodegenContext {
+  /** TODO: add support for nested function intrinsics*/
+  override val path: QualifiedPath = file.moduleName ?: QualifiedPath(file.module)
+
+  override val unit: StructType by lazy {
+    getOrCreateStruct("unit") { elements = listOf(i8) }
+  }
+
   private val functions = mutableMapOf<String, FunctionInst>()
   private val symbols = mutableMapOf<String, Pair<PlankType, AllocaInst>>()
   private val structs = mutableMapOf<String, Pair<PlankType, StructType>>()
@@ -92,6 +109,10 @@ data class ScopeContext(
 
   private val expanded = mutableListOf<ScopeContext>()
   private val modules = mutableMapOf<String, ScopeContext>()
+
+  fun addIntrinsics(intrinsics: Intrinsics) {
+    this.intrinsics += intrinsics.toFunctionMap(this)
+  }
 
   override fun expand(scope: ScopeContext) {
     expanded += scope
@@ -137,6 +158,12 @@ data class ScopeContext(
     return symbols[name]?.second
       ?: enclosing?.findAlloca(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findAlloca(name) }
+  }
+
+  override fun findIntrinsic(name: String): IntrinsicFunction? {
+    return intrinsics[name]
+      ?: enclosing?.findIntrinsic(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findIntrinsic(name) }
   }
 
   override fun findSymbol(name: String): AllocaInst {

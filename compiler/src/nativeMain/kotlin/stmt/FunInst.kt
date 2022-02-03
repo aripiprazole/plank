@@ -3,6 +3,7 @@ package com.gabrielleeg1.plank.compiler.stmt
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CodegenContext
 import com.gabrielleeg1.plank.compiler.CodegenInstruction
+import com.gabrielleeg1.plank.compiler.codegenError
 import com.gabrielleeg1.plank.compiler.element.BodyGenerator
 import com.gabrielleeg1.plank.compiler.element.addCurryFunction
 import com.gabrielleeg1.plank.compiler.element.addGlobalFunction
@@ -13,6 +14,13 @@ class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     return when {
       descriptor.type.isNested -> addCurryFunction(descriptor, true, BodyGenerator(descriptor))
+      descriptor.hasAttribute("intrinsic") -> {
+        addGlobalFunction(descriptor) {
+          findIntrinsic("${path.text}.${descriptor.name.text}")
+            ?.build(this)
+            ?: codegenError("Unable to find intrinsic `${path.text}.${descriptor.name.text}`")
+        }
+      }
       descriptor.hasAttribute("external") -> {
         val type = descriptor.type
         val realParameters = descriptor.realParameters

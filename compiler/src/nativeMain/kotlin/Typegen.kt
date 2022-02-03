@@ -18,7 +18,7 @@ import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 @Suppress("Detekt.ComplexMethod")
 fun CodegenContext.typegen(type: PlankType): Type {
   return when (type) {
-    UnitType -> getOrCreateStruct("unit") { elements = listOf(i8) }
+    UnitType -> unit
     BoolType -> i1
     CharType -> i8
     is IntType -> if (type.floatingPoint) float else i32 // TODO

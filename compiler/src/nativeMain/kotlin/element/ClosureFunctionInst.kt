@@ -56,7 +56,7 @@ class ClosureFunctionInst(
       val arguments = function.arguments
       val environment = arguments.first().apply { name = "env" }
 
-      val executionContext = ExecContext(this, returnType)
+      val executionContext = ExecContext(this, function, returnType)
 
       with(executionContext) {
         references.entries.forEachIndexed { index, (reference, type) ->

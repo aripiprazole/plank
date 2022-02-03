@@ -1,7 +1,7 @@
 module Std.IO;
 
-@external("PLANK_INTERNAL_println")
+@intrinsic
 fun println(message: *Char): Void
 
-@external("PLANK_INTERNAL_print")
+@intrinsic
 fun print(message: *Char): Void
