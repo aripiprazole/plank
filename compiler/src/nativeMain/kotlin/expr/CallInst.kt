@@ -53,7 +53,7 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
   }
 }
 
-fun CodegenContext.callClosure(value: Value, vararg arguments: Value, name: String? = ""): Value {
+fun CodegenContext.callClosure(value: Value, vararg arguments: Value, name: String? = null): Value {
   var closure = value
 
   if (closure.type !is PointerType) {
