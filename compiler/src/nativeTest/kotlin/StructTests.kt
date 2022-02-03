@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
 import kotlin.test.Test
 

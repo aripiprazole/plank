@@ -1,11 +1,11 @@
-package com.gabrielleeg1.plank.analyzer.element
+package org.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.EnumType
-import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.Untyped
-import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
-import com.gabrielleeg1.plank.grammar.element.Identifier
-import com.gabrielleeg1.plank.grammar.element.Location
+import org.plank.analyzer.EnumType
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.Untyped
+import org.plank.grammar.element.ErrorPlankElement
+import org.plank.grammar.element.Identifier
+import org.plank.grammar.element.Location
 
 sealed class TypedPattern : TypedPlankElement
 

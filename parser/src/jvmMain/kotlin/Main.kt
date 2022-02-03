@@ -1,11 +1,11 @@
-package com.gabrielleeg1.plank.parser
+package org.plank.parser
 
-import com.gabrielleeg1.plank.grammar.parser.toParseTree
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.ConsoleErrorListener
 import org.antlr.v4.kotlinruntime.DiagnosticErrorListener
 import org.antlr.v4.kotlinruntime.atn.PredictionMode
+import org.plank.grammar.parser.toParseTree
 
 fun main() {
   val stream = CharStreams.fromString(

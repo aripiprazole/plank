@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.grammar.debug
+package org.plank.grammar.debug
 
-import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.element.PlankElement
+import org.plank.grammar.element.Location
+import org.plank.grammar.element.PlankElement
 
 fun PlankElement.dumpTree(): String {
   return dumpTree(asMap(), name = this::class.simpleName!!)

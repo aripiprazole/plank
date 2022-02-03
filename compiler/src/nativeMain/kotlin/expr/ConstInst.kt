@@ -1,9 +1,9 @@
-package com.gabrielleeg1.plank.compiler.expr
+package org.plank.compiler.expr
 
-import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.CodegenInstruction
-import com.gabrielleeg1.plank.compiler.codegenError
+import org.plank.analyzer.element.TypedConstExpr
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.CodegenInstruction
+import org.plank.compiler.codegenError
 import org.plank.llvm4k.ir.Value
 
 class ConstInst(private val descriptor: TypedConstExpr) : CodegenInstruction {

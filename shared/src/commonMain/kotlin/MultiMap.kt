@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.shared
+package org.plank.shared
 
 class MultiMap<K, V>(
   map: MutableMap<K, MutableList<V>> = mutableMapOf()

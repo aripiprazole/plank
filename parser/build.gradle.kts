@@ -41,7 +41,7 @@ tasks {
       dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinVersion")
     )
     maxHeapSize = "64m"
-    packageName = "com.gabrielleeg1.plank.parser"
+    packageName = "org.plank.parser"
     arguments = listOf("-visitor")
     source = project.objects
       .sourceDirectorySet("commonAntlr", "commonAntlr")

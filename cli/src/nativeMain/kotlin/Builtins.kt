@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.cli
+package org.plank.cli
 
-import com.gabrielleeg1.plank.analyzer.ModuleTree
-import com.gabrielleeg1.plank.grammar.element.PlankFile
+import org.plank.analyzer.ModuleTree
+import org.plank.grammar.element.PlankFile
 
 @ThreadLocal
 object Builtins {

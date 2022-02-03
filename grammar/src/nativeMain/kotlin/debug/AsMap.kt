@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.grammar.debug
+package org.plank.grammar.debug
 
 internal actual fun List<*>.asMap(): Map<String, DumpEntry> {
   TODO("Not yet implemented")

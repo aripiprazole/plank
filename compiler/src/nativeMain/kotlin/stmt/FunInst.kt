@@ -1,12 +1,12 @@
-package com.gabrielleeg1.plank.compiler.stmt
+package org.plank.compiler.stmt
 
-import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.CodegenInstruction
-import com.gabrielleeg1.plank.compiler.codegenError
-import com.gabrielleeg1.plank.compiler.element.BodyGenerator
-import com.gabrielleeg1.plank.compiler.element.addCurryFunction
-import com.gabrielleeg1.plank.compiler.element.addGlobalFunction
+import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.CodegenInstruction
+import org.plank.compiler.codegenError
+import org.plank.compiler.element.BodyGenerator
+import org.plank.compiler.element.addCurryFunction
+import org.plank.compiler.element.addGlobalFunction
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
 

@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
-import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
-import com.gabrielleeg1.plank.grammar.element.QualifiedPath
+import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.grammar.element.QualifiedPath
 
 fun CodegenContext.mangleFunction(function: ResolvedFunDecl): String {
   val module = QualifiedPath(scope)

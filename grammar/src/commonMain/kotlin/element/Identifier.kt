@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.grammar.element
+package org.plank.grammar.element
 
 data class Identifier(val text: String, override val location: Location = Location.Generated) :
   PlankElement {

@@ -1,17 +1,17 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
-import com.gabrielleeg1.plank.analyzer.ArrayType
-import com.gabrielleeg1.plank.analyzer.BoolType
-import com.gabrielleeg1.plank.analyzer.CharType
-import com.gabrielleeg1.plank.analyzer.DelegateType
-import com.gabrielleeg1.plank.analyzer.EnumType
-import com.gabrielleeg1.plank.analyzer.FunctionType
-import com.gabrielleeg1.plank.analyzer.IntType
-import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.PointerType
-import com.gabrielleeg1.plank.analyzer.StructType
-import com.gabrielleeg1.plank.analyzer.UnitType
-import com.gabrielleeg1.plank.analyzer.Untyped
+import org.plank.analyzer.ArrayType
+import org.plank.analyzer.BoolType
+import org.plank.analyzer.CharType
+import org.plank.analyzer.DelegateType
+import org.plank.analyzer.EnumType
+import org.plank.analyzer.FunctionType
+import org.plank.analyzer.IntType
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.PointerType
+import org.plank.analyzer.StructType
+import org.plank.analyzer.UnitType
+import org.plank.analyzer.Untyped
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 

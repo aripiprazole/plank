@@ -1,11 +1,11 @@
-package com.gabrielleeg1.plank.compiler.element
+package org.plank.compiler.element
 
-import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.alloca
-import com.gabrielleeg1.plank.compiler.castClosure
-import com.gabrielleeg1.plank.compiler.codegenError
-import com.gabrielleeg1.plank.compiler.mangleFunction
+import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.alloca
+import org.plank.compiler.castClosure
+import org.plank.compiler.codegenError
+import org.plank.compiler.mangleFunction
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value

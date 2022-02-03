@@ -1,8 +1,8 @@
-package com.gabrielleeg1.plank.analyzer
+package org.plank.analyzer
 
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import org.junit.jupiter.api.Test
+import org.plank.grammar.element.PlankFile
+import org.plank.grammar.message.SimpleCompilerLogger
 import kotlin.test.assertEquals
 
 class AnalyzerTest {

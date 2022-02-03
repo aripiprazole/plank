@@ -66,7 +66,7 @@ kotlin {
         linkerOpts.addAll(cmd("--ldflags").split(" ").filter { it.isNotBlank() })
         linkerOpts.addAll(cmd("--system-libs").split(" ").filter { it.isNotBlank() })
         linkerOpts.addAll(cmd("--libs").split(" ").filter { it.isNotBlank() })
-        entryPoint = "com.gabrielleeg1.plank.cli.main"
+        entryPoint = "org.plank.cli.main"
       }
     }
   }

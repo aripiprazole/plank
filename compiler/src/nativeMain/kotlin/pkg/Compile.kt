@@ -1,20 +1,20 @@
-package com.gabrielleeg1.plank.compiler.pkg
+package org.plank.compiler.pkg
 
-import com.gabrielleeg1.plank.analyzer.FileScope
-import com.gabrielleeg1.plank.analyzer.ModuleTree
-import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
-import com.gabrielleeg1.plank.compiler.Entrypoint
-import com.gabrielleeg1.plank.compiler.ScopeContext
-import com.gabrielleeg1.plank.compiler.createFileContext
-import com.gabrielleeg1.plank.compiler.intrinsics.DefaultIntrinsics
-import com.gabrielleeg1.plank.compiler.intrinsics.Intrinsics
-import com.gabrielleeg1.plank.grammar.debug.dumpTree
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.message.CompilerLogger
-import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
-import com.gabrielleeg1.plank.shared.depthFirstSearch
+import org.plank.analyzer.FileScope
+import org.plank.analyzer.ModuleTree
+import org.plank.analyzer.element.ResolvedPlankFile
+import org.plank.compiler.Entrypoint
+import org.plank.compiler.ScopeContext
+import org.plank.compiler.createFileContext
+import org.plank.compiler.intrinsics.DefaultIntrinsics
+import org.plank.compiler.intrinsics.Intrinsics
+import org.plank.grammar.debug.dumpTree
+import org.plank.grammar.element.PlankFile
+import org.plank.grammar.message.CompilerLogger
+import org.plank.grammar.message.SimpleCompilerLogger
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.Module
+import org.plank.shared.depthFirstSearch
 
 fun compile(
   plainMain: PlankFile,
@@ -41,7 +41,7 @@ fun compile(
     .depthFirstSearch(main.module)
     .asSequence()
     .mapNotNull(tree::findModule)
-    .map(com.gabrielleeg1.plank.analyzer.Module::scope)
+    .map(org.plank.analyzer.Module::scope)
     .filterIsInstance<FileScope>()
     .map(FileScope::file)
     .toList()

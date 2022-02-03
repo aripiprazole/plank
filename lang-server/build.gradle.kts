@@ -39,7 +39,7 @@ tasks.shadowJar {
 
   from(jvmMain.output)
   manifest {
-    attributes["Main-Class"] = "com.gabrielleeg1.plank.tooling.langserver.MainKt"
+    attributes["Main-Class"] = "org.plank.tooling.langserver.MainKt"
   }
 
   configurations = mutableListOf(jvmMain.compileDependencyFiles as Configuration)

@@ -1,8 +1,8 @@
-package com.gabrielleeg1.plank.compiler.stmt
+package org.plank.compiler.stmt
 
-import com.gabrielleeg1.plank.analyzer.element.ResolvedStructDecl
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.CodegenInstruction
+import org.plank.analyzer.element.ResolvedStructDecl
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.CodegenInstruction
 import org.plank.llvm4k.ir.Value
 
 class StructInst(private val descriptor: ResolvedStructDecl) : CodegenInstruction {

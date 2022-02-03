@@ -1,17 +1,17 @@
-package com.gabrielleeg1.plank.compiler.element
+package org.plank.compiler.element
 
-import com.gabrielleeg1.plank.analyzer.FunctionType
-import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.ExecContext
-import com.gabrielleeg1.plank.compiler.alloca
-import com.gabrielleeg1.plank.compiler.codegenError
-import com.gabrielleeg1.plank.compiler.createScopeContext
-import com.gabrielleeg1.plank.compiler.getField
-import com.gabrielleeg1.plank.compiler.instantiate
-import com.gabrielleeg1.plank.compiler.mangleFunction
-import com.gabrielleeg1.plank.grammar.element.Identifier
+import org.plank.analyzer.FunctionType
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.ExecContext
+import org.plank.compiler.alloca
+import org.plank.compiler.codegenError
+import org.plank.compiler.createScopeContext
+import org.plank.compiler.getField
+import org.plank.compiler.instantiate
+import org.plank.compiler.mangleFunction
+import org.plank.grammar.element.Identifier
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Value
 

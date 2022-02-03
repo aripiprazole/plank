@@ -1,8 +1,8 @@
-package com.gabrielleeg1.plank.grammar.element
+package org.plank.grammar.element
 
-import com.gabrielleeg1.plank.grammar.debug.DontDump
-import com.gabrielleeg1.plank.grammar.message.lineSeparator
 import org.antlr.v4.kotlinruntime.Token
+import org.plank.grammar.debug.DontDump
+import org.plank.grammar.message.lineSeparator
 
 sealed interface Location {
   @DontDump

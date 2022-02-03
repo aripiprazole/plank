@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.grammar.mapper
+package org.plank.grammar.mapper
 
-import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.message.CompilerLogger
+import org.plank.grammar.element.Location
+import org.plank.grammar.message.CompilerLogger
 
 data class SyntaxViolation(
   override val message: String,

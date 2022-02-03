@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.compiler.pkg
+package org.plank.compiler.pkg
 
-import com.gabrielleeg1.plank.analyzer.BindingViolation
-import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
+import org.plank.analyzer.BindingViolation
+import org.plank.grammar.mapper.SyntaxViolation
 
 class SyntaxError(val violations: Set<SyntaxViolation>) : RuntimeException()
 

@@ -1,11 +1,5 @@
-package com.gabrielleeg1.plank.cli
+package org.plank.cli
 
-import com.gabrielleeg1.plank.analyzer.analyze
-import com.gabrielleeg1.plank.compiler.pkg.AnalyzerError
-import com.gabrielleeg1.plank.compiler.pkg.Package
-import com.gabrielleeg1.plank.compiler.pkg.SyntaxError
-import com.gabrielleeg1.plank.compiler.pkg.compile
-import com.gabrielleeg1.plank.grammar.message.SimpleCompilerLogger
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -17,6 +11,12 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import org.plank.analyzer.analyze
+import org.plank.compiler.pkg.AnalyzerError
+import org.plank.compiler.pkg.Package
+import org.plank.compiler.pkg.SyntaxError
+import org.plank.compiler.pkg.compile
+import org.plank.grammar.message.SimpleCompilerLogger
 import org.plank.llvm4k.OptimizationLevel
 import pw.binom.io.file.File
 import pw.binom.io.file.isExist

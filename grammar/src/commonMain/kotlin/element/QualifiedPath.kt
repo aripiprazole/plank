@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.grammar.element
+package org.plank.grammar.element
 
 data class QualifiedPath(val fullPath: List<Identifier>, override val location: Location) :
   PlankElement {

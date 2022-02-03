@@ -1,9 +1,9 @@
-package com.gabrielleeg1.plank.compiler.expr
+package org.plank.compiler.expr
 
-import com.gabrielleeg1.plank.analyzer.element.TypedGetExpr
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.CodegenInstruction
-import com.gabrielleeg1.plank.compiler.findField
+import org.plank.analyzer.element.TypedGetExpr
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.CodegenInstruction
+import org.plank.compiler.findField
 import org.plank.llvm4k.ir.Value
 
 class GetInst(private val descriptor: TypedGetExpr) : CodegenInstruction {

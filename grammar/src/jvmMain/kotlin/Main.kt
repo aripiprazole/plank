@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.grammar
+package org.plank.grammar
 
-import com.gabrielleeg1.plank.grammar.debug.dumpTree
-import com.gabrielleeg1.plank.grammar.element.PlankFile
+import org.plank.grammar.debug.dumpTree
+import org.plank.grammar.element.PlankFile
 
 fun main() {
   println("Parsing plank file...")

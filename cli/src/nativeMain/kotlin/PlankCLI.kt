@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.cli
+package org.plank.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands

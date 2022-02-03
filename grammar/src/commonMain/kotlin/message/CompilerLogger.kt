@@ -1,6 +1,5 @@
-package com.gabrielleeg1.plank.grammar.message
+package org.plank.grammar.message
 
-import com.gabrielleeg1.plank.grammar.element.Location
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.rendering.BorderStyle
 import com.github.ajalt.mordant.rendering.TextAlign
@@ -13,6 +12,7 @@ import com.github.ajalt.mordant.rendering.TextStyles.bold
 import com.github.ajalt.mordant.table.Borders
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
+import org.plank.grammar.element.Location
 
 enum class LogLevel(val prefix: String, val color: TextColors) {
   Debug("debug", brightRed),

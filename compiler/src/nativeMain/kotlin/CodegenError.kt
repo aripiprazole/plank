@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
 class CodegenError(override val message: String, val context: CodegenContext) : Exception(message)
 

@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.cli
+package org.plank.cli
 
-import com.gabrielleeg1.plank.compiler.pkg.Package
 import com.github.ajalt.clikt.core.ProgramResult
+import org.plank.compiler.pkg.Package
 
 fun Package.crash(message: String): Nothing {
   severe(message)

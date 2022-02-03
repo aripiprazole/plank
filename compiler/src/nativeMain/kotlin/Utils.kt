@@ -1,9 +1,9 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
-import com.gabrielleeg1.plank.analyzer.UnitType
-import com.gabrielleeg1.plank.analyzer.element.TypedAccessExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.grammar.element.Identifier
+import org.plank.analyzer.UnitType
+import org.plank.analyzer.element.TypedAccessExpr
+import org.plank.analyzer.element.TypedExpr
+import org.plank.grammar.element.Identifier
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
 import org.plank.llvm4k.ir.LoadInst
@@ -73,12 +73,12 @@ fun CodegenContext.findField(receiver: TypedExpr, name: Identifier): Value {
     else -> alloca(instance)
   }
 
-  if (!receiver.type.isInstance<com.gabrielleeg1.plank.analyzer.StructType>()) {
+  if (!receiver.type.isInstance<org.plank.analyzer.StructType>()) {
     codegenError("Unresolved type `${receiver.type.name.text}`")
   }
 
   val propertyIndex = receiver.type
-    .cast<com.gabrielleeg1.plank.analyzer.StructType>()!!.properties.entries
+    .cast<org.plank.analyzer.StructType>()!!.properties.entries
     .indexOfFirst { it.key == name }
 
   return getField(alloca, propertyIndex, "$struct.${name.text}")

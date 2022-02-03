@@ -1,13 +1,13 @@
 @file:Suppress("FunctionName")
 
-package com.gabrielleeg1.plank.analyzer
+package org.plank.analyzer
 
-import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedConstExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
-import com.gabrielleeg1.plank.grammar.element.Identifier
-import com.gabrielleeg1.plank.grammar.element.Location
+import org.plank.analyzer.element.TypedCallExpr
+import org.plank.analyzer.element.TypedConstExpr
+import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.element.TypedInstanceExpr
+import org.plank.grammar.element.Identifier
+import org.plank.grammar.element.Location
 import kotlin.reflect.KProperty
 
 /**

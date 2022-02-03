@@ -1,11 +1,11 @@
-package com.gabrielleeg1.plank.compiler.pkg
+package org.plank.compiler.pkg
 
-import com.gabrielleeg1.plank.analyzer.FileScope
-import com.gabrielleeg1.plank.analyzer.analyze
-import com.gabrielleeg1.plank.grammar.debug.dumpTree
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.message.lineSeparator
-import com.gabrielleeg1.plank.shared.depthFirstSearch
+import org.plank.analyzer.FileScope
+import org.plank.analyzer.analyze
+import org.plank.grammar.debug.dumpTree
+import org.plank.grammar.element.PlankFile
+import org.plank.grammar.message.lineSeparator
+import org.plank.shared.depthFirstSearch
 import pw.binom.io.file.File
 import pw.binom.io.file.extension
 import pw.binom.io.file.nameWithoutExtension
@@ -21,7 +21,7 @@ fun Package.compileBinary(): File {
     .depthFirstSearch(main.module)
     .asSequence()
     .mapNotNull(tree::findModule)
-    .map(com.gabrielleeg1.plank.analyzer.Module::scope)
+    .map(org.plank.analyzer.Module::scope)
     .filterIsInstance<FileScope>()
     .map(FileScope::file)
     .map { generateIR(it) }

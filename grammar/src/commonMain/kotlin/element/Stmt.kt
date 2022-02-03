@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.grammar.element
+package org.plank.grammar.element
 
 sealed interface Stmt : PlankElement {
   interface Visitor<T> {

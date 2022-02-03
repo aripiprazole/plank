@@ -1,8 +1,8 @@
-package com.gabrielleeg1.plank.analyzer.element
+package org.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.UnitType
-import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
-import com.gabrielleeg1.plank.grammar.element.Location
+import org.plank.analyzer.UnitType
+import org.plank.grammar.element.ErrorPlankElement
+import org.plank.grammar.element.Location
 
 sealed interface ResolvedStmt : ResolvedPlankElement {
   interface Visitor<T> {

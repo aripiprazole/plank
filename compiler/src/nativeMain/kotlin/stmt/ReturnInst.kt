@@ -1,9 +1,9 @@
-package com.gabrielleeg1.plank.compiler.stmt
+package org.plank.compiler.stmt
 
-import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.CodegenInstruction
-import com.gabrielleeg1.plank.compiler.createUnit
+import org.plank.analyzer.element.ResolvedReturnStmt
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.CodegenInstruction
+import org.plank.compiler.createUnit
 import org.plank.llvm4k.ir.Value
 
 class ReturnInst(private val descriptor: ResolvedReturnStmt) : CodegenInstruction {

@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
 import org.plank.llvm4k.ir.Value
 

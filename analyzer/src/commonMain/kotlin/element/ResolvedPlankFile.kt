@@ -1,9 +1,9 @@
-package com.gabrielleeg1.plank.analyzer.element
+package org.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.BindingViolation
-import com.gabrielleeg1.plank.grammar.debug.DontDump
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.mapper.SyntaxViolation
+import org.plank.analyzer.BindingViolation
+import org.plank.grammar.debug.DontDump
+import org.plank.grammar.element.PlankFile
+import org.plank.grammar.mapper.SyntaxViolation
 
 /**
  * Represents a [PlankFile] with type definitions. The properties [syntaxViolations],

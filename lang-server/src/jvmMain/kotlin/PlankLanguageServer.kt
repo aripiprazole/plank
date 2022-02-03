@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.tooling.langserver
+package org.plank.tooling.langserver
 
 import org.eclipse.lsp4j.CompletionOptions
 import org.eclipse.lsp4j.InitializeParams

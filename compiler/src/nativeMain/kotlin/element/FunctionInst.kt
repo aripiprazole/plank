@@ -1,16 +1,16 @@
-package com.gabrielleeg1.plank.compiler.element
+package org.plank.compiler.element
 
-import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.UnitType
-import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
-import com.gabrielleeg1.plank.analyzer.element.ResolvedReturnStmt
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.CodegenInstruction
-import com.gabrielleeg1.plank.compiler.ExecContext
-import com.gabrielleeg1.plank.compiler.alloca
-import com.gabrielleeg1.plank.compiler.codegenError
-import com.gabrielleeg1.plank.compiler.createUnit
-import com.gabrielleeg1.plank.grammar.element.Identifier
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.UnitType
+import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.analyzer.element.ResolvedReturnStmt
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.CodegenInstruction
+import org.plank.compiler.ExecContext
+import org.plank.compiler.alloca
+import org.plank.compiler.codegenError
+import org.plank.compiler.createUnit
+import org.plank.grammar.element.Identifier
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Argument
 

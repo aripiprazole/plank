@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.compiler.pkg
+package org.plank.compiler.pkg
 
 class DebugOptions {
   var treeDebug = false

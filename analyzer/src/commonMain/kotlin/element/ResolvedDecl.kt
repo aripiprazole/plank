@@ -1,15 +1,15 @@
-package com.gabrielleeg1.plank.analyzer.element
+package org.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.EnumMember
-import com.gabrielleeg1.plank.analyzer.FunctionType
-import com.gabrielleeg1.plank.analyzer.Module
-import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.StructProperty
-import com.gabrielleeg1.plank.grammar.element.Attribute
-import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
-import com.gabrielleeg1.plank.grammar.element.Identifier
-import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.element.QualifiedPath
+import org.plank.analyzer.EnumMember
+import org.plank.analyzer.FunctionType
+import org.plank.analyzer.Module
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.StructProperty
+import org.plank.grammar.element.Attribute
+import org.plank.grammar.element.ErrorPlankElement
+import org.plank.grammar.element.Identifier
+import org.plank.grammar.element.Location
+import org.plank.grammar.element.QualifiedPath
 
 sealed interface ResolvedDecl : ResolvedStmt
 

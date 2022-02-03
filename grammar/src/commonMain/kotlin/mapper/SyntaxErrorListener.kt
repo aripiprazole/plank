@@ -1,11 +1,11 @@
-package com.gabrielleeg1.plank.grammar.mapper
+package org.plank.grammar.mapper
 
-import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.element.PlankFile
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Recognizer
 import org.antlr.v4.kotlinruntime.Token
+import org.plank.grammar.element.Location
+import org.plank.grammar.element.PlankFile
 
 class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
   private val _violations = mutableListOf<SyntaxViolation>()

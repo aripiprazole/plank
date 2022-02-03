@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.shared
+package org.plank.shared
 
 import pw.binom.Stack
 

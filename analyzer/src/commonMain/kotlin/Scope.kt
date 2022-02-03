@@ -1,9 +1,9 @@
-package com.gabrielleeg1.plank.analyzer
+package org.plank.analyzer
 
-import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.grammar.element.Identifier
-import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.element.PlankFile
+import org.plank.analyzer.element.TypedExpr
+import org.plank.grammar.element.Identifier
+import org.plank.grammar.element.Location
+import org.plank.grammar.element.PlankFile
 
 data class Variable(
   val mutable: Boolean,

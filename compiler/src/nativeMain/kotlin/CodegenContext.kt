@@ -1,15 +1,15 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
-import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankElement
-import com.gabrielleeg1.plank.analyzer.element.ResolvedPlankFile
-import com.gabrielleeg1.plank.analyzer.element.ResolvedStmt
-import com.gabrielleeg1.plank.analyzer.element.TypedExpr
-import com.gabrielleeg1.plank.compiler.element.FunctionInst
-import com.gabrielleeg1.plank.compiler.intrinsics.IntrinsicFunction
-import com.gabrielleeg1.plank.compiler.intrinsics.Intrinsics
-import com.gabrielleeg1.plank.grammar.element.Location
-import com.gabrielleeg1.plank.grammar.element.QualifiedPath
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.element.ResolvedPlankElement
+import org.plank.analyzer.element.ResolvedPlankFile
+import org.plank.analyzer.element.ResolvedStmt
+import org.plank.analyzer.element.TypedExpr
+import org.plank.compiler.element.FunctionInst
+import org.plank.compiler.intrinsics.IntrinsicFunction
+import org.plank.compiler.intrinsics.Intrinsics
+import org.plank.grammar.element.Location
+import org.plank.grammar.element.QualifiedPath
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.IRBuilder
 import org.plank.llvm4k.Module

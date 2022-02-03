@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.grammar.debug
+package org.plank.grammar.debug
 
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties

@@ -24,7 +24,7 @@ plugins {
   alias(libs.plugins.detekt) apply false
 }
 
-group = "com.gabrielleeg1"
+group = "org"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -49,7 +49,7 @@ subprojects {
     maven("https://plank.jfrog.io/artifactory/default-gradle-dev-local/")
   }
 
-  group = "com.gabrielleeg1"
+  group = "org"
   version = "1.0-SNAPSHOT"
 
   configure<KtlintExtension> {

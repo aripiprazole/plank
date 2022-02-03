@@ -1,7 +1,7 @@
-package com.gabrielleeg1.plank.compiler
+package org.plank.compiler
 
-import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
-import com.gabrielleeg1.plank.compiler.expr.callClosure
+import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.compiler.expr.callClosure
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
 

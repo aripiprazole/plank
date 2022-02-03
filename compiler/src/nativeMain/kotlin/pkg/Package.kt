@@ -1,8 +1,8 @@
-package com.gabrielleeg1.plank.compiler.pkg
+package org.plank.compiler.pkg
 
-import com.gabrielleeg1.plank.analyzer.ModuleTree
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.grammar.message.CompilerLogger
+import org.plank.analyzer.ModuleTree
+import org.plank.grammar.element.PlankFile
+import org.plank.grammar.message.CompilerLogger
 import pw.binom.io.file.File
 
 data class Package(

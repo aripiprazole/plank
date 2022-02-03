@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.cli
+package org.plank.cli
 
 fun main(args: Array<String>) {
   llvm.LLVMInitializeNativeAsmPrinter()

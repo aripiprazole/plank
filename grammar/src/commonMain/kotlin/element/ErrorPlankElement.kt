@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.grammar.element
+package org.plank.grammar.element
 
 interface ErrorPlankElement : PlankElement {
   val message: String

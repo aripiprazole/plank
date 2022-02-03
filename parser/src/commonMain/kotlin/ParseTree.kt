@@ -1,4 +1,4 @@
-package com.gabrielleeg1.plank.grammar.parser
+package org.plank.grammar.parser
 
 import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.tree.TerminalNode

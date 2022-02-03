@@ -1,10 +1,10 @@
-package com.gabrielleeg1.plank.analyzer
+package org.plank.analyzer
 
-import com.gabrielleeg1.plank.grammar.element.Decl
-import com.gabrielleeg1.plank.grammar.element.Identifier
-import com.gabrielleeg1.plank.grammar.element.PlankFile
-import com.gabrielleeg1.plank.shared.Graph
-import com.gabrielleeg1.plank.shared.depthFirstSearch
+import org.plank.grammar.element.Decl
+import org.plank.grammar.element.Identifier
+import org.plank.grammar.element.PlankFile
+import org.plank.shared.Graph
+import org.plank.shared.depthFirstSearch
 
 data class Module(val name: Identifier, val content: List<Decl>) {
   lateinit var scope: Scope

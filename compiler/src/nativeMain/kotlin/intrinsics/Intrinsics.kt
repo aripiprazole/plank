@@ -1,9 +1,9 @@
-package com.gabrielleeg1.plank.compiler.intrinsics
+package org.plank.compiler.intrinsics
 
-import com.gabrielleeg1.plank.compiler.CodegenContext
-import com.gabrielleeg1.plank.compiler.ExecContext
-import com.gabrielleeg1.plank.compiler.createUnit
-import com.gabrielleeg1.plank.grammar.message.lineSeparator
+import org.plank.compiler.CodegenContext
+import org.plank.compiler.ExecContext
+import org.plank.compiler.createUnit
+import org.plank.grammar.message.lineSeparator
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.ir.Argument
 import org.plank.llvm4k.ir.Function

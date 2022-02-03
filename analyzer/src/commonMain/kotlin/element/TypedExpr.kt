@@ -1,13 +1,13 @@
-package com.gabrielleeg1.plank.analyzer.element
+package org.plank.analyzer.element
 
-import com.gabrielleeg1.plank.analyzer.PlankType
-import com.gabrielleeg1.plank.analyzer.PointerType
-import com.gabrielleeg1.plank.analyzer.StructType
-import com.gabrielleeg1.plank.analyzer.Untyped
-import com.gabrielleeg1.plank.analyzer.Variable
-import com.gabrielleeg1.plank.grammar.element.ErrorPlankElement
-import com.gabrielleeg1.plank.grammar.element.Identifier
-import com.gabrielleeg1.plank.grammar.element.Location
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.PointerType
+import org.plank.analyzer.StructType
+import org.plank.analyzer.Untyped
+import org.plank.analyzer.Variable
+import org.plank.grammar.element.ErrorPlankElement
+import org.plank.grammar.element.Identifier
+import org.plank.grammar.element.Location
 
 sealed interface TypedExpr : TypedPlankElement {
   interface Visitor<T> {
