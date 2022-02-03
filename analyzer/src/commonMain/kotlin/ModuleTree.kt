@@ -1,10 +1,10 @@
 package org.plank.analyzer
 
-import org.plank.grammar.element.Decl
-import org.plank.grammar.element.Identifier
-import org.plank.grammar.element.PlankFile
 import org.plank.shared.Graph
 import org.plank.shared.depthFirstSearch
+import org.plank.syntax.element.Decl
+import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.PlankFile
 
 data class Module(val name: Identifier, val content: List<Decl>) {
   lateinit var scope: Scope

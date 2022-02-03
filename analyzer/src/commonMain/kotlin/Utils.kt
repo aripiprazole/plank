@@ -1,6 +1,6 @@
 package org.plank.analyzer
 
-import org.plank.grammar.element.TypeRef
+import org.plank.syntax.element.TypeRef
 import kotlin.jvm.JvmName
 
 @JvmName("visitTypeReferenceOrElse")

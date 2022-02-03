@@ -34,16 +34,16 @@ You can find more examples [here](samples)
 
 ## Modules
 
-| Name                      | Description                                      |
-|---------------------------|--------------------------------------------------|
-| [cli](cli)                | All command-line stuff                           | 
-| [grammar](grammar)        | AST and Descriptor Mapping                       |
-| [parser](parser)          | ANTLR grammar                                    |
-| [compiler](compiler)      | The LLVM core that compiles to IR representation |
-| [analyzer](runtime)       | Code analyzing                                   |
-| [runtime](runtime)        | Runtime functions                                |
-| [stdlib](stdlib)          | Language stdlib                                  |
-| [intellij-plugin](stdlib) | Intellij tooling plugin                          |
+| Name                           | Description                                      |
+|--------------------------------|--------------------------------------------------|
+| [cli](cli)                     | All command-line stuff                           | 
+| [syntax](syntax)               | AST and Descriptor Mapping                       |
+| [parser](parser)               | ANTLR grammar                                    |
+| [codegen](codegen)             | The LLVM core that compiles to IR representation |
+| [analyzer](runtime)            | Code analyzing                                   |
+| [runtime](runtime)             | Runtime functions                                |
+| [stdlib](stdlib)               | Language stdlib                                  |
+| [vscode-plugin](vscode-plugin) | VSCode tooling plugin                            |
 
 ## CLI
 

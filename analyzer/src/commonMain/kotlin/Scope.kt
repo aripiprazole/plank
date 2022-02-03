@@ -1,9 +1,9 @@
 package org.plank.analyzer
 
 import org.plank.analyzer.element.TypedExpr
-import org.plank.grammar.element.Identifier
-import org.plank.grammar.element.Location
-import org.plank.grammar.element.PlankFile
+import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.Location
+import org.plank.syntax.element.PlankFile
 
 data class Variable(
   val mutable: Boolean,

@@ -1,7 +1,7 @@
 package org.plank.cli
 
 import org.plank.analyzer.ModuleTree
-import org.plank.grammar.element.PlankFile
+import org.plank.syntax.element.PlankFile
 
 @ThreadLocal
 object Builtins {

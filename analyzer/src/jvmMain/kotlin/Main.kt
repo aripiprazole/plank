@@ -1,7 +1,7 @@
 package org.plank.analyzer
 
-import org.plank.grammar.debug.dumpTree
-import org.plank.grammar.element.PlankFile
+import org.plank.syntax.debug.dumpTree
+import org.plank.syntax.element.PlankFile
 
 fun main() {
   val file = PlankFile.of(

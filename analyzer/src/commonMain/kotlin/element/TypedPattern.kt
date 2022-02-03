@@ -3,9 +3,9 @@ package org.plank.analyzer.element
 import org.plank.analyzer.EnumType
 import org.plank.analyzer.PlankType
 import org.plank.analyzer.Untyped
-import org.plank.grammar.element.ErrorPlankElement
-import org.plank.grammar.element.Identifier
-import org.plank.grammar.element.Location
+import org.plank.syntax.element.ErrorPlankElement
+import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.Location
 
 sealed class TypedPattern : TypedPlankElement
 

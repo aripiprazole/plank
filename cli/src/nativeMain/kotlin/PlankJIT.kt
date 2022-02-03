@@ -12,12 +12,12 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import org.plank.analyzer.analyze
-import org.plank.compiler.pkg.AnalyzerError
-import org.plank.compiler.pkg.Package
-import org.plank.compiler.pkg.SyntaxError
-import org.plank.compiler.pkg.compile
-import org.plank.grammar.message.SimpleCompilerLogger
+import org.plank.codegen.pkg.AnalyzerError
+import org.plank.codegen.pkg.Package
+import org.plank.codegen.pkg.SyntaxError
+import org.plank.codegen.pkg.compile
 import org.plank.llvm4k.OptimizationLevel
+import org.plank.syntax.message.SimpleCompilerLogger
 import pw.binom.io.file.File
 import pw.binom.io.file.isExist
 import pw.binom.io.file.readText

@@ -5,7 +5,7 @@ import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.ConsoleErrorListener
 import org.antlr.v4.kotlinruntime.DiagnosticErrorListener
 import org.antlr.v4.kotlinruntime.atn.PredictionMode
-import org.plank.grammar.parser.toParseTree
+import org.plank.syntax.parser.toParseTree
 
 fun main() {
   val stream = CharStreams.fromString(

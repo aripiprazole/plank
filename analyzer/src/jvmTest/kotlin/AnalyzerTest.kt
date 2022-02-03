@@ -1,8 +1,8 @@
 package org.plank.analyzer
 
 import org.junit.jupiter.api.Test
-import org.plank.grammar.element.PlankFile
-import org.plank.grammar.message.SimpleCompilerLogger
+import org.plank.syntax.element.PlankFile
+import org.plank.syntax.message.SimpleCompilerLogger
 import kotlin.test.assertEquals
 
 class AnalyzerTest {

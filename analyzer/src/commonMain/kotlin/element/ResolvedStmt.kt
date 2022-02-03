@@ -1,8 +1,8 @@
 package org.plank.analyzer.element
 
 import org.plank.analyzer.UnitType
-import org.plank.grammar.element.ErrorPlankElement
-import org.plank.grammar.element.Location
+import org.plank.syntax.element.ErrorPlankElement
+import org.plank.syntax.element.Location
 
 sealed interface ResolvedStmt : ResolvedPlankElement {
   interface Visitor<T> {

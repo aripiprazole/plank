@@ -11,8 +11,8 @@ pluginManagement {
   }
 }
 
-include("compiler")
-include("grammar")
+include("codegen")
+include("syntax")
 include("cli")
 include("lang-server")
 include("analyzer")

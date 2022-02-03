@@ -5,11 +5,11 @@ import org.plank.analyzer.FunctionType
 import org.plank.analyzer.Module
 import org.plank.analyzer.PlankType
 import org.plank.analyzer.StructProperty
-import org.plank.grammar.element.Attribute
-import org.plank.grammar.element.ErrorPlankElement
-import org.plank.grammar.element.Identifier
-import org.plank.grammar.element.Location
-import org.plank.grammar.element.QualifiedPath
+import org.plank.syntax.element.Attribute
+import org.plank.syntax.element.ErrorPlankElement
+import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.Location
+import org.plank.syntax.element.QualifiedPath
 
 sealed interface ResolvedDecl : ResolvedStmt
 

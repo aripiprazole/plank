@@ -6,8 +6,8 @@ import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedInstanceExpr
-import org.plank.grammar.element.Identifier
-import org.plank.grammar.element.Location
+import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.Location
 import kotlin.reflect.KProperty
 
 /**

@@ -86,10 +86,10 @@ kotlin {
 
     val nativeMain by getting {
       dependencies {
-        implementation(projects.grammar)
+        implementation(projects.syntax)
         implementation(projects.shared)
         implementation(projects.analyzer)
-        implementation(projects.compiler)
+        implementation(projects.codegen)
         implementation(libs.clikt)
         implementation(libs.llvm4k.common)
       }

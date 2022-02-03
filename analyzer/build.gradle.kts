@@ -3,7 +3,7 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(kotlin("stdlib-common"))
-        implementation(projects.grammar)
+        implementation(projects.syntax)
         implementation(projects.shared)
       }
     }

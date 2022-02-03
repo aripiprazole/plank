@@ -1,7 +1,7 @@
 package org.plank.analyzer
 
-import org.plank.grammar.element.Location
-import org.plank.grammar.message.CompilerLogger
+import org.plank.syntax.element.Location
+import org.plank.syntax.message.CompilerLogger
 
 data class BindingViolation(val message: String, val location: Location) {
   fun render(logger: CompilerLogger) {

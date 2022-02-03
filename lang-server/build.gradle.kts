@@ -20,7 +20,7 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        implementation(projects.grammar)
+        implementation(projects.syntax)
         implementation(projects.shared)
         implementation(projects.analyzer)
         implementation(libs.ktx.coroutines.core)
