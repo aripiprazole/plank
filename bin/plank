@@ -1,3 +1,0 @@
-#!/bin/sh
-
-java -cp "$PLANK_HOME/libs/*:." com.gabrielleeg1.plank.cli.MainKt "$@"
