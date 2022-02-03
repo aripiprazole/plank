@@ -76,18 +76,6 @@ $ ./gradlew cli:linkPlankReleaseExecutableLinuxX64
 The binary file `cli/build/bin/linuxX64/plankReleaseExecutable` or if you are in a Windows
 machine `cli/build/bin/mingwX64/plankReleaseExecutable` will be created.
 
-## Install
-
-This is the [linux install instructions](#Install Linux) that is tested in ubuntu; if you want the distributions for
-your operational system, you must follow the
-[Build instructions](#Building).
-
-## Install Linux
-
-You must download a release in [releases](https://github.com/plank-lang/plank/releases/tag/1.0.1-SNAPSHOT)
-or build your one in [Building](#Building). After that you must define the environment variable `PLANK_HOME`
-to the unzipped release folder, and set `PATH` to `$PLANK_HOME/bin`. So the plank is installed, make good use. 🙂
-
 ## Pull Requests
 
 PRs are welcome as long as they are well explained and only change one feature at a time.  
