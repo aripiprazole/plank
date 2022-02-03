@@ -39,7 +39,6 @@ subprojects {
   repositories {
     mavenCentral()
     mavenLocal()
-    jcenter()
     maven("https://repo.binom.pw")
     maven("https://repo.binom.pw/releases")
     maven("https://jitpack.io")

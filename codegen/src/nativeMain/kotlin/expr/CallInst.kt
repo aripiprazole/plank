@@ -23,7 +23,7 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
         functionType != null && functionType.isNested -> {
           castClosure(expr.codegen(), type.parameters.values.elementAt(index).typegen())
         }
-        functionType != null && !functionType.isPartialApplied -> { // FIXME: access function with lazy
+        functionType != null && !functionType.isPartialApplied -> {
           val name = "_Zclosure.wrap.(${descriptor.callee.type})$$index"
 
           val function = addFunction(
