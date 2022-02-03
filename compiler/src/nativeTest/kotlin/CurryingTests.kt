@@ -76,6 +76,33 @@ class CurryingTests {
   }
 
   @Test
+  fun `test call currying 2 times`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun print_full_name(name: *Char, surname: *Char) {
+          print(name);
+          print(" ");
+          println(surname);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          print_full_name("Isabela")("Freitas");
+          print_full_name("Isabela")("Freitas");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test partial apply curried function`() {
     TestCompilation
       .of(
@@ -118,6 +145,34 @@ class CurryingTests {
 
         fun main(argc: Int32, argv: **Char): Void {
           let print_surname = print_full_name("Isabela");
+          print_surname("Freitas");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test call partial applied curried function 2 times`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        fun print_full_name(name: *Char, surname: *Char) {
+          print(name);
+          print(" ");
+          println(surname);
+        }
+
+        fun main(argc: Int32, argv: **Char): Void {
+          let print_surname = print_full_name("Isabela");
+          print_surname("Freitas");
           print_surname("Freitas");
         }
         """.trimIndent()

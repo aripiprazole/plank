@@ -66,7 +66,7 @@ class CurryFunctionInst(
               val func = acc.also { it.codegen() }.access()!!
               val type = returnType.unsafeCast<FunctionType>().typegen()
 
-              createRet(createBitCast(func, type))
+              createRet(createLoad(createBitCast(func, type.pointer())))
             }
           }
           .also { it.codegen() }
@@ -79,7 +79,7 @@ class CurryFunctionInst(
     }
 
     if (nested) {
-      setSymbol(name, type, AllocaInst(closure.ref))
+      setSymbol(name, type, closure as AllocaInst)
     }
 
     return closure

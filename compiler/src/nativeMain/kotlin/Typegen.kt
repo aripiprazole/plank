@@ -39,11 +39,9 @@ fun CodegenContext.typegen(type: PlankType): Type {
         LLVMFunctionType(returnType, i8.pointer(), parameter)
       }
 
-      val struct = getOrCreateStruct("closure.anonymous.($type)") {
+      getOrCreateStruct("closure.anonymous.($type)") {
         elements = listOf(functionType.pointer(), i8.pointer())
       }
-
-      return struct.pointer()
     }
     is ArrayType -> type.inner.typegen().pointer()
     is PointerType -> type.inner.typegen().pointer()

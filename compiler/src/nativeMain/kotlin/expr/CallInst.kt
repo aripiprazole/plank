@@ -20,7 +20,8 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
 
       when {
         functionType != null && functionType.isNested -> {
-          createBitCast(expr.codegen(), type.parameters.values.elementAt(index).typegen())
+          createBitCast(expr.codegen(), type.parameters.values.elementAt(index).typegen().pointer())
+            .let(::createLoad)
         }
         functionType != null && !functionType.isPartialApplied -> { // FIXME: access function with lazy
           val name = "_Zclosure.wrap.(${descriptor.callee.type})$$index"
@@ -40,7 +41,8 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
             )
           )
 
-          createBitCast(function, type.parameters.values.elementAt(index).typegen())
+          createBitCast(function, type.parameters.values.elementAt(index).typegen().pointer())
+            .let(::createLoad)
         }
         else -> expr.codegen()
       }

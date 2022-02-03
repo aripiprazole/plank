@@ -37,7 +37,7 @@ class GlobalFunctionInst(
 
     positionAfter(entry)
 
-    createRet(createBitCast(closure, closureReturnType))
+    createRet(createLoad(createBitCast(closure, closureReturnType.pointer())))
 
     if (!function.verify()) {
       codegenError("Invalid function `${function.name}`")
