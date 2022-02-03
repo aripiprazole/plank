@@ -3,6 +3,7 @@ package com.gabrielleeg1.plank.compiler.intrinsics
 import com.gabrielleeg1.plank.compiler.CodegenContext
 import com.gabrielleeg1.plank.compiler.ExecContext
 import com.gabrielleeg1.plank.compiler.createUnit
+import com.gabrielleeg1.plank.grammar.message.lineSeparator
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.ir.Argument
 import org.plank.llvm4k.ir.Function
@@ -94,7 +95,7 @@ val DefaultIntrinsics = Intrinsics {
 
     val println by function(unit, i8.pointer()) {
       entry { (msg) ->
-        createCall(printf, createGlobalStringPtr("%s", "str"), msg)
+        createCall(printf, createGlobalStringPtr("%s$lineSeparator", "str"), msg)
         createRet(createUnit())
       }
     }

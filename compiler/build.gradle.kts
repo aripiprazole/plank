@@ -83,28 +83,6 @@ kotlin {
       }
     }
 
-    val jvmMain by getting {
-      dependencies {
-        compileOnly(libs.bytedeco.llvmplatform)
-        compileOnly(libs.llvm4j)
-        implementation(libs.kt.reflect)
-        implementation(projects.grammar)
-        implementation(projects.shared)
-        implementation(projects.analyzer)
-      }
-    }
-    val jvmTest by getting {
-      dependencies {
-        implementation(libs.kt.reflect)
-        implementation(libs.bytedeco.llvmplatform)
-        implementation(libs.arrow.core)
-        implementation(libs.llvm4j)
-
-        implementation(libs.jupiter.api)
-        implementation(libs.jupiter.engine)
-      }
-    }
-
     val nativeMain by getting {
       dependencies {
         implementation(projects.grammar)

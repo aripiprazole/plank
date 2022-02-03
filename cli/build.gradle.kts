@@ -1,104 +1,110 @@
-@file:Suppress("UnstableApiUsage")
+import org.jetbrains.kotlin.gradle.testing.KotlinTaskTestRun
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.Properties
 
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
+val localProperties: Properties = rootProject.file("local.properties").let { file ->
+  val properties = Properties()
 
-plugins {
-  java
-  distribution
+  if (file.exists()) {
+    properties.load(file.inputStream())
+  }
+
+  properties
+}
+
+fun locateLlvmConfig(): File {
+  return System.getenv("PATH").split(File.pathSeparatorChar)
+    .map { path ->
+      if (path.startsWith("'") || path.startsWith("\"")) {
+        path.substring(1, path.length - 1)
+      } else {
+        path
+      }
+    }
+    .map(Paths::get)
+    .firstOrNull { path -> Files.exists(path.resolve("llvm-config")) }
+    ?.resolve("llvm-config")
+    ?.toFile()
+    ?: error("No suitable version of LLVM was found.")
+}
+
+val llvmConfig = localProperties.getProperty("llvm.config")?.let(::File)
+  ?: System.getenv("LLVM4K_CONFIG")?.let(::File)
+  ?: locateLlvmConfig()
+
+fun cmd(vararg args: String): String {
+  val command = "${llvmConfig.absolutePath} ${args.joinToString(" ")}"
+  val process = Runtime.getRuntime().exec(command)
+  val output = process.inputStream.bufferedReader().readText()
+
+  val exitCode = process.waitFor()
+  if (exitCode != 0) {
+    error("Command `$command` failed with status code: $exitCode")
+  }
+
+  return output.replace("\n", "")
+}
+
+fun String.absolutePath(): String {
+  return Paths.get(this).toAbsolutePath().toString().replace("\n", "")
 }
 
 kotlin {
-  sourceSets {
-    val commonMain by getting
-    val commonTest by getting
+  val linuxX64 = linuxX64("linuxX64")
+  val mingwX64 = mingwX64("mingwX64")
 
-    val jvmMain by getting {
+  configure(listOf(linuxX64, mingwX64)) {
+    val test: KotlinTaskTestRun<*, *> by testRuns
+
+    test.executionTask.configure {
+      testLogging.showStandardStreams = true
+    }
+
+    binaries {
+      executable("plank") {
+        linkerOpts.addAll(cmd("--ldflags").split(" ").filter { it.isNotBlank() })
+        linkerOpts.addAll(cmd("--system-libs").split(" ").filter { it.isNotBlank() })
+        linkerOpts.addAll(cmd("--libs").split(" ").filter { it.isNotBlank() })
+        entryPoint = "com.gabrielleeg1.plank.cli.main"
+      }
+    }
+  }
+
+  sourceSets {
+    val commonMain by getting {
       dependencies {
-        implementation(kotlin("stdlib-common"))
-        implementation(libs.clikt)
-        implementation(libs.bytedeco.llvmplatform)
         implementation(libs.arrow.core)
-        implementation(libs.llvm4j)
+      }
+    }
+    val commonTest by getting {
+      dependencies {
+        implementation(libs.kt.test.common)
+        implementation(libs.kt.test.annotations.common)
+      }
+    }
+
+    val nativeMain by getting {
+      dependencies {
         implementation(projects.grammar)
-        implementation(projects.compiler)
         implementation(projects.shared)
         implementation(projects.analyzer)
+        implementation(projects.compiler)
+        implementation(libs.clikt)
+        implementation(libs.llvm4k.common)
       }
     }
-  }
-}
 
-val jvmMain: KotlinJvmCompilation = kotlin.jvm().compilations.getByName("main")
-val arch: String = System.getProperty("os.arch")
-val hostOs: String = System.getProperty("os.name")
-val isMingwX64: Boolean = hostOs.startsWith("Windows")
-
-fun CopySpec.excludeOsArch(
-  os: String,
-  vararg architectures: String,
-  target: String = os.toLowerCase()
-) {
-  if (!hostOs.startsWith(os)) {
-    architectures.forEach {
-      if (arch != it) {
-        exclude("*-$target-$it.jar")
+    val linuxX64Main by getting {
+      dependencies {
+        implementation(libs.llvm4k.linuxX64)
       }
     }
-  }
-}
 
-fun CopySpec.includeLlvm() {
-  excludeOsArch("macosx", "x86_64", "arm64")
-  excludeOsArch("macosx", "arm64", "x86_64", target = "ios")
-
-  excludeOsArch("Linux", "armhf", "arm64", "ppc64le", "x86", "x86_64")
-
-  excludeOsArch("Windows", "x86", "x86_64")
-}
-
-distributions {
-  main {
-    distributionBaseName.set("plank")
-
-    contents {
-      from(rootProject.file("README.md"))
-
-      from(rootProject.file("LICENSE.txt")) {
-        into("licenses")
-      }
-
-      from(rootProject.file("licenses/third_party")) {
-        into("licenses/third_party")
-      }
-
-      from(rootProject.file("stdlib")) {
-        into("stdlib")
-      }
-
-      from(rootProject.file("runtime")) {
-        into("runtime")
-      }
-
-      from(rootProject.file("bin")) {
-        into("bin")
-      }
-
-      from(tasks.jar) {
-        into("libs")
-      }
-
-      from(jvmMain.runtimeDependencyFiles) {
-        includeLlvm()
-
-        into("libs")
+    val mingwX64Main by getting {
+      dependencies {
+        implementation(libs.llvm4k.mingwX64)
       }
     }
-  }
-}
-
-tasks.jar {
-  from(jvmMain.output)
-  manifest {
-    attributes["Main-Class"] = "com.gabrielleeg1.plank.cli.MainKt"
   }
 }
