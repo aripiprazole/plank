@@ -4,7 +4,7 @@ import com.gabrielleeg1.plank.analyzer.element.TypedInstanceExpr
 import com.gabrielleeg1.plank.compiler.CodegenContext
 import com.gabrielleeg1.plank.compiler.CodegenInstruction
 import com.gabrielleeg1.plank.compiler.codegenError
-import com.gabrielleeg1.plank.compiler.getInstance
+import com.gabrielleeg1.plank.compiler.instantiate
 import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Value
 
@@ -22,7 +22,7 @@ class InstanceInst(private val descriptor: TypedInstanceExpr, private val ref: B
       }
       .toTypedArray()
 
-    return getInstance(struct, *arguments, ref = this@InstanceInst.ref) { index, value ->
+    return instantiate(struct, *arguments, ref = this@InstanceInst.ref) { index, value ->
       "$value.${descriptor.type.properties.keys.elementAt(index).text}"
     }
   }

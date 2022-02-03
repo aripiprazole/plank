@@ -7,6 +7,7 @@ import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CodegenContext
 import com.gabrielleeg1.plank.compiler.ExecContext
 import com.gabrielleeg1.plank.compiler.alloca
+import com.gabrielleeg1.plank.compiler.castClosure
 import com.gabrielleeg1.plank.compiler.createScopeContext
 import com.gabrielleeg1.plank.compiler.mangleFunction
 import com.gabrielleeg1.plank.grammar.element.Identifier
@@ -66,7 +67,7 @@ class CurryFunctionInst(
               val func = acc.also { it.codegen() }.access()!!
               val type = returnType.unsafeCast<FunctionType>().typegen()
 
-              createRet(createLoad(createBitCast(func, type.pointer())))
+              createRet(castClosure(func, type))
             }
           }
           .also { it.codegen() }

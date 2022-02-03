@@ -6,8 +6,16 @@ import com.gabrielleeg1.plank.analyzer.element.TypedExpr
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
+import org.plank.llvm4k.ir.LoadInst
 import org.plank.llvm4k.ir.StructType
+import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
+
+fun CodegenContext.castClosure(closure: Value, type: Type): LoadInst {
+  type as StructType
+
+  return createLoad(createBitCast(closure, type.pointer()))
+}
 
 fun CodegenContext.createUnit(): Constant {
   return (UnitType.typegen() as StructType).getConstant(i8.getConstant(0))
@@ -23,7 +31,7 @@ fun CodegenContext.alloca(value: Value, name: String? = null): AllocaInst {
   return alloca
 }
 
-inline fun CodegenContext.getInstance(
+inline fun CodegenContext.instantiate(
   struct: StructType,
   vararg arguments: Value,
   ref: Boolean = false,

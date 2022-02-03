@@ -5,6 +5,7 @@ import com.gabrielleeg1.plank.analyzer.element.TypedCallExpr
 import com.gabrielleeg1.plank.compiler.CodegenContext
 import com.gabrielleeg1.plank.compiler.CodegenInstruction
 import com.gabrielleeg1.plank.compiler.alloca
+import com.gabrielleeg1.plank.compiler.castClosure
 import com.gabrielleeg1.plank.compiler.element.CurryFunctionInst
 import com.gabrielleeg1.plank.compiler.getField
 import org.plank.llvm4k.ir.Function
@@ -20,8 +21,7 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
 
       when {
         functionType != null && functionType.isNested -> {
-          createBitCast(expr.codegen(), type.parameters.values.elementAt(index).typegen().pointer())
-            .let(::createLoad)
+          castClosure(expr.codegen(), type.parameters.values.elementAt(index).typegen())
         }
         functionType != null && !functionType.isPartialApplied -> { // FIXME: access function with lazy
           val name = "_Zclosure.wrap.(${descriptor.callee.type})$$index"
@@ -41,8 +41,7 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
             )
           )
 
-          createBitCast(function, type.parameters.values.elementAt(index).typegen().pointer())
-            .let(::createLoad)
+          castClosure(function, type.parameters.values.elementAt(index).typegen())
         }
         else -> expr.codegen()
       }

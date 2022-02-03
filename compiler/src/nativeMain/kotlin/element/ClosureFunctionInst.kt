@@ -9,7 +9,7 @@ import com.gabrielleeg1.plank.compiler.alloca
 import com.gabrielleeg1.plank.compiler.codegenError
 import com.gabrielleeg1.plank.compiler.createScopeContext
 import com.gabrielleeg1.plank.compiler.getField
-import com.gabrielleeg1.plank.compiler.getInstance
+import com.gabrielleeg1.plank.compiler.instantiate
 import com.gabrielleeg1.plank.compiler.mangleFunction
 import com.gabrielleeg1.plank.grammar.element.Identifier
 import org.plank.llvm4k.ir.AllocaInst
@@ -88,8 +88,8 @@ class ClosureFunctionInst(
       .map { createLoad(it) }
       .toTypedArray()
 
-    val environment = getInstance(environmentType, *variables, ref = true)
-    val closure = getInstance(closureFunctionType, function, environment, ref = true)
+    val environment = instantiate(environmentType, *variables, ref = true)
+    val closure = instantiate(closureFunctionType, function, environment, ref = true)
 
     setSymbol(mangled, type, closure as AllocaInst)
 

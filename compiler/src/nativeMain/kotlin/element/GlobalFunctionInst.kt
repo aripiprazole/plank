@@ -3,6 +3,7 @@ package com.gabrielleeg1.plank.compiler.element
 import com.gabrielleeg1.plank.analyzer.element.ResolvedFunDecl
 import com.gabrielleeg1.plank.compiler.CodegenContext
 import com.gabrielleeg1.plank.compiler.alloca
+import com.gabrielleeg1.plank.compiler.castClosure
 import com.gabrielleeg1.plank.compiler.codegenError
 import com.gabrielleeg1.plank.compiler.mangleFunction
 import org.plank.llvm4k.ir.AllocaInst
@@ -37,7 +38,7 @@ class GlobalFunctionInst(
 
     positionAfter(entry)
 
-    createRet(createLoad(createBitCast(closure, closureReturnType.pointer())))
+    createRet(castClosure(closure, closureReturnType))
 
     if (!function.verify()) {
       codegenError("Invalid function `${function.name}`")
