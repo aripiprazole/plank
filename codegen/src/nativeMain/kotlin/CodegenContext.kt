@@ -7,6 +7,7 @@ import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedExpr
 import org.plank.codegen.element.AllocaValue
 import org.plank.codegen.element.FunctionInst
+import org.plank.codegen.element.LazyInst
 import org.plank.codegen.element.ValueInst
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.intrinsics.Intrinsics
@@ -42,15 +43,18 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun addFunction(function: FunctionInst): Value
   fun addStruct(name: String, type: PlankType, struct: StructType)
 
+  fun getSymbol(name: String): AllocaInst
   fun setSymbol(name: String, value: ValueInst)
   fun setSymbol(name: String, type: PlankType, variable: AllocaInst)
+  fun setSymbolLazy(name: String, type: PlankType, lazyValue: () -> Value) {
+    return setSymbol(name, LazyInst(type, name, lazyValue))
+  }
 
   fun findFunction(name: String): FunctionInst?
   fun findModule(name: String): ScopeContext?
   fun findStruct(name: String): StructType?
   fun findAlloca(name: String): AllocaInst?
   fun findIntrinsic(name: String): IntrinsicFunction?
-  fun findSymbol(name: String): AllocaInst
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
@@ -135,6 +139,12 @@ data class ScopeContext(
     structs[name] = type to struct
   }
 
+  override fun getSymbol(name: String): AllocaInst {
+    return findAlloca(name)
+      ?: findFunction(name)?.run { access() }
+      ?: codegenError("Unresolved symbol `$name`")
+  }
+
   override fun setSymbol(name: String, value: ValueInst) {
     value.codegen()
     symbols[name] = value
@@ -172,12 +182,6 @@ data class ScopeContext(
     return intrinsics[name]
       ?: enclosing?.findIntrinsic(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findIntrinsic(name) }
-  }
-
-  override fun findSymbol(name: String): AllocaInst {
-    return findAlloca(name)
-      ?: findFunction(name)?.run { access() }
-      ?: codegenError("Unresolved symbol `$name`")
   }
 
   override fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst? {

@@ -64,7 +64,7 @@ fun CodegenContext.findField(receiver: TypedExpr, name: Identifier): Value {
   }
 
   val instance = when (receiver) {
-    is TypedAccessExpr -> findSymbol(receiver.name.text)
+    is TypedAccessExpr -> getSymbol(receiver.name.text)
     else -> receiver.codegen()
   }
 

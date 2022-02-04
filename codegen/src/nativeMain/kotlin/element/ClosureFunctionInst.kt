@@ -25,7 +25,7 @@ class ClosureFunctionInst(
   private val descriptor: ResolvedFunDecl? = null,
 ) : FunctionInst {
   override fun CodegenContext.access(): AllocaInst {
-    return findSymbol(mangled)
+    return getSymbol(mangled)
   }
 
   override fun CodegenContext.codegen(): Value { // TODO: fix access of variables

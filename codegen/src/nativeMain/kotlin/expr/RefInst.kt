@@ -12,7 +12,7 @@ class RefInst(private val descriptor: TypedRefExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     return when (val expr = descriptor.expr) {
       is TypedInstanceExpr -> InstanceInst(expr, ref = true).codegen()
-      is TypedAccessExpr -> findSymbol(expr.name.text)
+      is TypedAccessExpr -> getSymbol(expr.name.text)
       else -> alloca(expr.codegen())
     }
   }
