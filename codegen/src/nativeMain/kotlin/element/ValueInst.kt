@@ -31,15 +31,18 @@ class LazyInst(
   private var getter: Function? = null
 
   override fun CodegenContext.access(): AllocaInst? {
+    val getter = getter ?: return null
+
     return lazyLocal(name) {
-      getter?.let { alloca(createCall(it), "global.lazy.$name") }
+      alloca(createCall(getter, name = "lazy.call.$name"), "lazy.$name")
     }
   }
 
   override fun CodegenContext.codegen(): Value {
     val type = type.typegen()
+    val name = "global.${path.text}.$name"
 
-    val struct = createNamedStruct("global.${path.text}.$name") {
+    val struct = createNamedStruct(name) {
       elements = listOf(type.pointer())
     }
 
@@ -50,7 +53,7 @@ class LazyInst(
     val insertionBlock = insertionBlock
 
     getter = currentModule
-      .addFunction("_Zget.global.${path.text}.$name", FunctionType(type))
+      .addFunction("_Zget.$name", FunctionType(type))
       .apply {
         positionAfter(createBasicBlock("entry").also(::appendBasicBlock))
 
@@ -59,7 +62,9 @@ class LazyInst(
         createIf(
           this@LazyInst.type,
           createIsNull(createLoad(field)),
-          { listOf(createStore(alloca(lazyValue()), field)) },
+          {
+            listOf(createStore(alloca(lazyValue()), field))
+          },
         )
 
         createRet(createLoad(createLoad(getField(variable, 0))))
