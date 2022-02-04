@@ -29,7 +29,12 @@ data class Package(
     builder: CompileOptions.() -> Unit = {},
   ) : this(text, includeStd, CompileOptions(home).apply(builder))
 
-  constructor(text: String, includeStd: Boolean, options: CompileOptions, path: String = "") : this(
+  constructor(
+    text: String,
+    includeStd: Boolean,
+    options: CompileOptions,
+    path: String = "anonymous",
+  ) : this(
     name = "Anonymous",
     kind = Kind.Binary,
     options = options,
