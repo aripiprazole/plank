@@ -58,7 +58,7 @@ fun dumpTree(
           "$childrenPrefix│   ",
           "List[$itemType]",
           true
-        ) // todo use other dumper for list
+        )
       }
       is PlankElement -> {
         val typeName = value::class.simpleName!!

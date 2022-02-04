@@ -10,7 +10,7 @@ import org.plank.llvm4k.ir.Value
 
 class InstanceInst(private val descriptor: TypedInstanceExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    val struct = descriptor.type.typegen() as StructType // TODO: handle non-struct types
+    val struct = descriptor.type.typegen() as StructType
 
     val arguments = descriptor.type.properties
       .map { (name, property) ->
