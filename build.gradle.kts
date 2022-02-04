@@ -3,6 +3,7 @@
 import io.gitlab.arturbosch.detekt.DetektPlugin
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.KtlintPlugin
@@ -64,20 +65,6 @@ subprojects {
   }
 
   configure<KotlinMultiplatformExtension> {
-    val hostOs: String = System.getProperty("os.name")
-    val isMingwX64: Boolean = hostOs.startsWith("Windows")
-
-    jvm {
-      compilations.all {
-        kotlinOptions.jvmTarget = "11"
-      }
-
-      testRuns["test"].executionTask.configure {
-        useJUnitPlatform()
-        testLogging.showStandardStreams = true
-      }
-    }
-
     linuxX64("linuxX64")
     mingwX64("mingwX64")
 
@@ -117,12 +104,26 @@ subprojects {
 
   afterEvaluate {
     val kotlin: KotlinMultiplatformExtension by extensions
+
     val compilation = kotlin.targets["metadata"].compilations["nativeMain"]
 
     compilation.compileKotlinTask.doFirst {
       compilation.compileDependencyFiles = compilation.compileDependencyFiles
         .filterNot { it.absolutePath.endsWith("klib/common/stdlib") }
         .let { files(it) }
+    }
+
+    kotlin.targets.findByName("jvm")?.apply {
+      this as KotlinJvmTarget
+
+      compilations.all {
+        kotlinOptions.jvmTarget = "11"
+      }
+
+      testRuns["test"].executionTask.configure {
+        useJUnitPlatform()
+        testLogging.showStandardStreams = true
+      }
     }
   }
 }

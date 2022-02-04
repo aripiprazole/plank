@@ -1,8 +1,9 @@
 kotlin {
+  jvm()
+
   sourceSets {
     val commonMain by getting {
       dependencies {
-        implementation(kotlin("stdlib-common"))
         api(libs.binom.file)
       }
     }

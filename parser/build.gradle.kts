@@ -2,6 +2,8 @@ import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 kotlin {
+  jvm()
+
   sourceSets {
     val commonAntlr by creating {
       dependencies {

@@ -1,19 +1,11 @@
 kotlin {
+  jvm()
+
   sourceSets {
     val commonMain by getting {
       dependencies {
-        implementation(kotlin("stdlib-common"))
         implementation(projects.syntax)
         implementation(projects.shared)
-      }
-    }
-
-    val commonTest by getting {
-      dependencies {
-        implementation(libs.arrow.core)
-        implementation(kotlin("stdlib-common"))
-        implementation(kotlin("test-common"))
-        implementation(kotlin("test-annotations-common"))
       }
     }
 
