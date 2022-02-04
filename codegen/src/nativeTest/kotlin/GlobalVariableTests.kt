@@ -94,4 +94,26 @@ class GlobalVariableTests {
         expectSuccess()
       }
   }
+
+  @Test
+  fun `test create and call global variable`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        let x = println;
+
+        fun main(argc: Int32, argv: **Char): Void {
+          x("hello");
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
 }
