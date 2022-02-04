@@ -20,7 +20,6 @@ import org.plank.llvm4k.OptimizationLevel
 import org.plank.syntax.message.SimpleCompilerLogger
 import pw.binom.io.file.File
 import pw.binom.io.file.isExist
-import pw.binom.io.file.readText
 import kotlin.system.exitProcess
 
 /**
@@ -53,7 +52,7 @@ class PlankJIT : CliktCommand(
   private val arguments by argument(help = "Program arguments").multiple()
 
   override fun run() {
-    val pkg = Package(file.readText(), workingDir, false) {
+    val pkg = Package(file, workingDir, false) {
       logger = SimpleCompilerLogger(
         debug = this@PlankJIT.debug || printLlvmModule,
         verbose = this@PlankJIT.verbose,
