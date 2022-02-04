@@ -17,7 +17,9 @@ class LetInst(private val descriptor: ResolvedLetDecl) : CodegenInstruction {
 
         val value = descriptor.value.codegen()
 
-        return createStore(value, variable)
+        println("$variable = $value")
+
+        createStore(value, variable)
       }
       false -> {
         setSymbolLazy(descriptor.name.text, descriptor.type) {

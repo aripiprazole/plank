@@ -8,7 +8,7 @@ import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.element.CurryFunctionInst
 import org.plank.codegen.getField
-import org.plank.llvm4k.ir.Function
+import org.plank.codegen.unsafeFunction
 import org.plank.llvm4k.ir.PointerType
 import org.plank.llvm4k.ir.Value
 
@@ -64,7 +64,7 @@ fun CodegenContext.callClosure(value: Value, vararg arguments: Value, name: Stri
 
   val function = getField(closure, 0, if (name != null) "${prefix}fn" else null)
     .let(::createLoad)
-    .let { Function(it.ref) }
+    .let(::unsafeFunction)
 
   val environment = getField(closure, 1, if (name != null) "${prefix}env" else null)
     .let(::createLoad)

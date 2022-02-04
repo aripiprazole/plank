@@ -78,21 +78,16 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(libs.arrow.core)
+        implementation(libs.llvm4k.common)
+        implementation(projects.syntax)
+        implementation(projects.shared)
+        implementation(projects.analyzer)
       }
     }
     val commonTest by getting {
       dependencies {
         implementation(libs.kt.test.common)
         implementation(libs.kt.test.annotations.common)
-      }
-    }
-
-    val nativeMain by getting {
-      dependencies {
-        implementation(projects.syntax)
-        implementation(projects.shared)
-        implementation(projects.analyzer)
-        implementation(libs.llvm4k.common)
       }
     }
 

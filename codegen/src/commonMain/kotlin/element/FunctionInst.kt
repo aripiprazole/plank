@@ -8,7 +8,7 @@ import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
 import org.plank.codegen.createUnit
-import org.plank.llvm4k.ir.AllocaInst
+import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.Argument
 import org.plank.syntax.element.Identifier
 
@@ -40,7 +40,7 @@ fun ExecContext.generateParameter(parameters: Map<Identifier, PlankType>) =
     arguments[name.text] = argument
 
     if (type.isNested) {
-      setSymbol(name.text, type, AllocaInst(argument.ref))
+      setSymbol(name.text, type, unsafeAlloca(argument))
     } else {
       setSymbol(name.text, type, alloca(argument, "parameter.${name.text}"))
     }

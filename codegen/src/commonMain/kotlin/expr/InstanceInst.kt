@@ -25,6 +25,6 @@ class InstanceInst(private val descriptor: TypedInstanceExpr) : CodegenInstructi
       "$value.${descriptor.type.properties.keys.elementAt(index).text}"
     }
 
-    return instance
+    return createLoad(instance)
   }
 }

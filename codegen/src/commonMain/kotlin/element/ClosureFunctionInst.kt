@@ -97,7 +97,7 @@ class ClosureFunctionInst(
         createStore(value, field)
       }
 
-      AllocaInst(instance.ref)
+      instance
     }
     val closure = instantiate(closureFunctionType, function, environment)
 

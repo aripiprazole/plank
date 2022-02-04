@@ -85,7 +85,10 @@ subprojects {
       val commonMain by getting
       val commonTest by getting {
         dependencies {
-          implementation(kotlin("test"))
+          afterEvaluate {
+            implementation(libs.kt.test.common)
+            implementation(libs.kt.test.annotations.common)
+          }
         }
       }
 
