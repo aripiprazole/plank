@@ -1,4 +1,4 @@
-package org.plank.codegen.pkg
+package org.plank.codegen
 
 class DebugOptions {
   var treeDebug = false

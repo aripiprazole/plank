@@ -1,5 +1,6 @@
 package org.plank.codegen.pkg
 
+import org.plank.codegen.DebugOptions
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.message.SimpleCompilerLogger
@@ -26,7 +27,6 @@ data class CompileOptions(val plankHome: File) {
       .map { PlankFile.of(it) }
   }
 
-  /** TODO: remove ffi from stdlib */
   var runtime = plankHome.child("runtime")
 
   fun debug(block: DebugOptions.() -> Unit) {

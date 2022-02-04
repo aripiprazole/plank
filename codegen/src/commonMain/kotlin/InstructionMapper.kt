@@ -103,7 +103,7 @@ interface InstructionMapper :
     }
 
     override fun visitViolatedExpr(expr: TypedErrorExpr): CodegenInstruction {
-      TODO("Not yet implemented")
+      error("Cant generate violated expr")
     }
 
     override fun visitExprStmt(stmt: ResolvedExprStmt): CodegenInstruction {
@@ -139,11 +139,11 @@ interface InstructionMapper :
     }
 
     override fun visitViolatedStmt(stmt: ResolvedErrorStmt): CodegenInstruction {
-      TODO("Not yet implemented")
+      error("Cant generate violated stmt")
     }
 
     override fun visitViolatedDecl(stmt: ResolvedErrorDecl): CodegenInstruction {
-      TODO("Not yet implemented")
+      error("Cant generate violated decl")
     }
   }
 }

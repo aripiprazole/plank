@@ -28,7 +28,7 @@ import kotlin.contracts.contract
 sealed interface CodegenContext : Context, IRBuilder {
   val scope: String
   val file: ResolvedPlankFile
-  val debug: Boolean // TODO: add more debug options
+  val debug: DebugOptions
   val currentModule: Module
   val mapper: InstructionMapper
   val location: Location
@@ -97,7 +97,7 @@ class DescriptorContext(
 data class ScopeContext(
   private val llvm: Context,
   override val file: ResolvedPlankFile,
-  override val debug: Boolean = true,
+  override val debug: DebugOptions,
   private val intrinsics: MutableMap<String, IntrinsicFunction> = linkedMapOf(),
   override val scope: String = file.module.text,
   override val currentModule: Module = llvm.createModule(file.module.text),

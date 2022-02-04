@@ -3,6 +3,7 @@ package org.plank.codegen.pkg
 import org.plank.analyzer.FileScope
 import org.plank.analyzer.ModuleTree
 import org.plank.analyzer.element.ResolvedPlankFile
+import org.plank.codegen.DebugOptions
 import org.plank.codegen.Entrypoint
 import org.plank.codegen.ScopeContext
 import org.plank.codegen.createFileContext
@@ -33,7 +34,7 @@ fun compile(
   }
 
   val llvm = Context()
-  val context = ScopeContext(llvm, main, debug.compilationDebug).copy(scope = "Global").apply {
+  val context = ScopeContext(llvm, main, debug).copy(scope = "Global").apply {
     addIntrinsics(intrinsics)
   }
 

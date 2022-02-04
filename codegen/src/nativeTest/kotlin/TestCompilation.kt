@@ -6,7 +6,6 @@ import org.plank.analyzer.BindingViolation
 import org.plank.codegen.pkg.AnalyzerError
 import org.plank.codegen.pkg.Command
 import org.plank.codegen.pkg.CommandFailedException
-import org.plank.codegen.pkg.DebugOptions
 import org.plank.codegen.pkg.Package
 import org.plank.codegen.pkg.SyntaxError
 import org.plank.codegen.pkg.child
