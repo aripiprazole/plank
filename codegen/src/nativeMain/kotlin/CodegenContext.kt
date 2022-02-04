@@ -44,9 +44,13 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun addStruct(name: String, type: PlankType, struct: StructType)
 
   fun getSymbol(name: String): AllocaInst
-  fun setSymbol(name: String, value: ValueInst)
-  fun setSymbol(name: String, type: PlankType, variable: AllocaInst)
-  fun setSymbolLazy(name: String, type: PlankType, lazyValue: () -> Value) {
+  fun setSymbol(name: String, value: ValueInst): Value
+
+  fun setSymbol(name: String, type: PlankType, variable: AllocaInst): Value {
+    return setSymbol(name, AllocaValue(type, variable))
+  }
+
+  fun setSymbolLazy(name: String, type: PlankType, lazyValue: CodegenContext.() -> Value): Value {
     return setSymbol(name, LazyInst(type, name, lazyValue))
   }
 
@@ -145,13 +149,9 @@ data class ScopeContext(
       ?: codegenError("Unresolved symbol `$name`")
   }
 
-  override fun setSymbol(name: String, value: ValueInst) {
-    value.codegen()
+  override fun setSymbol(name: String, value: ValueInst): Value {
     symbols[name] = value
-  }
-
-  override fun setSymbol(name: String, type: PlankType, variable: AllocaInst) {
-    symbols[name] = AllocaValue(type, variable)
+    return value.codegen()
   }
 
   override fun findFunction(name: String): FunctionInst? {

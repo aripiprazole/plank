@@ -23,8 +23,11 @@ class AllocaValue(override val type: PlankType, private val inst: AllocaInst) : 
   override fun CodegenContext.codegen(): Value = inst
 }
 
-class LazyInst(override val type: PlankType, val name: String, val lazyValue: () -> Value) :
-  ValueInst {
+class LazyInst(
+  override val type: PlankType,
+  val name: String,
+  val lazyValue: CodegenContext.() -> Value,
+) : ValueInst {
   private var getter: Function? = null
 
   override fun CodegenContext.access(): AllocaInst? {
