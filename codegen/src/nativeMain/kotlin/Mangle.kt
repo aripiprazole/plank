@@ -1,9 +1,22 @@
 package org.plank.codegen
 
 import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.QualifiedPath
 
-fun CodegenContext.mangleFunction(function: ResolvedFunDecl): String {
+fun CodegenContext.mangle(path: ResolvedFunDecl): String {
+  return mangle(path.name)
+}
+
+fun CodegenContext.mangle(path: String): String {
+  return mangle(Identifier(path))
+}
+
+fun CodegenContext.mangle(path: Identifier): String {
+  return mangle(QualifiedPath(path))
+}
+
+fun CodegenContext.mangle(path: QualifiedPath): String {
   val module = QualifiedPath(scope)
 
   return buildString {
@@ -12,7 +25,9 @@ fun CodegenContext.mangleFunction(function: ResolvedFunDecl): String {
       append(name.length)
       append(name)
     }
-    append(function.name.text.length)
-    append(function.name.text)
+    path.fullPath.reversed().forEach { (name) ->
+      append(name.length)
+      append(name)
+    }
   }
 }

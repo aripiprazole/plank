@@ -10,7 +10,7 @@ import org.plank.codegen.codegenError
 import org.plank.codegen.createScopeContext
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
-import org.plank.codegen.mangleFunction
+import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
@@ -101,7 +101,7 @@ fun CodegenContext.addIrClosure(descriptor: ResolvedFunDecl, generate: GenerateB
   addFunction(
     ClosureFunctionInst(
       name = descriptor.name.text,
-      mangled = mangleFunction(descriptor),
+      mangled = mangle(descriptor),
       type = descriptor.type,
       references = descriptor.references,
       parameters = descriptor.realParameters,

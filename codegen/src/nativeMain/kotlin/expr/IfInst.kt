@@ -55,7 +55,7 @@ fun CodegenContext.createIf(
   val thenRet: Value?
   val elseRet: Value?
 
-  createScopeContext("then") {
+  createScopeContext(scope) {
     positionAfter(thenBranch) // emit then
 
     thenRet = thenStmts().lastOrNull()
@@ -66,7 +66,7 @@ fun CodegenContext.createIf(
     createBr(mergeBranch)
   }
 
-  createScopeContext("else") {
+  createScopeContext(scope) {
     positionAfter(elseBranch.also(currentFunction::appendBasicBlock)) // emit else
 
     elseRet = elseStmts().lastOrNull()

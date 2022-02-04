@@ -3,6 +3,7 @@ package org.plank.codegen.intrinsics
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
 import org.plank.codegen.createUnit
+import org.plank.codegen.mangle
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.ir.Argument
 import org.plank.llvm4k.ir.Function
@@ -95,14 +96,14 @@ val DefaultIntrinsics = Intrinsics {
 
     val println by function(unit, i8.pointer()) {
       entry { (msg) ->
-        createCall(printf, createGlobalStringPtr("%s$lineSeparator", "str"), msg)
+        createCall(printf, createGlobalStringPtr("%s$lineSeparator", mangle("println.str")), msg)
         createRet(createUnit())
       }
     }
 
     val print by function(unit, i8.pointer()) {
       entry { (msg) ->
-        createCall(printf, createGlobalStringPtr("%s", "str"), msg)
+        createCall(printf, createGlobalStringPtr("%s", mangle("print.str")), msg)
         createRet(createUnit())
       }
     }

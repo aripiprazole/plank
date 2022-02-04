@@ -6,7 +6,7 @@ import org.plank.codegen.CodegenContext
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.codegenError
-import org.plank.codegen.mangleFunction
+import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
@@ -58,5 +58,5 @@ class GlobalFunctionInst(
 }
 
 fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
-  return addFunction(GlobalFunctionInst(descriptor, mangleFunction(descriptor), generate))
+  return addFunction(GlobalFunctionInst(descriptor, mangle(descriptor), generate))
 }

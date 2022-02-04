@@ -6,6 +6,7 @@ import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.expr.createIf
 import org.plank.codegen.getField
+import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
@@ -40,7 +41,7 @@ class LazyInst(
 
   override fun CodegenContext.codegen(): Value {
     val type = type.typegen()
-    val name = "global.${path.text}.$name"
+    val name = mangle(name)
 
     val struct = createNamedStruct(name) {
       elements = listOf(type.pointer())
@@ -53,7 +54,7 @@ class LazyInst(
     val insertionBlock = insertionBlock
 
     getter = currentModule
-      .addFunction("_Zget.$name", FunctionType(type))
+      .addFunction("_ZGet.$name", FunctionType(type))
       .apply {
         positionAfter(createBasicBlock("entry").also(::appendBasicBlock))
 

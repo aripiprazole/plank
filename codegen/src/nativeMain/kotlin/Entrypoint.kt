@@ -12,7 +12,7 @@ class Entrypoint : CodegenInstruction {
       .find { it.name.text == "main" }
 
     if (descriptor != null) {
-      val main = currentModule.getFunction(mangleFunction(descriptor))
+      val main = currentModule.getFunction(mangle(descriptor))
         ?: codegenError("Unable to find main function")
 
       val function = FunctionType(i32, i32, i8.pointer().pointer()).let {

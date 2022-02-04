@@ -9,7 +9,7 @@ import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.createScopeContext
-import org.plank.codegen.mangleFunction
+import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
@@ -99,7 +99,7 @@ fun CodegenContext.addCurryFunction(
     nested = nested,
     references = descriptor.references,
     name = descriptor.name.text,
-    mangled = mangleFunction(descriptor),
+    mangled = mangle(descriptor),
     returnType = descriptor.type.actualReturnType,
     realParameters = descriptor.realParameters,
     generate = generate,

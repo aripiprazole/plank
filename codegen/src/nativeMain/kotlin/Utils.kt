@@ -1,6 +1,5 @@
 package org.plank.codegen
 
-import org.plank.analyzer.UnitType
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedExpr
 import org.plank.llvm4k.ir.AllocaInst
@@ -18,7 +17,7 @@ fun CodegenContext.castClosure(closure: Value, type: Type): LoadInst {
 }
 
 fun CodegenContext.createUnit(): Constant {
-  return (UnitType.typegen() as StructType).getConstant(i8.getConstant(0))
+  return unit.getConstant(i8.getConstant(0))
 }
 
 fun CodegenContext.getOrCreateStruct(name: String, builder: StructType.() -> Unit): StructType {
