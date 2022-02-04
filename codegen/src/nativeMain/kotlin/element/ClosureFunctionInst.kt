@@ -88,10 +88,20 @@ class ClosureFunctionInst(
       .map { createLoad(it) }
       .toTypedArray()
 
-    val environment = instantiate(environmentType, *variables, ref = true)
-    val closure = instantiate(closureFunctionType, function, environment, ref = true)
+    val environment = run {
+      val instance = createMalloc(environmentType, name = name)
 
-    setSymbol(mangled, type, closure as AllocaInst)
+      variables.forEachIndexed { idx, value ->
+        val field = getField(instance, idx)
+
+        createStore(value, field)
+      }
+
+      AllocaInst(instance.ref)
+    }
+    val closure = instantiate(closureFunctionType, function, environment)
+
+    setSymbol(mangled, type, closure)
 
     return closure
   }

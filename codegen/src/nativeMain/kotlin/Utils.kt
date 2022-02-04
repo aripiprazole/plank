@@ -33,10 +33,9 @@ fun CodegenContext.alloca(value: Value, name: String? = null): AllocaInst {
 inline fun CodegenContext.instantiate(
   struct: StructType,
   vararg arguments: Value,
-  ref: Boolean = false,
   name: String? = null,
-  generateGEPName: (Int, String) -> String? = { _, _ -> null }
-): Value {
+  generateGEPName: (Int, String) -> String? = { _, _ -> null },
+): AllocaInst {
   val instance = createAlloca(struct, name = name)
 
   arguments.forEachIndexed { idx, value ->
@@ -45,11 +44,7 @@ inline fun CodegenContext.instantiate(
     createStore(value, field)
   }
 
-  return if (ref) {
-    instance
-  } else {
-    createLoad(instance, if (name == null) null else "load.$name")
-  }
+  return instance
 }
 
 fun CodegenContext.getField(value: Value, idx: Int, name: String? = null): Value {

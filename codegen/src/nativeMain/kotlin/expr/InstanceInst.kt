@@ -22,8 +22,14 @@ class InstanceInst(private val descriptor: TypedInstanceExpr, private val ref: B
       }
       .toTypedArray()
 
-    return instantiate(struct, *arguments, ref = this@InstanceInst.ref) { index, value ->
+    val instance = instantiate(struct, *arguments) { index, value ->
       "$value.${descriptor.type.properties.keys.elementAt(index).text}"
+    }
+
+    return if (this@InstanceInst.ref) {
+      instance
+    } else {
+      createLoad(instance)
     }
   }
 }
