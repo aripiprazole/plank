@@ -5,7 +5,9 @@ import org.plank.analyzer.element.ResolvedPlankElement
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedExpr
+import org.plank.codegen.element.AllocaValue
 import org.plank.codegen.element.FunctionInst
+import org.plank.codegen.element.ValueInst
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.intrinsics.Intrinsics
 import org.plank.llvm4k.Context
@@ -40,6 +42,7 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun addFunction(function: FunctionInst): Value
   fun addStruct(name: String, type: PlankType, struct: StructType)
 
+  fun setSymbol(name: String, value: ValueInst)
   fun setSymbol(name: String, type: PlankType, variable: AllocaInst)
 
   fun findFunction(name: String): FunctionInst?
@@ -51,7 +54,7 @@ sealed interface CodegenContext : Context, IRBuilder {
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
-  fun FunctionInst.access(): AllocaInst? = with(this@CodegenContext) { access() }
+  fun ValueInst.access(): AllocaInst? = with(this@CodegenContext) { access() }
 
   fun PlankType.typegen(): Type = typegen(this)
   fun Collection<PlankType>.typegen(): List<Type> = map { it.typegen() }
@@ -103,7 +106,7 @@ data class ScopeContext(
   }
 
   private val functions = mutableMapOf<String, FunctionInst>()
-  private val symbols = mutableMapOf<String, Pair<PlankType, AllocaInst>>()
+  private val symbols = mutableMapOf<String, ValueInst>()
   private val structs = mutableMapOf<String, Pair<PlankType, StructType>>()
   private val lazy = mutableMapOf<String, AllocaInst>()
 
@@ -132,8 +135,13 @@ data class ScopeContext(
     structs[name] = type to struct
   }
 
+  override fun setSymbol(name: String, value: ValueInst) {
+    value.codegen()
+    symbols[name] = value
+  }
+
   override fun setSymbol(name: String, type: PlankType, variable: AllocaInst) {
-    symbols[name] = type to variable
+    symbols[name] = AllocaValue(type, variable)
   }
 
   override fun findFunction(name: String): FunctionInst? {
@@ -155,7 +163,7 @@ data class ScopeContext(
   }
 
   override fun findAlloca(name: String): AllocaInst? {
-    return symbols[name]?.second
+    return symbols[name]?.access()
       ?: enclosing?.findAlloca(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findAlloca(name) }
   }

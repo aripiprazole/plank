@@ -1,5 +1,6 @@
 package org.plank.codegen.element
 
+import org.plank.analyzer.PlankType
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.alloca
@@ -16,6 +17,8 @@ class GlobalFunctionInst(
   private val generate: GenerateBody,
   override val name: String = descriptor.name.text,
 ) : FunctionInst {
+  override val type: PlankType = descriptor.type
+
   override fun CodegenContext.access(): AllocaInst? {
     return lazyLocal(name) {
       currentModule.getFunction(mangled)?.let {

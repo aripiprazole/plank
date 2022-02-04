@@ -4,8 +4,6 @@ import org.plank.analyzer.PlankType
 import org.plank.analyzer.UnitType
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.element.ResolvedReturnStmt
-import org.plank.codegen.CodegenContext
-import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
@@ -16,10 +14,8 @@ import org.plank.syntax.element.Identifier
 
 typealias GenerateBody = ExecContext.() -> Unit
 
-sealed interface FunctionInst : CodegenInstruction {
+sealed interface FunctionInst : ValueInst {
   val name: String
-
-  fun CodegenContext.access(): AllocaInst?
 }
 
 class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecContext) -> Unit {

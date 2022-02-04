@@ -80,6 +80,7 @@ data class ResolvedLetDecl(
   val name: Identifier,
   val mutable: Boolean,
   val value: TypedExpr,
+  val isNested: Boolean,
   override val type: PlankType,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {

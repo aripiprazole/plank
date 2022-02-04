@@ -15,7 +15,7 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 class CurryFunctionInst(
-  private val type: FunctionType,
+  override val type: FunctionType,
   private val nested: Boolean,
   private val references: Map<Identifier, PlankType>,
   override val name: String,

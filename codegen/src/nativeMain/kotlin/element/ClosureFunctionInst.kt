@@ -16,7 +16,7 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 class ClosureFunctionInst(
-  private val type: FunctionType,
+  override val type: FunctionType,
   override val name: String,
   private val mangled: String,
   private val references: Map<Identifier, PlankType>,

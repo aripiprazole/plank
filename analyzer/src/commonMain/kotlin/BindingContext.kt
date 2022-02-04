@@ -468,11 +468,12 @@ internal class BindingContext(tree: ModuleTree) :
     val name = decl.name
     val mutable = decl.mutable
     val value = visit(decl.value)
+    val isNested = !currentScope.isTopLevelScope
 
     currentScope.declare(name, value, mutable)
 
     // TODO: use explicit type to infer with [bindings]
-    return ResolvedLetDecl(name, mutable, value, value.type, decl.location)
+    return ResolvedLetDecl(name, mutable, value, isNested, value.type, decl.location)
   }
 
   override fun visitErrorDecl(decl: ErrorDecl): ResolvedStmt {
