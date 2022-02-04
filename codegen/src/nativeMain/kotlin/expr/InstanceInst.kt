@@ -8,8 +8,7 @@ import org.plank.codegen.instantiate
 import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Value
 
-class InstanceInst(private val descriptor: TypedInstanceExpr, private val ref: Boolean = false) :
-  CodegenInstruction {
+class InstanceInst(private val descriptor: TypedInstanceExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     val struct = descriptor.type.typegen() as StructType // TODO: handle non-struct types
 
@@ -26,10 +25,6 @@ class InstanceInst(private val descriptor: TypedInstanceExpr, private val ref: B
       "$value.${descriptor.type.properties.keys.elementAt(index).text}"
     }
 
-    return if (this@InstanceInst.ref) {
-      instance
-    } else {
-      createLoad(instance)
-    }
+    return instance
   }
 }
