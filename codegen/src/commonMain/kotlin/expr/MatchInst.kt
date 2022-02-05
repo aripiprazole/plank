@@ -16,6 +16,7 @@ import org.plank.llvm4k.ir.Value
 class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     val enum = descriptor.subject.type.unsafeCast<EnumType>()
+    val type = descriptor.type.typegen()
     val patterns = descriptor.patterns.entries.toList()
 
     val lastPattern = patterns.elementAt(patterns.size - 1)
@@ -27,13 +28,14 @@ class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
       .drop(1)
       .foldIndexed(
         fun(): Value = createIf(
-          descriptor.type.typegen(),
+          type,
           checkPattern(enum, subject, lastPattern.key, patterns.size - 1),
           { lastPattern.value.codegen() },
+          { createLoad(createAlloca(type)) }
         )
       ) { index, acc, (pattern, expr) ->
         fun(): Value = createIf(
-          descriptor.type.typegen(),
+          type,
           checkPattern(enum, subject, pattern, index),
           { expr.codegen() },
           { acc.invoke() }
