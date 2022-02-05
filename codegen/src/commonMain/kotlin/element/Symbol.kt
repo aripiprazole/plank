@@ -11,6 +11,7 @@ import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
+import org.plank.syntax.element.Identifier
 
 sealed interface Symbol : CodegenInstruction {
   val type: PlankType
@@ -54,7 +55,7 @@ class LazySymbol(
     val insertionBlock = insertionBlock
 
     getter = currentModule
-      .addFunction("_ZGet.$name", FunctionType(type))
+      .addFunction(mangle(Identifier(this@LazySymbol.name), Identifier("Get")), FunctionType(type))
       .apply {
         positionAfter(createBasicBlock("entry").also(::appendBasicBlock))
 
