@@ -17,8 +17,6 @@ class LetInst(private val descriptor: ResolvedLetDecl) : CodegenInstruction {
 
         val value = descriptor.value.codegen()
 
-        println("$variable = $value")
-
         createStore(value, variable)
       }
       false -> {
