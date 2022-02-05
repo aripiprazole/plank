@@ -169,7 +169,7 @@ abstract class TreeWalker :
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern) {
     visit(pattern.type)
-    visitPatterns(pattern.fields)
+    visitPatterns(pattern.properties)
   }
 
   override fun visitIdentPattern(pattern: IdentPattern) {

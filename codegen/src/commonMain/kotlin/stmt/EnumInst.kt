@@ -29,9 +29,10 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
 
       when {
         types.isEmpty() -> setSymbolLazy(name.text, descriptor.type) {
-          // As it does not have any parameters, we can just allocate the enum
-          // The i8* field of enum type should be null to not waste memory unnecessarily
-          createLoad(createAlloca(enum))
+          val memberInstance = createAlloca(i8)
+          val enumInstance = instantiate(enum, i8.getConstant(tag), memberInstance)
+
+          createLoad(enumInstance)
         }
         else -> addGlobalFunction(functionType, name.text, construct) {
           val memberInstance = instantiate(member, arguments = arguments.values.toTypedArray())

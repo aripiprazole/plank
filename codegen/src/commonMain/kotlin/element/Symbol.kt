@@ -61,11 +61,8 @@ class LazySymbol(
         val field = getField(variable, 0)
 
         createIf(
-          this@LazySymbol.type,
-          createIsNull(createLoad(field)),
-          {
-            listOf(createStore(alloca(lazyValue()), field))
-          },
+          type, createIsNull(createLoad(field)),
+          { createStore(alloca(lazyValue()), field) },
         )
 
         createRet(createLoad(createLoad(getField(variable, 0))))

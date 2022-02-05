@@ -23,9 +23,11 @@ import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedMatchExpr
+import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
+import org.plank.analyzer.element.ViolatedPattern
 import org.plank.shared.depthFirstSearch
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
@@ -328,7 +330,14 @@ internal class BindingContext(tree: ModuleTree) :
   }
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern): TypedPattern {
-    TODO()
+    val type = currentScope.findType(pattern.type.toIdentifier())
+      ?: return pattern.type.violatedPattern("Unresolved type reference `${pattern.type.text}`")
+
+    val enum = type.cast<StructType> {
+      return pattern.type.violatedPattern("Type $type can not be destructured")
+    }
+
+    return TypedNamedTuplePattern(visitPatterns(pattern.properties), enum, pattern.location)
   }
 
   override fun visitIdentPattern(pattern: IdentPattern): TypedPattern {
@@ -415,6 +424,14 @@ internal class BindingContext(tree: ModuleTree) :
         types,
         types.withIndex().associate { (index, type) -> Identifier("_$index") to type },
       ).copy(actualReturnType = enum)
+
+      currentScope.create(
+        name,
+        StructType(
+          name,
+          functionType.realParameters.mapValues { StructProperty(false, it.key, it.value) }
+        )
+      )
 
       if (types.isEmpty()) {
         currentScope.declare(name, enum)
@@ -544,15 +561,21 @@ internal class BindingContext(tree: ModuleTree) :
           pattern.type.violate("Unresolved enum variant `${pattern.type.text}` of `${name.text}`")
         }
 
-        pattern.fields.forEachIndexed { index, subPattern ->
+        pattern.properties.forEachIndexed { index, subPattern ->
           val subType = member.fields.getOrNull(index) ?: return run {
-            subPattern.violate("Expecting ${member.fields.size} fields when matching `${member.name.text}`, but got $index fields instead")
+            subPattern.violatedPattern("Expecting ${member.fields.size} fields when matching `${member.name.text}`, but got $index fields instead")
           }
 
           deconstruct(subPattern, undeclared(subType), enum)
         }
       }
     }
+  }
+
+  private fun PlankElement.violatedPattern(message: String): TypedPattern {
+    violations = violations + BindingViolation(message, location)
+
+    return ViolatedPattern(message, location = location)
   }
 
   private fun PlankElement.violate(message: String): TypedExpr {

@@ -1,7 +1,7 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.EnumType
 import org.plank.analyzer.PlankType
+import org.plank.analyzer.StructType
 import org.plank.analyzer.Untyped
 import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Identifier
@@ -11,7 +11,7 @@ sealed class TypedPattern : TypedPlankElement
 
 data class TypedNamedTuplePattern(
   val properties: List<TypedPattern>,
-  override val type: EnumType,
+  override val type: StructType,
   override val location: Location
 ) : TypedPattern()
 
@@ -23,8 +23,8 @@ data class TypedIdentPattern(
 
 data class ViolatedPattern(
   override val message: String,
-  override val arguments: List<Any>
+  override val arguments: List<Any> = emptyList(),
+  override val location: Location = Location.Generated,
 ) : TypedPattern(), ErrorPlankElement {
-  override val location = Location.Generated
   override val type = Untyped
 }

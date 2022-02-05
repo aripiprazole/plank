@@ -1,7 +1,7 @@
 package org.plank.codegen.expr
 
+import arrow.core.constant
 import org.plank.analyzer.BoolType
-import org.plank.analyzer.PlankType
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
@@ -15,10 +15,10 @@ import org.plank.llvm4k.ir.Value
 class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     return createIf(
-      descriptor.type,
+      descriptor.type.typegen(),
       descriptor.cond.codegen(),
-      thenStmts = { listOf(descriptor.thenBranch.codegen()) },
-      elseStmts = { listOf(descriptor.elseBranch?.codegen() ?: createUnit()) },
+      thenStmts = { descriptor.thenBranch.codegen() },
+      elseStmts = { descriptor.elseBranch?.codegen() ?: createUnit() },
     )
   }
 }
@@ -27,20 +27,20 @@ fun CodegenContext.createAnd(lhs: Value, rhs: Value): Value {
   val variable = createAlloca(BoolType.typegen())
 
   createIf(
-    BoolType,
+    BoolType.typegen(),
     lhs,
-    thenStmts = { listOf(createStore(rhs, variable)) },
-    elseStmts = { listOf(createStore(i1.getConstant(0), variable)) }
+    thenStmts = { createStore(rhs, variable) },
+    elseStmts = { createStore(i1.getConstant(0), variable); variable }
   )
 
   return createLoad(variable)
 }
 
 fun CodegenContext.createIf(
-  type: PlankType,
+  type: Type,
   cond: Value,
-  thenStmts: CodegenContext.() -> List<Value>,
-  elseStmts: CodegenContext.() -> List<Value> = { emptyList() },
+  thenStmts: CodegenContext.() -> Value,
+  elseStmts: CodegenContext.() -> Value? = constant(null),
 ): Value {
   val insertionBlock = insertionBlock ?: codegenError("No block in context")
   val currentFunction = insertionBlock.function ?: codegenError("No function in context")
@@ -58,8 +58,8 @@ fun CodegenContext.createIf(
   createScopeContext(scope) {
     positionAfter(thenBranch) // emit then
 
-    thenRet = thenStmts().lastOrNull()
-      ?.takeIf { it.type.kind != Type.Kind.Void }
+    thenRet = thenStmts()
+      .takeIf { it.type.kind != Type.Kind.Void }
       ?.takeIf { it.type != void }
       ?.also { alloca(it, "then.v") }
 
@@ -69,7 +69,7 @@ fun CodegenContext.createIf(
   createScopeContext(scope) {
     positionAfter(elseBranch.also(currentFunction::appendBasicBlock)) // emit else
 
-    elseRet = elseStmts().lastOrNull()
+    elseRet = elseStmts()
       ?.takeIf { it.type.kind != Type.Kind.Void }
       ?.takeIf { it.type != void }
       ?.also { alloca(it, "else.v") }
@@ -83,9 +83,7 @@ fun CodegenContext.createIf(
   positionAfter(mergeBranch)
 
   if (thenRet != null && elseRet != null) {
-    val phiType = type.typegen()
-
-    return createPhi(phiType, "if.tmp").apply {
+    return createPhi(type, "if.tmp").apply {
       addIncoming(thenRet, thenBranch)
       addIncoming(elseRet, elseBranch)
     }

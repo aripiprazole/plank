@@ -35,6 +35,7 @@ import org.plank.codegen.expr.GetInst
 import org.plank.codegen.expr.GroupInst
 import org.plank.codegen.expr.IfInst
 import org.plank.codegen.expr.InstanceInst
+import org.plank.codegen.expr.MatchInst
 import org.plank.codegen.expr.RefInst
 import org.plank.codegen.expr.SetInst
 import org.plank.codegen.expr.SizeofInst
@@ -100,7 +101,7 @@ interface InstructionMapper :
     }
 
     override fun visitMatchExpr(expr: TypedMatchExpr): CodegenInstruction {
-      TODO("Not yet implemented")
+      return MatchInst(expr)
     }
 
     override fun visitViolatedExpr(expr: TypedErrorExpr): CodegenInstruction {

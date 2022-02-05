@@ -15,7 +15,7 @@ sealed interface Pattern : PlankElement {
 
 data class NamedTuplePattern(
   val type: QualifiedPath,
-  val fields: List<Pattern>,
+  val properties: List<Pattern>,
   override val location: Location
 ) : Pattern {
   override fun <T> accept(visitor: Pattern.Visitor<T>): T {
