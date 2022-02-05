@@ -52,7 +52,7 @@ class CurryFunctionSymbol(
           .also { it.codegen() }
           .access()!!
       } else {
-        addIrClosure(name, type, "${mangled}_empty", references, generate = generate)
+        addClosure(name, type, "${mangled}_empty", references, generate = generate)
           .also { it.codegen() }
           .access()!!
       }

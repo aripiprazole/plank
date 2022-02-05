@@ -105,7 +105,7 @@ class ClosureFunctionSymbol(
   }
 }
 
-fun CodegenContext.addIrClosure(
+fun CodegenContext.addClosure(
   name: String,
   type: FunctionType,
   mangled: String = name,
