@@ -46,8 +46,6 @@ data class TypedConstExpr(
   override val type: PlankType,
   override val location: Location
 ) : TypedExpr {
-  val literal = value.toString()
-
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitConstExpr(this)
   }
