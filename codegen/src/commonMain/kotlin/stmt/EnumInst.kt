@@ -5,7 +5,6 @@ import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.element.addGlobalFunction
 import org.plank.codegen.getField
-import org.plank.codegen.instantiate
 import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
@@ -23,32 +22,28 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
       val construct = mangle(name, descriptor.name, Identifier("construct"))
 
       val member = createNamedStruct(mangled) {
-        elements = types.typegen()
+        elements = listOf(i8, *types.typegen().toTypedArray())
       }
 
       addStruct(name.text, descriptor.type, member)
 
       when {
         types.isEmpty() -> setSymbolLazy(name.text, descriptor.type) {
-          val memberInstance = createAlloca(i8)
-          val enumInstance = instantiate(enum, i8.getConstant(tag), memberInstance)
-
-          createLoad(enumInstance)
+          val instance = createMalloc(member)
+          createStore(i8.getConstant(tag), getField(instance, 0))
+          createBitCast(instance, enum.pointer())
         }
         else -> addGlobalFunction(functionType, name.text, construct) {
-          val memberInstance = createAlloca(member)
+          var idx = 1
+          val instance = createMalloc(member)
+          createStore(i8.getConstant(tag), getField(instance, 0))
 
-          arguments.values.forEachIndexed { idx, argument ->
-            createStore(argument, getField(memberInstance, idx))
+          arguments.values.forEach { argument ->
+            createStore(argument, getField(instance, idx))
+            idx++
           }
 
-          val enumInstance = instantiate(
-            enum,
-            i8.getConstant(tag),
-            createBitCast(memberInstance, i8.pointer())
-          )
-
-          createRet(createLoad(enumInstance))
+          createRet(createBitCast(instance, enum.pointer()))
         }
       }
     }

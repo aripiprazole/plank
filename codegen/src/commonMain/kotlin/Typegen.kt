@@ -24,7 +24,7 @@ fun CodegenContext.typegen(type: PlankType): Type {
     is IntType -> if (type.floatingPoint) float else i32 // TODO
     is DelegateType -> type.value?.typegen() ?: codegenError("Delegate type has no value")
     is EnumType -> {
-      findStruct(type.name.text) ?: codegenError("Unresolved enum `${type.name.text}`")
+      findStruct(type.name.text)?.pointer() ?: codegenError("Unresolved enum `${type.name.text}`")
     }
     is StructType -> {
       findStruct(type.name.text) ?: codegenError("Unresolved struct `${type.name.text}`")

@@ -7,7 +7,6 @@ import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.ViolatedPattern
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
-import org.plank.codegen.alloca
 import org.plank.codegen.getField
 import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.IntPredicate
@@ -54,7 +53,7 @@ fun CodegenContext.checkPattern(
   return when (pattern) {
     is TypedIdentPattern -> i1.getConstant(1) // true
     is TypedNamedTuplePattern -> {
-      val tag = createLoad(getField(alloca(subject), 0))
+      val tag = createLoad(getField(subject, 0))
 
       createICmp(IntPredicate.EQ, tag, i8.getConstant(index))
     }
@@ -68,12 +67,14 @@ fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
       setSymbol(pattern.name.text, pattern.type, unsafeAlloca(subject))
     }
     is TypedNamedTuplePattern -> {
-      val member = createBitCast(getField(alloca(subject), 1), pattern.type.typegen().pointer())
+      var idx = 1
+      val member = createBitCast(subject, pattern.type.typegen().pointer())
 
-      pattern.properties.forEachIndexed { index, nestedPattern ->
-        val prop = getField(member, index)
+      pattern.properties.forEach { nestedPattern ->
+        val prop = getField(member, idx)
 
         deconstructPattern(prop, nestedPattern)
+        idx++
       }
     }
     is ViolatedPattern -> error("Trying to transform violated pattern")

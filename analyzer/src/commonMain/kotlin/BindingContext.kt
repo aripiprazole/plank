@@ -339,8 +339,6 @@ internal class BindingContext(tree: ModuleTree) :
 
     val properties = visitPatterns(pattern.properties)
 
-    println("PROPS $properties")
-
     return TypedNamedTuplePattern(properties, enum, pattern.location)
   }
 
