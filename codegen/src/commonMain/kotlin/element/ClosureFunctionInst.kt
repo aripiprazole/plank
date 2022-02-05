@@ -11,7 +11,7 @@ import org.plank.codegen.createScopeContext
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
 import org.plank.codegen.mangle
-import org.plank.llvm4k.ir.AllocaInst
+import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
@@ -22,9 +22,8 @@ class ClosureFunctionInst(
   private val references: Map<Identifier, PlankType>,
   private val parameters: Map<Identifier, PlankType>,
   private val generate: GenerateBody,
-  private val descriptor: ResolvedFunDecl? = null,
 ) : FunctionInst {
-  override fun CodegenContext.access(): AllocaInst {
+  override fun CodegenContext.access(): User {
     return getSymbol(mangled)
   }
 
@@ -106,18 +105,6 @@ class ClosureFunctionInst(
     return closure
   }
 }
-
-fun CodegenContext.addIrClosure(descriptor: ResolvedFunDecl, generate: GenerateBody): Value =
-  addFunction(
-    ClosureFunctionInst(
-      name = descriptor.name.text,
-      mangled = mangle(descriptor),
-      type = descriptor.type,
-      references = descriptor.references,
-      parameters = descriptor.realParameters,
-      generate = generate,
-    )
-  )
 
 fun CodegenContext.addIrClosure(
   name: String,

@@ -5,9 +5,9 @@ import org.plank.analyzer.element.ResolvedPlankElement
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedExpr
-import org.plank.codegen.element.AllocaValue
 import org.plank.codegen.element.FunctionInst
 import org.plank.codegen.element.LazyInst
+import org.plank.codegen.element.UserValue
 import org.plank.codegen.element.ValueInst
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.intrinsics.Intrinsics
@@ -18,6 +18,7 @@ import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Type
+import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Location
 import org.plank.syntax.element.QualifiedPath
@@ -43,11 +44,11 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun addFunction(function: FunctionInst): Value
   fun addStruct(name: String, type: PlankType, struct: StructType)
 
-  fun getSymbol(name: String): AllocaInst
+  fun getSymbol(name: String): User
   fun setSymbol(name: String, value: ValueInst): Value
 
-  fun setSymbol(name: String, type: PlankType, variable: AllocaInst): Value {
-    return setSymbol(name, AllocaValue(type, variable))
+  fun setSymbol(name: String, type: PlankType, variable: User): Value {
+    return setSymbol(name, UserValue(type, variable))
   }
 
   fun setSymbolLazy(name: String, type: PlankType, lazyValue: CodegenContext.() -> Value): Value {
@@ -57,12 +58,12 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun findFunction(name: String): FunctionInst?
   fun findModule(name: String): ScopeContext?
   fun findStruct(name: String): StructType?
-  fun findAlloca(name: String): AllocaInst?
+  fun findAlloca(name: String): User?
   fun findIntrinsic(name: String): IntrinsicFunction?
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
-  fun ValueInst.access(): AllocaInst? = with(this@CodegenContext) { access() }
+  fun ValueInst.access(): User? = with(this@CodegenContext) { access() }
 
   fun PlankType.typegen(): Type = typegen(this)
   fun Collection<PlankType>.typegen(): List<Type> = map { it.typegen() }
@@ -143,7 +144,7 @@ data class ScopeContext(
     structs[name] = type to struct
   }
 
-  override fun getSymbol(name: String): AllocaInst {
+  override fun getSymbol(name: String): User {
     return findAlloca(name)
       ?: findFunction(name)?.run { access() }
       ?: codegenError("Unresolved symbol `$name`")
@@ -172,7 +173,7 @@ data class ScopeContext(
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findStruct(name) }
   }
 
-  override fun findAlloca(name: String): AllocaInst? {
+  override fun findAlloca(name: String): User? {
     return symbols[name]?.access()
       ?: enclosing?.findAlloca(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findAlloca(name) }

@@ -7,21 +7,21 @@ import org.plank.codegen.alloca
 import org.plank.codegen.expr.createIf
 import org.plank.codegen.getField
 import org.plank.codegen.mangle
-import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
+import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 
 sealed interface ValueInst : CodegenInstruction {
   val type: PlankType
 
-  fun CodegenContext.access(): AllocaInst?
+  fun CodegenContext.access(): User?
 }
 
-class AllocaValue(override val type: PlankType, private val inst: AllocaInst) : ValueInst {
-  override fun CodegenContext.access(): AllocaInst = inst
+class UserValue(override val type: PlankType, private val value: User) : ValueInst {
+  override fun CodegenContext.access(): User = value
 
-  override fun CodegenContext.codegen(): Value = inst
+  override fun CodegenContext.codegen(): Value = value
 }
 
 class LazyInst(
@@ -31,7 +31,7 @@ class LazyInst(
 ) : ValueInst {
   private var getter: Function? = null
 
-  override fun CodegenContext.access(): AllocaInst? {
+  override fun CodegenContext.access(): User? {
     val getter = getter ?: return null
 
     return lazyLocal(name) {
