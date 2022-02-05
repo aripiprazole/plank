@@ -1,6 +1,5 @@
 package org.plank.codegen.expr
 
-import org.plank.analyzer.EnumType
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedNamedTuplePattern
@@ -10,12 +9,12 @@ import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.getField
+import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.IntPredicate
 import org.plank.llvm4k.ir.Value
 
 class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    val enum = descriptor.subject.type.unsafeCast<EnumType>()
     val type = descriptor.type.typegen()
     val patterns = descriptor.patterns.entries.toList()
 
@@ -29,15 +28,15 @@ class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
       .foldIndexed(
         fun(): Value = createIf(
           type,
-          checkPattern(enum, subject, lastPattern.key, patterns.size - 1),
-          { lastPattern.value.codegen() },
+          checkPattern(subject, lastPattern.key, patterns.size - 1),
+          { deconstructPattern(subject, lastPattern.key); lastPattern.value.codegen() },
           { createLoad(createAlloca(type)) }
         )
       ) { index, acc, (pattern, expr) ->
         fun(): Value = createIf(
           type,
-          checkPattern(enum, subject, pattern, index),
-          { expr.codegen() },
+          checkPattern(subject, pattern, index),
+          { deconstructPattern(subject, pattern); expr.codegen() },
           { acc.invoke() }
         )
       }
@@ -48,7 +47,6 @@ class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
 }
 
 fun CodegenContext.checkPattern(
-  type: EnumType,
   subject: Value,
   pattern: TypedPattern,
   index: Int, // TODO: remove
@@ -64,22 +62,20 @@ fun CodegenContext.checkPattern(
   }
 }
 
-fun CodegenContext.deconstructPattern(
-  type: EnumType,
-  subject: Value,
-  pattern: TypedPattern,
-) {
-//  when (pattern) {
-//    is TypedIdentPattern -> {
-//      setSymbol(pattern.name.text, pattern.type, unsafeAlloca(subject))
-//    }
-//    is TypedNamedTuplePattern -> {
-//      pattern.properties.forEachIndexed { index, nestedPattern ->
-//        val prop = getField(subject, index)
-//
-//        deconstructPattern(type, prop, nestedPattern)
-//      }
-//    }
-//    is ViolatedPattern -> error("Trying to transform violated pattern")
-//  }
+fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
+  when (pattern) {
+    is TypedIdentPattern -> {
+      setSymbol(pattern.name.text, pattern.type, unsafeAlloca(subject))
+    }
+    is TypedNamedTuplePattern -> {
+      val member = createBitCast(getField(alloca(subject), 1), pattern.type.typegen().pointer())
+
+      pattern.properties.forEachIndexed { index, nestedPattern ->
+        val prop = getField(member, index)
+
+        deconstructPattern(prop, nestedPattern)
+      }
+    }
+    is ViolatedPattern -> error("Trying to transform violated pattern")
+  }
 }

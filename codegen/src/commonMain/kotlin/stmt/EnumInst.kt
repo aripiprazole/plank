@@ -4,6 +4,7 @@ import org.plank.analyzer.element.ResolvedEnumDecl
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.element.addGlobalFunction
+import org.plank.codegen.getField
 import org.plank.codegen.instantiate
 import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.Value
@@ -35,7 +36,12 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
           createLoad(enumInstance)
         }
         else -> addGlobalFunction(functionType, name.text, construct) {
-          val memberInstance = instantiate(member, arguments = arguments.values.toTypedArray())
+          val memberInstance = createAlloca(member)
+
+          arguments.values.forEachIndexed { idx, argument ->
+            createStore(argument, getField(memberInstance, idx))
+          }
+
           val enumInstance = instantiate(
             enum,
             i8.getConstant(tag),

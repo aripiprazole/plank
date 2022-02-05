@@ -311,10 +311,10 @@ internal class BindingContext(tree: ModuleTree) :
     val patterns = expr.patterns
       .entries
       .associate { (pattern, value) ->
-        visit(pattern) to scoped(ClosureScope(Identifier("match"), currentScope)) {
+        scoped(ClosureScope(Identifier("match"), currentScope)) {
           deconstruct(pattern, subject)
 
-          visit(value)
+          visit(pattern) to visit(value)
         }
       }
 
@@ -337,11 +337,17 @@ internal class BindingContext(tree: ModuleTree) :
       return pattern.type.violatedPattern("Type $type can not be destructured")
     }
 
-    return TypedNamedTuplePattern(visitPatterns(pattern.properties), enum, pattern.location)
+    val properties = visitPatterns(pattern.properties)
+
+    println("PROPS $properties")
+
+    return TypedNamedTuplePattern(properties, enum, pattern.location)
   }
 
   override fun visitIdentPattern(pattern: IdentPattern): TypedPattern {
-    return TypedIdentPattern(pattern.name, Untyped, pattern.location)
+    val variable = findVariable(pattern.name)
+
+    return TypedIdentPattern(pattern.name, variable.value.type, pattern.location)
   }
 
   override fun visitIfExpr(expr: IfExpr): TypedExpr {
