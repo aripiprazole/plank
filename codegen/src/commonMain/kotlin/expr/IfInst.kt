@@ -1,7 +1,6 @@
 package org.plank.codegen.expr
 
 import arrow.core.constant
-import org.plank.analyzer.BoolType
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
@@ -21,19 +20,6 @@ class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
       elseStmts = { descriptor.elseBranch?.codegen() ?: createUnit() },
     )
   }
-}
-
-fun CodegenContext.createAnd(lhs: Value, rhs: Value): Value {
-  val variable = createAlloca(BoolType.typegen())
-
-  createIf(
-    BoolType.typegen(),
-    lhs,
-    thenStmts = { createStore(rhs, variable) },
-    elseStmts = { createStore(i1.getConstant(0), variable); variable }
-  )
-
-  return createLoad(variable)
 }
 
 fun CodegenContext.createIf(
