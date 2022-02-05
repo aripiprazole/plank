@@ -13,6 +13,7 @@ import org.plank.analyzer.element.ResolvedReturnStmt
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.analyzer.element.TypedAccessExpr
+import org.plank.analyzer.element.TypedAccessModuleExpr
 import org.plank.analyzer.element.TypedAssignExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
@@ -242,10 +243,36 @@ internal class BindingContext(tree: ModuleTree) :
   }
 
   override fun visitGetExpr(expr: GetExpr): TypedExpr {
-    val receiver = visit(expr.receiver)
+    val receiver = when (val receiver = expr.receiver) {
+      is AccessExpr -> {
+        val name = receiver.path.toIdentifier()
+        val location = receiver.location
+
+        val value = currentScope.findVariable(name) ?: currentScope.findModule(name)
+
+        if (value is Module) {
+          val type = ModuleType(
+            value.name,
+            value.scope.variables.values.map { variable ->
+              StructProperty(variable.mutable, variable.name, variable.value.type, variable.value)
+            }
+          )
+
+          val property = type.property(expr.property)
+            ?: return expr.property.violate("Unresolved property `${expr.property.text}` in module `${type.name}`")
+
+          return TypedAccessModuleExpr(value, property.name, property.type, location)
+        } else {
+          visit(receiver)
+        }
+      }
+      else -> {
+        visit(receiver)
+      }
+    }
 
     val struct = receiver.type.cast<StructType>()
-      ?: return receiver.violate("Can not get property `${expr.property.text}` from type ${receiver.type} because it is not a struct")
+      ?: return receiver.violate("Can not get property `${expr.property.text}` from type ${receiver.type} because it is not a struct or a module")
 
     val property = struct.property(expr.property)
       ?: return expr.property.violate("Unresolved property `${expr.property.text}` in struct $struct")

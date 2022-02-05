@@ -8,11 +8,11 @@ import org.plank.llvm4k.ir.Value
 
 class ModuleInst(private val descriptor: ResolvedModuleDecl) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    createScopeContext(descriptor.name.text) nested@{
-      addModule(this@nested)
-
+    val module = createScopeContext(descriptor.name.text) {
       descriptor.content.codegen()
     }
+
+    addModule(module)
 
     return i1.constantNull
   }

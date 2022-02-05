@@ -108,9 +108,13 @@ data class EnumType(
 
 class ModuleType(
   override val name: Identifier,
-  val members: List<StructProperty> = emptyList(),
+  private val members: List<StructProperty> = emptyList(),
 ) : PlankType() {
   override val size = 0
+
+  fun property(name: Identifier): StructProperty? {
+    return members.find { it.name == name }
+  }
 
   override fun toString(): String = "(module ${name.text})"
 }

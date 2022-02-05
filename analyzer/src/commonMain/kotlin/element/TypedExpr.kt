@@ -1,5 +1,6 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.Module
 import org.plank.analyzer.PlankType
 import org.plank.analyzer.PointerType
 import org.plank.analyzer.StructType
@@ -19,6 +20,7 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitCallExpr(expr: TypedCallExpr): T
     fun visitAssignExpr(expr: TypedAssignExpr): T
     fun visitSetExpr(expr: TypedSetExpr): T
+    fun visitAccessModuleExpr(expr: TypedAccessModuleExpr): T
     fun visitGetExpr(expr: TypedGetExpr): T
     fun visitGroupExpr(expr: TypedGroupExpr): T
     fun visitInstanceExpr(expr: TypedInstanceExpr): T
@@ -99,6 +101,17 @@ data class TypedSetExpr(
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitSetExpr(this)
+  }
+}
+
+data class TypedAccessModuleExpr(
+  val module: Module,
+  val member: Identifier,
+  override val type: PlankType,
+  override val location: Location
+) : TypedExpr {
+  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
+    return visitor.visitAccessModuleExpr(this)
   }
 }
 
