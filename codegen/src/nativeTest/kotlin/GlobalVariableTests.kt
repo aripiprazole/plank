@@ -116,4 +116,71 @@ class GlobalVariableTests {
         expectSuccess()
       }
   }
+
+  @Test
+  fun `test create mutable global variable`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        let mutable x = "hello, world";
+
+        fun main(argc: Int32, argv: **Char): Void {
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test create and update mutable global variable`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        let mutable x = "hello, world";
+
+        fun main(argc: Int32, argv: **Char): Void {
+          x := "updated";
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test create update and use mutable global variable`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        import Std.IO;
+
+        let mutable x = "hello, world";
+
+        fun main(argc: Int32, argv: **Char): Void {
+          println(x);
+          x := "updated";
+          println(x);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
 }

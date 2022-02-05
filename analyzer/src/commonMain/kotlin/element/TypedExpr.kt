@@ -19,8 +19,9 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitAccessExpr(expr: TypedAccessExpr): T
     fun visitCallExpr(expr: TypedCallExpr): T
     fun visitAssignExpr(expr: TypedAssignExpr): T
+    fun visitModuleSetExpr(expr: TypedModuleSetExpr): T
     fun visitSetExpr(expr: TypedSetExpr): T
-    fun visitAccessModuleExpr(expr: TypedAccessModuleExpr): T
+    fun visitModuleGetExpr(expr: TypedModuleGetExpr): T
     fun visitGetExpr(expr: TypedGetExpr): T
     fun visitGroupExpr(expr: TypedGroupExpr): T
     fun visitInstanceExpr(expr: TypedInstanceExpr): T
@@ -92,6 +93,18 @@ data class TypedAssignExpr(
   }
 }
 
+data class TypedModuleSetExpr(
+  val module: Module,
+  val member: Identifier,
+  val value: TypedExpr,
+  override val type: PlankType,
+  override val location: Location
+) : TypedExpr {
+  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
+    return visitor.visitModuleSetExpr(this)
+  }
+}
+
 data class TypedSetExpr(
   val receiver: TypedExpr,
   val member: Identifier,
@@ -104,14 +117,14 @@ data class TypedSetExpr(
   }
 }
 
-data class TypedAccessModuleExpr(
+data class TypedModuleGetExpr(
   val module: Module,
   val member: Identifier,
   override val type: PlankType,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitAccessModuleExpr(this)
+    return visitor.visitModuleGetExpr(this)
   }
 }
 

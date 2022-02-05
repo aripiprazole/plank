@@ -12,7 +12,6 @@ import org.plank.analyzer.element.ResolvedReturnStmt
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.analyzer.element.TypedAccessExpr
-import org.plank.analyzer.element.TypedAccessModuleExpr
 import org.plank.analyzer.element.TypedAssignExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
@@ -24,11 +23,12 @@ import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedInstanceExpr
 import org.plank.analyzer.element.TypedMatchExpr
+import org.plank.analyzer.element.TypedModuleGetExpr
+import org.plank.analyzer.element.TypedModuleSetExpr
 import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.codegen.expr.AccessInst
-import org.plank.codegen.expr.AccessModuleInst
 import org.plank.codegen.expr.AssignInst
 import org.plank.codegen.expr.CallInst
 import org.plank.codegen.expr.ConstInst
@@ -38,6 +38,8 @@ import org.plank.codegen.expr.GroupInst
 import org.plank.codegen.expr.IfInst
 import org.plank.codegen.expr.InstanceInst
 import org.plank.codegen.expr.MatchInst
+import org.plank.codegen.expr.ModuleGetInst
+import org.plank.codegen.expr.ModuleSetInst
 import org.plank.codegen.expr.RefInst
 import org.plank.codegen.expr.SetInst
 import org.plank.codegen.expr.SizeofInst
@@ -74,12 +76,16 @@ interface InstructionMapper :
       return AssignInst(expr)
     }
 
+    override fun visitModuleSetExpr(expr: TypedModuleSetExpr): CodegenInstruction {
+      return ModuleSetInst(expr)
+    }
+
     override fun visitSetExpr(expr: TypedSetExpr): CodegenInstruction {
       return SetInst(expr)
     }
 
-    override fun visitAccessModuleExpr(expr: TypedAccessModuleExpr): CodegenInstruction {
-      return AccessModuleInst(expr)
+    override fun visitModuleGetExpr(expr: TypedModuleGetExpr): CodegenInstruction {
+      return ModuleGetInst(expr)
     }
 
     override fun visitGetExpr(expr: TypedGetExpr): CodegenInstruction {

@@ -13,7 +13,6 @@ import org.plank.analyzer.element.ResolvedReturnStmt
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.analyzer.element.TypedAccessExpr
-import org.plank.analyzer.element.TypedAccessModuleExpr
 import org.plank.analyzer.element.TypedAssignExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
@@ -24,6 +23,8 @@ import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedMatchExpr
+import org.plank.analyzer.element.TypedModuleGetExpr
+import org.plank.analyzer.element.TypedModuleSetExpr
 import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
@@ -222,8 +223,43 @@ internal class BindingContext(tree: ModuleTree) :
   }
 
   override fun visitSetExpr(expr: SetExpr): TypedExpr {
-    val receiver = visit(expr.receiver)
-    val value = visit(expr.value)
+    val newValue = visit(expr.value)
+
+    val receiver = when (val receiver = expr.receiver) {
+      is AccessExpr -> {
+        val name = receiver.path.toIdentifier()
+        val location = receiver.location
+
+        val value = currentScope.findVariable(name) ?: currentScope.findModule(name)
+
+        if (value is Module) {
+          val type = ModuleType(
+            value.name,
+            value.scope.variables.values.map { variable ->
+              StructProperty(variable.mutable, variable.name, variable.value.type, variable.value)
+            }
+          )
+
+          val property = type.property(expr.property)
+            ?: return expr.property.violate("Unresolved property `${expr.property.text}` in module `${type.name}`")
+
+          if (!property.mutable) {
+            return expr.violate("Can not reassign immutable property `${property.name.text}` of module `${type.name}`")
+          }
+
+          if (property.type != newValue.type) {
+            return newValue.violate("Mismatch types: expecting ${property.type} but got ${newValue.type}")
+          }
+
+          return TypedModuleSetExpr(value, property.name, newValue, newValue.type, location)
+        } else {
+          visit(receiver)
+        }
+      }
+      else -> {
+        visit(receiver)
+      }
+    }
 
     val struct = receiver.type.cast<StructType>()
       ?: return receiver.violate("Can not set property `${expr.property.text}` from type ${receiver.type} because it is not a struct")
@@ -235,11 +271,11 @@ internal class BindingContext(tree: ModuleTree) :
       return expr.violate("Can not reassign immutable property `${property.name.text}` of struct $struct")
     }
 
-    if (property.type != value.type) {
-      return value.violate("Mismatch types: expecting ${property.type} but got ${value.type}")
+    if (property.type != newValue.type) {
+      return newValue.violate("Mismatch types: expecting ${property.type} but got ${newValue.type}")
     }
 
-    return TypedSetExpr(receiver, property.name, value, value.type, expr.location)
+    return TypedSetExpr(receiver, property.name, newValue, newValue.type, expr.location)
   }
 
   override fun visitGetExpr(expr: GetExpr): TypedExpr {
@@ -261,7 +297,7 @@ internal class BindingContext(tree: ModuleTree) :
           val property = type.property(expr.property)
             ?: return expr.property.violate("Unresolved property `${expr.property.text}` in module `${type.name}`")
 
-          return TypedAccessModuleExpr(value, property.name, property.type, location)
+          return TypedModuleGetExpr(value, property.name, property.type, location)
         } else {
           visit(receiver)
         }
