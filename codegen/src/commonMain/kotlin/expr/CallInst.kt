@@ -6,7 +6,7 @@ import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
-import org.plank.codegen.element.CurryFunctionInst
+import org.plank.codegen.element.CurryFunctionSymbol
 import org.plank.codegen.getField
 import org.plank.codegen.unsafeFunction
 import org.plank.llvm4k.ir.PointerType
@@ -27,7 +27,7 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
           val name = "_Zclosure.wrap.(${descriptor.callee.type})$$index"
 
           val function = addFunction(
-            CurryFunctionInst(
+            CurryFunctionSymbol(
               name = name,
               mangled = name,
               type = functionType,

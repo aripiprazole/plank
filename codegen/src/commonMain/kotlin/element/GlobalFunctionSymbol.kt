@@ -11,12 +11,12 @@ import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
 
-class GlobalFunctionInst(
+class GlobalFunctionSymbol(
   private val descriptor: ResolvedFunDecl,
   private val mangled: String,
   private val generate: GenerateBody,
   override val name: String = descriptor.name.text,
-) : FunctionInst {
+) : FunctionSymbol {
   override val type: PlankType = descriptor.type
 
   override fun CodegenContext.access(): AllocaInst? {
@@ -58,5 +58,5 @@ class GlobalFunctionInst(
 }
 
 fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
-  return addFunction(GlobalFunctionInst(descriptor, mangle(descriptor), generate))
+  return addFunction(GlobalFunctionSymbol(descriptor, mangle(descriptor), generate))
 }

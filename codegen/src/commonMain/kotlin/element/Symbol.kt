@@ -12,23 +12,23 @@ import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 
-sealed interface ValueInst : CodegenInstruction {
+sealed interface Symbol : CodegenInstruction {
   val type: PlankType
 
   fun CodegenContext.access(): User?
 }
 
-class UserValue(override val type: PlankType, private val value: User) : ValueInst {
+class ValueSymbol(override val type: PlankType, private val value: User) : Symbol {
   override fun CodegenContext.access(): User = value
 
   override fun CodegenContext.codegen(): Value = value
 }
 
-class LazyInst(
+class LazySymbol(
   override val type: PlankType,
   val name: String,
   val lazyValue: CodegenContext.() -> Value,
-) : ValueInst {
+) : Symbol {
   private var getter: Function? = null
 
   override fun CodegenContext.access(): User? {
@@ -61,7 +61,7 @@ class LazyInst(
         val field = getField(variable, 0)
 
         createIf(
-          this@LazyInst.type,
+          this@LazySymbol.type,
           createIsNull(createLoad(field)),
           {
             listOf(createStore(alloca(lazyValue()), field))

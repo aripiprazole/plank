@@ -14,7 +14,7 @@ import org.plank.syntax.element.Identifier
 
 typealias GenerateBody = ExecContext.() -> Unit
 
-sealed interface FunctionInst : ValueInst {
+sealed interface FunctionSymbol : Symbol {
   val name: String
 }
 

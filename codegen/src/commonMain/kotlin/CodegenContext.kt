@@ -5,10 +5,10 @@ import org.plank.analyzer.element.ResolvedPlankElement
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedExpr
-import org.plank.codegen.element.FunctionInst
-import org.plank.codegen.element.LazyInst
-import org.plank.codegen.element.UserValue
-import org.plank.codegen.element.ValueInst
+import org.plank.codegen.element.FunctionSymbol
+import org.plank.codegen.element.LazySymbol
+import org.plank.codegen.element.Symbol
+import org.plank.codegen.element.ValueSymbol
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.intrinsics.Intrinsics
 import org.plank.llvm4k.Context
@@ -41,21 +41,21 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun expand(scope: ScopeContext)
   fun addModule(module: ScopeContext)
 
-  fun addFunction(function: FunctionInst): Value
+  fun addFunction(function: FunctionSymbol): Value
   fun addStruct(name: String, type: PlankType, struct: StructType)
 
   fun getSymbol(name: String): User
-  fun setSymbol(name: String, value: ValueInst): Value
+  fun setSymbol(name: String, value: Symbol): Value
 
   fun setSymbol(name: String, type: PlankType, variable: User): Value {
-    return setSymbol(name, UserValue(type, variable))
+    return setSymbol(name, ValueSymbol(type, variable))
   }
 
   fun setSymbolLazy(name: String, type: PlankType, lazyValue: CodegenContext.() -> Value): Value {
-    return setSymbol(name, LazyInst(type, name, lazyValue))
+    return setSymbol(name, LazySymbol(type, name, lazyValue))
   }
 
-  fun findFunction(name: String): FunctionInst?
+  fun findFunction(name: String): FunctionSymbol?
   fun findModule(name: String): ScopeContext?
   fun findStruct(name: String): StructType?
   fun findAlloca(name: String): User?
@@ -63,7 +63,7 @@ sealed interface CodegenContext : Context, IRBuilder {
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
-  fun ValueInst.access(): User? = with(this@CodegenContext) { access() }
+  fun Symbol.access(): User? = with(this@CodegenContext) { access() }
 
   fun PlankType.typegen(): Type = typegen(this)
   fun Collection<PlankType>.typegen(): List<Type> = map { it.typegen() }
@@ -114,8 +114,8 @@ data class ScopeContext(
     getOrCreateStruct("unit") { elements = listOf(i8) }
   }
 
-  private val functions = mutableMapOf<String, FunctionInst>()
-  private val symbols = mutableMapOf<String, ValueInst>()
+  private val functions = mutableMapOf<String, FunctionSymbol>()
+  private val symbols = mutableMapOf<String, Symbol>()
   private val structs = mutableMapOf<String, Pair<PlankType, StructType>>()
   private val lazy = mutableMapOf<String, AllocaInst>()
 
@@ -134,7 +134,7 @@ data class ScopeContext(
     modules[module.scope] = module
   }
 
-  override fun addFunction(function: FunctionInst): Value {
+  override fun addFunction(function: FunctionSymbol): Value {
     functions[function.name] = function
 
     return function.codegen()
@@ -150,12 +150,12 @@ data class ScopeContext(
       ?: codegenError("Unresolved symbol `$name`")
   }
 
-  override fun setSymbol(name: String, value: ValueInst): Value {
+  override fun setSymbol(name: String, value: Symbol): Value {
     symbols[name] = value
     return value.codegen()
   }
 
-  override fun findFunction(name: String): FunctionInst? {
+  override fun findFunction(name: String): FunctionSymbol? {
     return functions[name]
       ?: enclosing?.findFunction(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findFunction(name) }

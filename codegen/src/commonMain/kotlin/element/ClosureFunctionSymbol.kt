@@ -2,7 +2,6 @@ package org.plank.codegen.element
 
 import org.plank.analyzer.FunctionType
 import org.plank.analyzer.PlankType
-import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
@@ -10,19 +9,18 @@ import org.plank.codegen.codegenError
 import org.plank.codegen.createScopeContext
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
-import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
-class ClosureFunctionInst(
+class ClosureFunctionSymbol(
   override val type: FunctionType,
   override val name: String,
   private val mangled: String,
   private val references: Map<Identifier, PlankType>,
   private val parameters: Map<Identifier, PlankType>,
   private val generate: GenerateBody,
-) : FunctionInst {
+) : FunctionSymbol {
   override fun CodegenContext.access(): User {
     return getSymbol(mangled)
   }
@@ -61,7 +59,7 @@ class ClosureFunctionInst(
         references.entries.forEachIndexed { index, (reference, type) ->
           val variable = alloca(createLoad(getField(environment, index)), "env.$reference")
 
-          if (reference in this@ClosureFunctionInst.parameters.keys.map { it.text }) {
+          if (reference in this@ClosureFunctionSymbol.parameters.keys.map { it.text }) {
             this.arguments[reference] = variable
           }
 
@@ -111,8 +109,8 @@ fun CodegenContext.addIrClosure(
   type: FunctionType,
   references: Map<Identifier, PlankType> = linkedMapOf(),
   generate: GenerateBody,
-): ClosureFunctionInst {
-  val closure = ClosureFunctionInst(
+): ClosureFunctionSymbol {
+  val closure = ClosureFunctionSymbol(
     name = name,
     mangled = name,
     type = type,

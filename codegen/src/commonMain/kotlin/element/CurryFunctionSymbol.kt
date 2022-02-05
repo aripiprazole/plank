@@ -14,7 +14,7 @@ import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
-class CurryFunctionInst(
+class CurryFunctionSymbol(
   override val type: FunctionType,
   private val nested: Boolean,
   private val references: Map<Identifier, PlankType>,
@@ -23,7 +23,7 @@ class CurryFunctionInst(
   private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
   private val generate: GenerateBody,
-) : FunctionInst {
+) : FunctionSymbol {
   private val parameters = realParameters.entries.toList().map { it.toPair() }
 
   override fun CodegenContext.access(): AllocaInst? {
@@ -69,7 +69,7 @@ class CurryFunctionInst(
   private fun generateNesting(
     index: Int,
     builder: ExecContext.(returnType: PlankType) -> Unit = { generate() }
-  ): ClosureFunctionInst {
+  ): ClosureFunctionSymbol {
     val type = FunctionType(
       parameters[index].second,
       when (val returnType = type.nest(index)) {
@@ -78,7 +78,7 @@ class CurryFunctionInst(
       }
     )
 
-    return ClosureFunctionInst(
+    return ClosureFunctionSymbol(
       name = "$mangled#$index",
       mangled = "$mangled{{closure}}#$index",
       type = type.copy(name = Identifier("$mangled#$index")),
@@ -94,7 +94,7 @@ fun CodegenContext.addCurryFunction(
   nested: Boolean = false,
   generate: GenerateBody,
 ): Value = addFunction(
-  CurryFunctionInst(
+  CurryFunctionSymbol(
     type = descriptor.type,
     nested = nested,
     references = descriptor.references,
