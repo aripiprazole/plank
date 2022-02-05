@@ -1,7 +1,9 @@
 package org.plank.syntax.element
 
-data class QualifiedPath(val fullPath: List<Identifier>, override val location: Location) :
-  PlankElement {
+data class QualifiedPath(
+  val fullPath: List<Identifier>,
+  override val location: Location = Location.Generated
+) : PlankElement {
   constructor(identifier: Identifier) :
     this(listOf(identifier), identifier.location)
 

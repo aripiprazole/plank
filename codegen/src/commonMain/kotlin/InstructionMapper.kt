@@ -38,6 +38,7 @@ import org.plank.codegen.expr.InstanceInst
 import org.plank.codegen.expr.RefInst
 import org.plank.codegen.expr.SetInst
 import org.plank.codegen.expr.SizeofInst
+import org.plank.codegen.stmt.EnumInst
 import org.plank.codegen.stmt.ExprInst
 import org.plank.codegen.stmt.FunInst
 import org.plank.codegen.stmt.ImportInst
@@ -123,7 +124,7 @@ interface InstructionMapper :
     }
 
     override fun visitEnumDecl(decl: ResolvedEnumDecl): CodegenInstruction {
-      TODO("Not yet implemented")
+      return EnumInst(decl)
     }
 
     override fun visitStructDecl(decl: ResolvedStructDecl): CodegenInstruction {

@@ -4,11 +4,11 @@ import org.plank.analyzer.FunctionType
 import org.plank.analyzer.PlankType
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
-import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
 import org.plank.codegen.createScopeContext
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
+import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
@@ -19,6 +19,7 @@ class ClosureFunctionSymbol(
   private val mangled: String,
   private val references: Map<Identifier, PlankType>,
   private val parameters: Map<Identifier, PlankType>,
+  private val realParameters: Map<Identifier, PlankType>,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   override fun CodegenContext.access(): User {
@@ -57,13 +58,13 @@ class ClosureFunctionSymbol(
 
       with(executionContext) {
         references.entries.forEachIndexed { index, (reference, type) ->
-          val variable = alloca(createLoad(getField(environment, index)), "env.$reference")
+          val variable = getField(environment, index, "env.$reference")
 
-          if (reference in this@ClosureFunctionSymbol.parameters.keys.map { it.text }) {
-            this.arguments[reference] = variable
+          if (reference in this@ClosureFunctionSymbol.realParameters.keys.map { it.text }) {
+            this.arguments[reference] = createLoad(variable)
           }
 
-          setSymbol(reference, type, variable)
+          setSymbol(reference, type, unsafeAlloca(variable))
         }
 
         val realArguments = arguments.drop(1)
@@ -107,15 +108,18 @@ class ClosureFunctionSymbol(
 fun CodegenContext.addIrClosure(
   name: String,
   type: FunctionType,
+  mangled: String = name,
   references: Map<Identifier, PlankType> = linkedMapOf(),
+  realParameters: Map<Identifier, PlankType> = type.realParameters,
   generate: GenerateBody,
 ): ClosureFunctionSymbol {
   val closure = ClosureFunctionSymbol(
     name = name,
-    mangled = name,
+    mangled = mangled,
     type = type,
     references = references,
     parameters = type.realParameters,
+    realParameters = realParameters,
     generate = generate,
   )
 

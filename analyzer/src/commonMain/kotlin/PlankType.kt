@@ -247,14 +247,27 @@ data class FunctionType(
   }
 }
 
-fun FunctionType(returnType: PlankType, parameters: List<PlankType>): FunctionType {
-  return parameters.fold(returnType) { acc, parameter ->
-    FunctionType(acc, parameter)
+fun FunctionType(
+  returnType: PlankType,
+  parameters: List<PlankType>,
+  realParameters: Map<Identifier, PlankType> = emptyMap(),
+): FunctionType {
+  val functionParameters = when {
+    parameters.isEmpty() -> listOf(Untyped)
+    else -> parameters.reversed()
+  }
+
+  return functionParameters.fold(returnType) { acc, parameter ->
+    FunctionType(parameter, acc, realParameters = realParameters)
   } as? FunctionType ?: FunctionType(returnType, UnitType)
 }
 
-fun FunctionType(returnType: PlankType, vararg parameters: PlankType): FunctionType {
-  return FunctionType(returnType, parameters.toList())
+fun FunctionType(
+  returnType: PlankType,
+  vararg parameters: PlankType,
+  realParameters: Map<Identifier, PlankType> = emptyMap(),
+): FunctionType {
+  return FunctionType(returnType, parameters.toList(), realParameters)
 }
 
 class DelegateType(var value: PlankType? = null) : PlankType() {
@@ -270,7 +283,7 @@ class DelegateType(var value: PlankType? = null) : PlankType() {
     value = plankType
   }
 
-  override fun toString() = value!!.toString()
+  override fun toString(): String = value!!.name.text // TODO: improve this
 }
 
 val UnitType = IntType("()", 8)
@@ -287,7 +300,11 @@ object Untyped : PlankType() {
   override fun toString(): String = "???"
 }
 
-data class EnumMember(val name: Identifier, val fields: List<PlankType>)
+data class EnumMember(
+  val name: Identifier,
+  val fields: List<PlankType>,
+  val functionType: FunctionType,
+)
 
 data class StructProperty(
   val mutable: Boolean,

@@ -404,16 +404,25 @@ internal class BindingContext(tree: ModuleTree) :
   override fun visitEnumDecl(decl: EnumDecl): ResolvedStmt {
     val name = decl.name
 
-    val enum = DelegateType(PointerType(EnumType(name))).also {
+    val enum = DelegateType(EnumType(name)).also {
       currentScope.create(name, it)
     }
 
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
+      val functionType = FunctionType(
+        enum,
+        types,
+        types.withIndex().associate { (index, type) -> Identifier("_$index") to type },
+      ).copy(actualReturnType = enum)
 
-      currentScope.declare(name, FunctionType(enum, types))
+      if (types.isEmpty()) {
+        currentScope.declare(name, enum)
+      } else {
+        currentScope.declare(name, functionType)
+      }
 
-      name to EnumMember(name, types)
+      name to EnumMember(name, types, functionType)
     }
 
     enum.value = EnumType(name, members)

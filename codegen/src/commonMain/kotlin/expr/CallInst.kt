@@ -31,7 +31,6 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
               name = name,
               mangled = name,
               type = functionType,
-              returnType = functionType.actualReturnType,
               realParameters = functionType.realParameters,
               references = functionType.references,
               nested = true,

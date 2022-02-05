@@ -10,15 +10,16 @@ import org.plank.codegen.mangle
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
+import org.plank.syntax.element.Identifier
 
 class GlobalFunctionSymbol(
-  private val descriptor: ResolvedFunDecl,
+  override val type: org.plank.analyzer.FunctionType,
+  private val references: Map<Identifier, PlankType>,
+  override val name: String,
   private val mangled: String,
+  private val realParameters: Map<Identifier, PlankType>,
   private val generate: GenerateBody,
-  override val name: String = descriptor.name.text,
 ) : FunctionSymbol {
-  override val type: PlankType = descriptor.type
-
   override fun CodegenContext.access(): AllocaInst? {
     return lazyLocal(name) {
       currentModule.getFunction(mangled)?.let {
@@ -28,7 +29,7 @@ class GlobalFunctionSymbol(
   }
 
   override fun CodegenContext.codegen(): Value {
-    val closureReturnType = descriptor.type.typegen()
+    val closureReturnType = type.typegen()
 
     val insertionBlock = insertionBlock
     val function = FunctionType(closureReturnType).let {
@@ -39,7 +40,17 @@ class GlobalFunctionSymbol(
       .also(function::appendBasicBlock)
       .also(::positionAfter)
 
-    val closure = addCurryFunction(descriptor, false, generate)
+    val closure = addFunction(
+      CurryFunctionSymbol(
+        type = type,
+        nested = false,
+        references = references,
+        name = name,
+        mangled = mangled,
+        realParameters = realParameters,
+        generate = generate,
+      )
+    )
 
     positionAfter(entry)
 
@@ -57,6 +68,28 @@ class GlobalFunctionSymbol(
   }
 }
 
+fun CodegenContext.addGlobalFunction(
+  type: org.plank.analyzer.FunctionType,
+  name: String,
+  mangled: String,
+  references: Map<Identifier, PlankType> = emptyMap(),
+  realParameters: Map<Identifier, PlankType> = type.realParameters,
+  generate: GenerateBody,
+): Value {
+  return addFunction(
+    GlobalFunctionSymbol(type, references, name, mangled, realParameters, generate)
+  )
+}
+
 fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
-  return addFunction(GlobalFunctionSymbol(descriptor, mangle(descriptor), generate))
+  return addFunction(
+    GlobalFunctionSymbol(
+      type = descriptor.type,
+      references = descriptor.references,
+      name = descriptor.name.text,
+      mangled = mangle(descriptor),
+      realParameters = descriptor.realParameters,
+      generate = generate,
+    )
+  )
 }

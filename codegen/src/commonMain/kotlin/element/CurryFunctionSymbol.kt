@@ -20,7 +20,6 @@ class CurryFunctionSymbol(
   private val references: Map<Identifier, PlankType>,
   override val name: String,
   private val mangled: String,
-  private val returnType: PlankType,
   private val realParameters: Map<Identifier, PlankType>,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
@@ -53,7 +52,7 @@ class CurryFunctionSymbol(
           .also { it.codegen() }
           .access()!!
       } else {
-        addIrClosure(name, type, references, generate)
+        addIrClosure(name, type, "${mangled}_empty", references, generate = generate)
           .also { it.codegen() }
           .access()!!
       }
@@ -84,6 +83,7 @@ class CurryFunctionSymbol(
       type = type.copy(name = Identifier("$mangled#$index")),
       references = references + parameters,
       parameters = mapOf(parameters[index]),
+      realParameters = realParameters,
       generate = { builder(type.returnType) },
     )
   }
@@ -100,7 +100,6 @@ fun CodegenContext.addCurryFunction(
     references = descriptor.references,
     name = descriptor.name.text,
     mangled = mangle(descriptor),
-    returnType = descriptor.type.actualReturnType,
     realParameters = descriptor.realParameters,
     generate = generate,
   )
