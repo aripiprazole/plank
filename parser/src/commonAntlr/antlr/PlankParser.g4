@@ -56,7 +56,7 @@ decl: TYPE name=IDENTIFIER EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)          
     | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr             semis                                 # LetDecl
     ;
 
-functionBody : (LBRACE stmt* returned=expr? RBRACE)? optionalSemis # CodeBody
+functionBody : LBRACE stmt* returned=expr? RBRACE optionalSemis    # CodeBody
              | semis                                               # NoBody
              | EQUAL value=expr                      optionalSemis # ExprBody
              ;
