@@ -18,6 +18,7 @@ import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
+import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
 import org.plank.analyzer.element.TypedErrorExpr
@@ -39,6 +40,7 @@ import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
 import org.plank.syntax.element.ArrayTypeRef
 import org.plank.syntax.element.AssignExpr
+import org.plank.syntax.element.BlockExpr
 import org.plank.syntax.element.CallExpr
 import org.plank.syntax.element.CodeBody
 import org.plank.syntax.element.ConstExpr
@@ -154,7 +156,7 @@ internal class BindingContext(tree: ModuleTree) :
         addVertex(name)
 
         val dependencyTreeWalker = object : TreeWalker() {
-          override fun visitImportDecl(decl: UseDecl) {
+          override fun visitUseDecl(decl: UseDecl) {
             addEdge(name, decl.path.toIdentifier())
           }
         }
@@ -169,6 +171,15 @@ internal class BindingContext(tree: ModuleTree) :
     val program = visitStmts(file.program).filterIsInstance<ResolvedDecl>()
 
     return ResolvedPlankFile(file, program, bindingViolations = violations.toList())
+  }
+
+  override fun visitBlockExpr(expr: BlockExpr): TypedExpr {
+    return scoped {
+      val returned = expr.returned?.let(::visit) ?: UnitType.const()
+      val stmts = visitStmts(expr.stmts)
+
+      TypedBlockExpr(stmts, returned, references, returned.type, expr.location)
+    }
   }
 
   override fun visitConstExpr(expr: ConstExpr): TypedExpr {
@@ -195,9 +206,7 @@ internal class BindingContext(tree: ModuleTree) :
       variable.declaredIn !is FileScope &&
       variable.declaredIn !is GlobalScope
     ) {
-      (currentScope as? FunctionScope)?.apply {
-        references[variable.name] = variable.value.type
-      }
+      currentScope.references[variable.name] = variable.value.type
     }
 
     return TypedAccessExpr(variable, expr.location)
@@ -231,6 +240,7 @@ internal class BindingContext(tree: ModuleTree) :
     return TypedAssignExpr(reference.name, value, value.type, expr.location)
   }
 
+  @Suppress("ReturnCount")
   override fun visitSetExpr(expr: SetExpr): TypedExpr {
     val newValue = visit(expr.value)
 
@@ -466,7 +476,7 @@ internal class BindingContext(tree: ModuleTree) :
     TODO("Not yet implemented")
   }
 
-  override fun visitImportDecl(decl: UseDecl): ResolvedStmt {
+  override fun visitUseDecl(decl: UseDecl): ResolvedStmt {
     val module = currentScope.findModule(decl.path.toIdentifier())
       ?: return decl.violate("Unresolved module `${decl.path.text}`").stmt()
 

@@ -32,6 +32,10 @@ sealed class PlankType {
 
   abstract val size: Int
 
+  fun identity(): FunctionType {
+    return FunctionType(this)
+  }
+
   fun const(value: Any = Unit): TypedConstExpr {
     return TypedConstExpr(value, this, Location.Generated)
   }

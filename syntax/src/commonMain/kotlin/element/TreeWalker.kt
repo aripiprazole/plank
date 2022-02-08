@@ -104,7 +104,7 @@ open class TreeWalker :
   override fun visitErrorStmt(stmt: ErrorStmt) {
   }
 
-  override fun visitImportDecl(decl: UseDecl) {
+  override fun visitUseDecl(decl: UseDecl) {
     visit(decl.path)
   }
 
@@ -197,5 +197,10 @@ open class TreeWalker :
   override fun visitCodeBody(body: CodeBody) {
     visitStmts(body.stmts)
     body.returned?.let { visit(it) }
+  }
+
+  override fun visitBlockExpr(expr: BlockExpr) {
+    visitStmts(expr.stmts)
+    expr.returned?.let { visit(it) }
   }
 }

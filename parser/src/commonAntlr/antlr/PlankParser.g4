@@ -97,6 +97,7 @@ expr: <assoc=right> name=IDENTIFIER ASSIGN       value=expr                  # A
     | lhs=expr op=(TIMES | DIV)         rhs=expr                             # BinaryExpr
     | lhs=expr op=(ADD | CONCAT | SUB)  rhs=expr                             # BinaryExpr
     | op=(BANG | SUB)                   rhs=expr                             # UnaryExpr
+    | LBRACE stmt* returned=expr? RBRACE                                     # BlockExpr
     | callee=primary arg*                                                    # CallExpr
     | type=typeRef LBRACE instanceArg (COMMA instanceArg)* RBRACE            # InstanceExpr
     | IF LPAREN cond=expr RPAREN thenBranch=expr (ELSE elseBranch=expr)?     # IfExpr

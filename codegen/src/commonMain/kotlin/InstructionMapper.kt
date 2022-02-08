@@ -13,6 +13,7 @@ import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
+import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
@@ -30,6 +31,7 @@ import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.codegen.expr.AccessInst
 import org.plank.codegen.expr.AssignInst
+import org.plank.codegen.expr.BlockInst
 import org.plank.codegen.expr.CallInst
 import org.plank.codegen.expr.ConstInst
 import org.plank.codegen.expr.DerefInst
@@ -56,6 +58,10 @@ interface InstructionMapper :
   TypedExpr.Visitor<CodegenInstruction>,
   ResolvedStmt.Visitor<CodegenInstruction> {
   companion object : InstructionMapper {
+    override fun visitBlockExpr(expr: TypedBlockExpr): CodegenInstruction {
+      return BlockInst(expr)
+    }
+
     override fun visitConstExpr(expr: TypedConstExpr): CodegenInstruction {
       return ConstInst(expr)
     }

@@ -22,6 +22,7 @@ import org.plank.parser.PlankParser.AttrIntExprContext
 import org.plank.parser.PlankParser.AttrStringExprContext
 import org.plank.parser.PlankParser.AttrTrueExprContext
 import org.plank.parser.PlankParser.BinaryExprContext
+import org.plank.parser.PlankParser.BlockExprContext
 import org.plank.parser.PlankParser.CallArgContext
 import org.plank.parser.PlankParser.CallExprContext
 import org.plank.parser.PlankParser.CodeBodyContext
@@ -77,6 +78,7 @@ import org.plank.syntax.element.ArrayTypeRef
 import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.AttributeExpr
+import org.plank.syntax.element.BlockExpr
 import org.plank.syntax.element.BoolAttributeExpr
 import org.plank.syntax.element.CallExpr
 import org.plank.syntax.element.CodeBody
@@ -336,6 +338,10 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     )
   }
 
+  override fun visitBlockExpr(ctx: BlockExprContext): Expr {
+    return BlockExpr(ctx.findStmt().map(::visitStmt), ctx.returned?.let(::visitExpr), ctx.location)
+  }
+
   private fun visitExpr(ctx: ExprContext): Expr = when (ctx) {
     is AssignExprContext -> visitAssignExpr(ctx)
     is SetExprContext -> visitSetExpr(ctx)
@@ -346,6 +352,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     is IfExprContext -> visitIfExpr(ctx)
     is SizeofExprContext -> visitSizeofExpr(ctx)
     is MatchExprContext -> visitMatchExpr(ctx)
+    is BlockExprContext -> visitBlockExpr(ctx)
     else -> error("Unsupported expr ${ctx::class.simpleName}")
   }
 

@@ -4,6 +4,7 @@ sealed interface Expr : PlankElement {
   interface Visitor<T> {
     fun visit(expr: Expr): T = expr.accept(this)
 
+    fun visitBlockExpr(expr: BlockExpr): T
     fun visitMatchExpr(expr: MatchExpr): T
     fun visitIfExpr(expr: IfExpr): T
     fun visitConstExpr(expr: ConstExpr): T
@@ -23,6 +24,16 @@ sealed interface Expr : PlankElement {
   }
 
   fun <T> accept(visitor: Visitor<T>): T
+}
+
+data class BlockExpr(
+  val stmts: List<Stmt>,
+  val returned: Expr?,
+  override val location: Location
+) : Expr {
+  override fun <T> accept(visitor: Expr.Visitor<T>): T {
+    return visitor.visitBlockExpr(this)
+  }
 }
 
 data class MatchExpr(

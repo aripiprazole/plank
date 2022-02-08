@@ -14,6 +14,7 @@ sealed interface TypedExpr : TypedPlankElement {
   interface Visitor<T> {
     fun visit(expr: TypedExpr): T = expr.accept(this)
 
+    fun visitBlockExpr(expr: TypedBlockExpr): T
     fun visitConstExpr(expr: TypedConstExpr): T
     fun visitIfExpr(expr: TypedIfExpr): T
     fun visitAccessExpr(expr: TypedAccessExpr): T
@@ -39,6 +40,18 @@ sealed interface TypedExpr : TypedPlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 
   fun stmt(): ResolvedStmt = ResolvedExprStmt(this, location)
+}
+
+data class TypedBlockExpr(
+  val stmts: List<ResolvedStmt>,
+  val returned: TypedExpr,
+  val references: LinkedHashMap<Identifier, PlankType> = LinkedHashMap(),
+  override val type: PlankType,
+  override val location: Location,
+) : TypedExpr {
+  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
+    return visitor.visitBlockExpr(this)
+  }
 }
 
 data class TypedConstExpr(

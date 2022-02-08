@@ -91,9 +91,10 @@ class FunctionScope(
   override val isTopLevelScope: Boolean = false
 }
 
-class ClosureScope(
+open class ClosureScope(
   override val name: Identifier,
   override val enclosing: Scope,
+  override val references: LinkedHashMap<Identifier, PlankType> = LinkedHashMap(),
   override val moduleTree: ModuleTree = ModuleTree()
 ) : Scope() {
   override val isTopLevelScope: Boolean = false
