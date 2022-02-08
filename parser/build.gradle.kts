@@ -1,5 +1,4 @@
 import com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 kotlin {
   jvm()
@@ -18,7 +17,7 @@ kotlin {
         implementation(projects.shared)
       }
 
-      kotlin.srcDir("$buildDir/generated-src/commonAntlr/kotlin")
+      kotlin.srcDir(buildDir.resolve("generated-src").resolve("commonAntlr").resolve("kotlin"))
     }
     val commonTest by getting
 
@@ -35,7 +34,7 @@ tasks {
   val antlr4Version = libs.versions.antlr4.get()
   val antlrKotlinVersion = libs.versions.antlr.kotlin.get()
 
-  val generateKotlinGrammarSource = register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+  val generateParserSource by creating(AntlrKotlinTask::class) {
     val dependencies = project.dependencies
 
     antlrClasspath = configurations.detachedConfiguration(
@@ -43,17 +42,25 @@ tasks {
       dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinVersion")
     )
     maxHeapSize = "64m"
-    packageName = "org.plank.parser"
     arguments = listOf("-visitor")
     source = project.objects
       .sourceDirectorySet("commonAntlr", "commonAntlr")
       .srcDir("src/commonAntlr/antlr").apply {
         include("*.g4")
       }
-    outputDirectory = File("$buildDir/generated-src/commonAntlr/kotlin")
+    outputDirectory = buildDir.resolve("generated-src").resolve("commonAntlr").resolve("kotlin")
+
+    finalizedBy(ktlintFormat)
   }
 
-  withType<KotlinCompile> {
-    dependsOn(generateKotlinGrammarSource)
+  runKtlintFormatOverCommonMainSourceSet {
+    inputs.dir(generateParserSource.outputDirectory.absoluteFile)
   }
+
+  kotlin.targets
+    .flatMap { it.compilations }
+    .map { it.compileKotlinTask }
+    .forEach { task ->
+      task.dependsOn(generateParserSource)
+    }
 }
