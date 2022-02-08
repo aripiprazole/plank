@@ -69,6 +69,7 @@ import org.plank.parser.PlankParser.TrueExprContext
 import org.plank.parser.PlankParser.TypePrimaryContext
 import org.plank.parser.PlankParser.TypeRefContext
 import org.plank.parser.PlankParser.UnaryExprContext
+import org.plank.parser.PlankParser.UnitTypeRefContext
 import org.plank.parser.PlankParser.UseDeclContext
 import org.plank.parser.PlankParserBaseVisitor
 import org.plank.syntax.element.AccessAttributeExpr
@@ -391,8 +392,10 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return ConstExpr(false, ctx.location)
   }
 
-  override fun visitGroupExpr(ctx: GroupExprContext): GroupExpr {
-    return GroupExpr(visitExpr(ctx.value!!), ctx.location)
+  override fun visitGroupExpr(ctx: GroupExprContext): Expr {
+    val value = ctx.value ?: return ConstExpr(Unit, ctx.location)
+
+    return GroupExpr(visitExpr(value), ctx.location)
   }
 
   private fun visitExpr(ctx: PrimaryContext): Expr = when (ctx) {
@@ -497,11 +500,16 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return visitTypeRef(ctx.type!!)
   }
 
+  override fun visitUnitTypeRef(ctx: UnitTypeRefContext): TypeRef {
+    return UnitTypeRef(ctx.location)
+  }
+
   private fun visitTypeRef(ctx: TypePrimaryContext): TypeRef = when (ctx) {
     is AccessTypeRefContext -> visitAccessTypeRef(ctx)
     is ArrayTypeRefContext -> visitArrayTypeRef(ctx)
     is PointerTypeRefContext -> visitPointerTypeRef(ctx)
     is GroupTypeRefContext -> visitGroupTypeRef(ctx)
+    is UnitTypeRefContext -> visitUnitTypeRef(ctx)
     else -> error("Unsupported primary type ref ${ctx::class.simpleName}")
   }
 

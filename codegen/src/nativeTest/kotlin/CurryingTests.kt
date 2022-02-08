@@ -12,7 +12,7 @@ class CurryingTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println("Hello, world");
         }
         """.trimIndent()
@@ -38,7 +38,7 @@ class CurryingTests {
           println(surname);
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           print_full_name("Isabela", "Freitas");
         }
         """.trimIndent()
@@ -64,7 +64,7 @@ class CurryingTests {
           println(surname);
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           print_full_name("Isabela")("Freitas");
         }
         """.trimIndent()
@@ -90,7 +90,7 @@ class CurryingTests {
           println(surname);
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           print_full_name("Isabela")("Freitas");
           print_full_name("Isabela")("Freitas");
         }
@@ -117,7 +117,7 @@ class CurryingTests {
           println(surname);
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let print_surname = print_full_name("Isabela");
         }
         """.trimIndent()
@@ -143,7 +143,7 @@ class CurryingTests {
           println(surname);
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let print_surname = print_full_name("Isabela");
           print_surname("Freitas");
         }
@@ -170,7 +170,7 @@ class CurryingTests {
           println(surname);
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let print_surname = print_full_name("Isabela");
           print_surname("Freitas");
           print_surname("Freitas");
@@ -192,11 +192,11 @@ class CurryingTests {
 
         use Std.IO;
 
-        fun empty() -> Void {
+        fun empty() -> () {
           println("Hello, world!");
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           empty();
         }
         """.trimIndent()

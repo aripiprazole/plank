@@ -28,7 +28,6 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     create(BoolType)
     create(IntType(32))
     create(FloatType(32))
-    create(Identifier("Void"), UnitType)
 
     // Add default binary operators
     declare(Identifier.add(), FunctionType(IntType(), IntType(), IntType()))

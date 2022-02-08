@@ -14,7 +14,7 @@ class StructTests {
 
         type Person = {mutable name: *Char};
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let person = Person{name: "Gabrielle"};
         }
         """.trimIndent()
@@ -36,7 +36,7 @@ class StructTests {
 
         type Person = {mutable name: *Char};
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let person = Person{name: "Gabrielle"};
           println(person.name);
         }
@@ -71,7 +71,7 @@ class StructTests {
           return Person{name: "Gerson"};
         }
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(create_gerson().name);
           let mutable person = *create_gabrielle();
           println(person.name);

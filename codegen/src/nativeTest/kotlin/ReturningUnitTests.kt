@@ -12,7 +12,7 @@ class ReturningUnitTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           return println("Hello, world!");
         }
         """.trimIndent()

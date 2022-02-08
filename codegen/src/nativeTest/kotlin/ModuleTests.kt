@@ -18,7 +18,7 @@ class ModuleTests {
           }
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
         }
         """.trimIndent()
       )
@@ -43,7 +43,7 @@ class ModuleTests {
           }
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           Print.str("Hello world");
         }
         """.trimIndent()
@@ -69,7 +69,7 @@ class ModuleTests {
           }
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           Print.str("Hello world");
         }
         """.trimIndent()
@@ -93,7 +93,7 @@ class ModuleTests {
           let x = "hello, world";
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
         }
         """.trimIndent()
       )
@@ -116,7 +116,7 @@ class ModuleTests {
           let x = "hello, world";
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(Test.x);
         }
         """.trimIndent()
@@ -140,7 +140,7 @@ class ModuleTests {
           let x = "hello, world";
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(Test.x);
           println(Test.x);
         }
@@ -169,7 +169,7 @@ class ModuleTests {
           let x = buildString();
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(Test.x);
         }
         """.trimIndent()
@@ -193,7 +193,7 @@ class ModuleTests {
           let x = println;
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           Test.x("hello");
         }
         """.trimIndent()
@@ -217,7 +217,7 @@ class ModuleTests {
           let mutable x = "hello, world";
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
         }
         """.trimIndent()
       )
@@ -240,7 +240,7 @@ class ModuleTests {
           let mutable x = "hello, world";
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           Test.x := "updated";
         }
         """.trimIndent()
@@ -264,7 +264,7 @@ class ModuleTests {
           let mutable x = "hello, world";
         };
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(Test.x);
           Test.x := "updated";
           println(Test.x);

@@ -12,7 +12,7 @@ class HelloWorldTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println("Hello, world!");
         }
         """.trimIndent()
@@ -32,7 +32,7 @@ class HelloWorldTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println("Hello, world!");
           println("Hello, world!");
         }

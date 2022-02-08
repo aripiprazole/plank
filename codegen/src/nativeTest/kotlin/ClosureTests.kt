@@ -12,8 +12,8 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested() -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested() -> () {
             println("Hello, world! (nested)");
           }
 
@@ -36,9 +36,9 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested() -> Void {
-            fun nested2() -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested() -> () {
+            fun nested2() -> () {
               println("Hello, world! (nested 2nd level)");
             }
 
@@ -63,8 +63,8 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested() -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested() -> () {
             println("Hello, world! (nested)");
           }
 
@@ -87,9 +87,9 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested() -> Void {
-            fun nested2() -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested() -> () {
+            fun nested2() -> () {
               println("Hello, world! (nested 2nd level)");
             }
 
@@ -116,9 +116,9 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested() -> Void {
-            fun nested2() -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested() -> () {
+            fun nested2() -> () {
               println("Hello world! (nested 2nd level)");
             }
 
@@ -146,11 +146,11 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested() -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested() -> () {
             let x = "Example String";
 
-            fun nested2() -> Void {
+            fun nested2() -> () {
               println(x);
             }
 
@@ -176,10 +176,10 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let x = "Example String";
-          fun nested() -> Void {
-            fun nested2() -> Void {
+          fun nested() -> () {
+            fun nested2() -> () {
               println(x);
             }
 
@@ -205,8 +205,8 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested() -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested() -> () {
             println("Hello, world! (nested)");
           }
 
@@ -230,9 +230,9 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let x = "Example String";
-          fun nested() -> Void {
+          fun nested() -> () {
             println(x);
           }
           nested();
@@ -254,8 +254,8 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested(x: *Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested(x: *Char) -> () {
             println(x);
           }
           nested("Hello, world");
@@ -277,8 +277,8 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
-          fun nested(x: *Char, y: *Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
+          fun nested(x: *Char, y: *Char) -> () {
           }
           nested("Hello")("world");
         }
@@ -300,9 +300,9 @@ class ClosureTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let outside = "Example String";
-          fun nested(x: *Char, y: *Char) -> Void {
+          fun nested(x: *Char, y: *Char) -> () {
             println(outside);
             print(x);
             print(" ");

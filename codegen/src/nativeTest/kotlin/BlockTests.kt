@@ -12,7 +12,7 @@ class BlockTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           {
             println("Hello, world!");
           };
@@ -34,7 +34,7 @@ class BlockTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let message = "Hello, world!";
           {
             println(message);
@@ -57,7 +57,7 @@ class BlockTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let string = {
             "Hello, world!"
           };
@@ -81,7 +81,7 @@ class BlockTests {
 
         use Std.IO;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           let message = "Hello, world!";
           let string = {
             message

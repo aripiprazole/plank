@@ -42,6 +42,7 @@ typePrimary: path=qualifiedPath                 # AccessTypeRef
            | LBRACKET type=typePrimary RBRACKET # ArrayTypeRef
            | TIMES    type=typePrimary          # PointerTypeRef
            | LPAREN   type=typeRef RPAREN       # GroupTypeRef
+           | LPAREN RPAREN                      # UnitTypeRef
            ;
 
 param: name=IDENTIFIER COLON type=typeRef;
@@ -113,13 +114,13 @@ arg: LPAREN (expr (COMMA expr)*)? RPAREN # CallArg
 
 matchPattern: key=pattern DOUBLE_ARROW_LEFT value=expr;
 
-primary: AMPERSTAND value=expr        # RefExpr
-       | TIMES      value=expr        # DerefExpr
-       |            value=INT         # IntExpr
-       |            value=DECIMAL     # DecimalExpr
-       |            value=STRING      # StringExpr
-       |            value=IDENTIFIER  # AccessExpr
-       |            value=TRUE        # TrueExpr
-       |            value=FALSE       # FalseExpr
-       | LPAREN     value=expr RPAREN # GroupExpr
+primary: AMPERSTAND value=expr         # RefExpr
+       | TIMES      value=expr         # DerefExpr
+       |            value=INT          # IntExpr
+       |            value=DECIMAL      # DecimalExpr
+       |            value=STRING       # StringExpr
+       |            value=IDENTIFIER   # AccessExpr
+       |            value=TRUE         # TrueExpr
+       |            value=FALSE        # FalseExpr
+       | LPAREN     value=expr? RPAREN # GroupExpr
        ;

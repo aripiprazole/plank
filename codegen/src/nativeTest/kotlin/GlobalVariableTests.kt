@@ -14,7 +14,7 @@ class GlobalVariableTests {
 
         let x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
         }
         """.trimIndent()
       )
@@ -35,7 +35,7 @@ class GlobalVariableTests {
 
         let x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(x);
         }
         """.trimIndent()
@@ -57,7 +57,7 @@ class GlobalVariableTests {
 
         let x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(x);
           println(x);
         }
@@ -84,7 +84,7 @@ class GlobalVariableTests {
 
         let x = buildString();
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(x);
         }
         """.trimIndent()
@@ -106,7 +106,7 @@ class GlobalVariableTests {
 
         let x = println;
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           x("hello");
         }
         """.trimIndent()
@@ -128,7 +128,7 @@ class GlobalVariableTests {
 
         let mutable x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
         }
         """.trimIndent()
       )
@@ -149,7 +149,7 @@ class GlobalVariableTests {
 
         let mutable x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           x := "updated";
         }
         """.trimIndent()
@@ -171,7 +171,7 @@ class GlobalVariableTests {
 
         let mutable x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char) -> Void {
+        fun main(argc: Int32, argv: **Char) -> () {
           println(x);
           x := "updated";
           println(x);
