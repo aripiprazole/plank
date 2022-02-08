@@ -22,7 +22,7 @@ on [Twitter](https://twitter.com/gabrielleeg1) or message me on discord **gabii#
 
 Hello world in plank:
 
-```kotlin
+```ocaml
 use Std.IO;
 
 fun main(argc: Int32, argv: **Char): Void {
