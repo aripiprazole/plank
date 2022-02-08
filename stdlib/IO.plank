@@ -1,7 +1,7 @@
 module Std.IO;
 
 @intrinsic
-fun println(message: *Char) -> Void
+fun println(message: *Char) -> Void;
 
 @intrinsic
-fun print(message: *Char) -> Void
+fun print(message: *Char) -> Void;
