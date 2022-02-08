@@ -2,8 +2,10 @@ package org.plank.codegen.element
 
 import org.plank.analyzer.PlankType
 import org.plank.analyzer.UnitType
+import org.plank.analyzer.element.ResolvedCodeBody
+import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedFunDecl
-import org.plank.analyzer.element.ResolvedReturnStmt
+import org.plank.analyzer.element.ResolvedNoBody
 import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
@@ -19,12 +21,22 @@ sealed interface FunctionSymbol : Symbol {
 
 class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecContext) -> Unit {
   override fun invoke(ctx: ExecContext): Unit = with(ctx) {
-    descriptor.content.codegen()
+    when (val body = descriptor.body) {
+      is ResolvedNoBody -> {}
+      is ResolvedExprBody -> createRet(body.expr.codegen())
+      is ResolvedCodeBody -> {
+        body.stmts.codegen()
 
-    if (descriptor.type.actualReturnType != UnitType) return
-    if (descriptor.content.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()) return
+        body.returned?.let { returned ->
+          createRet(returned.codegen())
+        }
 
-    createRet(createUnit())
+        if (descriptor.type.actualReturnType != UnitType) return
+        if (body.hasReturnedUnit) return
+
+        createRet(createUnit())
+      }
+    }
   }
 }
 

@@ -1,12 +1,14 @@
 package org.plank.syntax.element
 
-abstract class TreeWalker :
+@Suppress("EmptyFunctionBlock")
+open class TreeWalker :
   Expr.Visitor<Unit>,
   Stmt.Visitor<Unit>,
   Pattern.Visitor<Unit>,
   QualifiedPath.Visitor<Unit>,
   Identifier.Visitor<Unit>,
-  TypeRef.Visitor<Unit> {
+  TypeRef.Visitor<Unit>,
+  FunctionBody.Visitor<Unit> {
   fun walk(element: PlankElement) = when (element) {
     is Expr -> visit(element)
     is Stmt -> visit(element)
@@ -131,7 +133,7 @@ abstract class TreeWalker :
   override fun visitFunDecl(decl: FunDecl) {
     visit(decl.name)
     visit(decl.type)
-    visitStmts(decl.body)
+    visit(decl.body)
     decl.realParameters.forEach { (parameter, type) ->
       visit(parameter)
       visit(type)
@@ -183,5 +185,17 @@ abstract class TreeWalker :
   }
 
   override fun visitIdentifier(identifier: Identifier) {
+  }
+
+  override fun visitNoBody(body: NoBody) {
+  }
+
+  override fun visitExprBody(body: ExprBody) {
+    visit(body.expr)
+  }
+
+  override fun visitCodeBody(body: CodeBody) {
+    visitStmts(body.stmts)
+    body.returned?.let { visit(it) }
   }
 }

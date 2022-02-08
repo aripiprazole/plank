@@ -45,14 +45,19 @@ typePrimary: path=qualifiedPath                 # AccessTypeRef
 param: name=IDENTIFIER COLON type=typeRef;
 
 // decls
-decl: TYPE name=IDENTIFIER EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)                            semis                  # StructDecl
-    | ENUM name=IDENTIFIER       (LBRACE (enumMember (COMMA enumMember))? RBRACE)?                                       # EnumDecl
-    | MODULE path=qualifiedPath LBRACE decl* RBRACE                                               semis                  # ModuleDecl
-    | IMPORT path=qualifiedPath                                                                   semis                  # ImportDecl
-    | attr* FUN name=IDENTIFIER LPAREN (param (COMMA param)*)? RPAREN (COLON returnType=typeRef)? (LBRACE stmt* RBRACE)? # FunDecl
-    | LET MUTABLE? name=IDENTIFIER EQUAL value=expr                                               semis                  # InferLetDecl
-    | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr                            semis                  # LetDecl
+decl: TYPE name=IDENTIFIER EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)                            semis             # StructDecl
+    | ENUM name=IDENTIFIER       (LBRACE (enumMember (COMMA enumMember))? RBRACE)?                                  # EnumDecl
+    | MODULE path=qualifiedPath LBRACE decl* RBRACE                                               semis             # ModuleDecl
+    | IMPORT path=qualifiedPath                                                                   semis             # ImportDecl
+    | attr* FUN name=IDENTIFIER LPAREN (param (COMMA param)*)? RPAREN (COLON returnType=typeRef)? body=functionBody # FunDecl
+    | LET MUTABLE? name=IDENTIFIER EQUAL value=expr                                               semis             # InferLetDecl
+    | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr                            semis             # LetDecl
     ;
+
+functionBody : (LBRACE stmt* returned=expr? RBRACE)? # CodeBody
+             | semis                                 # NoBody
+             | EQUAL value=expr                      # ExprBody
+             ;
 
 // types
 enumMember: name=IDENTIFIER (LPAREN (typeRef (COMMA typeRef))? RPAREN)?;

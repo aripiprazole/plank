@@ -24,16 +24,19 @@ import org.plank.parser.PlankParser.AttrTrueExprContext
 import org.plank.parser.PlankParser.BinaryExprContext
 import org.plank.parser.PlankParser.CallArgContext
 import org.plank.parser.PlankParser.CallExprContext
+import org.plank.parser.PlankParser.CodeBodyContext
 import org.plank.parser.PlankParser.DecimalExprContext
 import org.plank.parser.PlankParser.DeclContext
 import org.plank.parser.PlankParser.DeclStmtContext
 import org.plank.parser.PlankParser.DerefExprContext
 import org.plank.parser.PlankParser.EnumDeclContext
+import org.plank.parser.PlankParser.ExprBodyContext
 import org.plank.parser.PlankParser.ExprContext
 import org.plank.parser.PlankParser.ExprStmtContext
 import org.plank.parser.PlankParser.FalseExprContext
 import org.plank.parser.PlankParser.FileContext
 import org.plank.parser.PlankParser.FunDeclContext
+import org.plank.parser.PlankParser.FunctionBodyContext
 import org.plank.parser.PlankParser.FunctionTypeRefContext
 import org.plank.parser.PlankParser.GetArgContext
 import org.plank.parser.PlankParser.GroupExprContext
@@ -49,6 +52,7 @@ import org.plank.parser.PlankParser.MatchExprContext
 import org.plank.parser.PlankParser.ModuleContext
 import org.plank.parser.PlankParser.ModuleDeclContext
 import org.plank.parser.PlankParser.NamedTuplePatternContext
+import org.plank.parser.PlankParser.NoBodyContext
 import org.plank.parser.PlankParser.PatternContext
 import org.plank.parser.PlankParser.PointerTypeRefContext
 import org.plank.parser.PlankParser.PrimaryContext
@@ -75,6 +79,7 @@ import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.AttributeExpr
 import org.plank.syntax.element.BoolAttributeExpr
 import org.plank.syntax.element.CallExpr
+import org.plank.syntax.element.CodeBody
 import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.DecimalAttributeExpr
 import org.plank.syntax.element.Decl
@@ -82,8 +87,10 @@ import org.plank.syntax.element.DerefExpr
 import org.plank.syntax.element.EnumDecl
 import org.plank.syntax.element.ErrorExpr
 import org.plank.syntax.element.Expr
+import org.plank.syntax.element.ExprBody
 import org.plank.syntax.element.ExprStmt
 import org.plank.syntax.element.FunDecl
+import org.plank.syntax.element.FunctionBody
 import org.plank.syntax.element.FunctionTypeRef
 import org.plank.syntax.element.GetExpr
 import org.plank.syntax.element.GroupExpr
@@ -98,6 +105,7 @@ import org.plank.syntax.element.Location
 import org.plank.syntax.element.MatchExpr
 import org.plank.syntax.element.ModuleDecl
 import org.plank.syntax.element.NamedTuplePattern
+import org.plank.syntax.element.NoBody
 import org.plank.syntax.element.Pattern
 import org.plank.syntax.element.PlankElement
 import org.plank.syntax.element.PlankFile
@@ -190,7 +198,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       attributes = ctx.findAttr().map(::visitAttr),
       name = visitToken(ctx.name!!),
       type = functionType,
-      body = ctx.findStmt().map(::visitStmt),
+      body = visitFunctionBody(ctx.body!!),
       location = ctx.location
     )
   }
@@ -213,6 +221,25 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       value = visitExpr(ctx.value!!),
       location = ctx.location
     )
+  }
+
+  override fun visitNoBody(ctx: NoBodyContext): FunctionBody {
+    return NoBody(ctx.location)
+  }
+
+  override fun visitExprBody(ctx: ExprBodyContext): FunctionBody {
+    return ExprBody(visitExpr(ctx.value!!), ctx.location)
+  }
+
+  override fun visitCodeBody(ctx: CodeBodyContext): FunctionBody {
+    return CodeBody(ctx.findStmt().map(::visitStmt), ctx.returned?.let(::visitExpr), ctx.location)
+  }
+
+  private fun visitFunctionBody(ctx: FunctionBodyContext): FunctionBody = when (ctx) {
+    is NoBodyContext -> visitNoBody(ctx)
+    is ExprBodyContext -> visitExprBody(ctx)
+    is CodeBodyContext -> visitCodeBody(ctx)
+    else -> error("Unsupported function body ${ctx::class.simpleName}")
   }
 
   private fun visitDecl(ctx: DeclContext): Decl = when (ctx) {

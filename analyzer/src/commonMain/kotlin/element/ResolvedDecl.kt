@@ -56,7 +56,7 @@ data class ResolvedModuleDecl(
 
 data class ResolvedFunDecl(
   val name: Identifier,
-  val content: List<ResolvedStmt>,
+  val body: ResolvedFunctionBody,
   val realParameters: Map<Identifier, PlankType>,
   val attributes: List<Attribute> = emptyList(),
   val references: LinkedHashMap<Identifier, PlankType> = LinkedHashMap(),

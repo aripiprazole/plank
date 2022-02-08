@@ -1,13 +1,17 @@
 package org.plank.analyzer
 
+import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedEnumDecl
 import org.plank.analyzer.element.ResolvedErrorDecl
+import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedExprStmt
 import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.ResolvedImportDecl
 import org.plank.analyzer.element.ResolvedLetDecl
 import org.plank.analyzer.element.ResolvedModuleDecl
+import org.plank.analyzer.element.ResolvedNoBody
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedReturnStmt
 import org.plank.analyzer.element.ResolvedStmt
@@ -36,6 +40,7 @@ import org.plank.syntax.element.AccessTypeRef
 import org.plank.syntax.element.ArrayTypeRef
 import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.CallExpr
+import org.plank.syntax.element.CodeBody
 import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.DerefExpr
 import org.plank.syntax.element.EnumDecl
@@ -43,8 +48,10 @@ import org.plank.syntax.element.ErrorDecl
 import org.plank.syntax.element.ErrorExpr
 import org.plank.syntax.element.ErrorStmt
 import org.plank.syntax.element.Expr
+import org.plank.syntax.element.ExprBody
 import org.plank.syntax.element.ExprStmt
 import org.plank.syntax.element.FunDecl
+import org.plank.syntax.element.FunctionBody
 import org.plank.syntax.element.FunctionTypeRef
 import org.plank.syntax.element.GetExpr
 import org.plank.syntax.element.GroupExpr
@@ -58,6 +65,7 @@ import org.plank.syntax.element.Location
 import org.plank.syntax.element.MatchExpr
 import org.plank.syntax.element.ModuleDecl
 import org.plank.syntax.element.NamedTuplePattern
+import org.plank.syntax.element.NoBody
 import org.plank.syntax.element.Pattern
 import org.plank.syntax.element.PlankElement
 import org.plank.syntax.element.PlankFile
@@ -88,6 +96,7 @@ internal class BindingContext(tree: ModuleTree) :
   Stmt.Visitor<ResolvedStmt>,
   Pattern.Visitor<TypedPattern>,
   PlankFile.Visitor<ResolvedPlankFile>,
+  FunctionBody.Visitor<ResolvedFunctionBody>,
   TypeRef.Visitor<PlankType> {
   /**
    * Used for type inference, where the type-system mutate the element's type to the most useful.
@@ -551,7 +560,7 @@ internal class BindingContext(tree: ModuleTree) :
           declare(name, closureIfFunction(visit(type)))
         }
 
-      visitStmts(decl.body)
+      visit(decl.body)
     }
 
     return ResolvedFunDecl(name, content, realParameters, attributes, references, type, location)
@@ -571,6 +580,18 @@ internal class BindingContext(tree: ModuleTree) :
 
   override fun visitErrorDecl(decl: ErrorDecl): ResolvedStmt {
     return ResolvedErrorDecl(decl.message, decl.arguments, decl.location)
+  }
+
+  override fun visitNoBody(body: NoBody): ResolvedFunctionBody {
+    return ResolvedNoBody(body.location)
+  }
+
+  override fun visitExprBody(body: ExprBody): ResolvedFunctionBody {
+    return ResolvedExprBody(visit(body.expr), body.location)
+  }
+
+  override fun visitCodeBody(body: CodeBody): ResolvedFunctionBody {
+    return ResolvedCodeBody(visitStmts(body.stmts), body.returned?.let(::visit), body.location)
   }
 
   override fun visitAccessTypeRef(ref: AccessTypeRef): PlankType {

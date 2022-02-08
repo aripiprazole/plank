@@ -46,7 +46,7 @@ data class FunDecl(
   val attributes: List<Attribute> = emptyList(),
   val name: Identifier,
   val type: FunctionTypeRef,
-  val body: List<Stmt>,
+  val body: FunctionBody,
   override val location: Location
 ) : Decl {
   val realParameters: Map<Identifier, TypeRef> = type.realParameters
