@@ -9,13 +9,11 @@ kotlin {
         implementation(projects.shared)
       }
     }
-    val commonTest by getting
 
     val jvmMain by getting {
       dependencies {
         implementation(libs.kt.reflect)
       }
     }
-    val jvmTest by getting
   }
 }
