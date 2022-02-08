@@ -197,7 +197,6 @@ fun IntType(size: Int = 32, unsigned: Boolean = false): IntType {
   return intCache.getOrPut(size) { IntType("Int$size", size, unsigned = unsigned) }
 }
 
-@Suppress("EqualsOrHashCode")
 data class FunctionType(
   val parameter: PlankType,
   val returnType: PlankType,
@@ -241,6 +240,22 @@ data class FunctionType(
   }
 
   override fun equals(other: Any?): Boolean = super.equals(other)
+
+  override fun hashCode(): Int {
+    var result = super.hashCode()
+    result = 31 * result + parameter.hashCode()
+    result = 31 * result + returnType.hashCode()
+    result = 31 * result + actualReturnType.hashCode()
+    result = 31 * result + parameters.hashCode()
+    result = 31 * result + realParameters.hashCode()
+    result = 31 * result + name.hashCode()
+    result = 31 * result + isNested.hashCode()
+    result = 31 * result + isPartialApplied.hashCode()
+    result = 31 * result + references.hashCode()
+    result = 31 * result + isPrimitive.hashCode()
+    result = 31 * result + size
+    return result
+  }
 
   override fun toString(): String = buildString {
     append(
