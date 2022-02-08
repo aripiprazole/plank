@@ -11,11 +11,7 @@ data class Module(val name: Identifier, val content: List<Decl>) {
 
   val type: ModuleType
     get() {
-      val variables = scope.variables.map { (name, variable) ->
-        StructProperty(variable.mutable, name, variable.value.type)
-      }
-
-      return ModuleType(name, variables)
+      return ModuleType(name, scope.variables.values.toList())
     }
 
   override fun toString(): String = "Module($name, ${scope::class.simpleName})"

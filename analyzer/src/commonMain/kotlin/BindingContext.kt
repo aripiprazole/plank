@@ -28,8 +28,6 @@ import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedMatchExpr
-import org.plank.analyzer.element.TypedModuleGetExpr
-import org.plank.analyzer.element.TypedModuleSetExpr
 import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
@@ -209,7 +207,7 @@ internal class BindingContext(tree: ModuleTree) :
       currentScope.references[variable.name] = variable.value.type
     }
 
-    return TypedAccessExpr(variable, expr.location)
+    return TypedAccessExpr(null, variable, expr.location)
   }
 
   override fun visitCallExpr(expr: CallExpr): TypedExpr {
@@ -237,7 +235,7 @@ internal class BindingContext(tree: ModuleTree) :
 
     reference.value = value
 
-    return TypedAssignExpr(reference.name, value, value.type, expr.location)
+    return TypedAssignExpr(null, reference.name, value, value.type, expr.location)
   }
 
   @Suppress("ReturnCount")
@@ -252,14 +250,9 @@ internal class BindingContext(tree: ModuleTree) :
         val value = currentScope.findVariable(name) ?: currentScope.findModule(name)
 
         if (value is Module) {
-          val type = ModuleType(
-            value.name,
-            value.scope.variables.values.map { variable ->
-              StructProperty(variable.mutable, variable.name, variable.value.type, variable.value)
-            }
-          )
+          val type = ModuleType(value.name, value.scope.variables.values.toList())
 
-          val property = type.property(expr.property)
+          val property = type.variable(expr.property)
             ?: return expr.property.violate("Unresolved property `${expr.property.text}` in module `${type.name}`")
 
           if (!property.mutable) {
@@ -270,7 +263,7 @@ internal class BindingContext(tree: ModuleTree) :
             return newValue.violate("Mismatch types: expecting ${property.type} but got ${newValue.type}")
           }
 
-          return TypedModuleSetExpr(value, property.name, newValue, newValue.type, location)
+          return TypedAssignExpr(value, property.name, newValue, newValue.type, location)
         } else {
           visit(receiver)
         }
@@ -306,17 +299,12 @@ internal class BindingContext(tree: ModuleTree) :
         val value = currentScope.findVariable(name) ?: currentScope.findModule(name)
 
         if (value is Module) {
-          val type = ModuleType(
-            value.name,
-            value.scope.variables.values.map { variable ->
-              StructProperty(variable.mutable, variable.name, variable.value.type, variable.value)
-            }
-          )
+          val type = ModuleType(value.name, value.scope.variables.values.toList())
 
-          val property = type.property(expr.property)
+          val variable = type.variable(expr.property)
             ?: return expr.property.violate("Unresolved property `${expr.property.text}` in module `${type.name}`")
 
-          return TypedModuleGetExpr(value, property.name, property.type, location)
+          return TypedAccessExpr(value, variable, location)
         } else {
           visit(receiver)
         }

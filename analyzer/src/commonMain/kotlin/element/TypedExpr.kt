@@ -20,9 +20,7 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitAccessExpr(expr: TypedAccessExpr): T
     fun visitCallExpr(expr: TypedCallExpr): T
     fun visitAssignExpr(expr: TypedAssignExpr): T
-    fun visitModuleSetExpr(expr: TypedModuleSetExpr): T
     fun visitSetExpr(expr: TypedSetExpr): T
-    fun visitModuleGetExpr(expr: TypedModuleGetExpr): T
     fun visitGetExpr(expr: TypedGetExpr): T
     fun visitGroupExpr(expr: TypedGroupExpr): T
     fun visitInstanceExpr(expr: TypedInstanceExpr): T
@@ -76,7 +74,11 @@ data class TypedIfExpr(
   }
 }
 
-data class TypedAccessExpr(val variable: Variable, override val location: Location) : TypedExpr {
+data class TypedAccessExpr(
+  val module: Module? = null,
+  val variable: Variable,
+  override val location: Location,
+) : TypedExpr {
   val name = variable.name
   override val type = variable.value.type
 
@@ -94,6 +96,7 @@ data class TypedGroupExpr(val expr: TypedExpr, override val location: Location) 
 }
 
 data class TypedAssignExpr(
+  val module: Module? = null,
   val name: Identifier,
   val value: TypedExpr,
   override val type: PlankType,
@@ -101,18 +104,6 @@ data class TypedAssignExpr(
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitAssignExpr(this)
-  }
-}
-
-data class TypedModuleSetExpr(
-  val module: Module,
-  val member: Identifier,
-  val value: TypedExpr,
-  override val type: PlankType,
-  override val location: Location
-) : TypedExpr {
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitModuleSetExpr(this)
   }
 }
 
@@ -125,17 +116,6 @@ data class TypedSetExpr(
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitSetExpr(this)
-  }
-}
-
-data class TypedModuleGetExpr(
-  val module: Module,
-  val member: Identifier,
-  override val type: PlankType,
-  override val location: Location
-) : TypedExpr {
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitModuleGetExpr(this)
   }
 }
 

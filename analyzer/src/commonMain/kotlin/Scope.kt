@@ -12,6 +12,8 @@ data class Variable(
   val declaredIn: Scope,
   val isInScope: Boolean = false,
 ) {
+  val type get() = value.type
+
   override fun toString(): String {
     return "Variable(mutable=$mutable, name=$name, value=$value, isInScope=$isInScope)"
   }
