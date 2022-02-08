@@ -12,7 +12,7 @@ import org.plank.syntax.element.Location
 
 sealed interface TypedExpr : TypedPlankElement {
   interface Visitor<T> {
-    fun visit(expr: TypedExpr): T = expr.accept(this)
+    fun visitExpr(expr: TypedExpr): T = expr.accept(this)
 
     fun visitBlockExpr(expr: TypedBlockExpr): T
     fun visitConstExpr(expr: TypedConstExpr): T
@@ -25,12 +25,12 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitGroupExpr(expr: TypedGroupExpr): T
     fun visitInstanceExpr(expr: TypedInstanceExpr): T
     fun visitSizeofExpr(expr: TypedSizeofExpr): T
-    fun visitReferenceExpr(expr: TypedRefExpr): T
+    fun visitRefExpr(expr: TypedRefExpr): T
     fun visitDerefExpr(expr: TypedDerefExpr): T
     fun visitMatchExpr(expr: TypedMatchExpr): T
     fun visitViolatedExpr(expr: TypedErrorExpr): T
 
-    fun visitTypedExprs(many: List<TypedExpr>): List<T> = many.map(::visit)
+    fun visitTypedExprs(many: List<TypedExpr>): List<T> = many.map(::visitExpr)
   }
 
   override val location: Location
@@ -167,7 +167,7 @@ data class TypedRefExpr(
   override val type = PointerType(expr.type)
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitReferenceExpr(this)
+    return visitor.visitRefExpr(this)
   }
 }
 

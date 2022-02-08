@@ -74,8 +74,8 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun ResolvedPlankElement.codegen(): Value =
     DescriptorContext(this, scopeContext()).let { context ->
       when (context.descriptor) {
-        is TypedExpr -> mapper.visit(context.descriptor).run { context.codegen() }
-        is ResolvedStmt -> mapper.visit(context.descriptor).run { context.codegen() }
+        is TypedExpr -> mapper.visitExpr(context.descriptor).run { context.codegen() }
+        is ResolvedStmt -> mapper.visitStmt(context.descriptor).run { context.codegen() }
         else -> error("No available value mapping for ${this::class.simpleName}")
       }
     }

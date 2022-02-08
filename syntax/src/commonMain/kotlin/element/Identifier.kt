@@ -3,8 +3,6 @@ package org.plank.syntax.element
 data class Identifier(val text: String, override val location: Location = Location.Generated) :
   PlankElement {
   interface Visitor<T> {
-    fun visit(identifier: Identifier): T = visitIdentifier(identifier)
-
     fun visitIdentifier(identifier: Identifier): T
   }
 

@@ -11,8 +11,6 @@ data class QualifiedPath(
     this(stringPath.split(".").reversed().map(::Identifier), location)
 
   interface Visitor<T> {
-    fun visit(path: QualifiedPath): T = visitQualifiedPath(path)
-
     fun visitQualifiedPath(path: QualifiedPath): T
   }
 

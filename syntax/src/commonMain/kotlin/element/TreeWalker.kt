@@ -10,9 +10,9 @@ open class TreeWalker :
   TypeRef.Visitor<Unit>,
   FunctionBody.Visitor<Unit> {
   fun walk(element: PlankElement) = when (element) {
-    is Expr -> visit(element)
-    is Stmt -> visit(element)
-    is TypeRef -> visit(element)
+    is Expr -> visitExpr(element)
+    is Stmt -> visitStmt(element)
+    is TypeRef -> visitTypeRef(element)
     is PlankFile -> walk(element)
     else -> error("Could not visit ${element::class}")
   }
@@ -22,18 +22,18 @@ open class TreeWalker :
   }
 
   override fun visitMatchExpr(expr: MatchExpr) {
-    visit(expr.subject)
+    visitExpr(expr.subject)
     expr.patterns.forEach { (pattern, value) ->
-      visit(pattern)
-      visit(value)
+      visitPattern(pattern)
+      visitExpr(value)
     }
   }
 
   override fun visitIfExpr(expr: IfExpr) {
-    visit(expr.cond)
-    visit(expr.thenBranch)
+    visitExpr(expr.cond)
+    visitExpr(expr.thenBranch)
     expr.elseBranch?.let {
-      visit(it)
+      visitExpr(it)
     }
   }
 
@@ -41,146 +41,146 @@ open class TreeWalker :
   }
 
   override fun visitAccessExpr(expr: AccessExpr) {
-    visit(expr.path)
+    visitQualifiedPath(expr.path)
   }
 
   override fun visitCallExpr(expr: CallExpr) {
-    visit(expr.callee)
+    visitExpr(expr.callee)
     visitExprs(expr.arguments)
   }
 
   override fun visitAssignExpr(expr: AssignExpr) {
-    visit(expr.name)
-    visit(expr.value)
+    visitIdentifier(expr.name)
+    visitExpr(expr.value)
   }
 
   override fun visitSetExpr(expr: SetExpr) {
-    visit(expr.receiver)
-    visit(expr.property)
-    visit(expr.value)
+    visitExpr(expr.receiver)
+    visitIdentifier(expr.property)
+    visitExpr(expr.value)
   }
 
   override fun visitGetExpr(expr: GetExpr) {
-    visit(expr.receiver)
-    visit(expr.property)
+    visitExpr(expr.receiver)
+    visitIdentifier(expr.property)
   }
 
   override fun visitGroupExpr(expr: GroupExpr) {
-    visit(expr.value)
+    visitExpr(expr.value)
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr) {
-    visit(expr.type)
+    visitTypeRef(expr.type)
 
     expr.arguments.forEach { (property, value) ->
-      visit(property)
-      visit(value)
+      visitIdentifier(property)
+      visitExpr(value)
     }
   }
 
   override fun visitSizeofExpr(expr: SizeofExpr) {
-    visit(expr.type)
+    visitTypeRef(expr.type)
   }
 
   override fun visitRefExpr(expr: RefExpr) {
-    visit(expr.expr)
+    visitExpr(expr.expr)
   }
 
   override fun visitDerefExpr(expr: DerefExpr) {
-    visit(expr.ref)
+    visitExpr(expr.ref)
   }
 
   override fun visitErrorExpr(expr: ErrorExpr) {
   }
 
   override fun visitExprStmt(stmt: ExprStmt) {
-    visit(stmt.expr)
+    visitExpr(stmt.expr)
   }
 
   override fun visitReturnStmt(stmt: ReturnStmt) {
-    stmt.value?.let { visit(it) }
+    stmt.value?.let { visitExpr(it) }
   }
 
   override fun visitErrorStmt(stmt: ErrorStmt) {
   }
 
   override fun visitUseDecl(decl: UseDecl) {
-    visit(decl.path)
+    visitQualifiedPath(decl.path)
   }
 
   override fun visitModuleDecl(decl: ModuleDecl) {
-    visit(decl.path)
+    visitQualifiedPath(decl.path)
     visitStmts(decl.content)
   }
 
   override fun visitEnumDecl(decl: EnumDecl) {
-    visit(decl.name)
+    visitIdentifier(decl.name)
 
     decl.members.forEach { (member, parameters) ->
-      visit(member)
+      visitIdentifier(member)
       visitTypeRefs(parameters)
     }
   }
 
   override fun visitStructDecl(decl: StructDecl) {
-    visit(decl.name)
+    visitIdentifier(decl.name)
     decl.properties.forEach { (_, property, type) ->
-      visit(property)
-      visit(type)
+      visitIdentifier(property)
+      visitTypeRef(type)
     }
   }
 
   override fun visitFunDecl(decl: FunDecl) {
-    visit(decl.name)
-    visit(decl.type)
-    visit(decl.body)
+    visitIdentifier(decl.name)
+    visitTypeRef(decl.type)
+    visitFunctionBody(decl.body)
     decl.realParameters.forEach { (parameter, type) ->
-      visit(parameter)
-      visit(type)
+      visitIdentifier(parameter)
+      visitTypeRef(type)
     }
   }
 
   override fun visitLetDecl(decl: LetDecl) {
-    visit(decl.name)
-    decl.type?.let { visit(it) }
-    visit(decl.value)
+    visitIdentifier(decl.name)
+    decl.type?.let { visitTypeRef(it) }
+    visitExpr(decl.value)
   }
 
   override fun visitErrorDecl(decl: ErrorDecl) {
   }
 
   override fun visitAccessTypeRef(ref: AccessTypeRef) {
-    visit(ref.path)
+    visitQualifiedPath(ref.path)
   }
 
   override fun visitPointerTypeRef(ref: PointerTypeRef) {
-    visit(ref.type)
+    visitTypeRef(ref.type)
   }
 
   override fun visitArrayTypeRef(ref: ArrayTypeRef) {
-    visit(ref.type)
+    visitTypeRef(ref.type)
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef) {
-    ref.parameter?.let { visit(it) }
-    visit(ref.returnType)
+    ref.parameter?.let { visitTypeRef(it) }
+    visitTypeRef(ref.returnType)
   }
 
   override fun visitUnitTypeRef(ref: UnitTypeRef) {
   }
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern) {
-    visit(pattern.type)
+    visitQualifiedPath(pattern.type)
     visitPatterns(pattern.properties)
   }
 
   override fun visitIdentPattern(pattern: IdentPattern) {
-    visit(pattern.name)
+    visitIdentifier(pattern.name)
   }
 
   override fun visitQualifiedPath(path: QualifiedPath) {
     path.fullPath.forEach {
-      visit(it)
+      visitIdentifier(it)
     }
   }
 
@@ -191,16 +191,16 @@ open class TreeWalker :
   }
 
   override fun visitExprBody(body: ExprBody) {
-    visit(body.expr)
+    visitExpr(body.expr)
   }
 
   override fun visitCodeBody(body: CodeBody) {
     visitStmts(body.stmts)
-    body.returned?.let { visit(it) }
+    body.returned?.let { visitExpr(it) }
   }
 
   override fun visitBlockExpr(expr: BlockExpr) {
     visitStmts(expr.stmts)
-    expr.returned?.let { visit(it) }
+    expr.returned?.let { visitExpr(it) }
   }
 }

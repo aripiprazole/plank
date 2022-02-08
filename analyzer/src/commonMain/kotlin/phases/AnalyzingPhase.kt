@@ -159,7 +159,7 @@ class AnalyzingPhase(tree: ModuleTree) :
       .filterIsInstance<FileScope>()
       .map(FileScope::file)
       .asReversed()
-      .map(this::visit)
+      .map(this::visitPlankFile)
       .let { dependencies ->
         dependencies
           .last()
@@ -192,7 +192,7 @@ class AnalyzingPhase(tree: ModuleTree) :
 
   override fun visitBlockExpr(expr: BlockExpr): TypedExpr {
     return scoped {
-      val returned = expr.returned?.let(::visit) ?: UnitType.const()
+      val returned = expr.returned?.let(::visitExpr) ?: UnitType.const()
       val stmts = visitStmts(expr.stmts)
 
       TypedBlockExpr(stmts, returned, references, returned.type, expr.location)
@@ -230,7 +230,7 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitCallExpr(expr: CallExpr): TypedExpr {
-    val callable = visit(expr.callee)
+    val callable = visitExpr(expr.callee)
 
     val function = callable.type.cast<FunctionType>()
       ?: return callable.violate("Type ${callable.type} is not callable")
@@ -242,7 +242,7 @@ class AnalyzingPhase(tree: ModuleTree) :
 
   override fun visitAssignExpr(expr: AssignExpr): TypedExpr {
     val reference = findVariable(expr.name)
-    val value = visit(expr.value)
+    val value = visitExpr(expr.value)
 
     if (!reference.mutable) {
       return expr.violate("Can not reassign immutable variable `${reference.name.text}`")
@@ -259,7 +259,7 @@ class AnalyzingPhase(tree: ModuleTree) :
 
   @Suppress("ReturnCount")
   override fun visitSetExpr(expr: SetExpr): TypedExpr {
-    val newValue = visit(expr.value)
+    val newValue = visitExpr(expr.value)
 
     val receiver = when (val receiver = expr.receiver) {
       is AccessExpr -> {
@@ -284,11 +284,11 @@ class AnalyzingPhase(tree: ModuleTree) :
 
           return TypedAssignExpr(value, property.name, newValue, newValue.type, location)
         } else {
-          visit(receiver)
+          visitExpr(receiver)
         }
       }
       else -> {
-        visit(receiver)
+        visitExpr(receiver)
       }
     }
 
@@ -325,11 +325,11 @@ class AnalyzingPhase(tree: ModuleTree) :
 
           return TypedAccessExpr(value, variable, location)
         } else {
-          visit(receiver)
+          visitExpr(receiver)
         }
       }
       else -> {
-        visit(receiver)
+        visitExpr(receiver)
       }
     }
 
@@ -343,18 +343,18 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitGroupExpr(expr: GroupExpr): TypedExpr {
-    val inner = visit(expr.value)
+    val inner = visitExpr(expr.value)
 
     return TypedGroupExpr(inner, inner.location)
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr): TypedExpr {
-    val struct = visit(expr.type).cast<StructType> {
+    val struct = visitTypeRef(expr.type).cast<StructType> {
       return expr.type.violate("Type $it can not be instantiated")
     }
 
     val arguments = expr.arguments.mapValues { (name, expr) ->
-      val value = visit(expr)
+      val value = visitExpr(expr)
       val property = struct.property(name)
         ?: return name.violate("Unresolved property `${name.text}` in struct $struct")
 
@@ -369,19 +369,19 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitSizeofExpr(expr: SizeofExpr): TypedExpr {
-    val type = visit(expr.type)
+    val type = visitTypeRef(expr.type)
 
     return IntType(32).const(type.size)
   }
 
   override fun visitRefExpr(expr: RefExpr): TypedExpr {
-    val inner = visit(expr.expr)
+    val inner = visitExpr(expr.expr)
 
     return TypedRefExpr(inner, inner.location)
   }
 
   override fun visitDerefExpr(expr: DerefExpr): TypedExpr {
-    val ref = visit(expr.ref)
+    val ref = visitExpr(expr.ref)
 
     val type = ref.type.cast<PointerType> {
       return expr.violate("Type ${ref.type} can not be dereferenced")
@@ -395,7 +395,7 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitMatchExpr(expr: MatchExpr): TypedExpr {
-    val subject = visit(expr.subject)
+    val subject = visitExpr(expr.subject)
 
     val patterns = expr.patterns
       .entries
@@ -403,7 +403,7 @@ class AnalyzingPhase(tree: ModuleTree) :
         scoped(ClosureScope(Identifier("match"), currentScope)) {
           deconstruct(pattern, subject)
 
-          visit(pattern) to visit(value)
+          visitPattern(pattern) to visitExpr(value)
         }
       }
 
@@ -438,14 +438,14 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitIfExpr(expr: IfExpr): TypedExpr {
-    val cond = visit(expr.cond)
+    val cond = visitExpr(expr.cond)
 
     if (cond.type != BoolType) {
       return cond.violate("Mismatch types: expecting $BoolType, but got ${cond.type}")
     }
 
-    val thenBranch = visit(expr.thenBranch)
-    val elseBranch = expr.elseBranch?.let { visit(it) }
+    val thenBranch = visitExpr(expr.thenBranch)
+    val elseBranch = expr.elseBranch?.let { visitExpr(it) }
 
     if (elseBranch == null) {
       return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.type, expr.location)
@@ -459,11 +459,11 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitExprStmt(stmt: ExprStmt): ResolvedStmt {
-    return ResolvedExprStmt(visit(stmt.expr), stmt.location)
+    return ResolvedExprStmt(visitExpr(stmt.expr), stmt.location)
   }
 
   override fun visitReturnStmt(stmt: ReturnStmt): ResolvedStmt {
-    val expr = stmt.value?.let(::visit) ?: UnitType.const()
+    val expr = stmt.value?.let(::visitExpr) ?: UnitType.const()
 
     val functionScope = currentScope as? FunctionScope
       ?: return stmt
@@ -548,7 +548,7 @@ class AnalyzingPhase(tree: ModuleTree) :
     }
 
     val properties = decl.properties.associate { (mutable, name, type) ->
-      name to StructProperty(mutable, name, visit(type))
+      name to StructProperty(mutable, name, visitTypeRef(type))
     }
 
     struct.value = StructType(name, properties)
@@ -558,7 +558,7 @@ class AnalyzingPhase(tree: ModuleTree) :
 
   override fun visitFunDecl(decl: FunDecl): ResolvedStmt {
     val name = decl.name
-    val realParameters = decl.realParameters.mapValues { closureIfFunction(visit(it.value)) }
+    val realParameters = decl.realParameters.mapValues { closureIfFunction(visitTypeRef(it.value)) }
 
     val location = decl.location
 
@@ -574,10 +574,10 @@ class AnalyzingPhase(tree: ModuleTree) :
       decl.realParameters
         .mapKeys { it.key }
         .forEach { (name, type) ->
-          declare(name, closureIfFunction(visit(type)))
+          declare(name, closureIfFunction(visitTypeRef(type)))
         }
 
-      visit(decl.body)
+      visitFunctionBody(decl.body)
     }
 
     return ResolvedFunDecl(name, content, realParameters, attributes, references, type, location)
@@ -586,7 +586,7 @@ class AnalyzingPhase(tree: ModuleTree) :
   override fun visitLetDecl(decl: LetDecl): ResolvedStmt {
     val name = decl.name
     val mutable = decl.mutable
-    val value = visit(decl.value)
+    val value = visitExpr(decl.value)
     val isNested = !currentScope.isTopLevelScope
 
     currentScope.declare(name, value, mutable)
@@ -604,11 +604,11 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitExprBody(body: ExprBody): ResolvedFunctionBody {
-    return ResolvedExprBody(visit(body.expr), body.location)
+    return ResolvedExprBody(visitExpr(body.expr), body.location)
   }
 
   override fun visitCodeBody(body: CodeBody): ResolvedFunctionBody {
-    return ResolvedCodeBody(visitStmts(body.stmts), body.returned?.let(::visit), body.location)
+    return ResolvedCodeBody(visitStmts(body.stmts), body.returned?.let(::visitExpr), body.location)
   }
 
   override fun visitAccessTypeRef(ref: AccessTypeRef): PlankType {
@@ -617,11 +617,11 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitPointerTypeRef(ref: PointerTypeRef): PlankType {
-    return PointerType(visit(ref.type))
+    return PointerType(visitTypeRef(ref.type))
   }
 
   override fun visitArrayTypeRef(ref: ArrayTypeRef): PlankType {
-    return ArrayType(visit(ref.type))
+    return ArrayType(visitTypeRef(ref.type))
   }
 
   // TODO: infer if hasn't user-defined type
@@ -630,7 +630,7 @@ class AnalyzingPhase(tree: ModuleTree) :
     val returnType = visit(ref.returnType) { UnitType }
 
     val actualReturnType = visit(ref.actualReturnType) { UnitType }
-    val realParameters = ref.realParameters.mapValues { visit(it.value) }
+    val realParameters = ref.realParameters.mapValues { visitTypeRef(it.value) }
 
     return FunctionType(
       parameter,

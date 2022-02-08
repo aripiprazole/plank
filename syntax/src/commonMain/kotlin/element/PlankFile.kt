@@ -27,8 +27,6 @@ data class PlankFile(
   val violations: List<SyntaxViolation> = emptyList(),
 ) : PlankElement {
   interface Visitor<T> {
-    fun visit(file: PlankFile): T = visitPlankFile(file)
-
     fun visitPlankFile(file: PlankFile): T
   }
 

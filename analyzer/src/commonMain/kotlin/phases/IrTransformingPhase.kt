@@ -189,14 +189,14 @@ open class IrTransformingPhase :
   }
 
   final override fun visitExprBody(body: ResolvedExprBody): ResolvedFunctionBody {
-    visit(body.expr)
+    visitExpr(body.expr)
 
     return transformExprBody(body)
   }
 
   final override fun visitCodeBody(body: ResolvedCodeBody): ResolvedFunctionBody {
     visitStmts(body.stmts)
-    body.returned?.let { visit(it) }
+    body.returned?.let { visitExpr(it) }
 
     return transformCodeBody(body)
   }
@@ -208,13 +208,13 @@ open class IrTransformingPhase :
   }
 
   final override fun visitExprStmt(stmt: ResolvedExprStmt): ResolvedStmt {
-    visit(stmt.expr)
+    visitExpr(stmt.expr)
 
     return transformExprStmt(stmt)
   }
 
   final override fun visitReturnStmt(stmt: ResolvedReturnStmt): ResolvedStmt {
-    stmt.value?.let { visit(it) }
+    stmt.value?.let { visitExpr(it) }
 
     return transformReturnStmt(stmt)
   }
@@ -224,42 +224,42 @@ open class IrTransformingPhase :
   }
 
   final override fun visitModuleDecl(decl: ResolvedModuleDecl): ResolvedStmt {
-    visit(decl.name)
+    visitQualifiedPath(decl.name)
     visitStmts(decl.content)
 
     return transformModuleDecl(decl)
   }
 
   final override fun visitEnumDecl(decl: ResolvedEnumDecl): ResolvedStmt {
-    visit(decl.name)
+    visitIdentifier(decl.name)
     decl.members.values.forEach { member ->
-      visit(member.name)
+      visitIdentifier(member.name)
     }
 
     return transformEnumDecl(decl)
   }
 
   final override fun visitStructDecl(decl: ResolvedStructDecl): ResolvedStmt {
-    visit(decl.name)
+    visitIdentifier(decl.name)
     decl.properties.values.forEach { property ->
-      visit(property.name)
-      property.value?.let { visit(it) }
+      visitIdentifier(property.name)
+      property.value?.let { visitExpr(it) }
     }
 
     return transformStructDecl(decl)
   }
 
   final override fun visitFunDecl(decl: ResolvedFunDecl): ResolvedStmt {
-    visit(decl.name)
-    visit(decl.body)
-    decl.realParameters.keys.forEach { visit(it) }
+    visitIdentifier(decl.name)
+    visitFunctionBody(decl.body)
+    decl.realParameters.keys.forEach { visitIdentifier(it) }
 
     return transformFunDecl(decl)
   }
 
   final override fun visitLetDecl(decl: ResolvedLetDecl): ResolvedStmt {
-    visit(decl.name)
-    visit(decl.value)
+    visitIdentifier(decl.name)
+    visitExpr(decl.value)
 
     return transformLetDecl(decl)
   }
@@ -274,7 +274,7 @@ open class IrTransformingPhase :
 
   final override fun visitBlockExpr(expr: TypedBlockExpr): TypedExpr {
     visitStmts(expr.stmts)
-    visit(expr.returned)
+    visitExpr(expr.returned)
 
     return transformBlockExpr(expr)
   }
@@ -284,60 +284,60 @@ open class IrTransformingPhase :
   }
 
   final override fun visitIfExpr(expr: TypedIfExpr): TypedExpr {
-    visit(expr.cond)
-    visit(expr.thenBranch)
-    expr.elseBranch?.let { visit(it) }
+    visitExpr(expr.cond)
+    visitExpr(expr.thenBranch)
+    expr.elseBranch?.let { visitExpr(it) }
 
     return transformIfExpr(expr)
   }
 
   final override fun visitAccessExpr(expr: TypedAccessExpr): TypedExpr {
-    visit(expr.name)
-    visit(expr.variable.name)
-    visit(expr.variable.value)
+    visitIdentifier(expr.name)
+    visitIdentifier(expr.variable.name)
+    visitExpr(expr.variable.value)
 
     return transformAccessExpr(expr)
   }
 
   final override fun visitCallExpr(expr: TypedCallExpr): TypedExpr {
-    visit(expr.callee)
-    expr.arguments.forEach { visit(it) }
+    visitExpr(expr.callee)
+    expr.arguments.forEach { visitExpr(it) }
 
     return transformCallExpr(expr)
   }
 
   final override fun visitAssignExpr(expr: TypedAssignExpr): TypedExpr {
-    visit(expr.name)
-    visit(expr.value)
+    visitIdentifier(expr.name)
+    visitExpr(expr.value)
 
     return transformAssignExpr(expr)
   }
 
   final override fun visitSetExpr(expr: TypedSetExpr): TypedExpr {
-    visit(expr.receiver)
-    visit(expr.member)
-    visit(expr.value)
+    visitExpr(expr.receiver)
+    visitIdentifier(expr.member)
+    visitExpr(expr.value)
 
     return transformSetExpr(expr)
   }
 
   final override fun visitGetExpr(expr: TypedGetExpr): TypedExpr {
-    visit(expr.receiver)
-    visit(expr.member)
+    visitExpr(expr.receiver)
+    visitIdentifier(expr.member)
 
     return transformGetExpr(expr)
   }
 
   final override fun visitGroupExpr(expr: TypedGroupExpr): TypedExpr {
-    visit(expr.expr)
+    visitExpr(expr.expr)
 
     return transformGroupExpr(expr)
   }
 
   final override fun visitInstanceExpr(expr: TypedInstanceExpr): TypedExpr {
     expr.arguments.forEach { (name, value) ->
-      visit(name)
-      visit(value)
+      visitIdentifier(name)
+      visitExpr(value)
     }
 
     return transformInstanceExpr(expr)
@@ -347,23 +347,23 @@ open class IrTransformingPhase :
     return transformSizeofExpr(expr)
   }
 
-  final override fun visitReferenceExpr(expr: TypedRefExpr): TypedExpr {
-    visit(expr.expr)
+  final override fun visitRefExpr(expr: TypedRefExpr): TypedExpr {
+    visitExpr(expr.expr)
 
     return transformReferenceExpr(expr)
   }
 
   final override fun visitDerefExpr(expr: TypedDerefExpr): TypedExpr {
-    visit(expr.expr)
+    visitExpr(expr.expr)
 
     return transformDerefExpr(expr)
   }
 
   final override fun visitMatchExpr(expr: TypedMatchExpr): TypedExpr {
-    visit(expr.subject)
+    visitExpr(expr.subject)
     expr.patterns.forEach { (pattern, value) ->
-      visit(pattern)
-      visit(value)
+      visitPattern(pattern)
+      visitExpr(value)
     }
 
     return transformMatchExpr(expr)
@@ -374,13 +374,13 @@ open class IrTransformingPhase :
   }
 
   final override fun visitNamedTuplePattern(pattern: TypedNamedTuplePattern): TypedPattern {
-    pattern.properties.forEach { visit(it) }
+    pattern.properties.forEach { visitPattern(it) }
 
     return transformNamedTuplePattern(pattern)
   }
 
   final override fun visitIdentPattern(pattern: TypedIdentPattern): TypedPattern {
-    visit(pattern.name)
+    visitIdentifier(pattern.name)
 
     return transformIdentPattern(pattern)
   }
@@ -394,7 +394,7 @@ open class IrTransformingPhase :
   }
 
   final override fun visitQualifiedPath(path: QualifiedPath): QualifiedPath {
-    path.fullPath.forEach { visit(it) }
+    path.fullPath.forEach { visitIdentifier(it) }
 
     return transformQualifiedPath(path)
   }

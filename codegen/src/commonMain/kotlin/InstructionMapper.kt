@@ -98,7 +98,7 @@ interface InstructionMapper :
       return SizeofInst(expr)
     }
 
-    override fun visitReferenceExpr(expr: TypedRefExpr): CodegenInstruction {
+    override fun visitRefExpr(expr: TypedRefExpr): CodegenInstruction {
       return RefInst(expr)
     }
 

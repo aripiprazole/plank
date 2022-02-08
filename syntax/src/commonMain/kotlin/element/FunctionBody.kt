@@ -2,7 +2,7 @@ package org.plank.syntax.element
 
 sealed interface FunctionBody : PlankElement {
   interface Visitor<T> {
-    fun visit(body: FunctionBody): T = body.accept(this)
+    fun visitFunctionBody(body: FunctionBody): T = body.accept(this)
 
     fun visitNoBody(body: NoBody): T
     fun visitExprBody(body: ExprBody): T

@@ -6,7 +6,7 @@ import org.plank.syntax.element.Location
 
 sealed interface ResolvedFunctionBody : ResolvedPlankElement {
   interface Visitor<T> {
-    fun visit(body: ResolvedFunctionBody): T = body.accept(this)
+    fun visitFunctionBody(body: ResolvedFunctionBody): T = body.accept(this)
 
     fun visitNoBody(body: ResolvedNoBody): T
     fun visitExprBody(body: ResolvedExprBody): T

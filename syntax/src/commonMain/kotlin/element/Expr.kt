@@ -2,7 +2,7 @@ package org.plank.syntax.element
 
 sealed interface Expr : PlankElement {
   interface Visitor<T> {
-    fun visit(expr: Expr): T = expr.accept(this)
+    fun visitExpr(expr: Expr): T = expr.accept(this)
 
     fun visitBlockExpr(expr: BlockExpr): T
     fun visitMatchExpr(expr: MatchExpr): T
@@ -20,7 +20,7 @@ sealed interface Expr : PlankElement {
     fun visitDerefExpr(expr: DerefExpr): T
     fun visitErrorExpr(expr: ErrorExpr): T
 
-    fun visitExprs(many: List<Expr>): List<T> = many.map(::visit)
+    fun visitExprs(many: List<Expr>): List<T> = many.map(::visitExpr)
   }
 
   fun <T> accept(visitor: Visitor<T>): T

@@ -2,7 +2,7 @@ package org.plank.syntax.element
 
 sealed interface Stmt : PlankElement {
   interface Visitor<T> {
-    fun visit(stmt: Stmt): T = stmt.accept(this)
+    fun visitStmt(stmt: Stmt): T = stmt.accept(this)
 
     fun visitExprStmt(stmt: ExprStmt): T
     fun visitReturnStmt(stmt: ReturnStmt): T
@@ -16,7 +16,7 @@ sealed interface Stmt : PlankElement {
     fun visitLetDecl(decl: LetDecl): T
     fun visitErrorDecl(decl: ErrorDecl): T
 
-    fun visitStmts(many: List<Stmt>): List<T> = many.map(::visit)
+    fun visitStmts(many: List<Stmt>): List<T> = many.map(::visitStmt)
   }
 
   fun <T> accept(visitor: Visitor<T>): T

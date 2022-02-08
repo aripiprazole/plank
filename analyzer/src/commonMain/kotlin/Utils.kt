@@ -8,5 +8,5 @@ inline fun TypeRef.Visitor<PlankType>.visit(
   typeDef: TypeRef?,
   orElse: () -> PlankType
 ): PlankType {
-  return typeDef?.let { visit(it) } ?: orElse()
+  return typeDef?.let { visitTypeRef(it) } ?: orElse()
 }

@@ -17,8 +17,6 @@ data class ResolvedPlankFile(
   @DontDump val dependencies: List<ResolvedPlankFile> = emptyList(),
 ) : ResolvedPlankElement {
   interface Visitor<T> {
-    fun visit(file: ResolvedPlankFile): T = visitPlankFile(file)
-
     fun visitPlankFile(file: ResolvedPlankFile): T
   }
 

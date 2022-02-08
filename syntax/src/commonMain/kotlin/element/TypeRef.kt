@@ -2,7 +2,7 @@ package org.plank.syntax.element
 
 sealed interface TypeRef : PlankElement {
   interface Visitor<T> {
-    fun visit(ref: TypeRef): T = ref.accept(this)
+    fun visitTypeRef(ref: TypeRef): T = ref.accept(this)
 
     fun visitAccessTypeRef(ref: AccessTypeRef): T
     fun visitPointerTypeRef(ref: PointerTypeRef): T
@@ -10,7 +10,7 @@ sealed interface TypeRef : PlankElement {
     fun visitFunctionTypeRef(ref: FunctionTypeRef): T
     fun visitUnitTypeRef(ref: UnitTypeRef): T
 
-    fun visitTypeRefs(many: List<TypeRef>): List<T> = many.map(::visit)
+    fun visitTypeRefs(many: List<TypeRef>): List<T> = many.map(::visitTypeRef)
   }
 
   fun <T> accept(visitor: Visitor<T>): T

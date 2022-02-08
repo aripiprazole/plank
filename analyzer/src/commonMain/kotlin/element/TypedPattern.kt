@@ -9,11 +9,13 @@ import org.plank.syntax.element.Location
 
 sealed interface TypedPattern : TypedPlankElement {
   interface Visitor<T> {
-    fun visit(pattern: TypedPattern): T = pattern.accept(this)
+    fun visitPattern(pattern: TypedPattern): T = pattern.accept(this)
 
     fun visitNamedTuplePattern(pattern: TypedNamedTuplePattern): T
     fun visitIdentPattern(pattern: TypedIdentPattern): T
     fun visitViolatedPattern(pattern: TypedViolatedPattern): T
+
+    fun visitPatterns(many: List<TypedPattern>): List<T> = many.map(::visitPattern)
   }
 
   fun <T> accept(visitor: Visitor<T>): T

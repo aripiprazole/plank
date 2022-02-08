@@ -6,7 +6,7 @@ import org.plank.syntax.element.Location
 
 sealed interface ResolvedStmt : ResolvedPlankElement {
   interface Visitor<T> {
-    fun visit(stmt: ResolvedStmt): T = stmt.accept(this)
+    fun visitStmt(stmt: ResolvedStmt): T = stmt.accept(this)
 
     fun visitExprStmt(stmt: ResolvedExprStmt): T
     fun visitReturnStmt(stmt: ResolvedReturnStmt): T
@@ -21,7 +21,7 @@ sealed interface ResolvedStmt : ResolvedPlankElement {
     fun visitViolatedStmt(stmt: ResolvedErrorStmt): T
     fun visitViolatedDecl(stmt: ResolvedErrorDecl): T
 
-    fun visitStmts(many: List<ResolvedStmt>): List<T> = many.map(::visit)
+    fun visitStmts(many: List<ResolvedStmt>): List<T> = many.map(::visitStmt)
   }
 
   fun <T> accept(visitor: Visitor<T>): T
