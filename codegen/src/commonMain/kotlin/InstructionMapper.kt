@@ -5,12 +5,12 @@ import org.plank.analyzer.element.ResolvedErrorDecl
 import org.plank.analyzer.element.ResolvedErrorStmt
 import org.plank.analyzer.element.ResolvedExprStmt
 import org.plank.analyzer.element.ResolvedFunDecl
-import org.plank.analyzer.element.ResolvedImportDecl
 import org.plank.analyzer.element.ResolvedLetDecl
 import org.plank.analyzer.element.ResolvedModuleDecl
 import org.plank.analyzer.element.ResolvedReturnStmt
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.ResolvedStructDecl
+import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
 import org.plank.analyzer.element.TypedCallExpr
@@ -128,7 +128,7 @@ interface InstructionMapper :
       return ReturnInst(stmt)
     }
 
-    override fun visitImportDecl(decl: ResolvedImportDecl): CodegenInstruction {
+    override fun visitUseDecl(decl: ResolvedUseDecl): CodegenInstruction {
       return ImportInst(decl)
     }
 

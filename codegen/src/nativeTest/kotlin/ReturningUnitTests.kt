@@ -10,7 +10,7 @@ class ReturningUnitTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           return println("Hello, world!");

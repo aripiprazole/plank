@@ -11,7 +11,7 @@ sealed interface ResolvedStmt : ResolvedPlankElement {
     fun visitExprStmt(stmt: ResolvedExprStmt): T
     fun visitReturnStmt(stmt: ResolvedReturnStmt): T
 
-    fun visitImportDecl(decl: ResolvedImportDecl): T
+    fun visitUseDecl(decl: ResolvedUseDecl): T
     fun visitModuleDecl(decl: ResolvedModuleDecl): T
     fun visitEnumDecl(decl: ResolvedEnumDecl): T
     fun visitStructDecl(decl: ResolvedStructDecl): T

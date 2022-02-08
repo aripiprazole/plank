@@ -78,7 +78,7 @@ class EnumTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         enum List {
           Cons(*Char, List),
@@ -111,7 +111,7 @@ class EnumTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         enum List {
           Cons(*Char, List),
@@ -144,7 +144,7 @@ class EnumTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         enum List {
           Cons(*Char, List),
@@ -177,7 +177,7 @@ class EnumTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         enum List {
           Cons(*Char, List),
@@ -210,7 +210,7 @@ class EnumTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         enum List {
           Cons(*Char, List),

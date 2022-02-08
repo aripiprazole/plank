@@ -8,7 +8,7 @@ sealed interface Stmt : PlankElement {
     fun visitReturnStmt(stmt: ReturnStmt): T
     fun visitErrorStmt(stmt: ErrorStmt): T
 
-    fun visitImportDecl(decl: ImportDecl): T
+    fun visitImportDecl(decl: UseDecl): T
     fun visitModuleDecl(decl: ModuleDecl): T
     fun visitEnumDecl(decl: EnumDecl): T
     fun visitStructDecl(decl: StructDecl): T

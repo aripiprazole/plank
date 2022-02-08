@@ -23,7 +23,7 @@ on [Twitter](https://twitter.com/gabrielleeg1) or message me on discord **gabii#
 Hello world in plank:
 
 ```kotlin
-import Std.IO;
+use Std.IO;
 
 fun main(argc: Int32, argv: **Char): Void {
   println("Hello, world");

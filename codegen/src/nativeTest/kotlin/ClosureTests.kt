@@ -10,7 +10,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested() -> Void {
@@ -34,7 +34,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested() -> Void {
@@ -61,7 +61,7 @@ class ClosureTests {
       .of(
         """ module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested() -> Void {
@@ -85,7 +85,7 @@ class ClosureTests {
       .of(
         """ module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested() -> Void {
@@ -114,7 +114,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested() -> Void {
@@ -144,7 +144,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested() -> Void {
@@ -174,7 +174,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           let x = "Example String";
@@ -203,7 +203,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested() -> Void {
@@ -228,7 +228,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           let x = "Example String";
@@ -252,7 +252,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested(x: *Char) -> Void {
@@ -275,7 +275,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           fun nested(x: *Char, y: *Char) -> Void {
@@ -298,7 +298,7 @@ class ClosureTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           let outside = "Example String";

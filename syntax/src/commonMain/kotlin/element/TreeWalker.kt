@@ -104,7 +104,7 @@ open class TreeWalker :
   override fun visitErrorStmt(stmt: ErrorStmt) {
   }
 
-  override fun visitImportDecl(decl: ImportDecl) {
+  override fun visitImportDecl(decl: UseDecl) {
     visit(decl.path)
   }
 

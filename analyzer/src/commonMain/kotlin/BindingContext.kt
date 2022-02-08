@@ -8,7 +8,6 @@ import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedExprStmt
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.element.ResolvedFunctionBody
-import org.plank.analyzer.element.ResolvedImportDecl
 import org.plank.analyzer.element.ResolvedLetDecl
 import org.plank.analyzer.element.ResolvedModuleDecl
 import org.plank.analyzer.element.ResolvedNoBody
@@ -16,6 +15,7 @@ import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedReturnStmt
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.ResolvedStructDecl
+import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
 import org.plank.analyzer.element.TypedConstExpr
@@ -58,7 +58,6 @@ import org.plank.syntax.element.GroupExpr
 import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.IfExpr
-import org.plank.syntax.element.ImportDecl
 import org.plank.syntax.element.InstanceExpr
 import org.plank.syntax.element.LetDecl
 import org.plank.syntax.element.Location
@@ -79,6 +78,7 @@ import org.plank.syntax.element.StructDecl
 import org.plank.syntax.element.TreeWalker
 import org.plank.syntax.element.TypeRef
 import org.plank.syntax.element.UnitTypeRef
+import org.plank.syntax.element.UseDecl
 import pw.binom.Stack
 
 /**
@@ -154,7 +154,7 @@ internal class BindingContext(tree: ModuleTree) :
         addVertex(name)
 
         val dependencyTreeWalker = object : TreeWalker() {
-          override fun visitImportDecl(decl: ImportDecl) {
+          override fun visitImportDecl(decl: UseDecl) {
             addEdge(name, decl.path.toIdentifier())
           }
         }
@@ -466,11 +466,11 @@ internal class BindingContext(tree: ModuleTree) :
     TODO("Not yet implemented")
   }
 
-  override fun visitImportDecl(decl: ImportDecl): ResolvedStmt {
+  override fun visitImportDecl(decl: UseDecl): ResolvedStmt {
     val module = currentScope.findModule(decl.path.toIdentifier())
       ?: return decl.violate("Unresolved module `${decl.path.text}`").stmt()
 
-    return ResolvedImportDecl(module, decl.location)
+    return ResolvedUseDecl(module, decl.location)
   }
 
   override fun visitModuleDecl(decl: ModuleDecl): ResolvedStmt {

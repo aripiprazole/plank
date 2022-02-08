@@ -10,7 +10,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         let x = "hello, world";
 
@@ -31,7 +31,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         let x = "hello, world";
 
@@ -53,7 +53,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         let x = "hello, world";
 
@@ -76,7 +76,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun buildString() -> *Char {
           return "hello, world";
@@ -102,7 +102,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         let x = println;
 
@@ -124,7 +124,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         let mutable x = "hello, world";
 
@@ -145,7 +145,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         let mutable x = "hello, world";
 
@@ -167,7 +167,7 @@ class GlobalVariableTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         let mutable x = "hello, world";
 

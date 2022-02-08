@@ -74,7 +74,7 @@ ELSE: 'else';
 MUTABLE: 'mutable';
 TRUE: 'true';
 FALSE: 'false';
-IMPORT: 'import';
+USE: 'use';
 SIZEOF: 'sizeof';
 MODULE: 'module';
 MATCH: 'match';

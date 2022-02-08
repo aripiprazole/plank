@@ -10,7 +10,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
@@ -40,7 +40,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof_nesting(f: *Char -> Void) -> Void {
           f("String (hof)");
@@ -73,7 +73,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof_nesting(f: *Char -> Void) -> Void {
           f("String (hof)");
@@ -98,7 +98,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
@@ -128,7 +128,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(write: *Char -> *Char -> Void) -> Void {
           write("String", "(hof)");
@@ -159,7 +159,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(f: *Char -> *Char -> Void) -> Void {
           f("(hof)", "String");
@@ -192,7 +192,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
@@ -223,7 +223,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
@@ -254,7 +254,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
@@ -286,7 +286,7 @@ class HOFTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");

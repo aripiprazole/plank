@@ -10,7 +10,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           println("Hello, world");
@@ -30,7 +30,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun print_full_name(name: *Char, surname: *Char) {
           print(name);
@@ -56,7 +56,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun print_full_name(name: *Char, surname: *Char) {
           print(name);
@@ -82,7 +82,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun print_full_name(name: *Char, surname: *Char) {
           print(name);
@@ -109,7 +109,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun print_full_name(name: *Char, surname: *Char) {
           print(name);
@@ -135,7 +135,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun print_full_name(name: *Char, surname: *Char) {
           print(name);
@@ -162,7 +162,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun print_full_name(name: *Char, surname: *Char) {
           print(name);
@@ -190,7 +190,7 @@ class CurryingTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun empty() -> Void {
           println("Hello, world!");

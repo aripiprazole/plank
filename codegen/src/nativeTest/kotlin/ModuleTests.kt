@@ -10,7 +10,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Print {
           fun str(v: *Char) {
@@ -35,7 +35,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Print {
           fun str(v: *Char) {
@@ -62,7 +62,7 @@ class ModuleTests {
         module Main;
 
         module Print {
-          import Std.IO;
+          use Std.IO;
 
           fun str(v: *Char) {
             println(v);
@@ -87,7 +87,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           let x = "hello, world";
@@ -110,7 +110,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           let x = "hello, world";
@@ -134,7 +134,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           let x = "hello, world";
@@ -159,7 +159,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           fun buildString() -> *Char {
@@ -187,7 +187,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           let x = println;
@@ -211,7 +211,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           let mutable x = "hello, world";
@@ -234,7 +234,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           let mutable x = "hello, world";
@@ -258,7 +258,7 @@ class ModuleTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         module Test {
           let mutable x = "hello, world";

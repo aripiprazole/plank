@@ -10,7 +10,7 @@ class IfTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           if (true) println("x") else println("y");
@@ -30,7 +30,7 @@ class IfTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           if (false) println("x") else println("y");
@@ -50,7 +50,7 @@ class IfTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           if (true) println("x");
@@ -70,7 +70,7 @@ class IfTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           if (false) println("x");
@@ -90,7 +90,7 @@ class IfTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           println(if (true) "x" else "y");
@@ -110,7 +110,7 @@ class IfTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           println(if (false) "x" else "y");

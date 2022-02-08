@@ -10,7 +10,7 @@ class BodyTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           println("Hello, world!");
@@ -30,7 +30,7 @@ class BodyTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun get_string() -> *Char { "Hello, world!" }
 
@@ -52,7 +52,7 @@ class BodyTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun get_string() -> *Char = "Hello, world!"
 

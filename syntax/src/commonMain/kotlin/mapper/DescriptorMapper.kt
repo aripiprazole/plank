@@ -43,7 +43,6 @@ import org.plank.parser.PlankParser.GroupExprContext
 import org.plank.parser.PlankParser.GroupTypeRefContext
 import org.plank.parser.PlankParser.IdentPatternContext
 import org.plank.parser.PlankParser.IfExprContext
-import org.plank.parser.PlankParser.ImportDeclContext
 import org.plank.parser.PlankParser.InferLetDeclContext
 import org.plank.parser.PlankParser.InstanceExprContext
 import org.plank.parser.PlankParser.IntExprContext
@@ -69,6 +68,7 @@ import org.plank.parser.PlankParser.TrueExprContext
 import org.plank.parser.PlankParser.TypePrimaryContext
 import org.plank.parser.PlankParser.TypeRefContext
 import org.plank.parser.PlankParser.UnaryExprContext
+import org.plank.parser.PlankParser.UseDeclContext
 import org.plank.parser.PlankParserBaseVisitor
 import org.plank.syntax.element.AccessAttributeExpr
 import org.plank.syntax.element.AccessExpr
@@ -97,7 +97,6 @@ import org.plank.syntax.element.GroupExpr
 import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.IfExpr
-import org.plank.syntax.element.ImportDecl
 import org.plank.syntax.element.InstanceExpr
 import org.plank.syntax.element.IntAttributeExpr
 import org.plank.syntax.element.LetDecl
@@ -120,6 +119,7 @@ import org.plank.syntax.element.StringAttributeExpr
 import org.plank.syntax.element.StructDecl
 import org.plank.syntax.element.TypeRef
 import org.plank.syntax.element.UnitTypeRef
+import org.plank.syntax.element.UseDecl
 
 class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElement>() {
   override fun visit(tree: ParseTree): PlankElement? = tree.accept(this)
@@ -161,8 +161,8 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return ModuleDecl(visitQualifiedPath(ctx.path!!), ctx.findDecl().map(::visitDecl), ctx.location)
   }
 
-  override fun visitImportDecl(ctx: ImportDeclContext): ImportDecl {
-    return ImportDecl(visitQualifiedPath(ctx.path!!), ctx.location)
+  override fun visitUseDecl(ctx: UseDeclContext): UseDecl {
+    return UseDecl(visitQualifiedPath(ctx.path!!), ctx.location)
   }
 
   override fun visitFunDecl(ctx: FunDeclContext): FunDecl {
@@ -246,7 +246,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     is StructDeclContext -> visitStructDecl(ctx)
     is EnumDeclContext -> visitEnumDecl(ctx)
     is ModuleDeclContext -> visitModuleDecl(ctx)
-    is ImportDeclContext -> visitImportDecl(ctx)
+    is UseDeclContext -> visitUseDecl(ctx)
     is FunDeclContext -> visitFunDecl(ctx)
     is InferLetDeclContext -> visitInferLetDecl(ctx)
     is LetDeclContext -> visitLetDecl(ctx)

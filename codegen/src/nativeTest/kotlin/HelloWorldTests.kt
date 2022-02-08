@@ -10,7 +10,7 @@ class HelloWorldTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           println("Hello, world!");
@@ -30,7 +30,7 @@ class HelloWorldTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> Void {
           println("Hello, world!");

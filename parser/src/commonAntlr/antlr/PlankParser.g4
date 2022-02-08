@@ -50,7 +50,7 @@ param: name=IDENTIFIER COLON type=typeRef;
 decl: TYPE name=IDENTIFIER EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)             optionalSemis                         # StructDecl
     | ENUM name=IDENTIFIER       (LBRACE (enumMember (COMMA enumMember))? RBRACE)? optionalSemis                         # EnumDecl
     | MODULE path=qualifiedPath LBRACE decl* RBRACE                                optionalSemis                         # ModuleDecl
-    | IMPORT path=qualifiedPath                                                    semis                                 # ImportDecl
+    | USE path=qualifiedPath                                                       semis                                 # UseDecl
     | attr* FUN name=IDENTIFIER LPAREN (param (COMMA param)*)? RPAREN (ARROW_LEFT returnType=typeRef)? body=functionBody # FunDecl
     | LET MUTABLE? name=IDENTIFIER EQUAL value=expr                                semis                                 # InferLetDecl
     | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr             semis                                 # LetDecl

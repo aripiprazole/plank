@@ -26,7 +26,7 @@ data class StructDecl(
   }
 }
 
-data class ImportDecl(val path: QualifiedPath, override val location: Location) : Decl {
+data class UseDecl(val path: QualifiedPath, override val location: Location) : Decl {
   override fun <T> accept(visitor: Stmt.Visitor<T>): T {
     return visitor.visitImportDecl(this)
   }

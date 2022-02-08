@@ -35,12 +35,12 @@ data class ResolvedStructDecl(
   }
 }
 
-data class ResolvedImportDecl(
+data class ResolvedUseDecl(
   val module: Module,
   override val location: Location
 ) : ResolvedDecl {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitImportDecl(this)
+    return visitor.visitUseDecl(this)
   }
 }
 

@@ -10,7 +10,7 @@ class StructTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         type Person = {mutable name: *Char};
 
@@ -32,7 +32,7 @@ class StructTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         type Person = {mutable name: *Char};
 
@@ -55,7 +55,7 @@ class StructTests {
         """
         module Main;
 
-        import Std.IO;
+        use Std.IO;
 
         type Person = {mutable name: *Char};
 
