@@ -12,7 +12,7 @@ class BodyTests {
 
         import Std.IO;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println("Hello, world!");
         }
         """.trimIndent()
@@ -32,9 +32,9 @@ class BodyTests {
 
         import Std.IO;
 
-        fun get_string(): *Char { "Hello, world!" }
+        fun get_string() -> *Char { "Hello, world!" }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(get_string());
         }
         """.trimIndent()
@@ -54,9 +54,9 @@ class BodyTests {
 
         import Std.IO;
 
-        fun get_string(): *Char = "Hello, world!"
+        fun get_string() -> *Char = "Hello, world!"
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(get_string());
         }
         """.trimIndent()

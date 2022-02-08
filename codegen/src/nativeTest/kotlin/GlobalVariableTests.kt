@@ -14,7 +14,7 @@ class GlobalVariableTests {
 
         let x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
         }
         """.trimIndent()
       )
@@ -35,7 +35,7 @@ class GlobalVariableTests {
 
         let x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(x);
         }
         """.trimIndent()
@@ -57,7 +57,7 @@ class GlobalVariableTests {
 
         let x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(x);
           println(x);
         }
@@ -78,13 +78,13 @@ class GlobalVariableTests {
 
         import Std.IO;
 
-        fun buildString(): *Char {
+        fun buildString() -> *Char {
           return "hello, world";
         }
 
         let x = buildString();
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(x);
         }
         """.trimIndent()
@@ -106,7 +106,7 @@ class GlobalVariableTests {
 
         let x = println;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           x("hello");
         }
         """.trimIndent()
@@ -128,7 +128,7 @@ class GlobalVariableTests {
 
         let mutable x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
         }
         """.trimIndent()
       )
@@ -149,7 +149,7 @@ class GlobalVariableTests {
 
         let mutable x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           x := "updated";
         }
         """.trimIndent()
@@ -171,7 +171,7 @@ class GlobalVariableTests {
 
         let mutable x = "hello, world";
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(x);
           x := "updated";
           println(x);

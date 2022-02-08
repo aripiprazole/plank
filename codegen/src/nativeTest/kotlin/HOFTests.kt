@@ -12,14 +12,14 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(f: *Char -> Void): Void {
+        fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println("String (outside hof)");
 
-          fun nested(value: *Char): Void {
+          fun nested(value: *Char) -> Void {
             println(value);
           }
 
@@ -42,16 +42,16 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof_nesting(f: *Char -> Void): Void {
+        fun hof_nesting(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println("String (outside hof)");
 
           let x = "Example String";
 
-          fun nested(value: *Char): Void {
+          fun nested(value: *Char) -> Void {
             println(x);
             println(value);
           }
@@ -75,11 +75,11 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof_nesting(f: *Char -> Void): Void {
+        fun hof_nesting(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println("Hello");
           hof_nesting(println);
         }
@@ -100,17 +100,17 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(f: *Char -> Void): Void {
+        fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun prefixed(prefix: *Char, message: *Char): Void {
+        fun prefixed(prefix: *Char, message: *Char) -> Void {
           print(prefix);
           print(" => ");
           println(message);
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           hof(prefixed("info"));
         }
         """.trimIndent()
@@ -130,13 +130,13 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(write: *Char -> *Char -> Void): Void {
+        fun hof(write: *Char -> *Char -> Void) -> Void {
           write("String", "(hof)");
           write("String2", "(hof)2");
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
-          fun write(message: *Char, prefix: *Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
+          fun write(message: *Char, prefix: *Char) -> Void {
             print(prefix);
             print(" => ");
             println(message);
@@ -161,13 +161,13 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(f: *Char -> *Char -> Void): Void {
+        fun hof(f: *Char -> *Char -> Void) -> Void {
           f("(hof)", "String");
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           let scope = "info";
-          fun prefixed(prefix: *Char, message: *Char): Void {
+          fun prefixed(prefix: *Char, message: *Char) -> Void {
             print(scope);
             print(" => ");
             print(prefix);
@@ -194,17 +194,17 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(f: *Char -> Void): Void {
+        fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun prefixed(prefix: *Char, message: *Char): Void {
+        fun prefixed(prefix: *Char, message: *Char) -> Void {
           print(prefix);
           print(" => ");
           println(message);
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           let f = prefixed("info");
           hof(f);
         }
@@ -225,17 +225,17 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(f: *Char -> Void): Void {
+        fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun prefixed(prefix: *Char, message: *Char): Void {
+        fun prefixed(prefix: *Char, message: *Char) -> Void {
           print(prefix);
           print(" => ");
           println(message);
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           let f = prefixed("info");
           hof(f);
           hof(f);
@@ -256,17 +256,17 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(f: *Char -> Void): Void {
+        fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun prefixed(prefix: *Char, message: *Char): Void {
+        fun prefixed(prefix: *Char, message: *Char) -> Void {
           print(prefix);
           print(" => ");
           println(message);
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           let f = prefixed("info");
           f("hello before");
           hof(f);
@@ -288,17 +288,17 @@ class HOFTests {
 
         import Std.IO;
 
-        fun hof(f: *Char -> Void): Void {
+        fun hof(f: *Char -> Void) -> Void {
           f("String (hof)");
         }
 
-        fun prefixed(prefix: *Char, message: *Char): Void {
+        fun prefixed(prefix: *Char, message: *Char) -> Void {
           print(prefix);
           print(" => ");
           println(message);
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           let f = prefixed("info");
           hof(f);
           f("hello after");

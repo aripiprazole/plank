@@ -15,7 +15,7 @@ class EnumTests {
           Nil
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
         }
         """.trimIndent()
       )
@@ -37,7 +37,7 @@ class EnumTests {
           Nil
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           let cons = Cons("hello");
         }
         """.trimIndent()
@@ -60,7 +60,7 @@ class EnumTests {
           Nil
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           let cons = Cons("hello", Nil);
         }
         """.trimIndent()
@@ -92,7 +92,7 @@ class EnumTests {
           };
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           print_list(Cons("hello", Nil));
           print_list(Nil);
         }
@@ -118,14 +118,14 @@ class EnumTests {
           Nil
         }
 
-        fun print_list(list: List): Void {
+        fun print_list(list: List) -> Void {
           return match list {
             Cons(value, next) => println("cons"),
             Nil() => println("nil")
           };
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           print_list(Cons("hello", Nil));
           print_list(Nil);
         }
@@ -151,14 +151,14 @@ class EnumTests {
           Nil
         }
 
-        fun show(list: List): *Char {
+        fun show(list: List) -> *Char {
           return match list {
             Cons(value, next) => "cons",
             Nil() => "nil"
           };
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(show(Cons("hello", Nil)));
           println(show(Nil));
         }
@@ -191,7 +191,7 @@ class EnumTests {
           };
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           print_list(Cons("hello", Nil));
           print_list(Nil);
         }
@@ -217,14 +217,14 @@ class EnumTests {
           Nil
         }
 
-        fun show(list: List): *Char {
+        fun show(list: List) -> *Char {
           return match list {
             Cons(value, next) => value,
             Nil() => "nil"
           };
         }
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(show(Cons("hello", Nil)));
           println(show(Nil));
         }

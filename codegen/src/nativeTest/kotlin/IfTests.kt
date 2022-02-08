@@ -12,7 +12,7 @@ class IfTests {
 
         import Std.IO;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           if (true) println("x") else println("y");
         }
         """.trimIndent()
@@ -32,7 +32,7 @@ class IfTests {
 
         import Std.IO;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           if (false) println("x") else println("y");
         }
         """.trimIndent()
@@ -52,7 +52,7 @@ class IfTests {
 
         import Std.IO;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           if (true) println("x");
         }
         """.trimIndent()
@@ -72,7 +72,7 @@ class IfTests {
 
         import Std.IO;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           if (false) println("x");
         }
         """.trimIndent()
@@ -92,7 +92,7 @@ class IfTests {
 
         import Std.IO;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(if (true) "x" else "y");
         }
         """.trimIndent()
@@ -112,7 +112,7 @@ class IfTests {
 
         import Std.IO;
 
-        fun main(argc: Int32, argv: **Char): Void {
+        fun main(argc: Int32, argv: **Char) -> Void {
           println(if (false) "x" else "y");
         }
         """.trimIndent()
