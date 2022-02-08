@@ -10,9 +10,10 @@ class EnumTests {
         """
         module Main;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun main(argc: Int32, argv: **Char): Void {
         }
@@ -31,9 +32,10 @@ class EnumTests {
         """
         module Main;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun main(argc: Int32, argv: **Char): Void {
           let cons = Cons("hello");
@@ -53,9 +55,10 @@ class EnumTests {
         """
         module Main;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun main(argc: Int32, argv: **Char): Void {
           let cons = Cons("hello", Nil);
@@ -77,9 +80,10 @@ class EnumTests {
 
         import Std.IO;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun print_list(list: List) {
           match list {
@@ -109,9 +113,10 @@ class EnumTests {
 
         import Std.IO;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun print_list(list: List): Void {
           return match list {
@@ -141,9 +146,10 @@ class EnumTests {
 
         import Std.IO;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun show(list: List): *Char {
           return match list {
@@ -173,9 +179,10 @@ class EnumTests {
 
         import Std.IO;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun print_list(list: List) {
           match list {
@@ -205,9 +212,10 @@ class EnumTests {
 
         import Std.IO;
 
-        type List =
-          | Cons(*Char, List)
-          | Nil;
+        enum List {
+          Cons(*Char, List),
+          Nil
+        }
 
         fun show(list: List): *Char {
           return match list {
