@@ -1,5 +1,31 @@
-package org.plank.analyzer
+package org.plank.analyzer.phases
 
+import org.plank.analyzer.ArrayType
+import org.plank.analyzer.AttributeScope
+import org.plank.analyzer.BindingViolation
+import org.plank.analyzer.BoolType
+import org.plank.analyzer.CharType
+import org.plank.analyzer.ClosureScope
+import org.plank.analyzer.DelegateType
+import org.plank.analyzer.EnumMember
+import org.plank.analyzer.EnumType
+import org.plank.analyzer.FileScope
+import org.plank.analyzer.FloatType
+import org.plank.analyzer.FunctionScope
+import org.plank.analyzer.FunctionType
+import org.plank.analyzer.GlobalScope
+import org.plank.analyzer.IntType
+import org.plank.analyzer.Module
+import org.plank.analyzer.ModuleTree
+import org.plank.analyzer.ModuleType
+import org.plank.analyzer.PlankType
+import org.plank.analyzer.PointerType
+import org.plank.analyzer.Scope
+import org.plank.analyzer.StructProperty
+import org.plank.analyzer.StructType
+import org.plank.analyzer.UnitType
+import org.plank.analyzer.Untyped
+import org.plank.analyzer.Variable
 import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedEnumDecl
@@ -32,7 +58,8 @@ import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
-import org.plank.analyzer.element.ViolatedPattern
+import org.plank.analyzer.element.TypedViolatedPattern
+import org.plank.analyzer.visit
 import org.plank.shared.depthFirstSearch
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
@@ -81,17 +108,9 @@ import org.plank.syntax.element.UnitTypeRef
 import org.plank.syntax.element.UseDecl
 import pw.binom.Stack
 
-/**
- * Analyzes the provided [PlankFile] and returns a typed [ResolvedPlankFile]
- * with typed declarations/statements/expressions.
- */
-fun analyze(file: PlankFile, tree: ModuleTree): ResolvedPlankFile {
-  return BindingContext(tree).analyze(file)
-}
-
 // TODO: add call parameters check
 @Suppress("UnusedPrivateMember", "MaxLineLength", "MaximumLineLength")
-internal class BindingContext(tree: ModuleTree) :
+class AnalyzingPhase(tree: ModuleTree) :
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,
   Pattern.Visitor<TypedPattern>,
@@ -661,7 +680,7 @@ internal class BindingContext(tree: ModuleTree) :
   private fun PlankElement.violatedPattern(message: String): TypedPattern {
     violations = violations + BindingViolation(message, location)
 
-    return ViolatedPattern(message, location = location)
+    return TypedViolatedPattern(message, location = location)
   }
 
   private fun PlankElement.violate(message: String): TypedExpr {

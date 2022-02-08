@@ -4,7 +4,7 @@ import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
-import org.plank.analyzer.element.ViolatedPattern
+import org.plank.analyzer.element.TypedViolatedPattern
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.getField
@@ -57,7 +57,7 @@ fun CodegenContext.checkPattern(
 
       createICmp(IntPredicate.EQ, tag, i8.getConstant(index))
     }
-    is ViolatedPattern -> error("Trying to check violated pattern")
+    is TypedViolatedPattern -> error("Trying to check violated pattern")
   }
 }
 
@@ -77,6 +77,6 @@ fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
         idx++
       }
     }
-    is ViolatedPattern -> error("Trying to transform violated pattern")
+    is TypedViolatedPattern -> error("Trying to transform violated pattern")
   }
 }
