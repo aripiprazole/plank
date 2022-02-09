@@ -47,8 +47,6 @@ tasks {
         include("*.g4")
       }
     outputDirectory = buildDir.resolve("generated-src").resolve("commonAntlr").resolve("kotlin")
-
-    finalizedBy(ktlintFormat)
   }
 
   runKtlintFormatOverCommonMainSourceSet {
