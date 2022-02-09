@@ -83,11 +83,11 @@ open class TreeWalker :
   }
 
   override fun visitRefExpr(expr: RefExpr) {
-    visitExpr(expr.expr)
+    visitExpr(expr.value)
   }
 
   override fun visitDerefExpr(expr: DerefExpr) {
-    visitExpr(expr.ref)
+    visitExpr(expr.value)
   }
 
   override fun visitErrorExpr(expr: ErrorExpr) {

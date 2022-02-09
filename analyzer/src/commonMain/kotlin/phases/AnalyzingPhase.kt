@@ -375,13 +375,13 @@ class AnalyzingPhase(tree: ModuleTree) :
   }
 
   override fun visitRefExpr(expr: RefExpr): TypedExpr {
-    val inner = visitExpr(expr.expr)
+    val inner = visitExpr(expr.value)
 
     return TypedRefExpr(inner, inner.location)
   }
 
   override fun visitDerefExpr(expr: DerefExpr): TypedExpr {
-    val ref = visitExpr(expr.ref)
+    val ref = visitExpr(expr.value)
 
     val type = ref.type.cast<PointerType> {
       return expr.violate("Type ${ref.type} can not be dereferenced")

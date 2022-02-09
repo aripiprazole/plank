@@ -7,6 +7,6 @@ import org.plank.llvm4k.ir.Value
 
 class GroupInst(private val descriptor: TypedGroupExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    return descriptor.expr.codegen()
+    return descriptor.value.codegen()
   }
 }

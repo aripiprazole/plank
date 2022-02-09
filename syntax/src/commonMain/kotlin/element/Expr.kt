@@ -58,8 +58,6 @@ data class IfExpr(
 }
 
 data class ConstExpr(val value: Any, override val location: Location) : Expr {
-  val literal = value.toString()
-
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitConstExpr(this)
   }
@@ -134,13 +132,13 @@ data class SizeofExpr(val type: TypeRef, override val location: Location) : Expr
   }
 }
 
-data class RefExpr(val expr: Expr, override val location: Location) : Expr {
+data class RefExpr(val value: Expr, override val location: Location) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitRefExpr(this)
   }
 }
 
-data class DerefExpr(val ref: Expr, override val location: Location) : Expr {
+data class DerefExpr(val value: Expr, override val location: Location) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitDerefExpr(this)
   }

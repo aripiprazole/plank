@@ -7,6 +7,6 @@ import org.plank.llvm4k.ir.Value
 
 class DerefInst(private val descriptor: TypedDerefExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    return createLoad(descriptor.expr.codegen())
+    return createLoad(descriptor.value.codegen())
   }
 }

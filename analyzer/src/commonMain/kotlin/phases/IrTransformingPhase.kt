@@ -347,7 +347,7 @@ open class IrTransformingPhase :
   }
 
   final override fun visitGroupExpr(expr: TypedGroupExpr): TypedExpr {
-    return transformGroupExpr(expr.copy(expr = visitExpr(expr.expr)))
+    return transformGroupExpr(expr.copy(value = visitExpr(expr.value)))
   }
 
   final override fun visitInstanceExpr(expr: TypedInstanceExpr): TypedExpr {
@@ -365,11 +365,11 @@ open class IrTransformingPhase :
   }
 
   final override fun visitRefExpr(expr: TypedRefExpr): TypedExpr {
-    return transformReferenceExpr(expr.copy(expr = visitExpr(expr.expr)))
+    return transformReferenceExpr(expr.copy(value = visitExpr(expr.value)))
   }
 
   final override fun visitDerefExpr(expr: TypedDerefExpr): TypedExpr {
-    return transformDerefExpr(expr.copy(expr = visitExpr(expr.expr)))
+    return transformDerefExpr(expr.copy(value = visitExpr(expr.value)))
   }
 
   final override fun visitMatchExpr(expr: TypedMatchExpr): TypedExpr {

@@ -90,8 +90,8 @@ data class TypedAccessExpr(
   }
 }
 
-data class TypedGroupExpr(val expr: TypedExpr, override val location: Location) : TypedExpr {
-  override val type = expr.type
+data class TypedGroupExpr(val value: TypedExpr, override val location: Location) : TypedExpr {
+  override val type = value.type
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitGroupExpr(this)
@@ -264,10 +264,10 @@ data class TypedSizeofExpr(
 }
 
 data class TypedRefExpr(
-  val expr: TypedExpr,
+  val value: TypedExpr,
   override val location: Location
 ) : TypedExpr {
-  override val type = PointerType(expr.type)
+  override val type = PointerType(value.type)
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitRefExpr(this)
@@ -275,7 +275,7 @@ data class TypedRefExpr(
 }
 
 data class TypedDerefExpr(
-  val expr: TypedExpr,
+  val value: TypedExpr,
   override val type: PlankType,
   override val location: Location
 ) : TypedExpr {
