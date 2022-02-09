@@ -15,6 +15,7 @@ object InliningPhase : IrTransformingPhase() {
     val inlineCall = type.inlineCall ?: return expr
 
     if (!type.isInline) return expr
+    if (type.isPartialApplied) return expr
 
     return when (val body = inlineCall(expr.arguments)) {
       is ResolvedCodeBody -> TypedBlockExpr(

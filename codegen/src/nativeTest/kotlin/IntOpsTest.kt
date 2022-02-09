@@ -202,4 +202,35 @@ class IntOpsTest {
         expectSuccess()
       }
   }
+
+  @Test
+  fun `test fibonacci`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        use Std.IO;
+
+        fun fib(n: Int32) -> Int32 {
+          if (n == 0) 0
+          else if (n == 1) 1
+          else fib(n - 1) + fib(n - 2)
+        }
+
+        fun main(argc: Int32, argv: **Char) {
+          print_int(fib(0));
+          print_int(fib(1));
+          print_int(fib(2));
+          print_int(fib(3));
+          print_int(fib(4));
+          print_int(fib(5));
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
 }

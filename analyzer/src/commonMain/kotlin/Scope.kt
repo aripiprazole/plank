@@ -33,13 +33,14 @@ data class Variable(
 class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
   private val i32 = IntType(32)
   private val f32 = FloatType(32)
+  private val bool = BoolType
 
   /**
    * Init compiler-defined functions
    */
   init {
     create(CharType)
-    create(BoolType)
+    create(bool)
     create(i32)
     create(f32)
 
@@ -50,12 +51,12 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     inlineFun("/", i32, i32, i32) { (a, b) -> TypedIntDivExpr(a, b) }
 
     // Add default logical operators
-    inlineFun("==", i32, i32, i32) { (a, b) -> TypedIntEQExpr(a, b) }
-    inlineFun("!=", i32, i32, i32) { (a, b) -> TypedIntNEQExpr(a, b) }
-    inlineFun(">=", i32, i32, i32) { (a, b) -> TypedIntGTEExpr(a, b) }
-    inlineFun(">", i32, i32, i32) { (a, b) -> TypedIntGTExpr(a, b) }
-    inlineFun("<=", i32, i32, i32) { (a, b) -> TypedIntLTEExpr(a, b) }
-    inlineFun("<", i32, i32, i32) { (a, b) -> TypedIntLTExpr(a, b) }
+    inlineFun("==", bool, i32, i32) { (a, b) -> TypedIntEQExpr(a, b) }
+    inlineFun("!=", bool, i32, i32) { (a, b) -> TypedIntNEQExpr(a, b) }
+    inlineFun(">=", bool, i32, i32) { (a, b) -> TypedIntGTEExpr(a, b) }
+    inlineFun(">", bool, i32, i32) { (a, b) -> TypedIntGTExpr(a, b) }
+    inlineFun("<=", bool, i32, i32) { (a, b) -> TypedIntLTEExpr(a, b) }
+    inlineFun("<", bool, i32, i32) { (a, b) -> TypedIntLTExpr(a, b) }
   }
 
   override val name = Identifier("Global")
@@ -69,7 +70,11 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
   ) {
     declare(
       Identifier(name),
-      FunctionType(returnType, parameters.toList()).copy(isInline = true, inlineCall = {
+      FunctionType(
+        returnType,
+        parameters.toList(),
+        parameters.withIndex().associate { Identifier(it.index.toString()) to it.value }
+      ).copy(isInline = true, actualReturnType = returnType, inlineCall = {
         ResolvedExprBody(builder(it))
       })
     )

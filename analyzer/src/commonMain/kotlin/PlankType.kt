@@ -231,6 +231,10 @@ data class FunctionType(
   fun call(callee: TypedExpr, location: Location, arguments: List<TypedExpr>): TypedExpr {
     // TODO: add constant evaluation in compile-time if arguments are constants
 
+    if (realParameters.size == arguments.size) {
+      return TypedCallExpr(callee, arguments, actualReturnType, location)
+    }
+
     val returnType = when (returnType) {
       is FunctionType -> returnType.copy(
         realParameters = realParameters.entries.drop(arguments.size).associate { it.toPair() },
