@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength", "MaximumLineLength")
+
 package org.plank.analyzer.phases
 
 import org.plank.analyzer.ArrayType
@@ -109,7 +111,7 @@ import org.plank.syntax.element.UseDecl
 import pw.binom.Stack
 
 // TODO: add call parameters check
-@Suppress("UnusedPrivateMember", "MaxLineLength", "MaximumLineLength")
+@Suppress("UnusedPrivateMember")
 class AnalyzingPhase(tree: ModuleTree) :
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,
