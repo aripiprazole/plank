@@ -1,6 +1,7 @@
 package org.plank.analyzer.element
 
 import org.plank.analyzer.BindingViolation
+import org.plank.analyzer.phases.IrTransformingPhase
 import org.plank.syntax.debug.DontDump
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.mapper.SyntaxViolation
@@ -23,9 +24,10 @@ data class ResolvedPlankFile(
   val module = delegate.module
   val moduleName = delegate.moduleName
   val path = delegate.path
-  val realFile = delegate.realFile
-
-  val isValid = delegate.isValid && bindingViolations.isEmpty()
 
   override val location = delegate.location
+
+  fun transform(irTransformingPhase: IrTransformingPhase): ResolvedPlankFile {
+    return irTransformingPhase.visitPlankFile(this)
+  }
 }

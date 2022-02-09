@@ -85,7 +85,7 @@ class IntrinsicFunction {
   }
 }
 
-@Suppress("UNUSED_VARIABLE", "Detekt.UnusedPrivateMember")
+@Suppress("UNUSED_VARIABLE", "UnusedPrivateMember", "LocalVariableName", "VariableNaming")
 val DefaultIntrinsics = Intrinsics {
   module("Std.IO") {
     val printf by function(i32, i8.pointer(), varargs = true) {
@@ -97,6 +97,20 @@ val DefaultIntrinsics = Intrinsics {
     val println by function(unit, i8.pointer()) {
       entry { (msg) ->
         createCall(printf, createGlobalStringPtr("%s$lineSeparator", mangle("println.str")), msg)
+        createRet(createUnit())
+      }
+    }
+
+    val print_int by function(unit, i32) {
+      entry { (msg) ->
+        createCall(printf, createGlobalStringPtr("%d$lineSeparator", mangle("print_int.str")), msg)
+        createRet(createUnit())
+      }
+    }
+
+    val print_bool by function(unit, i32) {
+      entry { (msg) ->
+        createCall(printf, createGlobalStringPtr("%d$lineSeparator", mangle("print_bool.str")), msg)
         createRet(createUnit())
       }
     }

@@ -5,3 +5,9 @@ fun println(message: *Char) -> ();
 
 @intrinsic
 fun print(message: *Char) -> ();
+
+@intrinsic
+fun print_int(message: Int32) -> ();
+
+@intrinsic
+fun print_bool(message: Bool) -> ();

@@ -1,6 +1,7 @@
 package org.plank.analyzer.phases
 
 import org.plank.analyzer.element.ResolvedCodeBody
+import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedEnumDecl
 import org.plank.analyzer.element.ResolvedErrorDecl
 import org.plank.analyzer.element.ResolvedErrorStmt
@@ -29,6 +30,7 @@ import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedInstanceExpr
+import org.plank.analyzer.element.TypedIntOperationExpr
 import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
@@ -120,6 +122,10 @@ open class IrTransformingPhase :
     return expr
   }
 
+  open fun transformIntOperationExpr(expr: TypedIntOperationExpr): TypedExpr {
+    return expr
+  }
+
   open fun transformCallExpr(expr: TypedCallExpr): TypedExpr {
     return expr
   }
@@ -189,34 +195,30 @@ open class IrTransformingPhase :
   }
 
   final override fun visitExprBody(body: ResolvedExprBody): ResolvedFunctionBody {
-    visitExpr(body.expr)
-
-    return transformExprBody(body)
+    return transformExprBody(body.copy(expr = visitExpr(body.expr)))
   }
 
   final override fun visitCodeBody(body: ResolvedCodeBody): ResolvedFunctionBody {
-    visitStmts(body.stmts)
-    body.returned?.let { visitExpr(it) }
-
-    return transformCodeBody(body)
+    return transformCodeBody(
+      body.copy(
+        stmts = visitStmts(body.stmts),
+        returned = body.returned?.let { visitExpr(it) },
+      ),
+    )
   }
 
   final override fun visitPlankFile(file: ResolvedPlankFile): ResolvedPlankFile {
-    visitStmts(file.program)
-
-    return transformPlankFile(file)
+    return transformPlankFile(
+      file.copy(program = visitStmts(file.program).filterIsInstance<ResolvedDecl>())
+    )
   }
 
   final override fun visitExprStmt(stmt: ResolvedExprStmt): ResolvedStmt {
-    visitExpr(stmt.expr)
-
-    return transformExprStmt(stmt)
+    return transformExprStmt(stmt.copy(expr = visitExpr(stmt.expr)))
   }
 
   final override fun visitReturnStmt(stmt: ResolvedReturnStmt): ResolvedStmt {
-    stmt.value?.let { visitExpr(it) }
-
-    return transformReturnStmt(stmt)
+    return transformReturnStmt(stmt.copy(value = stmt.value?.let { visitExpr(it) }))
   }
 
   final override fun visitUseDecl(decl: ResolvedUseDecl): ResolvedStmt {
@@ -224,44 +226,57 @@ open class IrTransformingPhase :
   }
 
   final override fun visitModuleDecl(decl: ResolvedModuleDecl): ResolvedStmt {
-    visitQualifiedPath(decl.name)
-    visitStmts(decl.content)
-
-    return transformModuleDecl(decl)
+    return transformModuleDecl(
+      decl.copy(
+        name = visitQualifiedPath(decl.name),
+        content = visitStmts(decl.content).filterIsInstance<ResolvedDecl>()
+      )
+    )
   }
 
   final override fun visitEnumDecl(decl: ResolvedEnumDecl): ResolvedStmt {
-    visitIdentifier(decl.name)
-    decl.members.values.forEach { member ->
-      visitIdentifier(member.name)
-    }
+    return transformEnumDecl(
+      decl.copy(
+        name = visitIdentifier(decl.name),
+        members = decl.members.entries.associate { (name, member) ->
+          val newName = visitIdentifier(name)
 
-    return transformEnumDecl(decl)
+          newName to member.copy(name = visitIdentifier(member.name))
+        }
+      )
+    )
   }
 
   final override fun visitStructDecl(decl: ResolvedStructDecl): ResolvedStmt {
-    visitIdentifier(decl.name)
-    decl.properties.values.forEach { property ->
-      visitIdentifier(property.name)
-      property.value?.let { visitExpr(it) }
-    }
-
-    return transformStructDecl(decl)
+    return transformStructDecl(
+      decl.copy(
+        name = visitIdentifier(decl.name),
+        properties = decl.properties.entries.associate { (name, property) ->
+          val newName = visitIdentifier(name)
+          newName to property.copy(name = newName, value = property.value?.let { visitExpr(it) })
+        }
+      )
+    )
   }
 
   final override fun visitFunDecl(decl: ResolvedFunDecl): ResolvedStmt {
-    visitIdentifier(decl.name)
-    visitFunctionBody(decl.body)
-    decl.realParameters.keys.forEach { visitIdentifier(it) }
 
-    return transformFunDecl(decl)
+    return transformFunDecl(
+      decl.copy(
+        name = visitIdentifier(decl.name),
+        realParameters = decl.realParameters.mapKeys { visitIdentifier(it.key) },
+        body = visitFunctionBody(decl.body),
+      )
+    )
   }
 
   final override fun visitLetDecl(decl: ResolvedLetDecl): ResolvedStmt {
-    visitIdentifier(decl.name)
-    visitExpr(decl.value)
-
-    return transformLetDecl(decl)
+    return transformLetDecl(
+      decl.copy(
+        name = visitIdentifier(decl.name),
+        value = visitExpr(decl.value)
+      )
+    )
   }
 
   final override fun visitViolatedStmt(stmt: ResolvedErrorStmt): ResolvedStmt {
@@ -273,10 +288,9 @@ open class IrTransformingPhase :
   }
 
   final override fun visitBlockExpr(expr: TypedBlockExpr): TypedExpr {
-    visitStmts(expr.stmts)
-    visitExpr(expr.returned)
-
-    return transformBlockExpr(expr)
+    return transformBlockExpr(
+      expr.copy(stmts = visitStmts(expr.stmts), returned = visitExpr(expr.returned))
+    )
   }
 
   final override fun visitConstExpr(expr: TypedConstExpr): TypedExpr {
@@ -284,63 +298,66 @@ open class IrTransformingPhase :
   }
 
   final override fun visitIfExpr(expr: TypedIfExpr): TypedExpr {
-    visitExpr(expr.cond)
-    visitExpr(expr.thenBranch)
-    expr.elseBranch?.let { visitExpr(it) }
-
-    return transformIfExpr(expr)
+    return transformIfExpr(
+      expr.copy(
+        cond = visitExpr(expr.cond),
+        thenBranch = visitExpr(expr.thenBranch),
+        elseBranch = expr.elseBranch?.let { visitExpr(it) }
+      )
+    )
   }
 
   final override fun visitAccessExpr(expr: TypedAccessExpr): TypedExpr {
-    visitIdentifier(expr.name)
-    visitIdentifier(expr.variable.name)
-    visitExpr(expr.variable.value)
-
-    return transformAccessExpr(expr)
+    return transformAccessExpr(
+      expr.copy(
+        variable = expr.variable.copy(
+          name = visitIdentifier(expr.name),
+          value = visitExpr(expr.variable.value)
+        ),
+      )
+    )
   }
 
   final override fun visitCallExpr(expr: TypedCallExpr): TypedExpr {
-    visitExpr(expr.callee)
-    expr.arguments.forEach { visitExpr(it) }
-
-    return transformCallExpr(expr)
+    return transformCallExpr(
+      expr.copy(callee = visitExpr(expr.callee), arguments = expr.arguments.map { visitExpr(it) })
+    )
   }
 
   final override fun visitAssignExpr(expr: TypedAssignExpr): TypedExpr {
-    visitIdentifier(expr.name)
-    visitExpr(expr.value)
-
-    return transformAssignExpr(expr)
+    return transformAssignExpr(
+      expr.copy(name = visitIdentifier(expr.name), value = visitExpr(expr.value)),
+    )
   }
 
   final override fun visitSetExpr(expr: TypedSetExpr): TypedExpr {
-    visitExpr(expr.receiver)
-    visitIdentifier(expr.member)
-    visitExpr(expr.value)
-
-    return transformSetExpr(expr)
+    return transformSetExpr(
+      expr.copy(
+        receiver = visitExpr(expr.receiver),
+        member = visitIdentifier(expr.member),
+        value = visitExpr(expr.value),
+      )
+    )
   }
 
   final override fun visitGetExpr(expr: TypedGetExpr): TypedExpr {
-    visitExpr(expr.receiver)
-    visitIdentifier(expr.member)
-
-    return transformGetExpr(expr)
+    return transformGetExpr(
+      expr.copy(receiver = visitExpr(expr.receiver), member = visitIdentifier(expr.member))
+    )
   }
 
   final override fun visitGroupExpr(expr: TypedGroupExpr): TypedExpr {
-    visitExpr(expr.expr)
-
-    return transformGroupExpr(expr)
+    return transformGroupExpr(expr.copy(expr = visitExpr(expr.expr)))
   }
 
   final override fun visitInstanceExpr(expr: TypedInstanceExpr): TypedExpr {
-    expr.arguments.forEach { (name, value) ->
-      visitIdentifier(name)
-      visitExpr(value)
-    }
-
-    return transformInstanceExpr(expr)
+    return transformInstanceExpr(
+      expr.copy(
+        arguments = expr.arguments.entries.associate { (name, value) ->
+          visitIdentifier(name) to visitExpr(value)
+        },
+      )
+    )
   }
 
   final override fun visitSizeofExpr(expr: TypedSizeofExpr): TypedExpr {
@@ -348,25 +365,23 @@ open class IrTransformingPhase :
   }
 
   final override fun visitRefExpr(expr: TypedRefExpr): TypedExpr {
-    visitExpr(expr.expr)
-
-    return transformReferenceExpr(expr)
+    return transformReferenceExpr(expr.copy(expr = visitExpr(expr.expr)))
   }
 
   final override fun visitDerefExpr(expr: TypedDerefExpr): TypedExpr {
-    visitExpr(expr.expr)
-
-    return transformDerefExpr(expr)
+    return transformDerefExpr(expr.copy(expr = visitExpr(expr.expr)))
   }
 
   final override fun visitMatchExpr(expr: TypedMatchExpr): TypedExpr {
-    visitExpr(expr.subject)
-    expr.patterns.forEach { (pattern, value) ->
-      visitPattern(pattern)
-      visitExpr(value)
-    }
 
-    return transformMatchExpr(expr)
+    return transformMatchExpr(
+      expr.copy(
+        subject = visitExpr(expr.subject),
+        patterns = expr.patterns.entries.associate { (pattern, value) ->
+          visitPattern(pattern) to visitExpr(value)
+        }
+      )
+    )
   }
 
   final override fun visitViolatedExpr(expr: TypedErrorExpr): TypedExpr {
@@ -374,15 +389,13 @@ open class IrTransformingPhase :
   }
 
   final override fun visitNamedTuplePattern(pattern: TypedNamedTuplePattern): TypedPattern {
-    pattern.properties.forEach { visitPattern(it) }
-
-    return transformNamedTuplePattern(pattern)
+    return transformNamedTuplePattern(
+      pattern.copy(properties = pattern.properties.map { visitPattern(it) })
+    )
   }
 
   final override fun visitIdentPattern(pattern: TypedIdentPattern): TypedPattern {
-    visitIdentifier(pattern.name)
-
-    return transformIdentPattern(pattern)
+    return transformIdentPattern(pattern.copy(name = visitIdentifier(pattern.name)))
   }
 
   final override fun visitViolatedPattern(pattern: TypedViolatedPattern): TypedPattern {
@@ -397,5 +410,12 @@ open class IrTransformingPhase :
     path.fullPath.forEach { visitIdentifier(it) }
 
     return transformQualifiedPath(path)
+  }
+
+  override fun visitIntOperationExpr(expr: TypedIntOperationExpr): TypedExpr {
+    visitExpr(expr.lhs)
+    visitExpr(expr.rhs)
+
+    return transformIntOperationExpr(expr)
   }
 }

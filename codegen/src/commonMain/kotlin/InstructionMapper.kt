@@ -23,6 +23,7 @@ import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedInstanceExpr
+import org.plank.analyzer.element.TypedIntOperationExpr
 import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
@@ -37,6 +38,7 @@ import org.plank.codegen.expr.GetInst
 import org.plank.codegen.expr.GroupInst
 import org.plank.codegen.expr.IfInst
 import org.plank.codegen.expr.InstanceInst
+import org.plank.codegen.expr.IntOperationInst
 import org.plank.codegen.expr.MatchInst
 import org.plank.codegen.expr.RefInst
 import org.plank.codegen.expr.SetInst
@@ -68,6 +70,10 @@ interface InstructionMapper :
 
     override fun visitAccessExpr(expr: TypedAccessExpr): CodegenInstruction {
       return AccessInst(expr)
+    }
+
+    override fun visitIntOperationExpr(expr: TypedIntOperationExpr): CodegenInstruction {
+      return IntOperationInst(expr)
     }
 
     override fun visitCallExpr(expr: TypedCallExpr): CodegenInstruction {

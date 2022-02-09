@@ -2,6 +2,7 @@
 
 package org.plank.analyzer
 
+import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedExpr
@@ -207,6 +208,8 @@ data class FunctionType(
   override val isNested: Boolean = false,
   override val isPartialApplied: Boolean = false,
   val references: Map<Identifier, PlankType> = emptyMap(),
+  val isInline: Boolean = false,
+  val inlineCall: ((List<TypedExpr>) -> ResolvedFunctionBody?)? = null,
 ) : PlankType() {
   fun nest(index: Int): PlankType {
     var i = 0

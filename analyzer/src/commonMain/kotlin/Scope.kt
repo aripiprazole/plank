@@ -1,6 +1,17 @@
 package org.plank.analyzer
 
+import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.element.TypedIntAddExpr
+import org.plank.analyzer.element.TypedIntDivExpr
+import org.plank.analyzer.element.TypedIntEQExpr
+import org.plank.analyzer.element.TypedIntGTEExpr
+import org.plank.analyzer.element.TypedIntGTExpr
+import org.plank.analyzer.element.TypedIntLTEExpr
+import org.plank.analyzer.element.TypedIntLTExpr
+import org.plank.analyzer.element.TypedIntMulExpr
+import org.plank.analyzer.element.TypedIntNEQExpr
+import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
 import org.plank.syntax.element.PlankFile
@@ -20,33 +31,49 @@ data class Variable(
 }
 
 class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
+  private val i32 = IntType(32)
+  private val f32 = FloatType(32)
+
   /**
    * Init compiler-defined functions
    */
   init {
     create(CharType)
     create(BoolType)
-    create(IntType(32))
-    create(FloatType(32))
+    create(i32)
+    create(f32)
 
     // Add default binary operators
-    declare(Identifier.add(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.sub(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.times(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.div(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.div(), FunctionType(IntType(), IntType(), IntType()))
+    inlineFun("+", i32, i32, i32) { (a, b) -> TypedIntAddExpr(a, b) }
+    inlineFun("-", i32, i32, i32) { (a, b) -> TypedIntSubExpr(a, b) }
+    inlineFun("*", i32, i32, i32) { (a, b) -> TypedIntMulExpr(a, b) }
+    inlineFun("/", i32, i32, i32) { (a, b) -> TypedIntDivExpr(a, b) }
 
     // Add default logical operators
-    declare(Identifier.eq(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.neq(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.gt(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.gte(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.lt(), FunctionType(IntType(), IntType(), IntType()))
-    declare(Identifier.lte(), FunctionType(IntType(), IntType(), IntType()))
+    inlineFun("==", i32, i32, i32) { (a, b) -> TypedIntEQExpr(a, b) }
+    inlineFun("!=", i32, i32, i32) { (a, b) -> TypedIntNEQExpr(a, b) }
+    inlineFun(">=", i32, i32, i32) { (a, b) -> TypedIntGTEExpr(a, b) }
+    inlineFun(">", i32, i32, i32) { (a, b) -> TypedIntGTExpr(a, b) }
+    inlineFun("<=", i32, i32, i32) { (a, b) -> TypedIntLTEExpr(a, b) }
+    inlineFun("<", i32, i32, i32) { (a, b) -> TypedIntLTExpr(a, b) }
   }
 
   override val name = Identifier("Global")
   override val enclosing: Scope? = null
+
+  private fun inlineFun(
+    name: String,
+    returnType: PlankType,
+    vararg parameters: PlankType,
+    builder: (List<TypedExpr>) -> TypedExpr,
+  ) {
+    declare(
+      Identifier(name),
+      FunctionType(returnType, parameters.toList()).copy(isInline = true, inlineCall = {
+        ResolvedExprBody(builder(it))
+      })
+    )
+  }
 }
 
 data class AttributeScope(override val moduleTree: ModuleTree) : Scope() {

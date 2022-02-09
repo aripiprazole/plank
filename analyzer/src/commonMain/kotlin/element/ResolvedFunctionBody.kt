@@ -16,7 +16,8 @@ sealed interface ResolvedFunctionBody : ResolvedPlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class ResolvedNoBody(override val location: Location) : ResolvedFunctionBody {
+data class ResolvedNoBody(override val location: Location = Location.Generated) :
+  ResolvedFunctionBody {
   override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {
     return visitor.visitNoBody(this)
   }
@@ -24,7 +25,7 @@ data class ResolvedNoBody(override val location: Location) : ResolvedFunctionBod
 
 data class ResolvedExprBody(
   val expr: TypedExpr,
-  override val location: Location
+  override val location: Location = Location.Generated,
 ) : ResolvedFunctionBody, TypedPlankElement {
   override val type: PlankType get() = expr.type
 
@@ -36,7 +37,7 @@ data class ResolvedExprBody(
 data class ResolvedCodeBody(
   val stmts: List<ResolvedStmt>,
   val returned: TypedExpr?,
-  override val location: Location
+  override val location: Location = Location.Generated,
 ) : ResolvedFunctionBody {
   val hasReturnedUnit: Boolean
     get(): Boolean = returned?.type == UnitType ||

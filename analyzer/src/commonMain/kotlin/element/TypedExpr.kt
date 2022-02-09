@@ -1,5 +1,7 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.BoolType
+import org.plank.analyzer.FloatType
 import org.plank.analyzer.Module
 import org.plank.analyzer.PlankType
 import org.plank.analyzer.PointerType
@@ -18,6 +20,7 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitConstExpr(expr: TypedConstExpr): T
     fun visitIfExpr(expr: TypedIfExpr): T
     fun visitAccessExpr(expr: TypedAccessExpr): T
+    fun visitIntOperationExpr(expr: TypedIntOperationExpr): T
     fun visitCallExpr(expr: TypedCallExpr): T
     fun visitAssignExpr(expr: TypedAssignExpr): T
     fun visitSetExpr(expr: TypedSetExpr): T
@@ -128,6 +131,106 @@ data class TypedGetExpr(
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitGetExpr(this)
   }
+}
+
+sealed interface TypedIntOperationExpr : TypedExpr {
+  val lhs: TypedExpr
+  val rhs: TypedExpr
+  val isConst: Boolean
+
+  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
+    return visitor.visitIntOperationExpr(this)
+  }
+}
+
+data class TypedIntAddExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = rhs.type
+}
+
+data class TypedIntSubExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = rhs.type
+}
+
+data class TypedIntMulExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = rhs.type
+}
+
+data class TypedIntDivExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = FloatType()
+}
+
+data class TypedIntEQExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = BoolType
+}
+
+data class TypedIntNEQExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = BoolType
+}
+
+data class TypedIntGTExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = BoolType
+}
+
+data class TypedIntGTEExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = BoolType
+}
+
+data class TypedIntLTExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = BoolType
+}
+
+data class TypedIntLTEExpr(
+  override val lhs: TypedExpr,
+  override val rhs: TypedExpr,
+  override val isConst: Boolean = false,
+  override val location: Location = Location.Generated,
+) : TypedIntOperationExpr {
+  override val type: PlankType = BoolType
 }
 
 data class TypedCallExpr(
