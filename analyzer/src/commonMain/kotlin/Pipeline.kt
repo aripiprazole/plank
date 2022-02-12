@@ -9,8 +9,8 @@ import org.plank.syntax.element.PlankFile
  * Analyzes the provided [PlankFile] and returns a typed [ResolvedPlankFile]
  * with typed declarations/statements/expressions.
  */
-fun analyze(file: PlankFile, tree: ModuleTree): ResolvedPlankFile {
-  return AnalyzingPhase(tree)
-    .analyze(file)
+fun analyze(file: PlankFile): ResolvedPlankFile {
+  return AnalyzingPhase()
+    .visitPlankFile(file)
     .transform(InliningPhase)
 }

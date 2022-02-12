@@ -1,10 +1,11 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.EnumMember
-import org.plank.analyzer.FunctionType
-import org.plank.analyzer.Module
-import org.plank.analyzer.PlankType
-import org.plank.analyzer.StructProperty
+import org.plank.analyzer.EnumInfo
+import org.plank.analyzer.EnumMemberInfo
+import org.plank.analyzer.FunctionInfo
+import org.plank.analyzer.Mono
+import org.plank.analyzer.StructInfo
+import org.plank.analyzer.StructMemberInfo
 import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Identifier
@@ -15,8 +16,9 @@ sealed interface ResolvedDecl : ResolvedStmt
 
 data class ResolvedEnumDecl(
   val name: Identifier,
-  val members: Map<Identifier, EnumMember>,
-  override val type: PlankType,
+  val members: Map<Identifier, EnumMemberInfo>,
+  val info: EnumInfo,
+  override val type: Mono,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
@@ -26,8 +28,9 @@ data class ResolvedEnumDecl(
 
 data class ResolvedStructDecl(
   val name: Identifier,
-  val properties: Map<Identifier, StructProperty>,
-  override val type: PlankType,
+  val properties: Map<Identifier, StructMemberInfo>,
+  val info: StructInfo,
+  override val type: Mono,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
@@ -36,7 +39,7 @@ data class ResolvedStructDecl(
 }
 
 data class ResolvedUseDecl(
-  val module: Module,
+//  val module: Module,
   override val location: Location
 ) : ResolvedDecl {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
@@ -57,10 +60,11 @@ data class ResolvedModuleDecl(
 data class ResolvedFunDecl(
   val name: Identifier,
   val body: ResolvedFunctionBody,
-  val realParameters: Map<Identifier, PlankType>,
+  val realParameters: Map<Identifier, Mono>,
   val attributes: List<Attribute> = emptyList(),
-  val references: LinkedHashMap<Identifier, PlankType> = LinkedHashMap(),
-  override val type: FunctionType,
+  val references: LinkedHashMap<Identifier, Mono> = LinkedHashMap(),
+  val info: FunctionInfo,
+  override val type: Mono,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
   fun attribute(name: String): Attribute? {
@@ -81,7 +85,7 @@ data class ResolvedLetDecl(
   val mutable: Boolean,
   val value: TypedExpr,
   val isNested: Boolean,
-  override val type: PlankType,
+  override val type: Mono,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {

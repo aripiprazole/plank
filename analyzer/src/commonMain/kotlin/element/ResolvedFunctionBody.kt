@@ -1,7 +1,7 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.PlankType
-import org.plank.analyzer.UnitType
+import org.plank.analyzer.MUnit
+import org.plank.analyzer.Mono
 import org.plank.syntax.element.Location
 
 sealed interface ResolvedFunctionBody : ResolvedPlankElement {
@@ -27,7 +27,7 @@ data class ResolvedExprBody(
   val expr: TypedExpr,
   override val location: Location = Location.Generated,
 ) : ResolvedFunctionBody, TypedPlankElement {
-  override val type: PlankType get() = expr.type
+  override val type: Mono = expr.type
 
   override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {
     return visitor.visitExprBody(this)
@@ -40,7 +40,7 @@ data class ResolvedCodeBody(
   override val location: Location = Location.Generated,
 ) : ResolvedFunctionBody {
   val hasReturnedUnit: Boolean
-    get(): Boolean = returned?.type == UnitType ||
+    get(): Boolean = returned?.type == MUnit ||
       stmts.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()
 
   override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {

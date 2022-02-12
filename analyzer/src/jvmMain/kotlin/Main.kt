@@ -14,7 +14,7 @@ fun main() {
     """.trimIndent(),
   )
 
-  val resolved = analyze(file, ModuleTree())
+  val resolved = analyze(file)
 
   resolved.bindingViolations.forEach { println(it) }
 

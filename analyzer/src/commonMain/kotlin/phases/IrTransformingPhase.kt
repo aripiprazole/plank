@@ -241,7 +241,8 @@ open class IrTransformingPhase :
         members = decl.members.entries.associate { (name, member) ->
           val newName = visitIdentifier(name)
 
-          newName to member.copy(name = visitIdentifier(member.name))
+//          newName to member.copy(name = visitIdentifier(member.name))
+          newName to member
         }
       )
     )
@@ -253,7 +254,8 @@ open class IrTransformingPhase :
         name = visitIdentifier(decl.name),
         properties = decl.properties.entries.associate { (name, property) ->
           val newName = visitIdentifier(name)
-          newName to property.copy(name = newName, value = property.value?.let { visitExpr(it) })
+//          newName to property.copy(name = newName, value = property.value?.let { visitExpr(it) })
+          newName to property
         }
       )
     )
@@ -310,10 +312,10 @@ open class IrTransformingPhase :
   final override fun visitAccessExpr(expr: TypedAccessExpr): TypedExpr {
     return transformAccessExpr(
       expr.copy(
-        variable = expr.variable.copy(
-          name = visitIdentifier(expr.name),
-          value = visitExpr(expr.variable.value)
-        ),
+//        variable = expr.variable.copy(
+//          name = visitIdentifier(expr.name),
+//          value = visitExpr(expr.variable.value)
+//        ),
       )
     )
   }

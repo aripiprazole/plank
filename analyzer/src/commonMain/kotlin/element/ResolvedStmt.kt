@@ -1,6 +1,6 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.UnitType
+import org.plank.analyzer.MUnit
 import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Location
 
@@ -40,7 +40,7 @@ data class ResolvedExprStmt(val expr: TypedExpr, override val location: Location
 data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Location) :
   ResolvedStmt,
   TypedPlankElement {
-  override val type = value?.type ?: UnitType
+  override val type = value?.type ?: MUnit
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitReturnStmt(this)
