@@ -67,14 +67,3 @@ data class LetDecl(
     return visitor.visitLetDecl(this)
   }
 }
-
-data class ErrorDecl(
-  override val message: String,
-  override val arguments: List<Any>
-) : Decl, ErrorPlankElement {
-  override val location = Location.Generated
-
-  override fun <T> accept(visitor: Stmt.Visitor<T>): T {
-    return visitor.visitErrorDecl(this)
-  }
-}

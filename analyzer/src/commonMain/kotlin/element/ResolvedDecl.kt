@@ -7,7 +7,6 @@ import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.StructMemberInfo
 import org.plank.analyzer.infer.Ty
 import org.plank.syntax.element.Attribute
-import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
 import org.plank.syntax.element.QualifiedPath
@@ -90,15 +89,5 @@ data class ResolvedLetDecl(
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitLetDecl(this)
-  }
-}
-
-data class ResolvedErrorDecl(
-  override val message: String,
-  override val arguments: List<Any>,
-  override val location: Location = Location.Generated,
-) : ResolvedDecl, ErrorPlankElement {
-  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitViolatedDecl(this)
   }
 }

@@ -4,8 +4,6 @@ import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.boolTy
 import org.plank.analyzer.infer.i32Ty
-import org.plank.analyzer.infer.undefTy
-import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
 
@@ -28,7 +26,6 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitRefExpr(expr: TypedRefExpr): T
     fun visitDerefExpr(expr: TypedDerefExpr): T
     fun visitMatchExpr(expr: TypedMatchExpr): T
-    fun visitViolatedExpr(expr: TypedErrorExpr): T
 
     fun visitTypedExprs(many: List<TypedExpr>): List<T> = many.map(::visitExpr)
   }
@@ -288,17 +285,5 @@ data class TypedMatchExpr(
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitMatchExpr(this)
-  }
-}
-
-data class TypedErrorExpr(
-  override val message: String,
-  override val arguments: List<Any>,
-  override val location: Location = Location.Generated,
-) : TypedExpr, ErrorPlankElement {
-  override val ty: Ty = undefTy
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitViolatedExpr(this)
   }
 }

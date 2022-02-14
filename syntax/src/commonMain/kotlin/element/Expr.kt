@@ -18,7 +18,6 @@ sealed interface Expr : PlankElement {
     fun visitSizeofExpr(expr: SizeofExpr): T
     fun visitRefExpr(expr: RefExpr): T
     fun visitDerefExpr(expr: DerefExpr): T
-    fun visitErrorExpr(expr: ErrorExpr): T = error("Found a error expr")
 
     fun visitExprs(many: List<Expr>): List<T> = many.map(::visitExpr)
   }
@@ -141,16 +140,5 @@ data class RefExpr(val value: Expr, override val location: Location) : Expr {
 data class DerefExpr(val value: Expr, override val location: Location) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitDerefExpr(this)
-  }
-}
-
-data class ErrorExpr(
-  override val message: String,
-  override val arguments: List<Any> = emptyList(),
-) : Expr, ErrorPlankElement {
-  override val location = Location.Generated
-
-  override fun <T> accept(visitor: Expr.Visitor<T>): T {
-    return visitor.visitErrorExpr(this)
   }
 }
