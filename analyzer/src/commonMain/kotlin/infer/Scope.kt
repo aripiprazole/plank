@@ -31,11 +31,14 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
    * Init compiler-defined functions
    */
   init {
-    create(charTy)
-    create(boolTy)
-    create(i32Ty)
-    create(doubleTy)
-    create(floatTy)
+    create(IntInfo("Char", 8))
+    create(IntInfo("Bool", 8))
+    create(DoubleInfo)
+    create(FloatInfo)
+
+    create(IntInfo("Int8", 8))
+    create(IntInfo("Int16", 16))
+    create(IntInfo("Int32", 32))
 
     // Add default binary operators
     inlineFun("+", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntAddExpr(a, b) }
@@ -61,16 +64,9 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     vararg parameters: Ty,
     builder: (List<TypedExpr>) -> TypedExpr,
   ) {
-//    declare(
-//      Identifier(name),
-//      FunctionType(
-//        returnType,
-//        parameters.toList(),
-//        parameters.withIndex().associate { Identifier(it.index.toString()) to it.value }
-//      ).copy(isInline = true, actualReturnType = returnType, inlineCall = {
-//        ResolvedExprBody(builder(it))
-//      })
-//    )
+    declare(Identifier(name), functionTy(returnTy, parameters.toList()))
+
+    TODO("Handle $builder")
   }
 }
 
@@ -114,14 +110,15 @@ sealed class Scope {
   abstract val name: Identifier
   abstract val enclosing: Scope?
   abstract val moduleTree: ModuleTree
+
   open val isTopLevelScope: Boolean = true
   open val nested: Boolean get() = enclosing != null
 
-  val variables = mutableMapOf<Identifier, Variable>()
   open val references = mutableMapOf<Identifier, Ty>()
 
-  private val types = mutableMapOf<Identifier, Ty>()
+  private val types = mutableMapOf<Identifier, TyInfo>()
   private val expanded = mutableListOf<Scope>()
+  private val variables = mutableMapOf<Identifier, Variable>()
 
   fun expand(another: Scope): Scope {
     expanded += another
@@ -140,16 +137,12 @@ sealed class Scope {
     variables[name] = Variable(mutable, name, value.ty, this)
   }
 
-  fun create(ty: Ty) {
-    when (ty) {
-      is AppTy -> error("Can not create a type from an application")
-      is ConstTy -> types[Identifier(ty.name)] = ty
-      is VarTy -> types[Identifier(ty.name)] = ty
-    }
+  fun create(info: TyInfo) {
+    create(info.name, info)
   }
 
-  fun create(name: Identifier, ty: Ty) {
-    types[name] = ty
+  fun create(name: Identifier, info: TyInfo) {
+    types[name] = info
   }
 
   fun findModule(name: Identifier): Module? {
@@ -157,10 +150,10 @@ sealed class Scope {
       ?: enclosing?.findModule(name)
   }
 
-  fun findTy(name: Identifier): Ty? {
+  fun findTyInfo(name: Identifier): TyInfo? {
     return types[name]
-      ?: enclosing?.findTy(name)
-      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findTy(name) }
+      ?: enclosing?.findTyInfo(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findTyInfo(name) }
   }
 
   fun findVariable(name: Identifier): Variable? {

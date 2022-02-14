@@ -8,8 +8,8 @@ import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedPattern
-import org.plank.analyzer.element.TypedViolatedPattern
 import org.plank.shared.depthFirstSearch
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
@@ -237,7 +237,7 @@ class Infer(tree: ModuleTree) :
   private fun PlankElement.violatedPattern(message: String): TypedPattern {
     violations += BindingViolation(message, location)
 
-    return TypedViolatedPattern(message, location = location)
+    return TypedIdentPattern(Identifier("<error>"), undefTy, location)
   }
 
   private fun PlankElement.violate(message: String): TypedExpr {

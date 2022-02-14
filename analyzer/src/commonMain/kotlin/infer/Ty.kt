@@ -40,7 +40,10 @@ val i32Ty: Ty = ConstTy("Int32")
 val floatTy: Ty = ConstTy("Float")
 val doubleTy: Ty = ConstTy("Double")
 
-fun pointer(type: Ty): AppTy = AppTy(ConstTy("Pointer"), type)
+fun pointerTy(type: Ty): AppTy = AppTy(ConstTy("Pointer"), type)
+
+fun functionTy(returnTy: Ty, parameters: List<Ty>): AppTy =
+  AppTy(ConstTy("->"), AppTy(returnTy, parameters.fold(unitTy) { acc, ty -> AppTy(acc, ty) }))
 
 data class Scheme(val names: Set<String>, val type: Ty) {
   override fun toString(): String = "∀ ${names.joinToString(" ")}. $type"
