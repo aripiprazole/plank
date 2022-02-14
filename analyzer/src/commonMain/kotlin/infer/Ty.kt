@@ -27,10 +27,10 @@ data class AppTy(val fn: Ty, val arg: Ty) : Ty {
   }
 }
 
-object UndefTy : Ty by ConstTy("!")
-object UnitTy : Ty by ConstTy("()")
-object BoolTy : Ty by ConstTy("Bool")
-object Int32Ty : Ty by ConstTy("Int32")
+val UndefTy: Ty = ConstTy("!")
+val UnitTy: Ty = ConstTy("()")
+val BoolTy: Ty = ConstTy("Bool")
+val Int32Ty: Ty = ConstTy("Int32")
 
 fun pointer(type: Ty): AppTy = AppTy(ConstTy("Pointer"), type)
 
