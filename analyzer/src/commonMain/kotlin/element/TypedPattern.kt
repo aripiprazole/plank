@@ -1,8 +1,8 @@
 package org.plank.analyzer.element
 
 import org.plank.analyzer.EnumMemberInfo
-import org.plank.analyzer.MUndef
-import org.plank.analyzer.Mono
+import org.plank.analyzer.Ty
+import org.plank.analyzer.UndefTy
 import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
@@ -24,7 +24,7 @@ sealed interface TypedPattern : TypedPlankElement {
 data class TypedNamedTuplePattern(
   val properties: List<TypedPattern>,
   val info: EnumMemberInfo,
-  override val type: Mono,
+  override val type: Ty,
   override val location: Location
 ) : TypedPattern {
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
@@ -34,7 +34,7 @@ data class TypedNamedTuplePattern(
 
 data class TypedIdentPattern(
   val name: Identifier,
-  override val type: Mono,
+  override val type: Ty,
   override val location: Location
 ) : TypedPattern {
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
@@ -47,7 +47,7 @@ data class TypedViolatedPattern(
   override val arguments: List<Any> = emptyList(),
   override val location: Location = Location.Generated,
 ) : TypedPattern, ErrorPlankElement {
-  override val type = MUndef
+  override val type = UndefTy
 
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
     return visitor.visitViolatedPattern(this)

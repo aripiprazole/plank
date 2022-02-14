@@ -2,7 +2,7 @@
 
 package org.plank.analyzer.phases
 
-import org.plank.analyzer.Mono
+import org.plank.analyzer.Ty
 import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
@@ -58,7 +58,7 @@ class AnalyzingPhase :
   Pattern.Visitor<TypedPattern>,
   PlankFile.Visitor<ResolvedPlankFile>,
   FunctionBody.Visitor<ResolvedFunctionBody>,
-  TypeRef.Visitor<Mono> {
+  TypeRef.Visitor<Ty> {
   override fun visitBlockExpr(expr: BlockExpr): TypedExpr {
     TODO("Not yet implemented")
   }
@@ -183,23 +183,23 @@ class AnalyzingPhase :
     TODO("Not yet implemented")
   }
 
-  override fun visitAccessTypeRef(ref: AccessTypeRef): Mono {
+  override fun visitAccessTypeRef(ref: AccessTypeRef): Ty {
     TODO("Not yet implemented")
   }
 
-  override fun visitPointerTypeRef(ref: PointerTypeRef): Mono {
+  override fun visitPointerTypeRef(ref: PointerTypeRef): Ty {
     TODO("Not yet implemented")
   }
 
-  override fun visitArrayTypeRef(ref: ArrayTypeRef): Mono {
+  override fun visitArrayTypeRef(ref: ArrayTypeRef): Ty {
     TODO("Not yet implemented")
   }
 
-  override fun visitFunctionTypeRef(ref: FunctionTypeRef): Mono {
+  override fun visitFunctionTypeRef(ref: FunctionTypeRef): Ty {
     TODO("Not yet implemented")
   }
 
-  override fun visitUnitTypeRef(ref: UnitTypeRef): Mono {
+  override fun visitUnitTypeRef(ref: UnitTypeRef): Ty {
     TODO("Not yet implemented")
   }
 }
