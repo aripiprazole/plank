@@ -6,7 +6,7 @@ sealed interface Stmt : PlankElement {
 
     fun visitExprStmt(stmt: ExprStmt): T
     fun visitReturnStmt(stmt: ReturnStmt): T
-    fun visitErrorStmt(stmt: ErrorStmt): T
+    fun visitErrorStmt(stmt: ErrorStmt): T = error("found error stmt")
 
     fun visitUseDecl(decl: UseDecl): T
     fun visitModuleDecl(decl: ModuleDecl): T
@@ -14,7 +14,7 @@ sealed interface Stmt : PlankElement {
     fun visitStructDecl(decl: StructDecl): T
     fun visitFunDecl(decl: FunDecl): T
     fun visitLetDecl(decl: LetDecl): T
-    fun visitErrorDecl(decl: ErrorDecl): T
+    fun visitErrorDecl(decl: ErrorDecl): T = error("found error decl")
 
     fun visitStmts(many: List<Stmt>): List<T> = many.map(::visitStmt)
   }

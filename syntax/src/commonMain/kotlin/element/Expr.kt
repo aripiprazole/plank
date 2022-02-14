@@ -18,7 +18,7 @@ sealed interface Expr : PlankElement {
     fun visitSizeofExpr(expr: SizeofExpr): T
     fun visitRefExpr(expr: RefExpr): T
     fun visitDerefExpr(expr: DerefExpr): T
-    fun visitErrorExpr(expr: ErrorExpr): T
+    fun visitErrorExpr(expr: ErrorExpr): T = error("Found a error expr")
 
     fun visitExprs(many: List<Expr>): List<T> = many.map(::visitExpr)
   }
