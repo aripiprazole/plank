@@ -13,7 +13,7 @@ import org.plank.llvm4k.ir.Value
 class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     return when {
-      descriptor.type.isNested -> addCurryFunction(descriptor, true, BodyGenerator(descriptor))
+      descriptor.ty.isNested -> addCurryFunction(descriptor, true, BodyGenerator(descriptor))
       descriptor.hasAttribute("intrinsic") -> {
         addGlobalFunction(descriptor) {
           findIntrinsic("${path.text}.${descriptor.name.text}")
@@ -22,7 +22,7 @@ class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
         }
       }
       descriptor.hasAttribute("external") -> {
-        val type = descriptor.type
+        val type = descriptor.ty
         val realParameters = descriptor.realParameters
 
         val function =

@@ -95,7 +95,7 @@ fun CodegenContext.addCurryFunction(
   generate: GenerateBody,
 ): Value = addFunction(
   CurryFunctionSymbol(
-    type = descriptor.type,
+    type = descriptor.ty,
     nested = nested,
     references = descriptor.references,
     name = descriptor.name.text,

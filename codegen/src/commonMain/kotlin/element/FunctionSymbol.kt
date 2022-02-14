@@ -31,7 +31,7 @@ class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecContext) -> 
           createRet(returned.codegen())
         }
 
-        if (descriptor.type.actualReturnType != UnitType) return
+        if (descriptor.ty.actualReturnType != UnitType) return
         if (body.hasReturnedUnit) return
 
         createRet(createUnit())

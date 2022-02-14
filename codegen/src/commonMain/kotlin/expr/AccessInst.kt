@@ -13,7 +13,7 @@ class AccessInst(private val descriptor: TypedAccessExpr) : CodegenInstruction {
       ?: this
 
     return when {
-      descriptor.type.isNested -> module.getSymbol(descriptor.name.text)
+      descriptor.ty.isNested -> module.getSymbol(descriptor.name.text)
       else -> createLoad(module.getSymbol(descriptor.name.text))
     }
   }

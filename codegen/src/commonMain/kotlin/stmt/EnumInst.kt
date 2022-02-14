@@ -15,7 +15,7 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
       elements = listOf(i8, i8.pointer())
     }
 
-    addStruct(descriptor.name.text, descriptor.type, enum)
+    addStruct(descriptor.name.text, descriptor.ty, enum)
 
     descriptor.members.values.forEachIndexed { tag, (name, types, functionType) ->
       val mangled = mangle(name, descriptor.name)
@@ -25,10 +25,10 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
         elements = listOf(i8, *types.typegen().toTypedArray())
       }
 
-      addStruct(name.text, descriptor.type, member)
+      addStruct(name.text, descriptor.ty, member)
 
       when {
-        types.isEmpty() -> setSymbolLazy(name.text, descriptor.type) {
+        types.isEmpty() -> setSymbolLazy(name.text, descriptor.ty) {
           val instance = createMalloc(member)
           createStore(i8.getConstant(tag), getField(instance, 0))
           createBitCast(instance, enum.pointer())

@@ -31,7 +31,7 @@ class IntOperationInst(private val descriptor: TypedIntOperationExpr) : CodegenI
     val rhs = descriptor.rhs.codegen()
     val lhs = descriptor.lhs.codegen()
 
-    val unsigned = descriptor.type.cast<IntType>()?.unsigned ?: false
+    val unsigned = descriptor.ty.cast<IntType>()?.unsigned ?: false
 
     return when (descriptor) {
       is TypedIntAddExpr -> createAdd(lhs, rhs)

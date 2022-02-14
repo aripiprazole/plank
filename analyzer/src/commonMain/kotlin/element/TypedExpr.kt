@@ -1,10 +1,10 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.BoolTy
-import org.plank.analyzer.Int32Ty
-import org.plank.analyzer.StructInfo
-import org.plank.analyzer.Ty
-import org.plank.analyzer.UndefTy
+import org.plank.analyzer.infer.StructInfo
+import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.boolTy
+import org.plank.analyzer.infer.i32Ty
+import org.plank.analyzer.infer.undefTy
 import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
@@ -44,7 +44,7 @@ data class TypedBlockExpr(
   val stmts: List<ResolvedStmt>,
   val returned: TypedExpr,
   val references: LinkedHashMap<Identifier, Ty> = LinkedHashMap(),
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -54,7 +54,7 @@ data class TypedBlockExpr(
 
 data class TypedConstExpr(
   val value: Any,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -66,7 +66,7 @@ data class TypedIfExpr(
   val cond: TypedExpr,
   val thenBranch: TypedExpr,
   val elseBranch: TypedExpr?,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -77,7 +77,7 @@ data class TypedIfExpr(
 data class TypedAccessExpr(
 //  val module: Module? = null,
 //  val variable: Variable,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -86,7 +86,7 @@ data class TypedAccessExpr(
 }
 
 data class TypedGroupExpr(val value: TypedExpr, override val location: Location) : TypedExpr {
-  override val type = value.type
+  override val ty = value.ty
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitGroupExpr(this)
@@ -97,7 +97,7 @@ data class TypedAssignExpr(
 //  val module: Module? = null,
   val name: Identifier,
   val value: TypedExpr,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -109,7 +109,7 @@ data class TypedSetExpr(
   val receiver: TypedExpr,
   val member: Identifier,
   val value: TypedExpr,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -120,7 +120,7 @@ data class TypedSetExpr(
 data class TypedGetExpr(
   val receiver: TypedExpr,
   val member: Identifier,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -144,7 +144,7 @@ data class TypedIntAddExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = rhs.type
+  override val ty: Ty = rhs.ty
 }
 
 data class TypedIntSubExpr(
@@ -153,7 +153,7 @@ data class TypedIntSubExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = rhs.type
+  override val ty: Ty = rhs.ty
 }
 
 data class TypedIntMulExpr(
@@ -162,7 +162,7 @@ data class TypedIntMulExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = rhs.type
+  override val ty: Ty = rhs.ty
 }
 
 data class TypedIntDivExpr(
@@ -171,7 +171,7 @@ data class TypedIntDivExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = Int32Ty
+  override val ty: Ty = i32Ty
 }
 
 data class TypedIntEQExpr(
@@ -180,7 +180,7 @@ data class TypedIntEQExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = BoolTy
+  override val ty: Ty = boolTy
 }
 
 data class TypedIntNEQExpr(
@@ -189,7 +189,7 @@ data class TypedIntNEQExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = BoolTy
+  override val ty: Ty = boolTy
 }
 
 data class TypedIntGTExpr(
@@ -198,7 +198,7 @@ data class TypedIntGTExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = BoolTy
+  override val ty: Ty = boolTy
 }
 
 data class TypedIntGTEExpr(
@@ -207,7 +207,7 @@ data class TypedIntGTEExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = BoolTy
+  override val ty: Ty = boolTy
 }
 
 data class TypedIntLTExpr(
@@ -216,7 +216,7 @@ data class TypedIntLTExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = BoolTy
+  override val ty: Ty = boolTy
 }
 
 data class TypedIntLTEExpr(
@@ -225,13 +225,13 @@ data class TypedIntLTEExpr(
   override val isConst: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
-  override val type: Ty = BoolTy
+  override val ty: Ty = boolTy
 }
 
 data class TypedCallExpr(
   val callee: TypedExpr,
   val arguments: List<TypedExpr>,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -242,7 +242,7 @@ data class TypedCallExpr(
 data class TypedInstanceExpr(
   val arguments: Map<Identifier, TypedExpr>,
   val struct: StructInfo,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -251,7 +251,7 @@ data class TypedInstanceExpr(
 }
 
 data class TypedSizeofExpr(
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -263,7 +263,7 @@ data class TypedRefExpr(
   val value: TypedExpr,
   override val location: Location
 ) : TypedExpr {
-  override val type: Ty get() = TODO()
+  override val ty: Ty get() = TODO()
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitRefExpr(this)
@@ -272,7 +272,7 @@ data class TypedRefExpr(
 
 data class TypedDerefExpr(
   val value: TypedExpr,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -283,7 +283,7 @@ data class TypedDerefExpr(
 data class TypedMatchExpr(
   val subject: TypedExpr,
   val patterns: Map<TypedPattern, TypedExpr>,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -296,7 +296,7 @@ data class TypedErrorExpr(
   override val arguments: List<Any>,
   override val location: Location = Location.Generated,
 ) : TypedExpr, ErrorPlankElement {
-  override val type: Ty = UndefTy
+  override val ty: Ty = undefTy
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitViolatedExpr(this)

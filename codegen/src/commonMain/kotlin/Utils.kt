@@ -59,7 +59,7 @@ fun CodegenContext.getField(value: Value, idx: Int, name: String? = null): Value
 fun CodegenContext.findField(receiver: TypedExpr, name: Identifier): Value {
   val struct = when (receiver) {
     is TypedAccessExpr -> receiver.name.text
-    else -> receiver.type.name.text
+    else -> receiver.ty.name.text
   }
 
   val instance = when (receiver) {
@@ -72,11 +72,11 @@ fun CodegenContext.findField(receiver: TypedExpr, name: Identifier): Value {
     else -> alloca(instance)
   }
 
-  if (!receiver.type.isInstance<org.plank.analyzer.StructType>()) {
-    codegenError("Unresolved type `${receiver.type.name.text}`")
+  if (!receiver.ty.isInstance<org.plank.analyzer.StructType>()) {
+    codegenError("Unresolved type `${receiver.ty.name.text}`")
   }
 
-  val propertyIndex = receiver.type
+  val propertyIndex = receiver.ty
     .cast<org.plank.analyzer.StructType>()!!.properties.entries
     .indexOfFirst { it.key == name }
 

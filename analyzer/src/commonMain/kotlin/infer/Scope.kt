@@ -57,7 +57,7 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
 
   private fun inlineFun(
     name: String,
-    returnType: Ty,
+    returnTy: Ty,
     vararg parameters: Ty,
     builder: (List<TypedExpr>) -> TypedExpr,
   ) {
@@ -130,26 +130,26 @@ sealed class Scope {
   }
 
   /**
-   * Declares a compiler-defined variable with type [type] in the context
+   * Declares a compiler-defined variable with type [ty] in the context
    */
-  fun declare(name: Identifier, type: Ty, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, type, this)
+  fun declare(name: Identifier, ty: Ty, mutable: Boolean = false) {
+    variables[name] = Variable(mutable, name, ty, this)
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, value.type, this)
+    variables[name] = Variable(mutable, name, value.ty, this)
   }
 
-  fun create(type: Ty) {
-    when (type) {
+  fun create(ty: Ty) {
+    when (ty) {
       is AppTy -> error("Can not create a type from an application")
-      is ConstTy -> types[Identifier(type.name)] = type
-      is VarTy -> types[Identifier(type.name)] = type
+      is ConstTy -> types[Identifier(ty.name)] = ty
+      is VarTy -> types[Identifier(ty.name)] = ty
     }
   }
 
-  fun create(name: Identifier, type: Ty) {
-    types[name] = type
+  fun create(name: Identifier, ty: Ty) {
+    types[name] = ty
   }
 
   fun findModule(name: Identifier): Module? {
@@ -157,10 +157,10 @@ sealed class Scope {
       ?: enclosing?.findModule(name)
   }
 
-  fun findType(name: Identifier): Ty? {
+  fun findTy(name: Identifier): Ty? {
     return types[name]
-      ?: enclosing?.findType(name)
-      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findType(name) }
+      ?: enclosing?.findTy(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findTy(name) }
   }
 
   fun findVariable(name: Identifier): Variable? {

@@ -7,7 +7,7 @@ import org.plank.llvm4k.ir.Value
 
 class SizeofInst(private val descriptor: TypedSizeofExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    val type = descriptor.type.typegen()
+    val type = descriptor.ty.typegen()
 
     return type.size
   }

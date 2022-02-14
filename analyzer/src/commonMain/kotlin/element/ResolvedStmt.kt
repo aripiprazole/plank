@@ -1,6 +1,7 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.UnitTy
+import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.unitTy
 import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Location
 
@@ -30,7 +31,7 @@ sealed interface ResolvedStmt : ResolvedPlankElement {
 data class ResolvedExprStmt(val expr: TypedExpr, override val location: Location) :
   ResolvedStmt,
   TypedPlankElement {
-  override val type = expr.type
+  override val ty = expr.ty
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitExprStmt(this)
@@ -40,7 +41,7 @@ data class ResolvedExprStmt(val expr: TypedExpr, override val location: Location
 data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Location) :
   ResolvedStmt,
   TypedPlankElement {
-  override val type = value?.type ?: UnitTy
+  override val ty: Ty = value?.ty ?: unitTy
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitReturnStmt(this)
@@ -51,7 +52,7 @@ data class ResolvedErrorStmt(
   override val message: String,
   override val arguments: List<Any>,
 ) : ResolvedStmt, ErrorPlankElement {
-  override val location = Location.Generated
+  override val location: Location = Location.Generated
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitViolatedStmt(this)

@@ -12,7 +12,7 @@ class StructInst(private val descriptor: ResolvedStructDecl) : CodegenInstructio
       elements = descriptor.properties.values.map { it.type.typegen() }
     }
 
-    addStruct(name, descriptor.type, struct)
+    addStruct(name, descriptor.ty, struct)
 
     return i1.constantNull
   }

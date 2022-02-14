@@ -14,7 +14,7 @@ import org.plank.llvm4k.ir.Value
 
 class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    val type = descriptor.type.typegen()
+    val type = descriptor.ty.typegen()
     val patterns = descriptor.patterns.entries.toList()
 
     val lastPattern = patterns.elementAt(patterns.size - 1)
@@ -64,11 +64,11 @@ fun CodegenContext.checkPattern(
 fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
   when (pattern) {
     is TypedIdentPattern -> {
-      setSymbol(pattern.name.text, pattern.type, unsafeAlloca(subject))
+      setSymbol(pattern.name.text, pattern.ty, unsafeAlloca(subject))
     }
     is TypedNamedTuplePattern -> {
       var idx = 1
-      val member = createBitCast(subject, pattern.type.typegen().pointer())
+      val member = createBitCast(subject, pattern.ty.typegen().pointer())
 
       pattern.properties.forEach { nestedPattern ->
         val prop = getField(member, idx)

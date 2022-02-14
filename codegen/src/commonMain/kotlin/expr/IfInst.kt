@@ -14,7 +14,7 @@ import org.plank.llvm4k.ir.Value
 class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     return createIf(
-      descriptor.type.typegen(),
+      descriptor.ty.typegen(),
       descriptor.cond.codegen(),
       thenStmts = { descriptor.thenBranch.codegen() },
       elseStmts = { descriptor.elseBranch?.codegen() ?: createUnit() },

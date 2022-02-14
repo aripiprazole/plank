@@ -84,7 +84,7 @@ fun CodegenContext.addGlobalFunction(
 fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
   return addFunction(
     GlobalFunctionSymbol(
-      type = descriptor.type,
+      type = descriptor.ty,
       references = descriptor.references,
       name = descriptor.name.text,
       mangled = mangle(descriptor),

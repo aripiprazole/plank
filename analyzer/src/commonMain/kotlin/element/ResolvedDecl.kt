@@ -1,11 +1,11 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.EnumInfo
-import org.plank.analyzer.EnumMemberInfo
-import org.plank.analyzer.FunctionInfo
-import org.plank.analyzer.StructInfo
-import org.plank.analyzer.StructMemberInfo
-import org.plank.analyzer.Ty
+import org.plank.analyzer.infer.EnumInfo
+import org.plank.analyzer.infer.EnumMemberInfo
+import org.plank.analyzer.infer.FunctionInfo
+import org.plank.analyzer.infer.StructInfo
+import org.plank.analyzer.infer.StructMemberInfo
+import org.plank.analyzer.infer.Ty
 import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.ErrorPlankElement
 import org.plank.syntax.element.Identifier
@@ -18,7 +18,7 @@ data class ResolvedEnumDecl(
   val name: Identifier,
   val members: Map<Identifier, EnumMemberInfo>,
   val info: EnumInfo,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
@@ -30,7 +30,7 @@ data class ResolvedStructDecl(
   val name: Identifier,
   val properties: Map<Identifier, StructMemberInfo>,
   val info: StructInfo,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
@@ -64,7 +64,7 @@ data class ResolvedFunDecl(
   val attributes: List<Attribute> = emptyList(),
   val references: LinkedHashMap<Identifier, Ty> = LinkedHashMap(),
   val info: FunctionInfo,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
   fun attribute(name: String): Attribute? {
@@ -85,7 +85,7 @@ data class ResolvedLetDecl(
   val mutable: Boolean,
   val value: TypedExpr,
   val isNested: Boolean,
-  override val type: Ty,
+  override val ty: Ty,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {

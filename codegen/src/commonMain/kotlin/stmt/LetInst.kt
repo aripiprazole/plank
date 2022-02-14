@@ -11,8 +11,8 @@ class LetInst(private val descriptor: ResolvedLetDecl) : CodegenInstruction {
       true -> {
         val name = descriptor.name.text
 
-        val variable = createAlloca(descriptor.type.typegen(), name = name).also {
-          setSymbol(name, descriptor.type, it)
+        val variable = createAlloca(descriptor.ty.typegen(), name = name).also {
+          setSymbol(name, descriptor.ty, it)
         }
 
         val value = descriptor.value.codegen()
@@ -20,7 +20,7 @@ class LetInst(private val descriptor: ResolvedLetDecl) : CodegenInstruction {
         createStore(value, variable)
       }
       false -> {
-        setSymbolLazy(descriptor.name.text, descriptor.type) {
+        setSymbolLazy(descriptor.name.text, descriptor.ty) {
           descriptor.value.codegen()
         }
 

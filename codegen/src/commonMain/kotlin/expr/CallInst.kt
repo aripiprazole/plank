@@ -14,17 +14,17 @@ import org.plank.llvm4k.ir.Value
 
 class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    val type = descriptor.callee.type.cast<FunctionType>()!!
+    val type = descriptor.callee.ty.cast<FunctionType>()!!
 
     val arguments = descriptor.arguments.mapIndexed { index, expr ->
-      val functionType = expr.type.cast<FunctionType>()
+      val functionType = expr.ty.cast<FunctionType>()
 
       when {
         functionType != null && functionType.isNested -> {
           castClosure(expr.codegen(), type.parameters.values.elementAt(index).typegen())
         }
         functionType != null && !functionType.isPartialApplied -> {
-          val name = "_Zclosure.wrap.(${descriptor.callee.type})$$index"
+          val name = "_Zclosure.wrap.(${descriptor.callee.ty})$$index"
 
           val function = addFunction(
             CurryFunctionSymbol(
