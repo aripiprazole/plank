@@ -27,10 +27,18 @@ data class AppTy(val fn: Ty, val arg: Ty) : Ty {
   }
 }
 
-val UndefTy: Ty = ConstTy("!")
-val UnitTy: Ty = ConstTy("()")
-val BoolTy: Ty = ConstTy("Bool")
-val Int32Ty: Ty = ConstTy("Int32")
+val undefTy: Ty = ConstTy("!")
+val unitTy: Ty = ConstTy("()")
+val boolTy: Ty = ConstTy("Bool")
+
+val charTy: Ty = ConstTy("Int8")
+
+val i8Ty: Ty = ConstTy("Int8")
+val i16Ty: Ty = ConstTy("Int16")
+val i32Ty: Ty = ConstTy("Int32")
+
+val floatTy: Ty = ConstTy("Float")
+val doubleTy: Ty = ConstTy("Double")
 
 fun pointer(type: Ty): AppTy = AppTy(ConstTy("Pointer"), type)
 
