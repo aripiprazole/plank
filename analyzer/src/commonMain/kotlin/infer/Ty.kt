@@ -1,4 +1,4 @@
-package org.plank.analyzer
+package org.plank.analyzer.infer
 
 sealed interface Ty {
   override fun toString(): String

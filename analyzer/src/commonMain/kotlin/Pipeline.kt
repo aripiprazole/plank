@@ -1,7 +1,7 @@
 package org.plank.analyzer
 
 import org.plank.analyzer.element.ResolvedPlankFile
-import org.plank.analyzer.phases.AnalyzingPhase
+import org.plank.analyzer.infer.Infer
 import org.plank.analyzer.phases.InliningPhase
 import org.plank.syntax.element.PlankFile
 
@@ -10,7 +10,7 @@ import org.plank.syntax.element.PlankFile
  * with typed declarations/statements/expressions.
  */
 fun analyze(file: PlankFile): ResolvedPlankFile {
-  return AnalyzingPhase()
+  return Infer()
     .visitPlankFile(file)
     .transform(InliningPhase)
 }

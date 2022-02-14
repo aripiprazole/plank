@@ -1,8 +1,7 @@
 @file:Suppress("MaxLineLength", "MaximumLineLength")
 
-package org.plank.analyzer.phases
+package org.plank.analyzer.infer
 
-import org.plank.analyzer.Ty
 import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
@@ -52,7 +51,7 @@ import org.plank.syntax.element.UseDecl
 
 // TODO: add call parameters check
 @Suppress("UnusedPrivateMember")
-class AnalyzingPhase :
+class Infer :
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,
   Pattern.Visitor<TypedPattern>,
