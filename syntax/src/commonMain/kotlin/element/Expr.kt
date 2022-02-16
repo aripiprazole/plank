@@ -27,7 +27,7 @@ sealed interface Expr : PlankElement {
 
 data class BlockExpr(
   val stmts: List<Stmt>,
-  val returned: Expr?,
+  val value: Expr?,
   override val location: Location
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {

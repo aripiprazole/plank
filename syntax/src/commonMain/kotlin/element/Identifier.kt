@@ -23,3 +23,5 @@ data class Identifier(val text: String, override val location: Location = Locati
     return text.hashCode()
   }
 }
+
+fun String.toIdentifier(): Identifier = Identifier(this)

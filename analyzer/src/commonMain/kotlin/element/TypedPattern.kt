@@ -2,6 +2,7 @@ package org.plank.analyzer.element
 
 import org.plank.analyzer.infer.EnumMemberInfo
 import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.undefTy
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
 
@@ -21,9 +22,10 @@ sealed interface TypedPattern : TypedPlankElement {
 data class TypedNamedTuplePattern(
   val properties: List<TypedPattern>,
   val info: EnumMemberInfo,
-  override val ty: Ty,
   override val location: Location
 ) : TypedPattern {
+  override val ty: Ty = undefTy
+
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
     return visitor.visitNamedTuplePattern(this)
   }

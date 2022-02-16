@@ -26,7 +26,7 @@ data class ExprBody(val expr: Expr, override val location: Location) : FunctionB
 
 data class CodeBody(
   val stmts: List<Stmt>,
-  val returned: Expr?,
+  val value: Expr?,
   override val location: Location
 ) : FunctionBody {
   override fun <T> accept(visitor: FunctionBody.Visitor<T>): T {

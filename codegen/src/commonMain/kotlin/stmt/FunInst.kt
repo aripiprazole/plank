@@ -23,7 +23,7 @@ class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
       }
       descriptor.hasAttribute("external") -> {
         val type = descriptor.ty
-        val realParameters = descriptor.realParameters
+        val realParameters = descriptor.parameters
 
         val function =
           FunctionType(type.actualReturnType.typegen(), realParameters.values.typegen()).let { f ->

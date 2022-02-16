@@ -45,12 +45,11 @@ data class ModuleDecl(
 data class FunDecl(
   val attributes: List<Attribute> = emptyList(),
   val name: Identifier,
-  val type: FunctionTypeRef,
   val body: FunctionBody,
+  val parameters: Map<Identifier, TypeRef>,
+  val returnType: TypeRef,
   override val location: Location
 ) : Decl {
-  val realParameters: Map<Identifier, TypeRef> = type.realParameters
-
   override fun <T> accept(visitor: Stmt.Visitor<T>): T {
     return visitor.visitFunDecl(this)
   }

@@ -1,7 +1,9 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.infer.Module
 import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.Variable
 import org.plank.analyzer.infer.boolTy
 import org.plank.analyzer.infer.i32Ty
 import org.plank.syntax.element.Identifier
@@ -40,7 +42,7 @@ sealed interface TypedExpr : TypedPlankElement {
 data class TypedBlockExpr(
   val stmts: List<ResolvedStmt>,
   val returned: TypedExpr,
-  val references: LinkedHashMap<Identifier, Ty> = LinkedHashMap(),
+  val references: MutableMap<Identifier, Ty> = mutableMapOf(),
   override val ty: Ty,
   override val location: Location,
 ) : TypedExpr {
@@ -72,11 +74,12 @@ data class TypedIfExpr(
 }
 
 data class TypedAccessExpr(
-//  val module: Module? = null,
-//  val variable: Variable,
-  override val ty: Ty,
+  val module: Module? = null,
+  val variable: Variable,
   override val location: Location,
 ) : TypedExpr {
+  override val ty: Ty = variable.ty
+
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitAccessExpr(this)
   }
@@ -91,7 +94,7 @@ data class TypedGroupExpr(val value: TypedExpr, override val location: Location)
 }
 
 data class TypedAssignExpr(
-//  val module: Module? = null,
+  val module: Module? = null,
   val name: Identifier,
   val value: TypedExpr,
   override val ty: Ty,
@@ -227,7 +230,7 @@ data class TypedIntLTEExpr(
 
 data class TypedCallExpr(
   val callee: TypedExpr,
-  val arguments: List<TypedExpr>,
+  val argument: TypedExpr,
   override val ty: Ty,
   override val location: Location
 ) : TypedExpr {

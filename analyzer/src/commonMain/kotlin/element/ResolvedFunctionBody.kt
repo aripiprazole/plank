@@ -36,11 +36,11 @@ data class ResolvedExprBody(
 
 data class ResolvedCodeBody(
   val stmts: List<ResolvedStmt>,
-  val returned: TypedExpr?,
+  val value: TypedExpr?,
   override val location: Location = Location.Generated,
 ) : ResolvedFunctionBody {
   val hasReturnedUnit: Boolean
-    get(): Boolean = returned?.ty == unitTy ||
+    get(): Boolean = value?.ty == unitTy ||
       stmts.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()
 
   override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {

@@ -88,7 +88,7 @@ fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: Gene
       references = descriptor.references,
       name = descriptor.name.text,
       mangled = mangle(descriptor),
-      realParameters = descriptor.realParameters,
+      realParameters = descriptor.parameters,
       generate = generate,
     )
   )

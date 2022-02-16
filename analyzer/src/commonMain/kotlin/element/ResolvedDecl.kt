@@ -3,6 +3,7 @@ package org.plank.analyzer.element
 import org.plank.analyzer.infer.EnumInfo
 import org.plank.analyzer.infer.EnumMemberInfo
 import org.plank.analyzer.infer.FunctionInfo
+import org.plank.analyzer.infer.Module
 import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.StructMemberInfo
 import org.plank.analyzer.infer.Ty
@@ -13,32 +14,27 @@ import org.plank.syntax.element.QualifiedPath
 
 sealed interface ResolvedDecl : ResolvedStmt
 
-data class ResolvedEnumDecl(
-  val name: Identifier,
-  val members: Map<Identifier, EnumMemberInfo>,
-  val info: EnumInfo,
-  override val ty: Ty,
-  override val location: Location
-) : ResolvedDecl, TypedPlankElement {
+data class ResolvedEnumDecl(val info: EnumInfo, override val location: Location) : ResolvedDecl {
+  val name: Identifier = info.name
+  val members: Map<Identifier, EnumMemberInfo> = info.members
+
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitEnumDecl(this)
   }
 }
 
-data class ResolvedStructDecl(
-  val name: Identifier,
-  val properties: Map<Identifier, StructMemberInfo>,
-  val info: StructInfo,
-  override val ty: Ty,
-  override val location: Location,
-) : ResolvedDecl, TypedPlankElement {
+data class ResolvedStructDecl(val info: StructInfo, override val location: Location) :
+  ResolvedDecl {
+  val name: Identifier = info.name
+  val members: Map<Identifier, StructMemberInfo> = info.members
+
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitStructDecl(this)
   }
 }
 
 data class ResolvedUseDecl(
-//  val module: Module,
+  val module: Module,
   override val location: Location
 ) : ResolvedDecl {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
@@ -57,15 +53,17 @@ data class ResolvedModuleDecl(
 }
 
 data class ResolvedFunDecl(
-  val name: Identifier,
   val body: ResolvedFunctionBody,
-  val realParameters: Map<Identifier, Ty>,
   val attributes: List<Attribute> = emptyList(),
   val references: LinkedHashMap<Identifier, Ty> = LinkedHashMap(),
   val info: FunctionInfo,
   override val ty: Ty,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
+  val name: Identifier = info.name
+  val parameters: Map<Identifier, Ty> = info.parameters
+  val returnTy: Ty = info.returnTy
+
   fun attribute(name: String): Attribute? {
     return attributes.find { it.name.text == name }
   }

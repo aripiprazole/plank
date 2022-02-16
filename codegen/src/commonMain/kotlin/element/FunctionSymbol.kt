@@ -27,7 +27,7 @@ class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecContext) -> 
       is ResolvedCodeBody -> {
         body.stmts.codegen()
 
-        body.returned?.let { returned ->
+        body.value?.let { returned ->
           createRet(returned.codegen())
         }
 

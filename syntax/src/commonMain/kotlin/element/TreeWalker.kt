@@ -90,18 +90,12 @@ open class TreeWalker :
     visitExpr(expr.value)
   }
 
-  override fun visitErrorExpr(expr: ErrorExpr) {
-  }
-
   override fun visitExprStmt(stmt: ExprStmt) {
     visitExpr(stmt.expr)
   }
 
   override fun visitReturnStmt(stmt: ReturnStmt) {
     stmt.value?.let { visitExpr(it) }
-  }
-
-  override fun visitErrorStmt(stmt: ErrorStmt) {
   }
 
   override fun visitUseDecl(decl: UseDecl) {
@@ -132,21 +126,18 @@ open class TreeWalker :
 
   override fun visitFunDecl(decl: FunDecl) {
     visitIdentifier(decl.name)
-    visitTypeRef(decl.type)
     visitFunctionBody(decl.body)
-    decl.realParameters.forEach { (parameter, type) ->
+    decl.parameters.forEach { (parameter, type) ->
       visitIdentifier(parameter)
       visitTypeRef(type)
     }
+    visitTypeRef(decl.returnType)
   }
 
   override fun visitLetDecl(decl: LetDecl) {
     visitIdentifier(decl.name)
     decl.type?.let { visitTypeRef(it) }
     visitExpr(decl.value)
-  }
-
-  override fun visitErrorDecl(decl: ErrorDecl) {
   }
 
   override fun visitAccessTypeRef(ref: AccessTypeRef) {
@@ -162,7 +153,7 @@ open class TreeWalker :
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef) {
-    ref.parameter?.let { visitTypeRef(it) }
+    visitTypeRef(ref.parameterType)
     visitTypeRef(ref.returnType)
   }
 
@@ -196,11 +187,11 @@ open class TreeWalker :
 
   override fun visitCodeBody(body: CodeBody) {
     visitStmts(body.stmts)
-    body.returned?.let { visitExpr(it) }
+    body.value?.let { visitExpr(it) }
   }
 
   override fun visitBlockExpr(expr: BlockExpr) {
     visitStmts(expr.stmts)
-    expr.returned?.let { visitExpr(it) }
+    expr.value?.let { visitExpr(it) }
   }
 }

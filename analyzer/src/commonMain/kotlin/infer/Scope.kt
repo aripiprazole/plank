@@ -64,9 +64,7 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     vararg parameters: Ty,
     builder: (List<TypedExpr>) -> TypedExpr,
   ) {
-    declare(Identifier(name), functionTy(returnTy, parameters.toList()))
-
-    TODO("Handle $builder")
+    declare(Identifier(name), arrowTy(returnTy, parameters.toList()))
   }
 }
 
@@ -95,6 +93,9 @@ class FunctionScope(
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
 ) : Scope() {
   override val isTopLevelScope: Boolean = false
+
+  val returnTy: Ty = function.returnTy
+  val parameters: Map<Identifier, Ty> = function.parameters
 }
 
 open class ClosureScope(
@@ -137,12 +138,13 @@ sealed class Scope {
     variables[name] = Variable(mutable, name, value.ty, this)
   }
 
-  fun create(info: TyInfo) {
-    create(info.name, info)
+  fun <T : TyInfo> create(info: T): T {
+    return create(info.name, info)
   }
 
-  fun create(name: Identifier, info: TyInfo) {
+  fun <T : TyInfo> create(name: Identifier, info: T): T {
     types[name] = info
+    return info
   }
 
   fun findModule(name: Identifier): Module? {
