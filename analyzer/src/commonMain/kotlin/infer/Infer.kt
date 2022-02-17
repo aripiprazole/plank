@@ -492,7 +492,7 @@ class Infer(tree: ModuleTree) :
 
     val parameters = decl.parameters
       .mapValues { visitTypeRef(it.value) }
-      .ifEmpty { mapOf(Identifier("___") to unitTy) }
+      .ifEmpty { mapOf(Identifier("_") to unitTy) }
 
     val returnType = visitTypeRef(decl.returnType)
 
@@ -555,7 +555,7 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef): Ty {
-    return FunTy(visitTypeRef(ref.returnType), visitTypeRef(ref.returnType))
+    return FunTy(visitTypeRef(ref.returnType), visitTypeRef(ref.parameterType))
   }
 
   override fun visitUnitTypeRef(ref: UnitTypeRef): Ty {
