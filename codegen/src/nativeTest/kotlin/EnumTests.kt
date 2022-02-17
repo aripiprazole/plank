@@ -38,7 +38,7 @@ class EnumTests {
         }
 
         fun main(argc: Int32, argv: **Char) -> () {
-          let cons = Cons("hello");
+          let cons = Cons("hello", Nil);
         }
         """.trimIndent()
       )

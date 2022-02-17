@@ -4,7 +4,6 @@ import arrow.core.identity
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Ty
-import org.plank.analyzer.infer.nest
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca

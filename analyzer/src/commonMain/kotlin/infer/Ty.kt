@@ -26,6 +26,28 @@ data class FunTy(val returnTy: Ty, val parameterTy: Ty) : Ty {
   } else {
     "$parameterTy -> $returnTy"
   }
+
+  fun nest(index: Int): Ty {
+    var i = 0
+    var current = returnTy
+
+    while (index > i) {
+      if (current is FunTy) {
+        current = current.returnTy
+      }
+      i++
+    }
+
+    return current
+  }
+
+  fun chainParameters(): List<Ty> = buildList {
+    var ty: Ty = this@FunTy
+    while (ty is FunTy) {
+      add(ty.parameterTy)
+      ty = ty.returnTy
+    }
+  }
 }
 
 fun FunTy(returnTy: Ty, parameters: Collection<Ty>): FunTy =
@@ -50,30 +72,6 @@ val i32Ty: Ty = ConstTy("Int32")
 
 val floatTy: Ty = ConstTy("Float")
 val doubleTy: Ty = ConstTy("Double")
-
-fun FunTy.nest(index: Int): Ty {
-  var i = 0
-  var current = returnTy
-
-  while (index > i) {
-    if (current is FunTy) {
-      current = current.returnTy
-    }
-    i++
-  }
-
-  return current
-}
-
-fun FunTy.chainParameters(): List<Ty> = buildList {
-  var ty: Ty = this@chainParameters
-  while (ty is FunTy) {
-    add(ty.parameterTy)
-    ty = ty.returnTy
-  }
-}.reversed()
-
-fun Ty.unapply(): Ty? = (this as? AppTy)?.arg
 
 data class Scheme(val names: Set<String>, val type: Ty) {
   override fun toString(): String = "∀ ${names.joinToString(" ")}. $type"
