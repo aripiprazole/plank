@@ -6,16 +6,17 @@ import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.element.addGlobalFunction
 import org.plank.codegen.getField
 import org.plank.codegen.mangle
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     val enum = createNamedStruct(mangle(descriptor.name)) {
-      elements = listOf(i8, i8.pointer())
+      elements = listOf(i8, i8.pointer(AddrSpace.Generic))
     }
 
-    addStruct(descriptor.name.text, enum.pointer())
+    addStruct(descriptor.name.text, enum.pointer(AddrSpace.Generic))
 
     descriptor.members.values.forEachIndexed { tag, (name, types, funTy) ->
       val mangled = mangle(name, descriptor.name)
@@ -30,8 +31,8 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
       when {
         types.isEmpty() -> setSymbolLazy(name.text, descriptor.ty) {
           val instance = createMalloc(member)
-          createStore(i8.getConstant(tag), getField(instance, 0))
-          createBitCast(instance, enum.pointer())
+          createStore(i8.getConstant(tag, false), getField(instance, 0))
+          createBitCast(instance, enum.pointer(AddrSpace.Generic))
         }
         else -> addGlobalFunction(
           funTy,
@@ -41,14 +42,14 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
         ) {
           var idx = 1
           val instance = createMalloc(member)
-          createStore(i8.getConstant(tag), getField(instance, 0))
+          createStore(i8.getConstant(tag, false), getField(instance, 0))
 
           arguments.values.forEach { argument ->
             createStore(argument, getField(instance, idx))
             idx++
           }
 
-          createRet(createBitCast(instance, enum.pointer()))
+          createRet(createBitCast(instance, enum.pointer(AddrSpace.Generic)))
         }
       }
     }

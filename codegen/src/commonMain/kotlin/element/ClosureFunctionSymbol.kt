@@ -9,6 +9,7 @@ import org.plank.codegen.createScopeContext
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
 import org.plank.codegen.unsafeAlloca
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
@@ -37,12 +38,15 @@ class ClosureFunctionSymbol(
 
     val functionType = org.plank.llvm4k.ir.FunctionType(
       returnTy,
-      environmentType.pointer(),
+      environmentType.pointer(AddrSpace.Generic),
       *parameters.values.toList().typegen().toTypedArray(),
     )
 
     val closureFunctionType = createNamedStruct("closure.fn.$mangled") {
-      elements = listOf(functionType.pointer(), environmentType.pointer())
+      elements = listOf(
+        functionType.pointer(AddrSpace.Generic),
+        environmentType.pointer(AddrSpace.Generic)
+      )
     }
 
     val function = currentModule.addFunction(mangled, functionType)

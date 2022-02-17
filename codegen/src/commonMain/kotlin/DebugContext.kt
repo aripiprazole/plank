@@ -1,15 +1,16 @@
 package org.plank.codegen
 
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Linkage
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.message.lineSeparator
 
-class DebugContext(private val context: CodegenContext, val options: DebugOptions) {
+class DebugContext(private val context: CodegenContext, private val options: DebugOptions) {
   private val printf: Function by lazy {
     context.currentModule.getFunction("printf")
-      ?: FunctionType(context.void, context.i8.pointer(), isVarargs = true)
+      ?: FunctionType(context.void, context.i8.pointer(AddrSpace.Generic), isVarargs = true)
         .let { context.currentModule.addFunction("printf", it) }
         .apply {
           linkage = Linkage.External

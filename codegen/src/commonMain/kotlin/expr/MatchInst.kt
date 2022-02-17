@@ -8,6 +8,7 @@ import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.getField
 import org.plank.codegen.unsafeAlloca
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.IntPredicate
 import org.plank.llvm4k.ir.Value
 
@@ -50,11 +51,11 @@ fun CodegenContext.checkPattern(
   index: Int, // TODO: remove
 ): Value {
   return when (pattern) {
-    is TypedIdentPattern -> i1.getConstant(1) // true
+    is TypedIdentPattern -> i1.getConstant(1, false) // true
     is TypedNamedTuplePattern -> {
       val tag = createLoad(getField(subject, 0))
 
-      createICmp(IntPredicate.EQ, tag, i8.getConstant(index))
+      createICmp(IntPredicate.EQ, tag, i8.getConstant(index, false))
     }
   }
 }
@@ -66,7 +67,7 @@ fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
     }
     is TypedNamedTuplePattern -> {
       var idx = 1
-      val member = createBitCast(subject, pattern.ty.typegen().pointer())
+      val member = createBitCast(subject, pattern.ty.typegen().pointer(AddrSpace.Generic))
 
       pattern.properties.forEach { nestedPattern ->
         val prop = getField(member, idx)

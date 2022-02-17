@@ -3,6 +3,7 @@ package org.plank.codegen
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.infer.StructInfo
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
 import org.plank.llvm4k.ir.Function
@@ -19,11 +20,11 @@ expect fun CodegenContext.unsafeFunction(value: Value): Function
 fun CodegenContext.castClosure(closure: Value, type: Type): LoadInst {
   type as StructType
 
-  return createLoad(createBitCast(closure, type.pointer()))
+  return createLoad(createBitCast(closure, type.pointer(AddrSpace.Generic)))
 }
 
 fun CodegenContext.createUnit(): Constant {
-  return unit.getConstant(i8.getConstant(0))
+  return unit.getConstant(i8.getConstant(0, false), isPacked = false)
 }
 
 fun CodegenContext.getOrCreateStruct(name: String, builder: StructType.() -> Unit): StructType {
@@ -54,7 +55,7 @@ inline fun CodegenContext.instantiate(
 }
 
 fun CodegenContext.getField(value: Value, idx: Int, name: String? = null): Value {
-  return createGEP(value, i32.getConstant(0), i32.getConstant(idx), name = name)
+  return createGEP(value, i32.getConstant(0, false), i32.getConstant(idx, false), name = name)
 }
 
 fun CodegenContext.findField(receiver: TypedExpr, info: StructInfo, name: Identifier): Value {

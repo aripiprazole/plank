@@ -5,6 +5,7 @@ import org.plank.codegen.ExecContext
 import org.plank.codegen.createUnit
 import org.plank.codegen.mangle
 import org.plank.llvm4k.Context
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Argument
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
@@ -88,13 +89,13 @@ class IntrinsicFunction {
 @Suppress("UNUSED_VARIABLE", "UnusedPrivateMember", "LocalVariableName", "VariableNaming")
 val DefaultIntrinsics = Intrinsics {
   module("Std.IO") {
-    val printf by function(i32, i8.pointer(), varargs = true) {
+    val printf by function(i32, i8.pointer(AddrSpace.Generic), varargs = true) {
       function {
         linkage = Linkage.External
       }
     }
 
-    val println by function(unit, i8.pointer()) {
+    val println by function(unit, i8.pointer(AddrSpace.Generic)) {
       entry { (msg) ->
         createCall(printf, createGlobalStringPtr("%s$lineSeparator", mangle("println.str")), msg)
         createRet(createUnit())
@@ -115,7 +116,7 @@ val DefaultIntrinsics = Intrinsics {
       }
     }
 
-    val print by function(unit, i8.pointer()) {
+    val print by function(unit, i8.pointer(AddrSpace.Generic)) {
       entry { (msg) ->
         createCall(printf, createGlobalStringPtr("%s", mangle("print.str")), msg)
         createRet(createUnit())

@@ -26,7 +26,7 @@ class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
         val parameters = descriptor.parameters
 
         val function =
-          FunctionType(returnTy.typegen(), parameters.values.typegen()).let { f ->
+          FunctionType(returnTy.typegen(), *parameters.values.typegen().toTypedArray()).let { f ->
             val name = descriptor.attribute("external")
               ?.takeIf { it.arguments.isNotEmpty() }
               ?.argument<String>(0)

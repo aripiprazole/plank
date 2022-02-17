@@ -7,6 +7,7 @@ import org.plank.codegen.alloca
 import org.plank.codegen.expr.createIf
 import org.plank.codegen.getField
 import org.plank.codegen.mangle
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.User
@@ -45,11 +46,14 @@ class LazySymbol(
     val name = mangle(name)
 
     val struct = createNamedStruct(name) {
-      elements = listOf(type.pointer())
+      elements = listOf(type.pointer(AddrSpace.Generic))
     }
 
-    val variable = currentModule.addGlobalVariable(name, struct).apply {
-      initializer = struct.getConstant(type.pointer().constPointerNull())
+    val variable = currentModule.addGlobalVariable(name, struct, AddrSpace.Generic).apply {
+      initializer = struct.getConstant(
+        type.pointer(AddrSpace.Generic).constPointerNull(),
+        isPacked = false
+      )
     }
 
     val insertionBlock = insertionBlock

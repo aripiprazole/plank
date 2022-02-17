@@ -2,6 +2,7 @@ package org.plank.codegen
 
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.codegen.expr.callClosure
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
 
@@ -15,7 +16,11 @@ class Entrypoint : CodegenInstruction {
       val main = currentModule.getFunction(mangle(descriptor))
         ?: codegenError("Unable to find main function")
 
-      val function = FunctionType(i32, i32, i8.pointer().pointer()).let {
+      val function = FunctionType(
+        i32,
+        i32,
+        i8.pointer(AddrSpace.Generic).pointer(AddrSpace.Generic),
+      ).let {
         currentModule.addFunction("main", it)
       }
 
@@ -28,7 +33,7 @@ class Entrypoint : CodegenInstruction {
 
       callClosure(callClosure(createCall(main), argc), argv)
 
-      createRet(i32.getConstant(0))
+      createRet(i32.getConstant(0, false))
     }
 
     return i1.constantNull

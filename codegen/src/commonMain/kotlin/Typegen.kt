@@ -10,6 +10,7 @@ import org.plank.analyzer.infer.i16Ty
 import org.plank.analyzer.infer.i32Ty
 import org.plank.analyzer.infer.i8Ty
 import org.plank.analyzer.infer.unitTy
+import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 
@@ -23,19 +24,19 @@ fun CodegenContext.typegen(ty: Ty): Type {
     i16Ty -> i16
     i32Ty -> i32
     is ConstTy -> findStruct(ty.name) ?: codegenError("Unresolved type `${ty.name}`")
-    is PtrTy -> ty.arg.typegen().pointer()
+    is PtrTy -> ty.arg.typegen().pointer(AddrSpace.Generic)
     is FunTy -> {
       val returnTy = ty.returnTy.typegen()
       val parameterTy = ty.parameterTy.typegen()
 
       val functionType = if (parameterTy.kind == Type.Kind.Void) {
-        LLVMFunctionType(returnTy, i8.pointer())
+        LLVMFunctionType(returnTy, i8.pointer(AddrSpace.Generic))
       } else {
-        LLVMFunctionType(returnTy, i8.pointer(), parameterTy)
+        LLVMFunctionType(returnTy, i8.pointer(AddrSpace.Generic), parameterTy)
       }
 
       getOrCreateStruct("$ty") {
-        elements = listOf(functionType.pointer(), i8.pointer())
+        elements = listOf(functionType.pointer(AddrSpace.Generic), i8.pointer(AddrSpace.Generic))
       }
     }
     else -> codegenError("Unsupported type `$ty`")
