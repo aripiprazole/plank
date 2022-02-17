@@ -372,10 +372,10 @@ class Infer(tree: ModuleTree) :
   override fun visitDerefExpr(expr: DerefExpr): TypedExpr {
     val value = visitExpr(expr.value)
 
-    val ty = value.ty.unapply()
+    val ty = value.ty as? PtrTy
       ?: return expr.value.violate("Type ${value.ty} is not a pointer and can not be dereferenced")
 
-    return TypedDerefExpr(value, ty, expr.location)
+    return TypedDerefExpr(value, ty.arg, expr.location)
   }
 
   override fun visitNoBody(body: NoBody): ResolvedFunctionBody {
