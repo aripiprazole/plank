@@ -17,6 +17,7 @@ import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
+import org.plank.analyzer.element.TypedBlockBranch
 import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
@@ -25,6 +26,7 @@ import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIdentPattern
+import org.plank.analyzer.element.TypedIfBranch
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedInstanceExpr
 import org.plank.analyzer.element.TypedIntOperationExpr
@@ -34,14 +36,16 @@ import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
+import org.plank.analyzer.element.TypedThenBranch
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.QualifiedPath
 
 @Suppress("TooManyFunctions")
 open class IrTransformingPhase :
   TypedExpr.Visitor<TypedExpr>,
-  ResolvedStmt.Visitor<ResolvedStmt>,
   TypedPattern.Visitor<TypedPattern>,
+  TypedIfBranch.Visitor<TypedIfBranch>,
+  ResolvedStmt.Visitor<ResolvedStmt>,
   ResolvedPlankFile.Visitor<ResolvedPlankFile>,
   ResolvedFunctionBody.Visitor<ResolvedFunctionBody>,
   Identifier.Visitor<Identifier>,
@@ -162,6 +166,14 @@ open class IrTransformingPhase :
     return pattern
   }
 
+  open fun transformThenBranch(branch: TypedThenBranch): TypedIfBranch {
+    return branch
+  }
+
+  open fun transformBlockBranch(branch: TypedBlockBranch): TypedIfBranch {
+    return branch
+  }
+
   open fun transformIdentifier(identifier: Identifier): Identifier {
     return identifier
   }
@@ -264,7 +276,7 @@ open class IrTransformingPhase :
 
   final override fun visitBlockExpr(expr: TypedBlockExpr): TypedExpr {
     return transformBlockExpr(
-      expr.copy(stmts = visitStmts(expr.stmts), returned = visitExpr(expr.returned))
+      expr.copy(stmts = visitStmts(expr.stmts), value = visitExpr(expr.value))
     )
   }
 
@@ -276,8 +288,8 @@ open class IrTransformingPhase :
     return transformIfExpr(
       expr.copy(
         cond = visitExpr(expr.cond),
-        thenBranch = visitExpr(expr.thenBranch),
-        elseBranch = expr.elseBranch?.let { visitExpr(it) }
+        thenBranch = visitIfBranch(expr.thenBranch),
+        elseBranch = expr.elseBranch?.let { visitIfBranch(it) }
       )
     )
   }
@@ -343,7 +355,6 @@ open class IrTransformingPhase :
   }
 
   final override fun visitMatchExpr(expr: TypedMatchExpr): TypedExpr {
-
     return transformMatchExpr(
       expr.copy(
         subject = visitExpr(expr.subject),
@@ -374,10 +385,20 @@ open class IrTransformingPhase :
     return transformQualifiedPath(path)
   }
 
-  override fun visitIntOperationExpr(expr: TypedIntOperationExpr): TypedExpr {
-    visitExpr(expr.lhs)
-    visitExpr(expr.rhs)
-
+  final override fun visitIntOperationExpr(expr: TypedIntOperationExpr): TypedExpr {
     return transformIntOperationExpr(expr)
+  }
+
+  final override fun visitThenBranch(branch: TypedThenBranch): TypedIfBranch {
+    return transformThenBranch(branch.copy(value = visitExpr(branch.value)))
+  }
+
+  final override fun visitBlockBranch(branch: TypedBlockBranch): TypedIfBranch {
+    return transformBlockBranch(
+      branch.copy(
+        stmts = visitStmts(branch.stmts),
+        value = visitExpr(branch.value),
+      )
+    )
   }
 }

@@ -57,7 +57,7 @@ decl: TYPE name=IDENTIFIER EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)          
     | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr             semis                                 # LetDecl
     ;
 
-functionBody : LBRACE stmt* returned=expr? RBRACE optionalSemis    # CodeBody
+functionBody : LBRACE stmt* value=expr? RBRACE optionalSemis    # CodeBody
              | semis                                               # NoBody
              | EQUAL value=expr                      optionalSemis # ExprBody
              ;
@@ -90,6 +90,14 @@ pattern: type=qualifiedPath LPAREN (pattern (COMMA pattern)*)? RPAREN # NamedTup
        | name=IDENTIFIER                                              # IdentPattern
        ;
 
+thenBranch : THEN value=expr                 # MainThenBranch
+           | LBRACE stmt* value=expr? RBRACE # BlockThenBranch
+           ;
+
+elseBranch : value=expr                      # MainElseBranch
+           | LBRACE stmt* value=expr? RBRACE # BlockElseBranch
+           ;
+
 // exprs
 expr: <assoc=right> name=IDENTIFIER ASSIGN       value=expr                  # AssignExpr
     | <assoc=right> receiver=primary arg* ASSIGN value=expr                  # SetExpr
@@ -98,10 +106,10 @@ expr: <assoc=right> name=IDENTIFIER ASSIGN       value=expr                  # A
     | lhs=expr op=(TIMES | DIV)         rhs=expr                             # BinaryExpr
     | lhs=expr op=(ADD | CONCAT | SUB)  rhs=expr                             # BinaryExpr
     | op=(BANG | SUB)                   rhs=expr                             # UnaryExpr
-    | LBRACE stmt* returned=expr? RBRACE                                     # BlockExpr
+    | LBRACE stmt* value=expr? RBRACE                                        # BlockExpr
     | callee=primary arg*                                                    # CallExpr
     | type=typeRef LBRACE instanceArg (COMMA instanceArg)* RBRACE            # InstanceExpr
-    | IF LPAREN cond=expr RPAREN thenBranch=expr (ELSE elseBranch=expr)?     # IfExpr
+    | IF cond=expr mainBranch=thenBranch (ELSE otherwiseBranch=elseBranch)?  # IfExpr
     | SIZEOF type=typeRef                                                    # SizeofExpr
     | MATCH subject=expr LBRACE (matchPattern (COMMA matchPattern))? RBRACE  # MatchExpr
     ;

@@ -8,7 +8,8 @@ open class TreeWalker :
   QualifiedPath.Visitor<Unit>,
   Identifier.Visitor<Unit>,
   TypeRef.Visitor<Unit>,
-  FunctionBody.Visitor<Unit> {
+  FunctionBody.Visitor<Unit>,
+  IfBranch.Visitor<Unit> {
   fun walk(element: PlankElement) = when (element) {
     is Expr -> visitExpr(element)
     is Stmt -> visitStmt(element)
@@ -31,10 +32,8 @@ open class TreeWalker :
 
   override fun visitIfExpr(expr: IfExpr) {
     visitExpr(expr.cond)
-    visitExpr(expr.thenBranch)
-    expr.elseBranch?.let {
-      visitExpr(it)
-    }
+    visitIfBranch(expr.thenBranch)
+    expr.elseBranch?.let { visitIfBranch(it) }
   }
 
   override fun visitConstExpr(expr: ConstExpr) {
@@ -193,5 +192,14 @@ open class TreeWalker :
   override fun visitBlockExpr(expr: BlockExpr) {
     visitStmts(expr.stmts)
     expr.value?.let { visitExpr(it) }
+  }
+
+  override fun visitThenBranch(branch: ThenBranch) {
+    visitExpr(branch.value)
+  }
+
+  override fun visitBlockBranch(branch: BlockBranch) {
+    visitStmts(branch.stmts)
+    branch.value?.let { visitExpr(it) }
   }
 }

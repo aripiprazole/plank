@@ -47,8 +47,8 @@ data class MatchExpr(
 
 data class IfExpr(
   val cond: Expr,
-  val thenBranch: Expr,
-  val elseBranch: Expr?,
+  val thenBranch: IfBranch,
+  val elseBranch: IfBranch?,
   override val location: Location
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {

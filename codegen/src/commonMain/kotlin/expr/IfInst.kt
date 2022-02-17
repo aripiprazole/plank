@@ -1,13 +1,17 @@
 package org.plank.codegen.expr
 
 import arrow.core.constant
+import org.plank.analyzer.element.TypedBlockBranch
+import org.plank.analyzer.element.TypedIfBranch
 import org.plank.analyzer.element.TypedIfExpr
+import org.plank.analyzer.element.TypedThenBranch
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
 import org.plank.codegen.createScopeContext
 import org.plank.codegen.createUnit
+import org.plank.codegen.element.addClosure
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
 
@@ -16,9 +20,31 @@ class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
     return createIf(
       descriptor.ty.typegen(),
       descriptor.cond.codegen(),
-      thenStmts = { descriptor.thenBranch.codegen() },
-      elseStmts = { descriptor.elseBranch?.codegen() ?: createUnit() },
+      thenStmts = { codegenBranch(descriptor.thenBranch) },
+      elseStmts = { descriptor.elseBranch?.let(::codegenBranch) ?: createUnit() },
     )
+  }
+}
+
+fun CodegenContext.codegenBranch(branch: TypedIfBranch): Value {
+  return when (branch) {
+    is TypedThenBranch -> branch.value.codegen()
+    is TypedBlockBranch -> {
+      val symbol = addClosure(
+        name = "blockBranch$${branch.hashCode()}",
+        returnTy = branch.ty,
+        references = branch.references,
+      ) {
+        branch.stmts.codegen()
+
+        createRet(branch.value.codegen())
+      }
+
+      val closure = symbol.access()
+        ?: codegenError("Failed to access generated closure for block expr")
+
+      return callClosure(closure)
+    }
   }
 }
 

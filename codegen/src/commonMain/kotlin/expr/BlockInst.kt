@@ -16,7 +16,7 @@ class BlockInst(private val descriptor: TypedBlockExpr) : CodegenInstruction {
     ) {
       descriptor.stmts.codegen()
 
-      createRet(descriptor.returned.codegen())
+      createRet(descriptor.value.codegen())
     }
 
     val closure = symbol.access()

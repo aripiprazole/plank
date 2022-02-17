@@ -20,6 +20,7 @@ import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
+import org.plank.analyzer.element.TypedBlockBranch
 import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
@@ -28,6 +29,7 @@ import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
 import org.plank.analyzer.element.TypedIdentPattern
+import org.plank.analyzer.element.TypedIfBranch
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedInstanceExpr
 import org.plank.analyzer.element.TypedMatchExpr
@@ -36,11 +38,13 @@ import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
+import org.plank.analyzer.element.TypedThenBranch
 import org.plank.shared.depthFirstSearch
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
 import org.plank.syntax.element.ArrayTypeRef
 import org.plank.syntax.element.AssignExpr
+import org.plank.syntax.element.BlockBranch
 import org.plank.syntax.element.BlockExpr
 import org.plank.syntax.element.CallExpr
 import org.plank.syntax.element.CodeBody
@@ -57,6 +61,7 @@ import org.plank.syntax.element.GetExpr
 import org.plank.syntax.element.GroupExpr
 import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.IfBranch
 import org.plank.syntax.element.IfExpr
 import org.plank.syntax.element.InstanceExpr
 import org.plank.syntax.element.LetDecl
@@ -75,6 +80,7 @@ import org.plank.syntax.element.SetExpr
 import org.plank.syntax.element.SizeofExpr
 import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.StructDecl
+import org.plank.syntax.element.ThenBranch
 import org.plank.syntax.element.TreeWalker
 import org.plank.syntax.element.TypeRef
 import org.plank.syntax.element.UnitTypeRef
@@ -90,6 +96,7 @@ class Infer(tree: ModuleTree) :
   Stmt.Visitor<ResolvedStmt>,
   Pattern.Visitor<TypedPattern>,
   FunctionBody.Visitor<ResolvedFunctionBody>,
+  IfBranch.Visitor<TypedIfBranch>,
   TypeRef.Visitor<Ty> {
   fun analyze(file: PlankFile): ResolvedPlankFile {
     val globalScope = currentScope
@@ -179,8 +186,8 @@ class Infer(tree: ModuleTree) :
       return cond.violate("Mismatch types: expecting $boolTy, but got ${cond.ty}")
     }
 
-    val thenBranch = visitExpr(expr.thenBranch)
-    val elseBranch = expr.elseBranch?.let { visitExpr(it) }
+    val thenBranch = visitIfBranch(expr.thenBranch)
+    val elseBranch = expr.elseBranch?.let { visitIfBranch(it) }
 
     if (elseBranch == null) {
       return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.ty, expr.location)
@@ -427,6 +434,19 @@ class Infer(tree: ModuleTree) :
     val variable = findVariable(pattern.name)
 
     return TypedIdentPattern(pattern.name, variable.ty, pattern.location)
+  }
+
+  override fun visitThenBranch(branch: ThenBranch): TypedIfBranch {
+    return TypedThenBranch(visitExpr(branch.value), branch.location)
+  }
+
+  override fun visitBlockBranch(branch: BlockBranch): TypedIfBranch {
+    return scoped {
+      val stmts = visitStmts(branch.stmts)
+      val value = branch.value?.let(::visitExpr) ?: unitValue()
+
+      TypedBlockBranch(stmts, value, references, branch.location)
+    }
   }
 
   override fun visitExprStmt(stmt: ExprStmt): ResolvedStmt {

@@ -213,8 +213,8 @@ class IntOpsTest {
         use Std.IO;
 
         fun fib(n: Int32) -> Int32 {
-          if (n == 0) 0
-          else if (n == 1) 1
+          if n == 0 then 0
+          else if n == 1 then 1
           else fib(n - 1) + fib(n - 2)
         }
 

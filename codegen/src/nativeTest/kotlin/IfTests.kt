@@ -13,7 +13,7 @@ class IfTests {
         use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> () {
-          if (true) println("x") else println("y");
+          if true then println("x") else println("y");
         }
         """.trimIndent()
       )
@@ -33,7 +33,7 @@ class IfTests {
         use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> () {
-          if (false) println("x") else println("y");
+          if false then println("x") else println("y");
         }
         """.trimIndent()
       )
@@ -53,7 +53,7 @@ class IfTests {
         use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> () {
-          if (true) println("x");
+          if true then println("x");
         }
         """.trimIndent()
       )
@@ -73,7 +73,7 @@ class IfTests {
         use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> () {
-          if (false) println("x");
+          if false then println("x");
         }
         """.trimIndent()
       )
@@ -93,7 +93,7 @@ class IfTests {
         use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> () {
-          println(if (true) "x" else "y");
+          println(if true then "x" else "y");
         }
         """.trimIndent()
       )
@@ -113,7 +113,7 @@ class IfTests {
         use Std.IO;
 
         fun main(argc: Int32, argv: **Char) -> () {
-          println(if (false) "x" else "y");
+          println(if false then "x" else "y");
         }
         """.trimIndent()
       )

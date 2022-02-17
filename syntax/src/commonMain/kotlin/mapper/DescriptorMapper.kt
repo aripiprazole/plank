@@ -1,7 +1,6 @@
 package org.plank.syntax.mapper
 
 import org.antlr.v4.kotlinruntime.ParserRuleContext
-import org.antlr.v4.kotlinruntime.RuleContext
 import org.antlr.v4.kotlinruntime.Token
 import org.antlr.v4.kotlinruntime.misc.Interval
 import org.antlr.v4.kotlinruntime.tree.ErrorNode
@@ -22,7 +21,9 @@ import org.plank.parser.PlankParser.AttrIntExprContext
 import org.plank.parser.PlankParser.AttrStringExprContext
 import org.plank.parser.PlankParser.AttrTrueExprContext
 import org.plank.parser.PlankParser.BinaryExprContext
+import org.plank.parser.PlankParser.BlockElseBranchContext
 import org.plank.parser.PlankParser.BlockExprContext
+import org.plank.parser.PlankParser.BlockThenBranchContext
 import org.plank.parser.PlankParser.CallArgContext
 import org.plank.parser.PlankParser.CallExprContext
 import org.plank.parser.PlankParser.CodeBodyContext
@@ -30,6 +31,7 @@ import org.plank.parser.PlankParser.DecimalExprContext
 import org.plank.parser.PlankParser.DeclContext
 import org.plank.parser.PlankParser.DeclStmtContext
 import org.plank.parser.PlankParser.DerefExprContext
+import org.plank.parser.PlankParser.ElseBranchContext
 import org.plank.parser.PlankParser.EnumDeclContext
 import org.plank.parser.PlankParser.ExprBodyContext
 import org.plank.parser.PlankParser.ExprContext
@@ -48,6 +50,8 @@ import org.plank.parser.PlankParser.InferLetDeclContext
 import org.plank.parser.PlankParser.InstanceExprContext
 import org.plank.parser.PlankParser.IntExprContext
 import org.plank.parser.PlankParser.LetDeclContext
+import org.plank.parser.PlankParser.MainElseBranchContext
+import org.plank.parser.PlankParser.MainThenBranchContext
 import org.plank.parser.PlankParser.MatchExprContext
 import org.plank.parser.PlankParser.ModuleContext
 import org.plank.parser.PlankParser.ModuleDeclContext
@@ -65,6 +69,7 @@ import org.plank.parser.PlankParser.SizeofExprContext
 import org.plank.parser.PlankParser.StmtContext
 import org.plank.parser.PlankParser.StringExprContext
 import org.plank.parser.PlankParser.StructDeclContext
+import org.plank.parser.PlankParser.ThenBranchContext
 import org.plank.parser.PlankParser.TrueExprContext
 import org.plank.parser.PlankParser.TypePrimaryContext
 import org.plank.parser.PlankParser.TypeRefContext
@@ -79,6 +84,7 @@ import org.plank.syntax.element.ArrayTypeRef
 import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.AttributeExpr
+import org.plank.syntax.element.BlockBranch
 import org.plank.syntax.element.BlockExpr
 import org.plank.syntax.element.BoolAttributeExpr
 import org.plank.syntax.element.CallExpr
@@ -98,6 +104,7 @@ import org.plank.syntax.element.GetExpr
 import org.plank.syntax.element.GroupExpr
 import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.IfBranch
 import org.plank.syntax.element.IfExpr
 import org.plank.syntax.element.InstanceExpr
 import org.plank.syntax.element.IntAttributeExpr
@@ -119,6 +126,7 @@ import org.plank.syntax.element.SizeofExpr
 import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.StringAttributeExpr
 import org.plank.syntax.element.StructDecl
+import org.plank.syntax.element.ThenBranch
 import org.plank.syntax.element.TypeRef
 import org.plank.syntax.element.UnitTypeRef
 import org.plank.syntax.element.UseDecl
@@ -209,7 +217,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitCodeBody(ctx: CodeBodyContext): FunctionBody {
-    return CodeBody(ctx.findStmt().map(::visitStmt), ctx.returned?.let(::visitExpr), ctx.location)
+    return CodeBody(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
   }
 
   private fun visitFunctionBody(ctx: FunctionBodyContext): FunctionBody = when (ctx) {
@@ -293,8 +301,8 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitIfExpr(ctx: IfExprContext): IfExpr {
     return IfExpr(
       visitExpr(ctx.cond!!),
-      visitExpr(ctx.thenBranch!!),
-      ctx.elseBranch?.let(this::visitExpr),
+      visitThenBranch(ctx.mainBranch!!),
+      ctx.otherwiseBranch?.let(::visitElseBranch),
       ctx.location
     )
   }
@@ -314,7 +322,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitBlockExpr(ctx: BlockExprContext): Expr {
-    return BlockExpr(ctx.findStmt().map(::visitStmt), ctx.returned?.let(::visitExpr), ctx.location)
+    return BlockExpr(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
   }
 
   private fun visitExpr(ctx: ExprContext): Expr = when (ctx) {
@@ -487,6 +495,34 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     else -> error("Unsupported primary type ref ${ctx::class.simpleName}")
   }
 
+  override fun visitMainThenBranch(ctx: MainThenBranchContext): IfBranch {
+    return ThenBranch(visitExpr(ctx.value!!), ctx.location)
+  }
+
+  override fun visitBlockThenBranch(ctx: BlockThenBranchContext): IfBranch {
+    return BlockBranch(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
+  }
+
+  override fun visitMainElseBranch(ctx: MainElseBranchContext): IfBranch {
+    return ThenBranch(visitExpr(ctx.value!!), ctx.location)
+  }
+
+  override fun visitBlockElseBranch(ctx: BlockElseBranchContext): IfBranch {
+    return BlockBranch(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
+  }
+
+  private fun visitThenBranch(ctx: ThenBranchContext): IfBranch = when (ctx) {
+    is MainThenBranchContext -> visitMainThenBranch(ctx)
+    is BlockThenBranchContext -> visitBlockThenBranch(ctx)
+    else -> error("Unsupported then branch ${ctx::class.simpleName}")
+  }
+
+  private fun visitElseBranch(ctx: ElseBranchContext): IfBranch = when (ctx) {
+    is MainElseBranchContext -> visitMainElseBranch(ctx)
+    is BlockElseBranchContext -> visitBlockElseBranch(ctx)
+    else -> error("Unsupported else branch ${ctx::class.simpleName}")
+  }
+
   override fun visitModule(ctx: ModuleContext): QualifiedPath {
     return visitQualifiedPath(ctx.path!!)
   }
@@ -503,7 +539,6 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
 
   private val Interval.location
     get() = Location(a, b, file)
-  private val RuleContext.location get() = sourceInterval.location
   private val ParserRuleContext.location
     get() = Location(start!!.startIndex, stop!!.stopIndex, file)
 

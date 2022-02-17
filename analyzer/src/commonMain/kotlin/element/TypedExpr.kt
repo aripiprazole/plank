@@ -42,7 +42,7 @@ sealed interface TypedExpr : TypedPlankElement {
 
 data class TypedBlockExpr(
   val stmts: List<ResolvedStmt>,
-  val returned: TypedExpr,
+  val value: TypedExpr,
   val references: MutableMap<Identifier, Ty> = mutableMapOf(),
   override val ty: Ty,
   override val location: Location,
@@ -64,8 +64,8 @@ data class TypedConstExpr(
 
 data class TypedIfExpr(
   val cond: TypedExpr,
-  val thenBranch: TypedExpr,
-  val elseBranch: TypedExpr?,
+  val thenBranch: TypedIfBranch,
+  val elseBranch: TypedIfBranch?,
   override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
