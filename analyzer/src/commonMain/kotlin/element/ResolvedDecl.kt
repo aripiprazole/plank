@@ -37,7 +37,7 @@ data class ResolvedStructDecl(val info: StructInfo, override val location: Locat
 
 data class ResolvedUseDecl(
   val module: Module,
-  override val location: Location
+  override val location: Location,
 ) : ResolvedDecl {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitUseDecl(this)
@@ -47,7 +47,7 @@ data class ResolvedUseDecl(
 data class ResolvedModuleDecl(
   val name: QualifiedPath,
   val content: List<ResolvedDecl>,
-  override val location: Location
+  override val location: Location,
 ) : ResolvedDecl {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitModuleDecl(this)
@@ -61,7 +61,7 @@ data class ResolvedFunDecl(
   val info: FunctionInfo,
   val isNested: Boolean,
   override val ty: FunTy,
-  override val location: Location
+  override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   val name: Identifier = info.name
   val parameters: Map<Identifier, Ty> = info.parameters

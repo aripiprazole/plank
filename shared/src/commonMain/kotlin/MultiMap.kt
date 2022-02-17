@@ -1,7 +1,7 @@
 package org.plank.shared
 
 class MultiMap<K, V>(
-  map: MutableMap<K, MutableList<V>> = mutableMapOf()
+  map: MutableMap<K, MutableList<V>> = mutableMapOf(),
 ) : MutableMap<K, MutableList<V>> by map {
   operator fun set(key: K, value: V): List<V> {
     return put(key, value)

@@ -22,7 +22,7 @@ data class TypedNamedTuplePattern(
   val properties: List<TypedPattern>,
   val info: EnumMemberInfo,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedPattern {
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
     return visitor.visitNamedTuplePattern(this)
@@ -32,7 +32,7 @@ data class TypedNamedTuplePattern(
 data class TypedIdentPattern(
   val name: Identifier,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedPattern {
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
     return visitor.visitIdentPattern(this)

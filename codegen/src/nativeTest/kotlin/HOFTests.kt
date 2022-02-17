@@ -247,6 +247,7 @@ class HOFTests {
         expectSuccess()
       }
   }
+
   @Test
   fun `test passing hof closure with currying by reference and exec the reference before hof`() {
     TestCompilation

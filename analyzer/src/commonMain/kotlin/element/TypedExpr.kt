@@ -55,7 +55,7 @@ data class TypedBlockExpr(
 data class TypedConstExpr(
   val value: Any,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitConstExpr(this)
@@ -67,7 +67,7 @@ data class TypedIfExpr(
   val thenBranch: TypedIfBranch,
   val elseBranch: TypedIfBranch?,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitIfExpr(this)
@@ -100,7 +100,7 @@ data class TypedAssignExpr(
   val name: Identifier,
   val value: TypedExpr,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitAssignExpr(this)
@@ -113,7 +113,7 @@ data class TypedSetExpr(
   val value: TypedExpr,
   val info: StructInfo,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitSetExpr(this)
@@ -125,7 +125,7 @@ data class TypedGetExpr(
   val member: Identifier,
   val info: StructInfo,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitGetExpr(this)
@@ -247,7 +247,7 @@ data class TypedCallExpr(
   val callee: TypedExpr,
   val argument: TypedExpr,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitCallExpr(this)
@@ -267,7 +267,7 @@ data class TypedInstanceExpr(
 
 data class TypedSizeofExpr(
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitSizeofExpr(this)
@@ -276,7 +276,7 @@ data class TypedSizeofExpr(
 
 data class TypedRefExpr(
   val value: TypedExpr,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override val ty: Ty = PtrTy(value.ty)
 
@@ -288,7 +288,7 @@ data class TypedRefExpr(
 data class TypedDerefExpr(
   val value: TypedExpr,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitDerefExpr(this)
@@ -299,7 +299,7 @@ data class TypedMatchExpr(
   val subject: TypedExpr,
   val patterns: Map<TypedPattern, TypedExpr>,
   override val ty: Ty,
-  override val location: Location
+  override val location: Location,
 ) : TypedExpr {
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitMatchExpr(this)

@@ -693,7 +693,7 @@ class Infer(tree: ModuleTree) :
   private inline fun <T> scoped(
     name: Identifier = Identifier("anonymous"),
     scope: Scope = ClosureScope(name, scopes.peekLast()),
-    body: Scope.() -> T
+    body: Scope.() -> T,
   ): T {
     scopes.pushLast(scope)
     val result = body(scope)

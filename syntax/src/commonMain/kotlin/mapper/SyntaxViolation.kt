@@ -5,7 +5,7 @@ import org.plank.syntax.message.CompilerLogger
 
 data class SyntaxViolation(
   override val message: String,
-  val location: Location
+  val location: Location,
 ) : RuntimeException() {
   fun render(logger: CompilerLogger) {
     logger.severe(message, location)

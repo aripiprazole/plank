@@ -18,7 +18,7 @@ class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
     line: Int,
     charPositionInLine: Int,
     msg: String,
-    e: RecognitionException?
+    e: RecognitionException?,
   ) {
     if (offendingSymbol is Token) {
       _violations += SyntaxViolation(msg, Location(offendingSymbol, file))

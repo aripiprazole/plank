@@ -105,7 +105,7 @@ data class FileScope(
 data class ModuleScope(
   val module: Module,
   override val enclosing: Scope,
-  override val moduleTree: ModuleTree = ModuleTree()
+  override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
   override val name: Identifier = Identifier("${enclosing.name}.${module.name}")
 }
@@ -127,7 +127,7 @@ open class ClosureScope(
   override val name: Identifier,
   override val enclosing: Scope,
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
-  override val moduleTree: ModuleTree = ModuleTree()
+  override val moduleTree: ModuleTree = ModuleTree(),
 ) : Scope() {
   override val isTopLevelScope: Boolean = false
 }

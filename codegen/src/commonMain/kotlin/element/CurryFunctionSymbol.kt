@@ -67,7 +67,7 @@ class CurryFunctionSymbol(
 
   private fun generateNesting(
     index: Int,
-    builder: ExecContext.(returnType: Ty) -> Unit = { generate() }
+    builder: ExecContext.(returnType: Ty) -> Unit = { generate() },
   ): ClosureFunctionSymbol {
     val ty = FunTy(ty.nest(index), parameters[index].second)
 

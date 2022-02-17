@@ -28,7 +28,7 @@ sealed interface Expr : PlankElement {
 data class BlockExpr(
   val stmts: List<Stmt>,
   val value: Expr?,
-  override val location: Location
+  override val location: Location,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitBlockExpr(this)
@@ -38,7 +38,7 @@ data class BlockExpr(
 data class MatchExpr(
   val subject: Expr,
   val patterns: Map<Pattern, Expr>,
-  override val location: Location
+  override val location: Location,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitMatchExpr(this)
@@ -49,7 +49,7 @@ data class IfExpr(
   val cond: Expr,
   val thenBranch: IfBranch,
   val elseBranch: IfBranch?,
-  override val location: Location
+  override val location: Location,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitIfExpr(this)
@@ -77,7 +77,7 @@ data class GroupExpr(val value: Expr, override val location: Location) : Expr {
 data class AssignExpr(
   val name: Identifier,
   val value: Expr,
-  override val location: Location
+  override val location: Location,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitAssignExpr(this)
@@ -88,7 +88,7 @@ data class SetExpr(
   val receiver: Expr,
   val property: Identifier,
   val value: Expr,
-  override val location: Location
+  override val location: Location,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitSetExpr(this)
@@ -98,7 +98,7 @@ data class SetExpr(
 data class GetExpr(
   val receiver: Expr,
   val property: Identifier,
-  override val location: Location
+  override val location: Location,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitGetExpr(this)
@@ -108,7 +108,7 @@ data class GetExpr(
 data class CallExpr(
   val callee: Expr,
   val arguments: List<Expr>,
-  override val location: Location
+  override val location: Location,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitCallExpr(this)

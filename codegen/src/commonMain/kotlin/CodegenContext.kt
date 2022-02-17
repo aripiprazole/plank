@@ -220,7 +220,7 @@ fun CodegenContext.scopeContext(): ScopeContext {
 @OptIn(ExperimentalContracts::class)
 inline fun CodegenContext.createScopeContext(
   moduleName: String,
-  builder: ScopeContext.() -> Unit = {}
+  builder: ScopeContext.() -> Unit = {},
 ): ScopeContext {
   contract {
     callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
