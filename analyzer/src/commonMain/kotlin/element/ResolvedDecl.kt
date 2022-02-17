@@ -2,6 +2,7 @@ package org.plank.analyzer.element
 
 import org.plank.analyzer.infer.EnumInfo
 import org.plank.analyzer.infer.EnumMemberInfo
+import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.FunctionInfo
 import org.plank.analyzer.infer.Module
 import org.plank.analyzer.infer.StructInfo
@@ -59,7 +60,7 @@ data class ResolvedFunDecl(
   val references: LinkedHashMap<Identifier, Ty> = LinkedHashMap(),
   val info: FunctionInfo,
   val isNested: Boolean,
-  override val ty: Ty,
+  override val ty: FunTy,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {
   val name: Identifier = info.name

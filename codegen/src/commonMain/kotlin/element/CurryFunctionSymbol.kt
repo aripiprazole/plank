@@ -90,7 +90,7 @@ fun CodegenContext.addCurryFunction(
   generate: GenerateBody,
 ): Value = addFunction(
   CurryFunctionSymbol(
-    ty = descriptor.ty as FunTy,
+    ty = descriptor.ty,
     nested = nested,
     references = descriptor.references,
     name = descriptor.name.text,

@@ -70,7 +70,7 @@ class GlobalFunctionSymbol(
 }
 
 fun CodegenContext.addGlobalFunction(
-  ty: Ty,
+  ty: FunTy,
   name: String,
   mangled: String,
   references: Map<Identifier, Ty> = emptyMap(),
@@ -78,14 +78,14 @@ fun CodegenContext.addGlobalFunction(
   generate: GenerateBody,
 ): Value {
   return addFunction(
-    GlobalFunctionSymbol(ty as FunTy, name, mangled, references, parameters, generate)
+    GlobalFunctionSymbol(ty, name, mangled, references, parameters, generate)
   )
 }
 
 fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
   return addFunction(
     GlobalFunctionSymbol(
-      ty = descriptor.ty as FunTy,
+      ty = descriptor.ty,
       references = descriptor.references,
       name = descriptor.name.text,
       mangled = mangle(descriptor),
