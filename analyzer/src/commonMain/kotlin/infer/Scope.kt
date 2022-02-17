@@ -1,5 +1,7 @@
 package org.plank.analyzer.infer
 
+import org.plank.analyzer.element.ResolvedExprBody
+import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedIntAddExpr
 import org.plank.analyzer.element.TypedIntDivExpr
@@ -14,16 +16,48 @@ import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.PlankFile
 
-data class Variable(
-  val mutable: Boolean,
-  val name: Identifier,
-  val ty: Ty,
-  val declaredIn: Scope,
-  val isInScope: Boolean = false,
-) {
-  override fun toString(): String {
-    return "Variable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
-  }
+sealed interface Variable {
+  val mutable: Boolean
+  val name: Identifier
+  val ty: Ty
+  val declaredIn: Scope
+  val isInScope: Boolean
+
+  fun name(name: Identifier): Variable
+
+  fun inScope(): Variable
+  fun notInScope(): Variable
+}
+
+data class SimpleVariable(
+  override val mutable: Boolean,
+  override val name: Identifier,
+  override val ty: Ty,
+  override val declaredIn: Scope,
+  override val isInScope: Boolean = false,
+) : Variable {
+  override fun name(name: Identifier): SimpleVariable = copy(name = name)
+  override fun inScope(): SimpleVariable = copy(isInScope = true)
+  override fun notInScope(): SimpleVariable = copy(isInScope = false)
+
+  override fun toString(): String =
+    "SimpleVariable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
+}
+
+data class InlineVariable(
+  override val mutable: Boolean,
+  override val name: Identifier,
+  override val ty: Ty,
+  override val declaredIn: Scope,
+  override val isInScope: Boolean = false,
+  val inlineCall: (List<TypedExpr>) -> ResolvedFunctionBody,
+) : Variable {
+  override fun name(name: Identifier): InlineVariable = copy(name = name)
+  override fun inScope(): InlineVariable = copy(isInScope = true)
+  override fun notInScope(): InlineVariable = copy(isInScope = false)
+
+  override fun toString(): String =
+    "InlineVariable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
 }
 
 class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
@@ -41,31 +75,22 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     create(IntInfo("Int32", 32))
 
     // Add default binary operators
-    inlineFun("+", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntAddExpr(a, b) }
-    inlineFun("-", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntSubExpr(a, b) }
-    inlineFun("*", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntMulExpr(a, b) }
-    inlineFun("/", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntDivExpr(a, b) }
+    declareInline("+", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntAddExpr(a, b) }
+    declareInline("-", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntSubExpr(a, b) }
+    declareInline("*", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntMulExpr(a, b) }
+    declareInline("/", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntDivExpr(a, b) }
 
     // Add default logical operators
-    inlineFun("==", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntEQExpr(a, b) }
-    inlineFun("!=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntNEQExpr(a, b) }
-    inlineFun(">=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntGTEExpr(a, b) }
-    inlineFun(">", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntGTExpr(a, b) }
-    inlineFun("<=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTEExpr(a, b) }
-    inlineFun("<", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTExpr(a, b) }
+    declareInline("==", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntEQExpr(a, b) }
+    declareInline("!=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntNEQExpr(a, b) }
+    declareInline(">=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntGTEExpr(a, b) }
+    declareInline(">", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntGTExpr(a, b) }
+    declareInline("<=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTEExpr(a, b) }
+    declareInline("<", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTExpr(a, b) }
   }
 
   override val name = Identifier("Global")
   override val enclosing: Scope? = null
-
-  private fun inlineFun(
-    name: String,
-    returnTy: Ty,
-    vararg parameters: Ty,
-    builder: (List<TypedExpr>) -> TypedExpr,
-  ) {
-    declare(Identifier(name), FunTy(returnTy, parameters.toList()))
-  }
 }
 
 data class FileScope(
@@ -131,11 +156,23 @@ sealed class Scope {
    * Declares a compiler-defined variable with type [ty] in the context
    */
   fun declare(name: Identifier, ty: Ty, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, ty, this)
+    variables[name] = SimpleVariable(mutable, name, ty, this)
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
-    variables[name] = Variable(mutable, name, value.ty, this)
+    variables[name] = SimpleVariable(mutable, name, value.ty, this)
+  }
+
+  fun declareInline(
+    name: String,
+    returnTy: Ty,
+    vararg parameters: Ty,
+    builder: (List<TypedExpr>) -> TypedExpr,
+  ) {
+    variables[Identifier(name)] =
+      InlineVariable(false, Identifier(name), FunTy(returnTy, parameters.toList()), this, false) {
+        ResolvedExprBody(builder(it))
+      }
   }
 
   fun <T : TyInfo> create(info: T): T {
@@ -159,9 +196,9 @@ sealed class Scope {
   }
 
   fun findVariable(name: Identifier): Variable? {
-    return variables[name]?.copy(isInScope = true)
-      ?: enclosing?.findVariable(name)?.copy(isInScope = false)
+    return variables[name]?.inScope()
+      ?: enclosing?.findVariable(name)?.notInScope()
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
-        ?.copy(isInScope = false)
+        ?.notInScope()
   }
 }

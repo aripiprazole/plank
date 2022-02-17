@@ -233,21 +233,42 @@ class Infer(tree: ModuleTree) :
     val ty = callee.ty as FunTy
     val parameters = ty.chainParameters()
 
-    val arguments = visitExprs(expr.arguments).ifEmpty { listOf(unitValue()) }
+    if (callee is TypedAccessExpr && callee.variable is InlineVariable && parameters.size == expr.arguments.size) {
+      val variable = callee.variable
+      val arguments = visitExprs(expr.arguments)
 
-    return arguments.foldIndexed(callee) { i, acc, argument ->
-      val parameter = parameters.elementAtOrNull(i)
-
-      if (parameter == null) {
-        argument.violate("Unexpected $i arity for function $callee")
+      arguments.zip(parameters).forEach { (arg, param) ->
+        if (arg.ty != param) {
+          arg.violate("Mismatch types: expecting $param, but got ${arg.ty}")
+        }
       }
 
-      if (argument.ty != parameter) {
-        argument.violate("Mismatch types: expecting $parameter but got ${argument.ty}")
+      return when (val body = variable.inlineCall(arguments)) {
+        is ResolvedCodeBody -> TypedBlockExpr(
+          body.stmts, body.value!!,
+          ty = body.value.ty,
+          location = expr.location,
+        )
+        is ResolvedExprBody -> body.expr
+        is ResolvedNoBody -> unitValue()
       }
-
-      TypedCallExpr(acc, argument, ty.nest(i), expr.location)
     }
+
+    return visitExprs(expr.arguments)
+      .ifEmpty { listOf(unitValue()) }
+      .foldIndexed(callee) { i, acc, argument ->
+        val parameter = parameters.elementAtOrNull(i)
+
+        if (parameter == null) {
+          argument.violate("Unexpected $i arity for function $callee")
+        }
+
+        if (argument.ty != parameter) {
+          argument.violate("Mismatch types: expecting $parameter but got ${argument.ty}")
+        }
+
+        TypedCallExpr(acc, argument, ty.nest(i), expr.location)
+      }
   }
 
   override fun visitAssignExpr(expr: AssignExpr): TypedExpr {
@@ -633,7 +654,12 @@ class Infer(tree: ModuleTree) :
 
   private fun findVariable(name: Identifier): Variable {
     return currentScope.findVariable(name)
-      ?: Variable(false, name, name.violate("Unresolved variable `${name.text}`").ty, currentScope)
+      ?: SimpleVariable(
+        false,
+        name,
+        name.violate("Unresolved variable `${name.text}`").ty,
+        currentScope
+      )
   }
 
   private inline fun <T> scoped(scope: Scope, body: Scope.() -> T): T {

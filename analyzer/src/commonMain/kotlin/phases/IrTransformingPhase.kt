@@ -284,13 +284,13 @@ open class IrTransformingPhase :
 
   final override fun visitAccessExpr(expr: TypedAccessExpr): TypedExpr {
     return transformAccessExpr(
-      expr.copy(variable = expr.variable.copy(name = visitIdentifier(expr.variable.name)))
+      expr.copy(variable = expr.variable.name(visitIdentifier(expr.variable.name)))
     )
   }
 
   final override fun visitCallExpr(expr: TypedCallExpr): TypedExpr {
     return transformCallExpr(
-      expr.copy(callee = visitExpr(expr.callee), argument = expr.argument?.let(::visitExpr))
+      expr.copy(callee = visitExpr(expr.callee), argument = visitExpr(expr.argument))
     )
   }
 
