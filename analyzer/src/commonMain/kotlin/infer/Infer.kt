@@ -88,7 +88,6 @@ import org.plank.syntax.element.UseDecl
 import org.plank.syntax.element.toIdentifier
 import pw.binom.Stack
 
-// TODO: add call parameters check
 @Suppress("UnusedPrivateMember")
 class Infer(tree: ModuleTree) :
   PlankFile.Visitor<ResolvedPlankFile>,

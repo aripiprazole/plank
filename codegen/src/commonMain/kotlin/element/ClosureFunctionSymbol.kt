@@ -28,7 +28,7 @@ class ClosureFunctionSymbol(
     return getSymbol(mangled)
   }
 
-  override fun CodegenContext.codegen(): Value { // TODO: fix access of variables
+  override fun CodegenContext.codegen(): Value {
     val returnTy = returnTy.typegen()
     val references = references.mapKeys { (name) -> name.text }
 
