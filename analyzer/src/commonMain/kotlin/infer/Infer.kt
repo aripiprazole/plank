@@ -399,7 +399,7 @@ class Infer(tree: ModuleTree) :
 
     val properties = visitPatterns(pattern.properties)
 
-    return TypedNamedTuplePattern(properties, enum, pattern.location)
+    return TypedNamedTuplePattern(properties, enum, ConstTy(enum.name.text), pattern.location)
   }
 
   override fun visitIdentPattern(pattern: IdentPattern): TypedPattern {

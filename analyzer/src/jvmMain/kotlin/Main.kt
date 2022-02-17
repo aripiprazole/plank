@@ -12,10 +12,23 @@ fun main() {
     @intrinsic
     fun println(message: *Char) -> ();
 
-    fun main(argc: Int32, argv: **Char) {
-      println("Hello, world!");
+    enum List {
+      Cons(*Char, List),
+      Nil
     }
-    """.trimIndent(),
+
+    fun print_list(list: List) {
+      match list {
+        Cons(value, next) => println("cons"),
+        Nil() => println("nil")
+      };
+    }
+
+    fun main(argc: Int32, argv: **Char) -> () {
+      print_list(Cons("hello", Nil));
+      print_list(Nil);
+    }
+    """.trimIndent()
   )
 
   val resolved = analyze(file)
