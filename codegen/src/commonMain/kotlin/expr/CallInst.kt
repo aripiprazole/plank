@@ -14,12 +14,11 @@ import org.plank.llvm4k.ir.Value
 class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     val ty = descriptor.callee.ty as FunTy
-    val expr = descriptor.argument
-
     val callee = descriptor.callee.codegen()
-    val argument = when (expr.ty) {
-      is FunTy -> castClosure(expr.codegen(), ty.parameterTy.typegen())
-      else -> expr.codegen()
+
+    val argument = when (descriptor.argument.ty) {
+      is FunTy -> castClosure(descriptor.argument.codegen(), ty.parameterTy.typegen())
+      else -> descriptor.argument.codegen()
     }
 
     return callClosure(callee, argument)

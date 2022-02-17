@@ -1,6 +1,7 @@
 package org.plank.analyzer.element
 
 import org.plank.analyzer.infer.Module
+import org.plank.analyzer.infer.PtrTy
 import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.Variable
@@ -277,7 +278,7 @@ data class TypedRefExpr(
   val value: TypedExpr,
   override val location: Location
 ) : TypedExpr {
-  override val ty: Ty get() = TODO()
+  override val ty: Ty = PtrTy(value.ty)
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitRefExpr(this)

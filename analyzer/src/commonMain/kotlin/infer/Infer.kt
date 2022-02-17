@@ -490,7 +490,10 @@ class Infer(tree: ModuleTree) :
     val name = decl.name
     val attributes = decl.attributes // todo validate
 
-    val parameters = decl.parameters.mapValues { visitTypeRef(it.value) }
+    val parameters = decl.parameters
+      .mapValues { visitTypeRef(it.value) }
+      .ifEmpty { mapOf(Identifier("___") to unitTy) }
+
     val returnType = visitTypeRef(decl.returnType)
 
     val info = FunctionInfo(name, returnType, parameters)

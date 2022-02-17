@@ -290,7 +290,7 @@ open class IrTransformingPhase :
 
   final override fun visitCallExpr(expr: TypedCallExpr): TypedExpr {
     return transformCallExpr(
-      expr.copy(callee = visitExpr(expr.callee), argument = visitExpr(expr.argument))
+      expr.copy(callee = visitExpr(expr.callee), argument = expr.argument?.let(::visitExpr))
     )
   }
 

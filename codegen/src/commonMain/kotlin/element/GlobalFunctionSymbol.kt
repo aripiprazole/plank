@@ -19,7 +19,6 @@ class GlobalFunctionSymbol(
   private val mangled: String,
   private val references: Map<Identifier, Ty>,
   private val parameters: Map<Identifier, Ty>,
-  private val returnTy: Ty,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   override fun CodegenContext.access(): AllocaInst? {
@@ -76,11 +75,10 @@ fun CodegenContext.addGlobalFunction(
   mangled: String,
   references: Map<Identifier, Ty> = emptyMap(),
   parameters: Map<Identifier, Ty> = emptyMap(),
-  returnTy: Ty,
   generate: GenerateBody,
 ): Value {
   return addFunction(
-    GlobalFunctionSymbol(ty as FunTy, name, mangled, references, parameters, returnTy, generate)
+    GlobalFunctionSymbol(ty as FunTy, name, mangled, references, parameters, generate)
   )
 }
 
@@ -92,7 +90,6 @@ fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: Gene
       name = descriptor.name.text,
       mangled = mangle(descriptor),
       parameters = descriptor.parameters,
-      returnTy = descriptor.returnTy,
       generate = generate,
     )
   )

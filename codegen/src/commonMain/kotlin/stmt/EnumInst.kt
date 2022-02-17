@@ -38,7 +38,6 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
           name.text,
           construct,
           parameters = types.withIndex().associate { Identifier(it.index.toString()) to it.value },
-          returnTy = descriptor.ty,
         ) {
           var idx = 1
           val instance = createMalloc(member)

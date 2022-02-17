@@ -5,6 +5,7 @@ import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.element.ResolvedNoBody
 import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.unitTy
 import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
@@ -30,6 +31,7 @@ class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecContext) -> 
           createRet(returned.codegen())
         }
 
+        if (descriptor.returnTy != unitTy) return
         if (body.hasReturnedUnit) return
 
         createRet(createUnit())
