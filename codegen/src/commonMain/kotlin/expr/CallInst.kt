@@ -17,7 +17,7 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
     val callee = descriptor.callee.codegen()
 
     val argument = when (descriptor.argument.ty) {
-      is FunTy -> castClosure(descriptor.argument.codegen(), ty.parameterTy.typegen())
+      is FunTy -> castClosure(alloca(descriptor.argument.codegen()), ty.parameterTy.typegen())
       else -> descriptor.argument.codegen()
     }
 

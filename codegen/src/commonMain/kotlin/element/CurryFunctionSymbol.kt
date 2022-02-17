@@ -59,7 +59,7 @@ class CurryFunctionSymbol(
     }
 
     if (nested) {
-      setSymbol(name, ty, alloca(closure))
+      setSymbol(name, ty, closure as AllocaInst)
     }
 
     return closure
