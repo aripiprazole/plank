@@ -9,7 +9,7 @@ import org.plank.llvm4k.ir.Value
 class SetInst(private val descriptor: TypedSetExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     val value = descriptor.value.codegen()
-    val field = findField(descriptor.receiver, descriptor.member)
+    val field = findField(descriptor.receiver, descriptor.info, descriptor.member)
 
     createStore(value, field)
 

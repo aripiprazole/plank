@@ -26,7 +26,7 @@ class Entrypoint : CodegenInstruction {
       argc.name = "argc"
       argv.name = "argv"
 
-      callClosure(callClosure(createCall(main), argc, name = null), argv, name = null)
+      callClosure(callClosure(createCall(main), argc), argv)
 
       createRet(i32.getConstant(0))
     }

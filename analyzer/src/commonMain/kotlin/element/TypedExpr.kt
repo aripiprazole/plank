@@ -78,6 +78,7 @@ data class TypedAccessExpr(
   val variable: Variable,
   override val location: Location,
 ) : TypedExpr {
+  val name: Identifier = variable.name
   override val ty: Ty = variable.ty
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -109,6 +110,7 @@ data class TypedSetExpr(
   val receiver: TypedExpr,
   val member: Identifier,
   val value: TypedExpr,
+  val info: StructInfo,
   override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
@@ -120,6 +122,7 @@ data class TypedSetExpr(
 data class TypedGetExpr(
   val receiver: TypedExpr,
   val member: Identifier,
+  val info: StructInfo,
   override val ty: Ty,
   override val location: Location
 ) : TypedExpr {
@@ -132,6 +135,7 @@ sealed interface TypedIntOperationExpr : TypedExpr {
   val lhs: TypedExpr
   val rhs: TypedExpr
   val isConst: Boolean
+  val unsigned: Boolean
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitIntOperationExpr(this)
@@ -142,6 +146,7 @@ data class TypedIntAddExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
@@ -151,6 +156,7 @@ data class TypedIntSubExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
@@ -160,6 +166,7 @@ data class TypedIntMulExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
@@ -169,6 +176,7 @@ data class TypedIntDivExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = i32Ty
@@ -178,6 +186,7 @@ data class TypedIntEQExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -187,6 +196,7 @@ data class TypedIntNEQExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -196,6 +206,7 @@ data class TypedIntGTExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -205,6 +216,7 @@ data class TypedIntGTEExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -214,6 +226,7 @@ data class TypedIntLTExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -223,6 +236,7 @@ data class TypedIntLTEExpr(
   override val lhs: TypedExpr,
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
+  override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -241,7 +255,7 @@ data class TypedCallExpr(
 
 data class TypedInstanceExpr(
   val arguments: Map<Identifier, TypedExpr>,
-  val struct: StructInfo,
+  val info: StructInfo,
   override val ty: Ty,
   override val location: Location,
 ) : TypedExpr {

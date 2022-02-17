@@ -8,6 +8,6 @@ import org.plank.llvm4k.ir.Value
 
 class GetInst(private val descriptor: TypedGetExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
-    return createLoad(findField(descriptor.receiver, descriptor.member))
+    return createLoad(findField(descriptor.receiver, descriptor.info, descriptor.member))
   }
 }

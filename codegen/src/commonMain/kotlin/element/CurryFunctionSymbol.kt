@@ -1,9 +1,10 @@
 package org.plank.codegen.element
 
 import arrow.core.identity
-import org.plank.analyzer.FunctionType
-import org.plank.analyzer.PlankType
 import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.nest
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
@@ -15,12 +16,12 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 class CurryFunctionSymbol(
-  override val type: FunctionType,
-  private val nested: Boolean,
-  private val references: Map<Identifier, PlankType>,
+  override val ty: FunTy,
   override val name: String,
   private val mangled: String,
-  private val realParameters: Map<Identifier, PlankType>,
+  private val nested: Boolean,
+  private val references: Map<Identifier, Ty>,
+  private val realParameters: Map<Identifier, Ty>,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   private val parameters = realParameters.entries.toList().map { it.toPair() }
@@ -42,24 +43,24 @@ class CurryFunctionSymbol(
         List(parameters.size - 1, ::identity)
           .reversed()
           .fold(generateNesting(reversedParameters.size - 1)) { acc, i ->
-            generateNesting(i) { returnType ->
+            generateNesting(i) { returnTy ->
               val func = acc.also { it.codegen() }.access()!!
-              val type = returnType.unsafeCast<FunctionType>().typegen()
+              val ty = returnTy.typegen()
 
-              createRet(castClosure(func, type))
+              createRet(castClosure(func, ty))
             }
           }
           .also { it.codegen() }
           .access()!!
       } else {
-        addClosure(name, type, "${mangled}_empty", references, generate = generate)
+        addClosure(name, ty.returnTy, "${mangled}_empty", references, generate = generate)
           .also { it.codegen() }
           .access()!!
       }
     }
 
     if (nested) {
-      setSymbol(name, type, closure as AllocaInst)
+      setSymbol(name, ty, alloca(closure))
     }
 
     return closure
@@ -67,24 +68,19 @@ class CurryFunctionSymbol(
 
   private fun generateNesting(
     index: Int,
-    builder: ExecContext.(returnType: PlankType) -> Unit = { generate() }
+    builder: ExecContext.(returnType: Ty) -> Unit = { generate() }
   ): ClosureFunctionSymbol {
-    val type = FunctionType(
-      parameters[index].second,
-      when (val returnType = type.nest(index)) {
-        is FunctionType -> returnType.copy(isNested = true)
-        else -> returnType
-      }
-    )
+    val ty = FunTy(ty.nest(index), parameters[index].second)
 
     return ClosureFunctionSymbol(
       name = "$mangled#$index",
       mangled = "$mangled{{closure}}#$index",
-      type = type.copy(name = Identifier("$mangled#$index")),
-      references = references + parameters,
+      ty = ty,
+      returnTy = ty.returnTy,
+      references = references + parameters.dropLast(1),
       parameters = mapOf(parameters[index]),
       realParameters = realParameters,
-      generate = { builder(type.returnType) },
+      generate = { builder(ty.returnTy) },
     )
   }
 }
@@ -95,7 +91,7 @@ fun CodegenContext.addCurryFunction(
   generate: GenerateBody,
 ): Value = addFunction(
   CurryFunctionSymbol(
-    type = descriptor.ty,
+    ty = descriptor.ty as FunTy,
     nested = nested,
     references = descriptor.references,
     name = descriptor.name.text,

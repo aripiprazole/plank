@@ -1,8 +1,8 @@
 package org.plank.codegen.pkg
 
-import org.plank.analyzer.FileScope
-import org.plank.analyzer.ModuleTree
 import org.plank.analyzer.element.ResolvedPlankFile
+import org.plank.analyzer.infer.FileScope
+import org.plank.analyzer.infer.ModuleTree
 import org.plank.codegen.DebugOptions
 import org.plank.codegen.Entrypoint
 import org.plank.codegen.ScopeContext
@@ -42,7 +42,7 @@ fun compile(
     .depthFirstSearch(main.module)
     .asSequence()
     .mapNotNull(tree::findModule)
-    .map(org.plank.analyzer.Module::scope)
+    .map(org.plank.analyzer.infer.Module::scope)
     .filterIsInstance<FileScope>()
     .map(FileScope::file)
     .toList()

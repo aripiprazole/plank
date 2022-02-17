@@ -1,10 +1,10 @@
 package org.plank.codegen
 
-import org.plank.analyzer.PlankType
 import org.plank.analyzer.element.ResolvedPlankElement
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.infer.Ty
 import org.plank.codegen.element.FunctionSymbol
 import org.plank.codegen.element.LazySymbol
 import org.plank.codegen.element.Symbol
@@ -42,22 +42,22 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun addModule(module: ScopeContext)
 
   fun addFunction(function: FunctionSymbol): Value
-  fun addStruct(name: String, type: PlankType, struct: StructType)
+  fun addStruct(name: String, struct: Type)
 
   fun getSymbol(name: String): User
   fun setSymbol(name: String, value: Symbol): Value
 
-  fun setSymbol(name: String, type: PlankType, variable: User): Value {
+  fun setSymbol(name: String, type: Ty, variable: User): Value {
     return setSymbol(name, ValueSymbol(type, variable))
   }
 
-  fun setSymbolLazy(name: String, type: PlankType, lazyValue: CodegenContext.() -> Value): Value {
+  fun setSymbolLazy(name: String, type: Ty, lazyValue: CodegenContext.() -> Value): Value {
     return setSymbol(name, LazySymbol(type, name, lazyValue))
   }
 
   fun findFunction(name: String): FunctionSymbol?
   fun findModule(name: String): ScopeContext?
-  fun findStruct(name: String): StructType?
+  fun findStruct(name: String): Type?
   fun findAlloca(name: String): User?
   fun findIntrinsic(name: String): IntrinsicFunction?
 
@@ -65,8 +65,8 @@ sealed interface CodegenContext : Context, IRBuilder {
 
   fun Symbol.access(): User? = with(this@CodegenContext) { access() }
 
-  fun PlankType.typegen(): Type = typegen(this)
-  fun Collection<PlankType>.typegen(): List<Type> = map { it.typegen() }
+  fun Ty.typegen(): Type = typegen(this)
+  fun Collection<Ty>.typegen(): List<Type> = map { it.typegen() }
 
   fun CodegenInstruction.codegen(): Value = with(this@CodegenContext) { codegen() }
   fun Collection<ResolvedPlankElement>.codegen(): List<Value> = map { it.codegen() }
@@ -120,7 +120,7 @@ data class ScopeContext(
 
   private val functions = mutableMapOf<String, FunctionSymbol>()
   private val symbols = mutableMapOf<String, Symbol>()
-  private val structs = mutableMapOf<String, Pair<PlankType, StructType>>()
+  private val structs = mutableMapOf<String, Type>()
   private val lazy = mutableMapOf<String, AllocaInst>()
 
   private val expanded = mutableListOf<ScopeContext>()
@@ -144,8 +144,8 @@ data class ScopeContext(
     return function.codegen()
   }
 
-  override fun addStruct(name: String, type: PlankType, struct: StructType) {
-    structs[name] = type to struct
+  override fun addStruct(name: String, struct: Type) {
+    structs[name] = struct
   }
 
   override fun getSymbol(name: String): User {
@@ -171,8 +171,8 @@ data class ScopeContext(
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findModule(name) }
   }
 
-  override fun findStruct(name: String): StructType? {
-    return structs[name]?.second
+  override fun findStruct(name: String): Type? {
+    return structs[name]
       ?: enclosing?.findStruct(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findStruct(name) }
   }

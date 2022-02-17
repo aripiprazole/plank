@@ -9,10 +9,10 @@ class StructInst(private val descriptor: ResolvedStructDecl) : CodegenInstructio
   override fun CodegenContext.codegen(): Value {
     val name = descriptor.name.text
     val struct = createNamedStruct(name) {
-      elements = descriptor.members.values.map { it.type.typegen() }
+      elements = descriptor.members.values.map { it.ty.typegen() }
     }
 
-    addStruct(name, descriptor.ty, struct)
+    addStruct(name, struct)
 
     return i1.constantNull
   }

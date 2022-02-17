@@ -13,10 +13,6 @@ fun main() {
     fun println(message: *Char) -> ();
 
     fun main(argc: Int32, argv: **Char) {
-      fun nested() {
-        println("Hello, world! (nested)");
-      }
-
       println("Hello, world!");
     }
     """.trimIndent(),
@@ -27,6 +23,5 @@ fun main() {
 
   resolved.bindingViolations.forEach { it.render(logger) }
 
-//  println(file.dumpTree())
   println(resolved.dumpTree())
 }

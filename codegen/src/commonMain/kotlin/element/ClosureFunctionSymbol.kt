@@ -1,7 +1,7 @@
 package org.plank.codegen.element
 
-import org.plank.analyzer.FunctionType
-import org.plank.analyzer.PlankType
+import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Ty
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
 import org.plank.codegen.codegenError
@@ -14,12 +14,13 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 class ClosureFunctionSymbol(
-  override val type: FunctionType,
+  override val ty: Ty,
   override val name: String,
   private val mangled: String,
-  private val references: Map<Identifier, PlankType>,
-  private val parameters: Map<Identifier, PlankType>,
-  private val realParameters: Map<Identifier, PlankType>,
+  private val references: Map<Identifier, Ty>,
+  private val parameters: Map<Identifier, Ty>,
+  private val realParameters: Map<Identifier, Ty>,
+  private val returnTy: Ty,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   override fun CodegenContext.access(): User {
@@ -27,7 +28,7 @@ class ClosureFunctionSymbol(
   }
 
   override fun CodegenContext.codegen(): Value { // TODO: fix access of variables
-    val returnType = type.actualReturnType.typegen()
+    val returnTy = returnTy.typegen()
     val references = references.mapKeys { (name) -> name.text }
 
     val environmentType = createNamedStruct("closure.env.$mangled") {
@@ -35,7 +36,7 @@ class ClosureFunctionSymbol(
     }
 
     val functionType = org.plank.llvm4k.ir.FunctionType(
-      returnType,
+      returnTy,
       environmentType.pointer(),
       *parameters.values.toList().typegen().toTypedArray(),
     )
@@ -54,17 +55,17 @@ class ClosureFunctionSymbol(
       val arguments = function.arguments
       val environment = arguments.first().apply { name = "env" }
 
-      val executionContext = ExecContext(this, function, returnType)
+      val executionContext = ExecContext(this, function, returnTy)
 
       with(executionContext) {
-        references.entries.forEachIndexed { index, (reference, type) ->
+        references.entries.forEachIndexed { index, (reference, ty) ->
           val variable = getField(environment, index, "env.$reference")
 
           if (reference in this@ClosureFunctionSymbol.realParameters.keys.map { it.text }) {
             this.arguments[reference] = createLoad(variable)
           }
 
-          setSymbol(reference, type, unsafeAlloca(variable))
+          setSymbol(reference, ty, unsafeAlloca(variable))
         }
 
         val realArguments = arguments.drop(1)
@@ -99,7 +100,7 @@ class ClosureFunctionSymbol(
     }
     val closure = instantiate(closureFunctionType, function, environment)
 
-    setSymbol(mangled, type, closure)
+    setSymbol(mangled, ty, closure)
 
     return closure
   }
@@ -107,20 +108,21 @@ class ClosureFunctionSymbol(
 
 fun CodegenContext.addClosure(
   name: String,
-  type: FunctionType,
+  returnTy: Ty,
   mangled: String = name,
-  references: Map<Identifier, PlankType> = linkedMapOf(),
-  realParameters: Map<Identifier, PlankType> = type.realParameters,
+  references: Map<Identifier, Ty> = linkedMapOf(),
+  realParameters: Map<Identifier, Ty> = emptyMap(),
   generate: GenerateBody,
 ): ClosureFunctionSymbol {
   val closure = ClosureFunctionSymbol(
     name = name,
     mangled = mangled,
-    type = type,
+    ty = FunTy(returnTy, realParameters.values),
     references = references,
-    parameters = type.realParameters,
+    parameters = realParameters,
     realParameters = realParameters,
     generate = generate,
+    returnTy = returnTy,
   )
 
   addFunction(closure)

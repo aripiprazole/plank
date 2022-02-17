@@ -12,7 +12,7 @@ class InstanceInst(private val descriptor: TypedInstanceExpr) : CodegenInstructi
   override fun CodegenContext.codegen(): Value {
     val struct = descriptor.ty.typegen() as StructType
 
-    val arguments = descriptor.ty.properties
+    val arguments = descriptor.info.members
       .map { (name, property) ->
         val (_, value) = descriptor.arguments.entries.find { it.key == property.name }
           ?: codegenError("Unresolved property `${name.text}` in $struct")
@@ -22,7 +22,7 @@ class InstanceInst(private val descriptor: TypedInstanceExpr) : CodegenInstructi
       .toTypedArray()
 
     val instance = instantiate(struct, *arguments) { index, value ->
-      "$value.${descriptor.ty.properties.keys.elementAt(index).text}"
+      "$value.${descriptor.info.members.keys.elementAt(index).text}"
     }
 
     return createLoad(instance)

@@ -12,19 +12,30 @@ data class VarTy(val name: String) : Ty {
   override fun toString(): String = name
 }
 
-data class AppTy(val fn: Ty, val arg: Ty) : Ty {
-  override fun toString(): String {
-    val arg = if (arg is AppTy && arg.fn is ConstTy && arg.fn.name == "->") {
-      "($arg)"
-    } else {
-      "$arg"
-    }
+data class PtrTy(val arg: Ty) : Ty {
+  override fun toString(): String = "*$arg"
+}
 
-    return when {
-      fn is ConstTy && fn.name == "->" -> "$arg ->"
-      else -> "$fn $arg"
-    }
+data class ArrTy(val arg: Ty) : Ty {
+  override fun toString(): String = "[$arg]"
+}
+
+data class FunTy(val returnTy: Ty, val parameterTy: Ty) : Ty {
+  override fun toString(): String = if (parameterTy is FunTy) {
+    "($parameterTy) -> $returnTy"
+  } else {
+    "$parameterTy -> $returnTy"
   }
+}
+
+fun FunTy(returnTy: Ty, parameters: Collection<Ty>): FunTy =
+  parameters
+    .reversed()
+    .ifEmpty { listOf(unitTy) }
+    .fold(returnTy) { acc, ty -> FunTy(acc, ty) } as FunTy
+
+data class AppTy(val fn: Ty, val arg: Ty) : Ty {
+  override fun toString(): String = "$fn $arg"
 }
 
 val undefTy: Ty = ConstTy("!")
@@ -40,30 +51,29 @@ val i32Ty: Ty = ConstTy("Int32")
 val floatTy: Ty = ConstTy("Float")
 val doubleTy: Ty = ConstTy("Double")
 
-fun pointerTy(type: Ty): AppTy = AppTy(ConstTy("*"), type)
+fun FunTy.nest(index: Int): Ty {
+  var i = 0
+  var current = returnTy
 
-fun arrayTy(type: Ty): AppTy = AppTy(ConstTy("arr"), type)
-
-fun arrowTy(returnTy: Ty, parameter: Ty): Ty = arrowTy(returnTy, listOf(parameter))
-
-fun arrowTy(returnTy: Ty, parameters: Collection<Ty>): Ty =
-  parameters
-    .ifEmpty { listOf(unitTy) }
-    .fold(returnTy) { acc, ty -> AppTy(AppTy(ConstTy("->"), ty), acc) }
-
-fun AppTy.chainArgs(): List<Ty> = buildList {
-  var ty: Ty = this@chainArgs
-  while (ty is AppTy) {
-    add(ty.arg)
-    ty = ty.fn
+  while (index > i) {
+    if (current is FunTy) {
+      current = current.returnTy
+    }
+    i++
   }
-  add(ty)
+
+  return current
+}
+
+fun FunTy.chainParameters(): List<Ty> = buildList {
+  var ty: Ty = this@chainParameters
+  while (ty is FunTy) {
+    add(ty.parameterTy)
+    ty = ty.returnTy
+  }
 }.reversed()
 
 fun Ty.unapply(): Ty? = (this as? AppTy)?.arg
-
-fun Ty.isArrow(name: String = "->"): Boolean =
-  this is AppTy && ((fn is ConstTy && fn.name == name) || fn.isArrow(name))
 
 data class Scheme(val names: Set<String>, val type: Ty) {
   override fun toString(): String = "∀ ${names.joinToString(" ")}. $type"

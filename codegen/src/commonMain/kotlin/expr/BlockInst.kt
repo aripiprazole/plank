@@ -11,7 +11,7 @@ class BlockInst(private val descriptor: TypedBlockExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     val symbol = addClosure(
       name = "anonymous$${descriptor.hashCode()}",
-      type = descriptor.ty.identity(),
+      returnTy = descriptor.ty,
       references = descriptor.references,
     ) {
       descriptor.stmts.codegen()

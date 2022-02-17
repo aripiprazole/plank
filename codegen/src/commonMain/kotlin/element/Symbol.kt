@@ -1,6 +1,6 @@
 package org.plank.codegen.element
 
-import org.plank.analyzer.PlankType
+import org.plank.analyzer.infer.Ty
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
@@ -14,19 +14,19 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 sealed interface Symbol : CodegenInstruction {
-  val type: PlankType
+  val ty: Ty
 
   fun CodegenContext.access(): User?
 }
 
-class ValueSymbol(override val type: PlankType, private val value: User) : Symbol {
+class ValueSymbol(override val ty: Ty, private val value: User) : Symbol {
   override fun CodegenContext.access(): User = value
 
   override fun CodegenContext.codegen(): Value = value
 }
 
 class LazySymbol(
-  override val type: PlankType,
+  override val ty: Ty,
   val name: String,
   val lazyValue: CodegenContext.() -> Value,
 ) : Symbol {
@@ -41,7 +41,7 @@ class LazySymbol(
   }
 
   override fun CodegenContext.codegen(): Value {
-    val type = type.typegen()
+    val type = ty.typegen()
     val name = mangle(name)
 
     val struct = createNamedStruct(name) {

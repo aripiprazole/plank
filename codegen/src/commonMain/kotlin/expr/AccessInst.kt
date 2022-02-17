@@ -12,9 +12,6 @@ class AccessInst(private val descriptor: TypedAccessExpr) : CodegenInstruction {
       ?.let { findModule(it) ?: codegenError("Unable to find module `$it`") }
       ?: this
 
-    return when {
-      descriptor.ty.isNested -> module.getSymbol(descriptor.name.text)
-      else -> createLoad(module.getSymbol(descriptor.name.text))
-    }
+    return createLoad(module.getSymbol(descriptor.name.text))
   }
 }

@@ -1,6 +1,5 @@
 package org.plank.codegen.expr
 
-import org.plank.analyzer.IntType
 import org.plank.analyzer.element.TypedIntAddExpr
 import org.plank.analyzer.element.TypedIntDivExpr
 import org.plank.analyzer.element.TypedIntEQExpr
@@ -30,8 +29,7 @@ class IntOperationInst(private val descriptor: TypedIntOperationExpr) : CodegenI
   override fun CodegenContext.codegen(): Value {
     val rhs = descriptor.rhs.codegen()
     val lhs = descriptor.lhs.codegen()
-
-    val unsigned = descriptor.ty.cast<IntType>()?.unsigned ?: false
+    val unsigned = descriptor.unsigned
 
     return when (descriptor) {
       is TypedIntAddExpr -> createAdd(lhs, rhs)

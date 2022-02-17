@@ -64,7 +64,7 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     vararg parameters: Ty,
     builder: (List<TypedExpr>) -> TypedExpr,
   ) {
-    declare(Identifier(name), arrowTy(returnTy, parameters.toList()))
+    declare(Identifier(name), FunTy(returnTy, parameters.toList()))
   }
 }
 

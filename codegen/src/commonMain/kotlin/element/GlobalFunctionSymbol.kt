@@ -1,7 +1,8 @@
 package org.plank.codegen.element
 
-import org.plank.analyzer.PlankType
 import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Ty
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
@@ -13,11 +14,12 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 class GlobalFunctionSymbol(
-  override val type: org.plank.analyzer.FunctionType,
-  private val references: Map<Identifier, PlankType>,
+  override val ty: FunTy,
   override val name: String,
   private val mangled: String,
-  private val realParameters: Map<Identifier, PlankType>,
+  private val references: Map<Identifier, Ty>,
+  private val parameters: Map<Identifier, Ty>,
+  private val returnTy: Ty,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   override fun CodegenContext.access(): AllocaInst? {
@@ -29,7 +31,7 @@ class GlobalFunctionSymbol(
   }
 
   override fun CodegenContext.codegen(): Value {
-    val closureReturnType = type.typegen()
+    val closureReturnType = ty.typegen()
 
     val insertionBlock = insertionBlock
     val function = FunctionType(closureReturnType).let {
@@ -42,12 +44,12 @@ class GlobalFunctionSymbol(
 
     val closure = addFunction(
       CurryFunctionSymbol(
-        type = type,
+        ty = ty,
         nested = false,
         references = references,
         name = name,
         mangled = mangled,
-        realParameters = realParameters,
+        realParameters = parameters,
         generate = generate,
       )
     )
@@ -69,26 +71,28 @@ class GlobalFunctionSymbol(
 }
 
 fun CodegenContext.addGlobalFunction(
-  type: org.plank.analyzer.FunctionType,
+  ty: Ty,
   name: String,
   mangled: String,
-  references: Map<Identifier, PlankType> = emptyMap(),
-  realParameters: Map<Identifier, PlankType> = type.realParameters,
+  references: Map<Identifier, Ty> = emptyMap(),
+  parameters: Map<Identifier, Ty> = emptyMap(),
+  returnTy: Ty,
   generate: GenerateBody,
 ): Value {
   return addFunction(
-    GlobalFunctionSymbol(type, references, name, mangled, realParameters, generate)
+    GlobalFunctionSymbol(ty as FunTy, name, mangled, references, parameters, returnTy, generate)
   )
 }
 
 fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
   return addFunction(
     GlobalFunctionSymbol(
-      type = descriptor.ty,
+      ty = descriptor.ty as FunTy,
       references = descriptor.references,
       name = descriptor.name.text,
       mangled = mangle(descriptor),
-      realParameters = descriptor.parameters,
+      parameters = descriptor.parameters,
+      returnTy = descriptor.returnTy,
       generate = generate,
     )
   )

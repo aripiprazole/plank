@@ -2,6 +2,7 @@ package org.plank.codegen
 
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.infer.StructInfo
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
 import org.plank.llvm4k.ir.Function
@@ -56,10 +57,10 @@ fun CodegenContext.getField(value: Value, idx: Int, name: String? = null): Value
   return createGEP(value, i32.getConstant(0), i32.getConstant(idx), name = name)
 }
 
-fun CodegenContext.findField(receiver: TypedExpr, name: Identifier): Value {
+fun CodegenContext.findField(receiver: TypedExpr, info: StructInfo, name: Identifier): Value {
   val struct = when (receiver) {
     is TypedAccessExpr -> receiver.name.text
-    else -> receiver.ty.name.text
+    else -> receiver.ty.toString()
   }
 
   val instance = when (receiver) {
@@ -72,13 +73,7 @@ fun CodegenContext.findField(receiver: TypedExpr, name: Identifier): Value {
     else -> alloca(instance)
   }
 
-  if (!receiver.ty.isInstance<org.plank.analyzer.StructType>()) {
-    codegenError("Unresolved type `${receiver.ty.name.text}`")
-  }
-
-  val propertyIndex = receiver.ty
-    .cast<org.plank.analyzer.StructType>()!!.properties.entries
-    .indexOfFirst { it.key == name }
+  val propertyIndex = info.members.entries.indexOfFirst { it.key == name }
 
   return getField(alloca, propertyIndex, "$struct.${name.text}")
 }

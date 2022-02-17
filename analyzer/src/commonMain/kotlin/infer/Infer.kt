@@ -197,12 +197,12 @@ class Infer(tree: ModuleTree) :
     val type = when (val value = expr.value) {
       is Boolean -> boolTy
       is Unit -> unitTy
-      is String -> pointerTy(charTy)
       is Int -> i32Ty
       is Short -> i16Ty
       is Byte -> i8Ty
       is Double -> doubleTy
       is Float -> floatTy
+      is String -> PtrTy(charTy)
       else -> return expr.violate("Unsupported type ${value::class.simpleName}")
     }
 
@@ -226,16 +226,16 @@ class Infer(tree: ModuleTree) :
   override fun visitCallExpr(expr: CallExpr): TypedExpr {
     val callee = visitExpr(expr.callee)
 
-    if (!callee.ty.isArrow()) {
+    if (callee.ty !is FunTy) {
       return callee.violate("Type ${callee.ty} is not callable")
     }
 
-    val ty = callee.ty as AppTy
-    val parameters = ty.chainArgs()
+    val ty = callee.ty as FunTy
+    val parameters = ty.chainParameters()
 
     val arguments = visitExprs(expr.arguments).ifEmpty { listOf(unitValue()) }
 
-    return arguments.reduceIndexed { i, acc, argument ->
+    return arguments.foldIndexed(callee) { i, acc, argument ->
       val parameter = parameters.elementAtOrNull(i)
 
       if (parameter == null) {
@@ -246,7 +246,7 @@ class Infer(tree: ModuleTree) :
         argument.violate("Mismatch types: expecting $parameter but got ${argument.ty}")
       }
 
-      TypedCallExpr(acc, argument, ty.arg, expr.location)
+      TypedCallExpr(acc, argument, ty.nest(i), expr.location)
     }
   }
 
@@ -302,7 +302,7 @@ class Infer(tree: ModuleTree) :
       return newValue.violate("Mismatch types: expecting ${property.ty} but got ${newValue.ty}")
     }
 
-    return TypedSetExpr(receiver, property.name, newValue, property.ty, expr.location)
+    return TypedSetExpr(receiver, property.name, newValue, struct, property.ty, expr.location)
   }
 
   override fun visitGetExpr(expr: GetExpr): TypedExpr {
@@ -332,7 +332,7 @@ class Infer(tree: ModuleTree) :
     val property = struct.members[expr.property]
       ?: return expr.property.violate("Unresolved property `${expr.property.text}` in struct $struct")
 
-    return TypedGetExpr(receiver, property.name, property.ty, expr.location)
+    return TypedGetExpr(receiver, property.name, struct, property.ty, expr.location)
   }
 
   override fun visitGroupExpr(expr: GroupExpr): TypedExpr {
@@ -458,12 +458,12 @@ class Infer(tree: ModuleTree) :
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
 
-      val memberInfo = currentScope.create(EnumMemberInfo(name, types, arrowTy(enum, types)))
+      val memberInfo = currentScope.create(EnumMemberInfo(name, types, FunTy(enum, types)))
 
       if (types.isEmpty()) {
         currentScope.declare(name, enum)
       } else {
-        currentScope.declare(name, arrowTy(enum, types))
+        currentScope.declare(name, FunTy(enum, types))
       }
 
       name to memberInfo
@@ -471,7 +471,7 @@ class Infer(tree: ModuleTree) :
 
     val info = currentScope.create(EnumInfo(decl.name, members))
 
-    return ResolvedEnumDecl(info, decl.location)
+    return ResolvedEnumDecl(info, enum, decl.location)
   }
 
   override fun visitStructDecl(decl: StructDecl): ResolvedStmt {
@@ -488,15 +488,15 @@ class Infer(tree: ModuleTree) :
 
   override fun visitFunDecl(decl: FunDecl): ResolvedStmt {
     val name = decl.name
+    val attributes = decl.attributes // todo validate
 
     val parameters = decl.parameters.mapValues { visitTypeRef(it.value) }
     val returnType = visitTypeRef(decl.returnType)
 
     val info = FunctionInfo(name, returnType, parameters)
-    val ty = arrowTy(returnType, parameters.values)
+    val ty = FunTy(returnType, parameters.values)
 
-    val attributes = decl.attributes // todo validate
-
+    val isNested = !currentScope.isTopLevelScope
     val references = linkedMapOf<Identifier, Ty>()
 
     currentScope.declare(name, ty)
@@ -512,7 +512,7 @@ class Infer(tree: ModuleTree) :
       visitFunctionBody(decl.body)
     }
 
-    return ResolvedFunDecl(body, attributes, references, info, ty, decl.location)
+    return ResolvedFunDecl(body, attributes, references, info, isNested, ty, decl.location)
   }
 
   override fun visitLetDecl(decl: LetDecl): ResolvedStmt {
@@ -544,15 +544,15 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitPointerTypeRef(ref: PointerTypeRef): Ty {
-    return pointerTy(visitTypeRef(ref.type))
+    return PtrTy(visitTypeRef(ref.type))
   }
 
   override fun visitArrayTypeRef(ref: ArrayTypeRef): Ty {
-    return arrayTy(visitTypeRef(ref.type))
+    return ArrTy(visitTypeRef(ref.type))
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef): Ty {
-    return arrowTy(visitTypeRef(ref.returnType), visitTypeRef(ref.returnType))
+    return FunTy(visitTypeRef(ref.returnType), visitTypeRef(ref.returnType))
   }
 
   override fun visitUnitTypeRef(ref: UnitTypeRef): Ty {
@@ -620,6 +620,9 @@ class Infer(tree: ModuleTree) :
   private fun findTyInfo(ty: Ty): TyInfo? {
     return when (ty) {
       is AppTy -> null
+      is FunTy -> null
+      is PtrTy -> null
+      is ArrTy -> null
       is ConstTy -> currentScope.findTyInfo(ty.name.toIdentifier())
       is VarTy -> currentScope.findTyInfo(ty.name.toIdentifier())
     }

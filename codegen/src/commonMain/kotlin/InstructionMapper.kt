@@ -1,8 +1,6 @@
 package org.plank.codegen
 
 import org.plank.analyzer.element.ResolvedEnumDecl
-import org.plank.analyzer.element.ResolvedErrorDecl
-import org.plank.analyzer.element.ResolvedErrorStmt
 import org.plank.analyzer.element.ResolvedExprStmt
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.element.ResolvedLetDecl
@@ -17,7 +15,6 @@ import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
-import org.plank.analyzer.element.TypedErrorExpr
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
@@ -116,10 +113,6 @@ interface InstructionMapper :
       return MatchInst(expr)
     }
 
-    override fun visitViolatedExpr(expr: TypedErrorExpr): CodegenInstruction {
-      error("Cant generate violated expr")
-    }
-
     override fun visitExprStmt(stmt: ResolvedExprStmt): CodegenInstruction {
       return ExprInst(stmt)
     }
@@ -150,14 +143,6 @@ interface InstructionMapper :
 
     override fun visitLetDecl(decl: ResolvedLetDecl): CodegenInstruction {
       return LetInst(decl)
-    }
-
-    override fun visitViolatedStmt(stmt: ResolvedErrorStmt): CodegenInstruction {
-      error("Cant generate violated stmt")
-    }
-
-    override fun visitViolatedDecl(stmt: ResolvedErrorDecl): CodegenInstruction {
-      error("Cant generate violated decl")
     }
   }
 }

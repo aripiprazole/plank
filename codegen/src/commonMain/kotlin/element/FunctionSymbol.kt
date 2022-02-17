@@ -1,11 +1,10 @@
 package org.plank.codegen.element
 
-import org.plank.analyzer.PlankType
-import org.plank.analyzer.UnitType
 import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.element.ResolvedNoBody
+import org.plank.analyzer.infer.Ty
 import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
@@ -31,7 +30,6 @@ class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecContext) -> 
           createRet(returned.codegen())
         }
 
-        if (descriptor.ty.actualReturnType != UnitType) return
         if (body.hasReturnedUnit) return
 
         createRet(createUnit())
@@ -40,7 +38,7 @@ class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecContext) -> 
   }
 }
 
-fun ExecContext.generateParameter(parameters: Map<Identifier, PlankType>) =
+fun ExecContext.generateParameter(parameters: Map<Identifier, Ty>) =
   fun(index: Int, argument: Argument) {
     val (name, type) = parameters.entries.elementAtOrElse(index) {
       codegenError("Unresolved parameter `$index`")

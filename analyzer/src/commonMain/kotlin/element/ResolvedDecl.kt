@@ -14,7 +14,8 @@ import org.plank.syntax.element.QualifiedPath
 
 sealed interface ResolvedDecl : ResolvedStmt
 
-data class ResolvedEnumDecl(val info: EnumInfo, override val location: Location) : ResolvedDecl {
+data class ResolvedEnumDecl(val info: EnumInfo, val ty: Ty, override val location: Location) :
+  ResolvedDecl {
   val name: Identifier = info.name
   val members: Map<Identifier, EnumMemberInfo> = info.members
 
@@ -57,6 +58,7 @@ data class ResolvedFunDecl(
   val attributes: List<Attribute> = emptyList(),
   val references: LinkedHashMap<Identifier, Ty> = LinkedHashMap(),
   val info: FunctionInfo,
+  val isNested: Boolean,
   override val ty: Ty,
   override val location: Location
 ) : ResolvedDecl, TypedPlankElement {

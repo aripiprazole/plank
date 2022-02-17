@@ -15,9 +15,9 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
       elements = listOf(i8, i8.pointer())
     }
 
-    addStruct(descriptor.name.text, descriptor.ty, enum)
+    addStruct(descriptor.name.text, enum.pointer())
 
-    descriptor.members.values.forEachIndexed { tag, (name, types, functionType) ->
+    descriptor.members.values.forEachIndexed { tag, (name, types, funTy) ->
       val mangled = mangle(name, descriptor.name)
       val construct = mangle(name, descriptor.name, Identifier("construct"))
 
@@ -25,7 +25,7 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
         elements = listOf(i8, *types.typegen().toTypedArray())
       }
 
-      addStruct(name.text, descriptor.ty, member)
+      addStruct(name.text, member)
 
       when {
         types.isEmpty() -> setSymbolLazy(name.text, descriptor.ty) {
@@ -33,7 +33,13 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
           createStore(i8.getConstant(tag), getField(instance, 0))
           createBitCast(instance, enum.pointer())
         }
-        else -> addGlobalFunction(functionType, name.text, construct) {
+        else -> addGlobalFunction(
+          funTy,
+          name.text,
+          construct,
+          parameters = types.withIndex().associate { Identifier(it.index.toString()) to it.value },
+          returnTy = descriptor.ty,
+        ) {
           var idx = 1
           val instance = createMalloc(member)
           createStore(i8.getConstant(tag), getField(instance, 0))
