@@ -146,6 +146,8 @@ sealed class Scope {
   private val expanded = mutableListOf<Scope>()
   private val variables = mutableMapOf<Identifier, Variable>()
 
+  private var count = 0
+
   /**
    * Declares a compiler-defined variable with type [ty] in the context
    */
@@ -190,5 +192,23 @@ sealed class Scope {
       ?: enclosing?.findVariable(name)?.notInScope()
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
         ?.notInScope()
+  }
+
+  fun fresh(): Ty {
+    return VarTy(letters.elementAt(count)).also { count++ }
+  }
+
+  companion object {
+    private val letters: Sequence<String> = sequence {
+      var prefix = ""
+      var i = 0
+      while (i < Char.MAX_VALUE.code) {
+        ('a'..'z').forEach { c ->
+          yield("$prefix$c")
+        }
+        i++
+        prefix += "${i.toChar()}"
+      }
+    }
   }
 }

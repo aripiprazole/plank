@@ -264,16 +264,23 @@ class Infer(tree: ModuleTree) :
       .ifEmpty { listOf(unitValue()) }
       .foldIndexed(callee) { i, acc, argument ->
         val parameter = parameters.elementAtOrNull(i)
+        var parameterTy = parameter ?: argument.ty
+        var argumentTy = argument.ty
+        var nestTy = ty.nest(i)
 
         if (parameter == null) {
           argument.violate("Unexpected $i arity for function $callee")
+        } else {
+          parameterTy = parameter ap unify(argument.ty, parameter)
+          argumentTy = argumentTy ap unify(argument.ty, parameter)
+          nestTy = nestTy ap unify(argument.ty, parameter)
         }
 
-        if (argument.ty != parameter) {
-          argument.violate("Mismatch types: expecting $parameter but got ${argument.ty}")
+        if (argumentTy != parameterTy) {
+          argument.violate("Mismatch types: expecting $parameterTy but got $argumentTy")
         }
 
-        TypedCallExpr(acc, argument, ty.nest(i), expr.location)
+        TypedCallExpr(acc, argument, nestTy, expr.location)
       }
   }
 
@@ -373,19 +380,33 @@ class Infer(tree: ModuleTree) :
     val struct = info.getAs<StructInfo>()
       ?: return expr.type.violate("Type ${expr.type} is not a struct")
 
+    var subst = Subst()
+
     val arguments = expr.arguments.mapValues { (name, expr) ->
       val value = visitExpr(expr)
       val property = struct.members[name]
         ?: return name.violate("Unresolved property `${name.text}` in struct $info")
 
-      if (property.ty != value.ty) {
-        return value.violate("Mismatch types: expecting ${property.ty} but got ${value.ty}")
+      subst = subst compose unify(property.ty, value.ty)
+
+      val propertyTy = property.ty ap subst
+      if (propertyTy != value.ty) {
+        return value.violate("Mismatch types: expecting $propertyTy but got ${value.ty}")
       }
 
       value
     }
 
-    return TypedInstanceExpr(arguments, struct, ConstTy(struct.name.text), expr.location)
+    val ty = inst(
+      Scheme(
+        struct.names.map { it.text }.toSet(),
+        struct.names.fold(ConstTy(struct.name.text) as Ty) { acc, next ->
+          AppTy(acc, VarTy(next.text))
+        }
+      ),
+    )
+
+    return TypedInstanceExpr(arguments, struct, ty ap subst, expr.location)
   }
 
   override fun visitSizeofExpr(expr: SizeofExpr): TypedExpr {
@@ -493,37 +514,53 @@ class Infer(tree: ModuleTree) :
   override fun visitEnumDecl(decl: EnumDecl): ResolvedStmt {
     currentScope.create(EnumInfo(decl.name))
 
-    val enum = ConstTy(decl.name.text)
+    val ty = inst(
+      Scheme(
+        decl.names.map { it.text }.toSet(),
+        decl.names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
+          AppTy(acc, VarTy(next.text))
+        }
+      ),
+    )
 
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
 
-      val memberInfo = currentScope.create(EnumMemberInfo(name, types, FunTy(enum, types)))
+      val memberInfo = currentScope.create(EnumMemberInfo(name, types, FunTy(ty, types)))
 
       if (types.isEmpty()) {
-        currentScope.declare(name, enum)
+        currentScope.declare(name, ty)
       } else {
-        currentScope.declare(name, FunTy(enum, types))
+        currentScope.declare(name, FunTy(ty, types))
       }
 
       name to memberInfo
     }
 
-    val info = currentScope.create(EnumInfo(decl.name, members))
+    val info = currentScope.create(EnumInfo(decl.name, decl.names, members))
 
-    return ResolvedEnumDecl(info, enum, decl.location)
+    return ResolvedEnumDecl(info, ty, decl.location)
   }
 
   override fun visitStructDecl(decl: StructDecl): ResolvedStmt {
     currentScope.create(StructInfo(decl.name))
 
+    val ty = inst(
+      Scheme(
+        decl.names.map { it.text }.toSet(),
+        decl.names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
+          AppTy(acc, VarTy(next.text))
+        }
+      ),
+    )
+
     val properties = decl.properties.associate { (mutable, name, type) ->
       name to StructMemberInfo(name, visitTypeRef(type), mutable)
     }
 
-    val info = currentScope.create(StructInfo(decl.name, properties))
+    val info = currentScope.create(StructInfo(decl.name, decl.names, properties))
 
-    return ResolvedStructDecl(info, decl.location)
+    return ResolvedStructDecl(info, ty, decl.location)
   }
 
   override fun visitFunDecl(decl: FunDecl): ResolvedStmt {
@@ -580,7 +617,11 @@ class Infer(tree: ModuleTree) :
     val path = ref.path.toIdentifier()
 
     if (currentScope.findTyInfo(path) == null) {
-      return ref.violate("Type `${path.text}` is not defined").ty
+      return if (ref.path.fullPath.size > 1) {
+        ref.violate("Type `${path.text}` is not defined").ty
+      } else {
+        VarTy(path.text)
+      }
     }
 
     return ConstTy(ref.path.text)
@@ -697,6 +738,18 @@ class Infer(tree: ModuleTree) :
   }
 
   // Infer
+  private fun inst(scheme: Scheme): Ty {
+    val env = currentScope
+
+    val subst = scheme.names
+      .zip(scheme.names.map { env.fresh() })
+      .toMap()
+      .mapKeys { VarTy(it.key) }
+      .toSubst()
+
+    return scheme.ty ap subst
+  }
+
   private fun unify(a: Ty, b: Ty): Subst {
     return when {
       a == b -> Subst()

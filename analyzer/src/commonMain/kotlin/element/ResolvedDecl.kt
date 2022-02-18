@@ -25,7 +25,7 @@ data class ResolvedEnumDecl(val info: EnumInfo, val ty: Ty, override val locatio
   }
 }
 
-data class ResolvedStructDecl(val info: StructInfo, override val location: Location) :
+data class ResolvedStructDecl(val info: StructInfo, val ty: Ty, override val location: Location) :
   ResolvedDecl {
   val name: Identifier = info.name
   val members: Map<Identifier, StructMemberInfo> = info.members

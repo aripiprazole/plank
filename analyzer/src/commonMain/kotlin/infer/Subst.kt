@@ -7,6 +7,8 @@ value class Subst(val map: Map<VarTy, Ty> = emptyMap()) {
   constructor(name: String, ty: Ty) : this(mapOf(VarTy(name) to ty))
 }
 
+fun Map<VarTy, Ty>.toSubst(): Subst = Subst(this)
+
 fun Ty.ftv(): Set<String> {
   return when (this) {
     is ConstTy -> emptySet()

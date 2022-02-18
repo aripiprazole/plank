@@ -9,24 +9,16 @@ fun main() {
     """
     module Main;
 
-    @intrinsic
-    fun println(message: *Char) -> ();
-
-    enum List {
-      Cons(*Char, List),
-      Nil
+    type Person[a] = {
+      name: a,
+      age: Int32
     }
 
-    fun print_list(list: List) {
-      match list {
-        Cons(value, next) => println("cons"),
-        Nil() => println("nil")
-      };
-    }
+    fun show_person(person: Person[a]) {}
 
-    fun main(argc: Int32, argv: **Char) -> () {
-      print_list(Cons("hello", Nil));
-      print_list(Nil);
+    fun main(argc: Int32, argv: **Char) {
+      let person = Person{name: "John", age: 42};
+      show_person(person);
     }
     """.trimIndent()
   )
@@ -36,5 +28,6 @@ fun main() {
 
   resolved.bindingViolations.forEach { it.render(logger) }
 
+  println(file.dumpTree())
   println(resolved.dumpTree())
 }

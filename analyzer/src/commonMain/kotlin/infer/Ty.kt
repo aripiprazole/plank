@@ -69,6 +69,6 @@ val i32Ty: Ty = ConstTy("Int32")
 val floatTy: Ty = ConstTy("Float")
 val doubleTy: Ty = ConstTy("Double")
 
-data class Scheme(val names: Set<String>, val type: Ty) {
-  override fun toString(): String = "∀ ${names.joinToString(" ") { "'$it" }}. $type"
+data class Scheme(val names: Set<String>, val ty: Ty) {
+  override fun toString(): String = "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
 }

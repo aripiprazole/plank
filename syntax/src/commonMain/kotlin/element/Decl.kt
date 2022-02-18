@@ -4,6 +4,7 @@ sealed interface Decl : Stmt
 
 data class EnumDecl(
   val name: Identifier,
+  val names: Set<Identifier>,
   val members: List<Member>,
   override val location: Location,
 ) : Decl {
@@ -16,6 +17,7 @@ data class EnumDecl(
 
 data class StructDecl(
   val name: Identifier,
+  val names: Set<Identifier>,
   val properties: List<Property>,
   override val location: Location,
 ) : Decl {

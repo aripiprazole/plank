@@ -7,10 +7,6 @@ sealed interface TyInfo {
   val name: Identifier
 }
 
-data class GenericInfo(override val name: Identifier) : TyInfo {
-  override fun toString(): String = name.text
-}
-
 data class FunctionInfo(
   override val name: Identifier,
   val returnTy: Ty,
@@ -22,6 +18,7 @@ data class FunctionInfo(
 
 data class StructInfo(
   override val name: Identifier,
+  val names: Set<Identifier> = emptySet(),
   val members: Map<Identifier, StructMemberInfo> = emptyMap(),
 ) : TyInfo {
   override fun toString(): String = name.text
@@ -37,6 +34,7 @@ data class StructMemberInfo(
 
 data class EnumInfo(
   override val name: Identifier,
+  val names: Set<Identifier> = emptySet(),
   val members: Map<Identifier, EnumMemberInfo> = emptyMap(),
 ) : TyInfo {
   override fun toString(): String = name.text
