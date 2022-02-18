@@ -147,8 +147,9 @@ open class TreeWalker :
     visitTypeRef(ref.type)
   }
 
-  override fun visitArrayTypeRef(ref: ArrayTypeRef) {
-    visitTypeRef(ref.type)
+  override fun visitApplyTypeRef(ref: ApplyTypeRef) {
+    visitQualifiedPath(ref.function)
+    visitTypeRefs(ref.arguments)
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef) {

@@ -9,8 +9,8 @@ import org.antlr.v4.kotlinruntime.tree.RuleNode
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
 import org.plank.parser.PlankParser.AccessExprContext
 import org.plank.parser.PlankParser.AccessTypeRefContext
+import org.plank.parser.PlankParser.ApplyTypeRefContext
 import org.plank.parser.PlankParser.ArgContext
-import org.plank.parser.PlankParser.ArrayTypeRefContext
 import org.plank.parser.PlankParser.AssignExprContext
 import org.plank.parser.PlankParser.AttrAccessExprContext
 import org.plank.parser.PlankParser.AttrContext
@@ -80,7 +80,7 @@ import org.plank.parser.PlankParserBaseVisitor
 import org.plank.syntax.element.AccessAttributeExpr
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
-import org.plank.syntax.element.ArrayTypeRef
+import org.plank.syntax.element.ApplyTypeRef
 import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.AttributeExpr
@@ -470,8 +470,10 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return AccessTypeRef(visitQualifiedPath(ctx.path!!), ctx.location)
   }
 
-  override fun visitArrayTypeRef(ctx: ArrayTypeRefContext): ArrayTypeRef {
-    return ArrayTypeRef(visitTypeRef(ctx.type!!), ctx.location)
+  override fun visitApplyTypeRef(ctx: ApplyTypeRefContext): ApplyTypeRef {
+    val arguments = ctx.findTypeRef().map(::visitTypeRef)
+
+    return ApplyTypeRef(visitQualifiedPath(ctx.path!!), arguments, ctx.location)
   }
 
   override fun visitPointerTypeRef(ctx: PointerTypeRefContext): PointerTypeRef {
@@ -488,7 +490,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
 
   private fun visitTypeRef(ctx: TypePrimaryContext): TypeRef = when (ctx) {
     is AccessTypeRefContext -> visitAccessTypeRef(ctx)
-    is ArrayTypeRefContext -> visitArrayTypeRef(ctx)
+    is ApplyTypeRefContext -> visitApplyTypeRef(ctx)
     is PointerTypeRefContext -> visitPointerTypeRef(ctx)
     is GroupTypeRefContext -> visitGroupTypeRef(ctx)
     is UnitTypeRefContext -> visitUnitTypeRef(ctx)

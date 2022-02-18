@@ -6,7 +6,7 @@ sealed interface TypeRef : PlankElement {
 
     fun visitAccessTypeRef(ref: AccessTypeRef): T
     fun visitPointerTypeRef(ref: PointerTypeRef): T
-    fun visitArrayTypeRef(ref: ArrayTypeRef): T
+    fun visitApplyTypeRef(ref: ApplyTypeRef): T
     fun visitFunctionTypeRef(ref: FunctionTypeRef): T
     fun visitUnitTypeRef(ref: UnitTypeRef): T
 
@@ -34,9 +34,13 @@ data class PointerTypeRef(val type: TypeRef, override val location: Location) : 
   }
 }
 
-data class ArrayTypeRef(val type: TypeRef, override val location: Location) : TypeRef {
+data class ApplyTypeRef(
+  val function: QualifiedPath,
+  val arguments: List<TypeRef>,
+  override val location: Location,
+) : TypeRef {
   override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
-    return visitor.visitArrayTypeRef(this)
+    return visitor.visitApplyTypeRef(this)
   }
 }
 

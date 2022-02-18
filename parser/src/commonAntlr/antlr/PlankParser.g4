@@ -38,11 +38,11 @@ typeRef: parameter=typeRef ARROW_LEFT returnType=typeRef # FunctionTypeRef
        | value=typePrimary                               # PrimaryTypeRef
        ;
 
-typePrimary: path=qualifiedPath                 # AccessTypeRef
-           | LBRACKET type=typePrimary RBRACKET # ArrayTypeRef
-           | TIMES    type=typePrimary          # PointerTypeRef
-           | LPAREN   type=typeRef RPAREN       # GroupTypeRef
-           | LPAREN RPAREN                      # UnitTypeRef
+typePrimary: path=qualifiedPath                                               # AccessTypeRef
+           | path=qualifiedPath LBRACKET (typeRef (COMMA typeRef)*)? RBRACKET # ApplyTypeRef
+           | TIMES    type=typePrimary                                        # PointerTypeRef
+           | LPAREN   type=typeRef RPAREN                                     # GroupTypeRef
+           | LPAREN RPAREN                                                    # UnitTypeRef
            ;
 
 param: name=IDENTIFIER COLON type=typeRef;

@@ -9,15 +9,11 @@ data class ConstTy(val name: String) : Ty {
 }
 
 data class VarTy(val name: String) : Ty {
-  override fun toString(): String = name
+  override fun toString(): String = "'$name"
 }
 
 data class PtrTy(val arg: Ty) : Ty {
   override fun toString(): String = "*$arg"
-}
-
-data class ArrTy(val arg: Ty) : Ty {
-  override fun toString(): String = "[$arg]"
 }
 
 data class FunTy(val returnTy: Ty, val parameterTy: Ty) : Ty {
@@ -74,5 +70,5 @@ val floatTy: Ty = ConstTy("Float")
 val doubleTy: Ty = ConstTy("Double")
 
 data class Scheme(val names: Set<String>, val type: Ty) {
-  override fun toString(): String = "∀ ${names.joinToString(" ")}. $type"
+  override fun toString(): String = "∀ ${names.joinToString(" ") { "'$it" }}. $type"
 }

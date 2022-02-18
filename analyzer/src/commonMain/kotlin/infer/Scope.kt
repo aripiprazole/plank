@@ -146,12 +146,6 @@ sealed class Scope {
   private val expanded = mutableListOf<Scope>()
   private val variables = mutableMapOf<Identifier, Variable>()
 
-  fun expand(another: Scope): Scope {
-    expanded += another
-
-    return this
-  }
-
   /**
    * Declares a compiler-defined variable with type [ty] in the context
    */
@@ -176,11 +170,7 @@ sealed class Scope {
   }
 
   fun <T : TyInfo> create(info: T): T {
-    return create(info.name, info)
-  }
-
-  fun <T : TyInfo> create(name: Identifier, info: T): T {
-    types[name] = info
+    types[info.name] = info
     return info
   }
 

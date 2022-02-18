@@ -7,6 +7,10 @@ sealed interface TyInfo {
   val name: Identifier
 }
 
+data class GenericInfo(override val name: Identifier) : TyInfo {
+  override fun toString(): String = name.text
+}
+
 data class FunctionInfo(
   override val name: Identifier,
   val returnTy: Ty,
@@ -51,7 +55,7 @@ data class IntInfo(override val name: Identifier, val size: Int, val unsigned: B
   constructor(name: String, size: Int, unsigned: Boolean = false) :
     this(name.toIdentifier(), size, unsigned)
 
-  override fun toString(): String = "{$name}"
+  override fun toString(): String = "{${name.text}}"
 }
 
 object DoubleInfo : TyInfo {

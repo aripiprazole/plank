@@ -42,7 +42,7 @@ import org.plank.analyzer.element.TypedThenBranch
 import org.plank.shared.depthFirstSearch
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
-import org.plank.syntax.element.ArrayTypeRef
+import org.plank.syntax.element.ApplyTypeRef
 import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.BlockBranch
 import org.plank.syntax.element.BlockExpr
@@ -580,7 +580,7 @@ class Infer(tree: ModuleTree) :
     val path = ref.path.toIdentifier()
 
     if (currentScope.findTyInfo(path) == null) {
-      return ref.violate("Type $path is not defined").ty
+      return ref.violate("Type `${path.text}` is not defined").ty
     }
 
     return ConstTy(ref.path.text)
@@ -590,8 +590,10 @@ class Infer(tree: ModuleTree) :
     return PtrTy(visitTypeRef(ref.type))
   }
 
-  override fun visitArrayTypeRef(ref: ArrayTypeRef): Ty {
-    return ArrTy(visitTypeRef(ref.type))
+  override fun visitApplyTypeRef(ref: ApplyTypeRef): Ty {
+    return visitTypeRefs(ref.arguments).fold(ConstTy(ref.function.text) as Ty) { acc, ty ->
+      AppTy(acc, ty)
+    }
   }
 
   override fun visitFunctionTypeRef(ref: FunctionTypeRef): Ty {
@@ -604,6 +606,10 @@ class Infer(tree: ModuleTree) :
 
   private fun unitValue(): TypedExpr {
     return TypedConstExpr(Unit, unitTy, Location.Generated)
+  }
+
+  private fun violate(message: String, loc: Location = Location.Generated) {
+    violations += BindingViolation(message, loc)
   }
 
   private fun PlankElement.violatedPattern(message: String): TypedPattern {
@@ -660,17 +666,6 @@ class Infer(tree: ModuleTree) :
     }
   }
 
-  private fun findTyInfo(ty: Ty): TyInfo? {
-    return when (ty) {
-      is AppTy -> null
-      is FunTy -> null
-      is PtrTy -> null
-      is ArrTy -> null
-      is ConstTy -> currentScope.findTyInfo(ty.name.toIdentifier())
-      is VarTy -> currentScope.findTyInfo(ty.name.toIdentifier())
-    }
-  }
-
   private fun findVariable(name: Identifier): Variable {
     return currentScope.findVariable(name)
       ?: SimpleVariable(
@@ -699,5 +694,56 @@ class Infer(tree: ModuleTree) :
     scopes.popLast()
 
     return result
+  }
+
+  // Infer
+  private fun unify(a: Ty, b: Ty): Subst {
+    return when {
+      a == b -> Subst()
+      a is VarTy -> a bind b
+      b is VarTy -> b bind a
+      a is AppTy && b is AppTy -> {
+        val s1 = unify(a.fn, b.fn)
+        val s2 = unify(a.arg.ap(s1), b.arg.ap(s1))
+
+        s1 compose s2
+      }
+      a is FunTy && b is FunTy -> {
+        val s1 = unify(a.returnTy, b.returnTy)
+        val s2 = unify(a.parameterTy.ap(s1), b.parameterTy.ap(s1))
+
+        s1 compose s2
+      }
+      a is PtrTy && b is PtrTy -> unify(a.arg, b.arg)
+      else -> {
+        violate("Could not unify $a with $b")
+        Subst()
+      }
+    }
+  }
+
+  private infix fun VarTy.bind(other: Ty): Subst {
+    return when {
+      this == other -> Subst()
+      name in other.ftv() -> {
+        violate("Infinite type $this $other")
+        Subst()
+      }
+      else -> Subst(name, other)
+    }
+  }
+
+  private infix fun Subst.compose(other: Subst): Subst {
+    return Subst((map + other.map).mapValues { it.value ap this })
+  }
+
+  private fun findTyInfo(ty: Ty): TyInfo? {
+    return when (ty) {
+      is AppTy -> null
+      is FunTy -> null
+      is PtrTy -> null
+      is ConstTy -> currentScope.findTyInfo(ty.name.toIdentifier())
+      is VarTy -> currentScope.findTyInfo(ty.name.toIdentifier())
+    }
   }
 }
