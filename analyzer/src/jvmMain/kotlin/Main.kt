@@ -14,7 +14,7 @@ fun main() {
       age: Int32
     }
 
-    fun show_person(person: Person[a]) {}
+    fun show_person(person: Person[Int32]) {}
 
     fun main(argc: Int32, argv: **Char) {
       let person = Person{name: "John", age: 42};
@@ -26,7 +26,7 @@ fun main() {
   val resolved = analyze(file)
   val logger = SimpleCompilerLogger(debug = true, verbose = true)
 
-  resolved.bindingViolations.forEach { it.render(logger) }
+  resolved.analyzerViolations.forEach { it.render(logger) }
 
   println(file.dumpTree())
   println(resolved.dumpTree())

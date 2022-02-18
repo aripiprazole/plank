@@ -2,7 +2,26 @@
 
 package org.plank.analyzer.infer
 
-import org.plank.analyzer.BindingViolation
+import org.plank.analyzer.AnalyzerViolation
+import org.plank.analyzer.CanNotReassignImmutableStructMember
+import org.plank.analyzer.CanNotReassignImmutableVariable
+import org.plank.analyzer.IncorrectArity
+import org.plank.analyzer.IncorrectEnumArity
+import org.plank.analyzer.ScopeIsNotReturnable
+import org.plank.analyzer.TypeInfoCanNotBeDestructured
+import org.plank.analyzer.TypeIsInfinite
+import org.plank.analyzer.TypeIsNotCallable
+import org.plank.analyzer.TypeIsNotPointer
+import org.plank.analyzer.TypeIsNotStruct
+import org.plank.analyzer.TypeIsNotStructAndCanNotGet
+import org.plank.analyzer.TypeMismatch
+import org.plank.analyzer.UnresolvedEnumVariant
+import org.plank.analyzer.UnresolvedModule
+import org.plank.analyzer.UnresolvedStructMember
+import org.plank.analyzer.UnresolvedType
+import org.plank.analyzer.UnresolvedTypeAccess
+import org.plank.analyzer.UnresolvedVariable
+import org.plank.analyzer.UnsupportedConstType
 import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedEnumDecl
@@ -138,7 +157,7 @@ class Infer(tree: ModuleTree) :
   override fun visitPlankFile(file: PlankFile): ResolvedPlankFile {
     val program = visitStmts(file.program).filterIsInstance<ResolvedDecl>()
 
-    return ResolvedPlankFile(file, program, bindingViolations = violations.toList())
+    return ResolvedPlankFile(file, program, analyzerViolations = violations.toList())
   }
 
   override fun visitBlockExpr(expr: BlockExpr): TypedExpr {
@@ -160,7 +179,7 @@ class Infer(tree: ModuleTree) :
           deconstruct(
             pattern,
             subject,
-            findTyInfo(subject.ty) ?: return pattern.violate("Unresolved type ${subject.ty}"),
+            findTyInfo(subject.ty) ?: return pattern.violate(UnresolvedType(subject.ty)),
           )
 
           visitPattern(pattern) to visitExpr(value)
@@ -169,7 +188,7 @@ class Infer(tree: ModuleTree) :
 
     val value = patterns.values.reduce { acc, next ->
       if (acc.ty != next.ty) {
-        return next.violate("Type mismatch: expected ${acc.ty}, got ${next.ty}")
+        return next.violate(TypeMismatch(acc.ty, next.ty))
       }
 
       next
@@ -181,8 +200,8 @@ class Infer(tree: ModuleTree) :
   override fun visitIfExpr(expr: IfExpr): TypedExpr {
     val cond = visitExpr(expr.cond)
 
-    if (cond.ty != boolTy) {
-      return cond.violate("Type mismatch: expected $boolTy, got ${cond.ty}")
+    if (boolTy != cond.ty) {
+      return cond.violate(TypeMismatch(boolTy, cond.ty))
     }
 
     val thenBranch = visitIfBranch(expr.thenBranch)
@@ -193,7 +212,7 @@ class Infer(tree: ModuleTree) :
     }
 
     if (thenBranch.ty != elseBranch.ty) {
-      return expr.violate("Type mismatch: expected if type ${thenBranch.ty}, got ${elseBranch.ty}")
+      return elseBranch.violate(TypeMismatch(thenBranch.ty, elseBranch.ty))
     }
 
     return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.ty, expr.location)
@@ -209,7 +228,7 @@ class Infer(tree: ModuleTree) :
       is Double -> doubleTy
       is Float -> floatTy
       is String -> PtrTy(charTy)
-      else -> return expr.violate("Unsupported type ${value::class.simpleName}")
+      else -> return expr.violate(UnsupportedConstType(value::class))
     }
 
     return TypedConstExpr(expr.value, type, expr.location)
@@ -232,11 +251,7 @@ class Infer(tree: ModuleTree) :
   override fun visitCallExpr(expr: CallExpr): TypedExpr {
     val callee = visitExpr(expr.callee)
 
-    if (callee.ty !is FunTy) {
-      return callee.violate("Type ${callee.ty} is not callable")
-    }
-
-    val ty = callee.ty as FunTy
+    val ty = callee.ty as? FunTy ?: return callee.violate(TypeIsNotCallable(callee.ty))
     val parameters = ty.chainParameters()
 
     if (callee is TypedAccessExpr && callee.variable is InlineVariable && parameters.size == expr.arguments.size) {
@@ -244,8 +259,8 @@ class Infer(tree: ModuleTree) :
       val arguments = visitExprs(expr.arguments)
 
       arguments.zip(parameters).forEach { (arg, param) ->
-        if (arg.ty != param) {
-          arg.violate("Type mismatch: expected $param, got ${arg.ty}")
+        if (param != arg.ty) {
+          arg.violate(TypeMismatch(param, arg.ty))
         }
       }
 
@@ -269,15 +284,15 @@ class Infer(tree: ModuleTree) :
         var nestTy = ty.nest(i)
 
         if (parameter == null) {
-          argument.violate("Unexpected $i arity for function $callee")
+          argument.violate(IncorrectArity(parameters.size, i))
         } else {
           parameterTy = parameter ap unify(argument.ty, parameter)
           argumentTy = argumentTy ap unify(argument.ty, parameter)
           nestTy = nestTy ap unify(argument.ty, parameter)
         }
 
-        if (argumentTy != parameterTy) {
-          argument.violate("Type mismatch: expected $parameterTy, got $argumentTy")
+        if (parameterTy != argumentTy) {
+          argument.violate(TypeMismatch(parameterTy, argumentTy))
         }
 
         TypedCallExpr(acc, argument, nestTy, expr.location)
@@ -289,11 +304,11 @@ class Infer(tree: ModuleTree) :
     val value = visitExpr(expr.value)
 
     if (!variable.mutable) {
-      return expr.violate("Can not reassign immutable variable `${variable.name.text}`")
+      return expr.violate(CanNotReassignImmutableVariable(variable.name))
     }
 
     if (variable.ty != value.ty) {
-      return value.violate("Type mismatch: expected ${variable.ty}, got ${value.ty}")
+      return value.violate(TypeMismatch(variable.ty, value.ty))
     }
 
     return TypedAssignExpr(null, variable.name, value, value.ty, expr.location)
@@ -309,7 +324,7 @@ class Infer(tree: ModuleTree) :
         when (val value = currentScope.findVariable(name) ?: currentScope.findModule(name)) {
           is Module -> {
             val variable = value.scope.findVariable(expr.property)
-              ?: return expr.property.violate("Unresolved property `${expr.property.text}` in module `${value.name}`")
+              ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
             return TypedAccessExpr(value, variable, receiver.location)
           }
@@ -320,20 +335,20 @@ class Infer(tree: ModuleTree) :
     }
 
     val info = findTyInfo(receiver.ty)
-      ?: return receiver.violate("Unresolved type ${receiver.ty}")
+      ?: return receiver.violate(UnresolvedType(receiver.ty))
 
     val struct = info.getAs<StructInfo>()
-      ?: return receiver.violate("Can not get property `${expr.property.text}` from type $info because it is not a struct or a module")
+      ?: return receiver.violate(TypeIsNotStructAndCanNotGet(expr.property, receiver.ty))
 
     val property = struct.members[expr.property]
-      ?: return expr.property.violate("Unresolved property `${expr.property.text}` in struct $struct")
+      ?: return expr.property.violate(UnresolvedStructMember(expr.property, struct))
 
     if (!property.mutable) {
-      return expr.violate("Can not reassign immutable property `${property.name.text}` of struct $struct")
+      return expr.violate(CanNotReassignImmutableStructMember(property.name, struct))
     }
 
     if (property.ty != newValue.ty) {
-      return newValue.violate("Type mismatch: expected ${property.ty}, got ${newValue.ty}")
+      return newValue.violate(TypeMismatch(property.ty, newValue.ty))
     }
 
     return TypedSetExpr(receiver, property.name, newValue, struct, property.ty, expr.location)
@@ -347,7 +362,7 @@ class Infer(tree: ModuleTree) :
         when (val value = currentScope.findVariable(name) ?: currentScope.findModule(name)) {
           is Module -> {
             val variable = value.scope.findVariable(expr.property)
-              ?: return expr.property.violate("Unresolved property `${expr.property.text}` in module `${value.name}`")
+              ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
             return TypedAccessExpr(value, variable, receiver.location)
           }
@@ -357,14 +372,13 @@ class Infer(tree: ModuleTree) :
       else -> visitExpr(receiver)
     }
 
-    val info = findTyInfo(receiver.ty)
-      ?: return receiver.violate("Unresolved type ${receiver.ty}")
+    val info = findTyInfo(receiver.ty) ?: return receiver.violate(UnresolvedType(receiver.ty))
 
     val struct = info.getAs<StructInfo>()
-      ?: return receiver.violate("Can not get property `${expr.property.text}` from type $info because it is not a struct or a module")
+      ?: return receiver.violate(TypeIsNotStructAndCanNotGet(expr.property, receiver.ty))
 
     val property = struct.members[expr.property]
-      ?: return expr.property.violate("Unresolved property `${expr.property.text}` in struct $struct")
+      ?: return expr.property.violate(UnresolvedStructMember(expr.property, struct))
 
     return TypedGetExpr(receiver, property.name, struct, property.ty, expr.location)
   }
@@ -374,24 +388,22 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr): TypedExpr {
-    val info = findTyInfo(visitTypeRef(expr.type))
-      ?: return expr.type.violate("Unresolved type ${expr.type}")
+    val basicTy = visitTypeRef(expr.type)
 
-    val struct = info.getAs<StructInfo>()
-      ?: return expr.type.violate("Type ${expr.type} is not a struct")
+    val info = findTyInfo(basicTy) ?: return expr.type.violate(UnresolvedType(basicTy))
+    val struct = info.getAs<StructInfo>() ?: return expr.type.violate(TypeIsNotStruct(basicTy))
 
     var subst = Subst()
-
     val arguments = expr.arguments.mapValues { (name, expr) ->
       val value = visitExpr(expr)
       val property = struct.members[name]
-        ?: return name.violate("Unresolved property `${name.text}` in struct $info")
+        ?: return name.violate(UnresolvedStructMember(name, struct))
 
       subst = subst compose unify(property.ty, value.ty)
 
       val propertyTy = property.ty ap subst
       if (propertyTy != value.ty) {
-        return value.violate("Type mismatch: expected $propertyTy, got ${value.ty}")
+        return value.violate(TypeMismatch(propertyTy, value.ty))
       }
 
       value
@@ -420,8 +432,7 @@ class Infer(tree: ModuleTree) :
   override fun visitDerefExpr(expr: DerefExpr): TypedExpr {
     val value = visitExpr(expr.value)
 
-    val ty = value.ty as? PtrTy
-      ?: return expr.value.violate("Type ${value.ty} is not a pointer and can not be dereferenced")
+    val ty = value.ty as? PtrTy ?: return expr.value.violate(TypeIsNotPointer(value.ty))
 
     return TypedDerefExpr(value, ty.arg, expr.location)
   }
@@ -440,10 +451,10 @@ class Infer(tree: ModuleTree) :
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern): TypedPattern {
     val info = currentScope.findTyInfo(pattern.type.toIdentifier())
-      ?: return pattern.type.violatedPattern("Unresolved type reference `${pattern.type.text}`")
+      ?: return pattern.type.violatedPattern(UnresolvedTypeAccess(pattern.type.toIdentifier()))
 
     val enum = info.getAs<EnumMemberInfo>()
-      ?: return pattern.type.violatedPattern("Type $info can not be destructured")
+      ?: return pattern.type.violatedPattern(TypeInfoCanNotBeDestructured(info))
 
     val properties = visitPatterns(pattern.properties)
 
@@ -474,25 +485,21 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitReturnStmt(stmt: ReturnStmt): ResolvedStmt {
-    val expr = stmt.value?.let(::visitExpr) ?: unitValue()
+    val value = stmt.value?.let(::visitExpr) ?: unitValue()
 
     val functionScope = currentScope as? FunctionScope
-      ?: return stmt
-        .violate("Can not return in not function scope `${currentScope.name.text}`")
-        .stmt()
+      ?: return stmt.violate(ScopeIsNotReturnable(currentScope)).stmt()
 
-    if (functionScope.function.returnTy != expr.ty) {
-      return stmt
-        .violate("Type mismatch: expected return type ${functionScope.returnTy}, got ${expr.ty}")
-        .stmt()
+    if (functionScope.function.returnTy != value.ty) {
+      return stmt.violate(TypeMismatch(functionScope.function.returnTy, value.ty)).stmt()
     }
 
-    return ResolvedReturnStmt(expr, stmt.location)
+    return ResolvedReturnStmt(value, stmt.location)
   }
 
   override fun visitUseDecl(decl: UseDecl): ResolvedStmt {
     val module = currentScope.findModule(decl.path.toIdentifier())
-      ?: return decl.violate("Unresolved module `${decl.path.text}`").stmt()
+      ?: return decl.violate(UnresolvedModule(decl.path.toIdentifier())).stmt()
 
     return ResolvedUseDecl(module, decl.location)
   }
@@ -603,9 +610,7 @@ class Infer(tree: ModuleTree) :
     val isNested = !currentScope.isTopLevelScope
 
     if (ty != value.ty) {
-      return value
-        .violate("Type mismatch: expected $ty, got ${value.ty}")
-        .stmt()
+      return value.violate(TypeMismatch(ty, value.ty)).stmt()
     }
 
     currentScope.declare(name, value, mutable)
@@ -618,7 +623,7 @@ class Infer(tree: ModuleTree) :
 
     if (currentScope.findTyInfo(path) == null) {
       return if (ref.path.fullPath.size > 1) {
-        ref.violate("Type `${path.text}` is not defined").ty
+        ref.violate(UnresolvedTypeAccess(path)).ty
       } else {
         VarTy(path.text)
       }
@@ -649,18 +654,25 @@ class Infer(tree: ModuleTree) :
     return TypedConstExpr(Unit, unitTy, Location.Generated)
   }
 
-  private fun violate(message: String, loc: Location = Location.Generated) {
-    violations += BindingViolation(message, loc)
+  private fun violate(error: AnalyzerViolation, loc: Location = Location.Generated) {
+    when (loc) {
+      is Location.Range -> violations += error.withLocation(loc)
+      is Location.Generated -> {
+        if (violations.none { it.message == error.message }) {
+          violations += error.withLocation(loc)
+        }
+      }
+    }
   }
 
-  private fun PlankElement.violatedPattern(message: String): TypedPattern {
-    violations += BindingViolation(message, location)
+  private fun PlankElement.violatedPattern(error: AnalyzerViolation): TypedPattern {
+    violations += error.withLocation(location)
 
     return TypedIdentPattern(Identifier("<error>"), undefTy, location)
   }
 
-  private fun PlankElement.violate(message: String): TypedExpr {
-    violations += BindingViolation(message, location)
+  private fun PlankElement.violate(error: AnalyzerViolation): TypedExpr {
+    violations += error.withLocation(location)
 
     return TypedConstExpr(Unit, undefTy, location)
   }
@@ -669,14 +681,14 @@ class Infer(tree: ModuleTree) :
     return TypedConstExpr(Unit, ty, Location.Generated)
   }
 
-  private val scopes = Stack<Scope>().also { stack ->
+  private val scopes: Stack<Scope> = Stack<Scope>().also { stack ->
     stack.pushLast(GlobalScope(tree))
   }
 
-  private val violations = mutableSetOf<BindingViolation>()
+  private val violations: MutableSet<AnalyzerViolation> = mutableSetOf()
 
-  private val currentScope get() = scopes.peekLast()
-  private val currentModuleTree get() = scopes.peekLast().moduleTree
+  private val currentScope: Scope get() = scopes.peekLast()
+  private val currentModuleTree: ModuleTree get() = scopes.peekLast().moduleTree
 
   private fun Scope.deconstruct(
     pattern: Pattern,
@@ -689,16 +701,18 @@ class Infer(tree: ModuleTree) :
       }
       is NamedTuplePattern -> {
         val enum = info.getAs<EnumInfo>() ?: return run {
-          subject.violate("Expecting a enum type with named tuple pattern, got ${subject.ty}")
+          subject.violate(TypeInfoCanNotBeDestructured(info))
         }
 
         val member = enum.members[pattern.type.toIdentifier()] ?: return run {
-          pattern.type.violate("Unresolved enum variant `${pattern.type.text}` of `${name.text}`")
+          pattern.type.violate(UnresolvedEnumVariant(pattern.type.toIdentifier(), enum))
         }
 
         pattern.properties.forEachIndexed { index, subPattern ->
           val subType = member.parameters.getOrNull(index) ?: return run {
-            subPattern.violatedPattern("Expecting ${member.parameters.size} fields when matching `${member.name.text}`, got $index fields instead")
+            subPattern.violatedPattern(
+              IncorrectEnumArity(member.parameters.size, index, member.name)
+            )
           }
 
           deconstruct(subPattern, undeclared(subType), enum)
@@ -709,12 +723,7 @@ class Infer(tree: ModuleTree) :
 
   private fun findVariable(name: Identifier): Variable {
     return currentScope.findVariable(name)
-      ?: SimpleVariable(
-        false,
-        name,
-        name.violate("Unresolved variable `${name.text}`").ty,
-        currentScope
-      )
+      ?: SimpleVariable(false, name, name.violate(UnresolvedVariable(name)).ty, currentScope)
   }
 
   private inline fun <T> scoped(scope: Scope, body: Scope.() -> T): T {
@@ -769,7 +778,7 @@ class Infer(tree: ModuleTree) :
       }
       a is PtrTy && b is PtrTy -> unify(a.arg, b.arg)
       else -> {
-        violate("Could not unify $a with $b")
+        violate(TypeMismatch(a, b))
         Subst()
       }
     }
@@ -779,7 +788,7 @@ class Infer(tree: ModuleTree) :
     return when {
       this == other -> Subst()
       name in other.ftv() -> {
-        violate("Infinite type $this $other")
+        violate(TypeIsInfinite(this, other))
         Subst()
       }
       else -> Subst(name, other)

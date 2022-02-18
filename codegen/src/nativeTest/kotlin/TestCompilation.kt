@@ -2,7 +2,6 @@
 
 package org.plank.codegen
 
-import org.plank.analyzer.BindingViolation
 import org.plank.codegen.pkg.AnalyzerError
 import org.plank.codegen.pkg.Command
 import org.plank.codegen.pkg.CommandFailedException
@@ -25,7 +24,7 @@ import kotlin.test.fail
 class TestCompilation(
   private val pkg: Package,
   private val syntaxViolations: Set<SyntaxViolation>,
-  private val bindingViolations: Set<BindingViolation>,
+  private val analyzerViolations: Set<org.plank.analyzer.AnalyzerViolation>,
   private val exitCode: Int,
 ) {
   fun expectSyntaxViolation(message: String): TestCompilation = apply {
@@ -33,7 +32,7 @@ class TestCompilation(
   }
 
   fun expectBindingViolation(message: String): TestCompilation = apply {
-    assertNotNull(bindingViolations.find { it.message == message })
+    assertNotNull(analyzerViolations.find { it.message == message })
   }
 
   fun expectExitCode(actual: Int): TestCompilation = apply {
@@ -47,15 +46,15 @@ class TestCompilation(
       pkg.logger.severe()
     }
 
-    if (bindingViolations.isNotEmpty()) {
+    if (analyzerViolations.isNotEmpty()) {
       pkg.logger.severe("Binding violations:")
-      bindingViolations.forEach { it.render(pkg.logger) }
+      analyzerViolations.forEach { it.render(pkg.logger) }
       pkg.logger.severe()
     }
 
     expectExitCode(0)
 
-    if (bindingViolations.isNotEmpty() || syntaxViolations.isNotEmpty()) {
+    if (analyzerViolations.isNotEmpty() || syntaxViolations.isNotEmpty()) {
       fail("Compilation failed")
     }
   }
@@ -92,7 +91,7 @@ class TestCompilation(
       }
 
       var syntaxViolations: Set<SyntaxViolation> = emptySet()
-      var bindingViolations: Set<BindingViolation> = emptySet()
+      var analyzerViolations: Set<org.plank.analyzer.AnalyzerViolation> = emptySet()
       var exitCode = 0
 
       try {
@@ -107,7 +106,7 @@ class TestCompilation(
       } catch (error: CommandFailedException) {
         exitCode = error.exitCode
       } catch (error: AnalyzerError) {
-        bindingViolations = error.violations
+        analyzerViolations = error.violations
       } catch (error: SyntaxError) {
         syntaxViolations = error.violations
       } catch (error: CodegenError) {
@@ -124,7 +123,7 @@ class TestCompilation(
         throw error
       }
 
-      return TestCompilation(pkg, syntaxViolations, bindingViolations, exitCode)
+      return TestCompilation(pkg, syntaxViolations, analyzerViolations, exitCode)
         .apply(compilation)
     }
   }

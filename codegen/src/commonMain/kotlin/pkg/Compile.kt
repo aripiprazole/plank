@@ -68,7 +68,7 @@ private fun ResolvedPlankFile.check(): ResolvedPlankFile = apply {
     throw SyntaxError(syntaxViolations.toSet())
   }
 
-  if (bindingViolations.isNotEmpty()) {
-    throw AnalyzerError(bindingViolations.toSet())
+  if (analyzerViolations.isNotEmpty()) {
+    throw AnalyzerError(analyzerViolations.toSet())
   }
 }
