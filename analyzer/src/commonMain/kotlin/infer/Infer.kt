@@ -169,7 +169,7 @@ class Infer(tree: ModuleTree) :
 
     val value = patterns.values.reduce { acc, next ->
       if (acc.ty != next.ty) {
-        return next.violate("Mismatch types: expecting ${acc.ty}, but got ${next.ty}")
+        return next.violate("Type mismatch: expected ${acc.ty}, got ${next.ty}")
       }
 
       next
@@ -182,7 +182,7 @@ class Infer(tree: ModuleTree) :
     val cond = visitExpr(expr.cond)
 
     if (cond.ty != boolTy) {
-      return cond.violate("Mismatch types: expecting $boolTy, but got ${cond.ty}")
+      return cond.violate("Type mismatch: expected $boolTy, got ${cond.ty}")
     }
 
     val thenBranch = visitIfBranch(expr.thenBranch)
@@ -193,7 +193,7 @@ class Infer(tree: ModuleTree) :
     }
 
     if (thenBranch.ty != elseBranch.ty) {
-      return expr.violate("Mismatch types: expecting if type ${thenBranch.ty}, but got ${elseBranch.ty}")
+      return expr.violate("Type mismatch: expected if type ${thenBranch.ty}, got ${elseBranch.ty}")
     }
 
     return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.ty, expr.location)
@@ -245,7 +245,7 @@ class Infer(tree: ModuleTree) :
 
       arguments.zip(parameters).forEach { (arg, param) ->
         if (arg.ty != param) {
-          arg.violate("Mismatch types: expecting $param, but got ${arg.ty}")
+          arg.violate("Type mismatch: expected $param, got ${arg.ty}")
         }
       }
 
@@ -277,7 +277,7 @@ class Infer(tree: ModuleTree) :
         }
 
         if (argumentTy != parameterTy) {
-          argument.violate("Mismatch types: expecting $parameterTy but got $argumentTy")
+          argument.violate("Type mismatch: expected $parameterTy, got $argumentTy")
         }
 
         TypedCallExpr(acc, argument, nestTy, expr.location)
@@ -293,7 +293,7 @@ class Infer(tree: ModuleTree) :
     }
 
     if (variable.ty != value.ty) {
-      return value.violate("Mismatch types: expecting ${variable.ty} but got ${value.ty}")
+      return value.violate("Type mismatch: expected ${variable.ty}, got ${value.ty}")
     }
 
     return TypedAssignExpr(null, variable.name, value, value.ty, expr.location)
@@ -333,7 +333,7 @@ class Infer(tree: ModuleTree) :
     }
 
     if (property.ty != newValue.ty) {
-      return newValue.violate("Mismatch types: expecting ${property.ty} but got ${newValue.ty}")
+      return newValue.violate("Type mismatch: expected ${property.ty}, got ${newValue.ty}")
     }
 
     return TypedSetExpr(receiver, property.name, newValue, struct, property.ty, expr.location)
@@ -391,7 +391,7 @@ class Infer(tree: ModuleTree) :
 
       val propertyTy = property.ty ap subst
       if (propertyTy != value.ty) {
-        return value.violate("Mismatch types: expecting $propertyTy but got ${value.ty}")
+        return value.violate("Type mismatch: expected $propertyTy, got ${value.ty}")
       }
 
       value
@@ -483,7 +483,7 @@ class Infer(tree: ModuleTree) :
 
     if (functionScope.function.returnTy != expr.ty) {
       return stmt
-        .violate("Mismatch types: expecting return type ${functionScope.returnTy}, but got ${expr.ty}")
+        .violate("Type mismatch: expected return type ${functionScope.returnTy}, got ${expr.ty}")
         .stmt()
     }
 
@@ -604,7 +604,7 @@ class Infer(tree: ModuleTree) :
 
     if (ty != value.ty) {
       return value
-        .violate("Mismatch types: expecting $ty but got ${value.ty}")
+        .violate("Type mismatch: expected $ty, got ${value.ty}")
         .stmt()
     }
 
@@ -689,7 +689,7 @@ class Infer(tree: ModuleTree) :
       }
       is NamedTuplePattern -> {
         val enum = info.getAs<EnumInfo>() ?: return run {
-          subject.violate("Expecting a enum type with named tuple pattern, but got ${subject.ty}")
+          subject.violate("Expecting a enum type with named tuple pattern, got ${subject.ty}")
         }
 
         val member = enum.members[pattern.type.toIdentifier()] ?: return run {
@@ -698,7 +698,7 @@ class Infer(tree: ModuleTree) :
 
         pattern.properties.forEachIndexed { index, subPattern ->
           val subType = member.parameters.getOrNull(index) ?: return run {
-            subPattern.violatedPattern("Expecting ${member.parameters.size} fields when matching `${member.name.text}`, but got $index fields instead")
+            subPattern.violatedPattern("Expecting ${member.parameters.size} fields when matching `${member.name.text}`, got $index fields instead")
           }
 
           deconstruct(subPattern, undeclared(subType), enum)
