@@ -50,13 +50,13 @@ param: name=IDENTIFIER COLON type=typeRef;
 generics: LBRACKET IDENTIFIER (COMMA IDENTIFIER)* RBRACKET;
 
 // decls
-decl: TYPE name=IDENTIFIER names=generics EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)             optionalSemis          # StructDecl
-    | ENUM name=IDENTIFIER names=generics       (LBRACE (enumMember (COMMA enumMember))? RBRACE)? optionalSemis          # EnumDecl
-    | MODULE path=qualifiedPath LBRACE decl* RBRACE                                               optionalSemis          # ModuleDecl
-    | USE path=qualifiedPath                                                                      semis                  # UseDecl
+decl: TYPE name=IDENTIFIER names=generics? EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)             optionalSemis         # StructDecl
+    | ENUM name=IDENTIFIER names=generics?       (LBRACE (enumMember (COMMA enumMember))? RBRACE)? optionalSemis         # EnumDecl
+    | MODULE path=qualifiedPath LBRACE decl* RBRACE                                                optionalSemis         # ModuleDecl
+    | USE path=qualifiedPath                                                                       semis                 # UseDecl
     | attr* FUN name=IDENTIFIER LPAREN (param (COMMA param)*)? RPAREN (ARROW_LEFT returnType=typeRef)? body=functionBody # FunDecl
-    | LET MUTABLE? name=IDENTIFIER EQUAL value=expr                                               semis                  # InferLetDecl
-    | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr                            semis                  # LetDecl
+    | LET MUTABLE? name=IDENTIFIER EQUAL value=expr                                                semis                 # InferLetDecl
+    | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr                             semis                 # LetDecl
     ;
 
 functionBody : LBRACE stmt* value=expr? RBRACE optionalSemis       # CodeBody

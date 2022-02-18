@@ -148,7 +148,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitStructDecl(ctx: StructDeclContext): StructDecl {
     return StructDecl(
       visitToken(ctx.name!!),
-      ctx.names!!.IDENTIFIER().map(::visitTerminal).toSet(),
+      ctx.names?.IDENTIFIER()?.map(::visitTerminal)?.toSet().orEmpty(),
       ctx.findProp().map { prop ->
         val mutable = prop.MUTABLE() != null
 
@@ -161,7 +161,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitEnumDecl(ctx: EnumDeclContext): EnumDecl {
     return EnumDecl(
       visitToken(ctx.name!!),
-      ctx.names!!.IDENTIFIER().map(::visitTerminal).toSet(),
+      ctx.names?.IDENTIFIER()?.map(::visitTerminal)?.toSet().orEmpty(),
       ctx.findEnumMember().map { member ->
         EnumDecl.Member(visitToken(member.name!!), member.findTypeRef().map(::visitTypeRef))
       },
