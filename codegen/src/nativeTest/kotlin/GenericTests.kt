@@ -2,7 +2,7 @@ package org.plank.codegen
 
 import kotlin.test.Test
 
-class TestGenerics {
+class GenericTests {
   @Test
   fun `test creating enum with generics`() {
     TestCompilation
