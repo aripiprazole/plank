@@ -15,6 +15,7 @@ import org.plank.analyzer.element.TypedIntNEQExpr
 import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.PlankFile
+import kotlin.native.concurrent.ThreadLocal
 
 sealed interface Variable {
   val mutable: Boolean
@@ -146,8 +147,6 @@ sealed class Scope {
   private val expanded = mutableListOf<Scope>()
   private val variables = mutableMapOf<Identifier, Variable>()
 
-  private var count = 0
-
   /**
    * Declares a compiler-defined variable with type [ty] in the context
    */
@@ -198,15 +197,21 @@ sealed class Scope {
     return VarTy(letters.elementAt(count)).also { count++ }
   }
 
+  @ThreadLocal
   companion object {
+    private var count: Int = 0
+
     private val letters: Sequence<String> = sequence {
       var prefix = ""
       var i = 0
-      while (i < Char.MAX_VALUE.code) {
+      while (true) {
+        i++
         ('a'..'z').forEach { c ->
           yield("$prefix$c")
         }
-        i++
+        if (i > Char.MAX_VALUE.code) {
+          i = 0
+        }
         prefix += "${i.toChar()}"
       }
     }

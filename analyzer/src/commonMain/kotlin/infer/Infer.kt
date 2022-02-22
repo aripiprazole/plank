@@ -661,7 +661,7 @@ class Infer(tree: ModuleTree) :
       return if (ref.path.fullPath.size > 1) {
         ref.violate(UnresolvedTypeAccess(path)).ty
       } else {
-        VarTy(path.text)
+        currentScope.fresh()
       }
     }
 

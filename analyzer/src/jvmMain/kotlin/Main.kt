@@ -9,22 +9,24 @@ fun main() {
     """
     module Main;
 
-    enum Maybe[a] {
-      Just(a),
-      Nothing
+
+    enum List[a] {
+      Cons(a, List[a]),
+      Nil
     }
 
-    fun use_maybe(m: Maybe[a]) {}
+    @intrinsic
+    fun ty(value: a) -> *Char;
+
+    fun show_list(list: List[a]) -> *Char {
+      ty(list)
+    }
 
     fun main(argc: Int32, argv: **Char) {
-      use_maybe(match Just(10) {
-        Just(x) => Just(x),
-        Nothing => Just(0)
-      });
+      show_list(Cons("Hello", Nil));
     }
     """.trimIndent()
   )
-
   val resolved = analyze(file)
   val logger = SimpleCompilerLogger(debug = true, verbose = true)
 
