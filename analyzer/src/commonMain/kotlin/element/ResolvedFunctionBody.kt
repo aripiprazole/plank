@@ -1,5 +1,6 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.syntax.element.Location
@@ -28,6 +29,7 @@ data class ResolvedExprBody(
   override val location: Location = Location.Generated,
 ) : ResolvedFunctionBody, TypedPlankElement {
   override val ty: Ty = expr.ty
+  override val subst: Subst = expr.subst
 
   override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {
     return visitor.visitExprBody(this)

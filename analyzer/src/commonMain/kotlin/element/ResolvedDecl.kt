@@ -7,6 +7,7 @@ import org.plank.analyzer.infer.FunctionInfo
 import org.plank.analyzer.infer.Module
 import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.StructMemberInfo
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.Identifier
@@ -61,6 +62,7 @@ data class ResolvedFunDecl(
   val info: FunctionInfo,
   val isNested: Boolean,
   override val ty: FunTy,
+  override val subst: Subst,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   val name: Identifier = info.name
@@ -86,6 +88,7 @@ data class ResolvedLetDecl(
   val value: TypedExpr,
   val isNested: Boolean,
   override val ty: Ty,
+  override val subst: Subst,
   override val location: Location,
 ) : ResolvedDecl, TypedPlankElement {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {

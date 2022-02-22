@@ -1,5 +1,6 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.syntax.element.Location
@@ -27,7 +28,8 @@ sealed interface ResolvedStmt : ResolvedPlankElement {
 data class ResolvedExprStmt(val expr: TypedExpr, override val location: Location) :
   ResolvedStmt,
   TypedPlankElement {
-  override val ty = expr.ty
+  override val ty: Ty = expr.ty
+  override val subst: Subst = expr.subst
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitExprStmt(this)
@@ -38,6 +40,7 @@ data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Loca
   ResolvedStmt,
   TypedPlankElement {
   override val ty: Ty = value?.ty ?: unitTy
+  override val subst: Subst = value?.subst ?: Subst()
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitReturnStmt(this)

@@ -1,5 +1,6 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
@@ -14,8 +15,12 @@ sealed interface TypedIfBranch : TypedPlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class TypedThenBranch(val value: TypedExpr, override val location: Location) : TypedIfBranch {
+data class TypedThenBranch(
+  val value: TypedExpr,
+  override val location: Location,
+) : TypedIfBranch {
   override val ty: Ty = value.ty
+  override val subst: Subst = value.subst
 
   override fun <T> accept(visitor: TypedIfBranch.Visitor<T>): T {
     return visitor.visitThenBranch(this)
@@ -29,6 +34,7 @@ data class TypedBlockBranch(
   override val location: Location,
 ) : TypedIfBranch {
   override val ty: Ty = value.ty
+  override val subst: Subst = value.subst
 
   override fun <T> accept(visitor: TypedIfBranch.Visitor<T>): T {
     return visitor.visitBlockBranch(this)

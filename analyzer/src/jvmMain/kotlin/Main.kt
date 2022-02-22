@@ -9,16 +9,18 @@ fun main() {
     """
     module Main;
 
-    type Person[a] = {
-      name: a,
-      age: Int32
+    enum Maybe[a] {
+      Just(a),
+      Nothing
     }
 
-    fun show_person(person: Person[Int32]) {}
+    fun use_maybe(m: Maybe[a]) {}
 
     fun main(argc: Int32, argv: **Char) {
-      let person = Person{name: "John", age: 42};
-      show_person(person);
+      use_maybe(match Just(10) {
+        Just(x) => Just(x),
+        Nothing => Just(0)
+      });
     }
     """.trimIndent()
   )
@@ -28,6 +30,5 @@ fun main() {
 
   resolved.analyzerViolations.forEach { it.render(logger) }
 
-  println(file.dumpTree())
   println(resolved.dumpTree())
 }

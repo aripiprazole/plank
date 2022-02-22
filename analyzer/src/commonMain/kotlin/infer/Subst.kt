@@ -5,6 +5,11 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class Subst(val map: Map<VarTy, Ty> = emptyMap()) {
   constructor(name: String, ty: Ty) : this(mapOf(VarTy(name) to ty))
+
+  operator fun get(name: String): Ty? = map[VarTy(name)]
+
+  override fun toString(): String =
+    "Subst ${map.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}: ${it.value}" }}"
 }
 
 fun Map<VarTy, Ty>.toSubst(): Subst = Subst(this)

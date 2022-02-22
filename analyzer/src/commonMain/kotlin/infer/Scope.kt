@@ -65,14 +65,14 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
    * Init compiler-defined functions
    */
   init {
-    create(IntInfo("Char", 8))
-    create(IntInfo("Bool", 8))
+    create(IntInfo("Char", charTy, 8))
+    create(IntInfo("Bool", boolTy, 8))
     create(DoubleInfo)
     create(FloatInfo)
 
-    create(IntInfo("Int8", 8))
-    create(IntInfo("Int16", 16))
-    create(IntInfo("Int32", 32))
+    create(IntInfo("Int8", i8Ty, 8))
+    create(IntInfo("Int16", i16Ty, 16))
+    create(IntInfo("Int32", i32Ty, 32))
 
     // Add default binary operators
     declareInline("+", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntAddExpr(a, b) }

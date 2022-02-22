@@ -162,10 +162,10 @@ class Infer(tree: ModuleTree) :
 
   override fun visitBlockExpr(expr: BlockExpr): TypedExpr {
     return scoped {
-      val value = expr.value?.let(::visitExpr) ?: unitValue()
       val stmts = visitStmts(expr.stmts)
+      val value = expr.value?.let(::visitExpr) ?: unitValue()
 
-      TypedBlockExpr(stmts, value, references, value.ty, expr.location)
+      TypedBlockExpr(stmts, value, references, expr.location)
     }
   }
 
@@ -186,15 +186,26 @@ class Infer(tree: ModuleTree) :
         }
       }
 
-    val value = patterns.values.reduce { acc, next ->
-      if (acc.ty != next.ty) {
-        return next.violate(TypeMismatch(acc.ty, next.ty))
-      }
-
-      next
+    if (patterns.isEmpty()) {
+      return TypedMatchExpr(subject, patterns, unitTy, Subst(), expr.location)
     }
 
-    return TypedMatchExpr(subject, patterns, value.ty, expr.location)
+    val fst = patterns.values.first()
+    var subst: Subst = fst.subst
+
+    val ty = patterns.values.drop(1).fold(fst.ty) { acc, next ->
+      subst = subst compose unify(acc, next.ty)
+
+      val ty = acc ap subst
+
+      if (ty != next.ty ap subst) {
+        return next.violate(TypeMismatch(acc, next.ty))
+      }
+
+      ty
+    }
+
+    return TypedMatchExpr(subject, patterns, ty, subst, expr.location)
   }
 
   override fun visitIfExpr(expr: IfExpr): TypedExpr {
@@ -206,16 +217,16 @@ class Infer(tree: ModuleTree) :
 
     val thenBranch = visitIfBranch(expr.thenBranch)
     val elseBranch = expr.elseBranch?.let { visitIfBranch(it) }
+      ?: return TypedIfExpr(cond, thenBranch, null, thenBranch.ty, thenBranch.subst, expr.location)
 
-    if (elseBranch == null) {
-      return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.ty, expr.location)
+    val subst = thenBranch.subst compose elseBranch.subst
+    val ty = thenBranch.ty ap subst
+
+    if (ty != elseBranch.ty) {
+      return elseBranch.violate(TypeMismatch(ty, elseBranch.ty))
     }
 
-    if (thenBranch.ty != elseBranch.ty) {
-      return elseBranch.violate(TypeMismatch(thenBranch.ty, elseBranch.ty))
-    }
-
-    return TypedIfExpr(cond, thenBranch, elseBranch, thenBranch.ty, expr.location)
+    return TypedIfExpr(cond, thenBranch, elseBranch, ty, subst, expr.location)
   }
 
   override fun visitConstExpr(expr: ConstExpr): TypedExpr {
@@ -231,7 +242,7 @@ class Infer(tree: ModuleTree) :
       else -> return expr.violate(UnsupportedConstType(value::class))
     }
 
-    return TypedConstExpr(expr.value, type, expr.location)
+    return TypedConstExpr(expr.value, type, Subst(), expr.location)
   }
 
   override fun visitAccessExpr(expr: AccessExpr): TypedExpr {
@@ -265,11 +276,7 @@ class Infer(tree: ModuleTree) :
       }
 
       return when (val body = variable.inlineCall(arguments)) {
-        is ResolvedCodeBody -> TypedBlockExpr(
-          body.stmts, body.value!!,
-          ty = body.value.ty,
-          location = expr.location,
-        )
+        is ResolvedCodeBody -> TypedBlockExpr(body.stmts, body.value!!, location = expr.location)
         is ResolvedExprBody -> body.expr
         is ResolvedNoBody -> unitValue()
       }
@@ -282,20 +289,22 @@ class Infer(tree: ModuleTree) :
         var parameterTy = parameter ?: argument.ty
         var argumentTy = argument.ty
         var nestTy = ty.nest(i)
+        var subst = Subst()
 
         if (parameter == null) {
           argument.violate(IncorrectArity(parameters.size, i))
         } else {
-          parameterTy = parameter ap unify(argument.ty, parameter)
-          argumentTy = argumentTy ap unify(argument.ty, parameter)
-          nestTy = nestTy ap unify(argument.ty, parameter)
+          subst = unify(argument.ty, parameter)
+          parameterTy = parameter ap subst
+          argumentTy = argumentTy ap subst
+          nestTy = nestTy ap subst
         }
 
         if (parameterTy != argumentTy) {
           argument.violate(TypeMismatch(parameterTy, argumentTy))
         }
 
-        TypedCallExpr(acc, argument, nestTy, expr.location)
+        TypedCallExpr(acc, argument, nestTy, subst, expr.location)
       }
   }
 
@@ -311,7 +320,7 @@ class Infer(tree: ModuleTree) :
       return value.violate(TypeMismatch(variable.ty, value.ty))
     }
 
-    return TypedAssignExpr(null, variable.name, value, value.ty, expr.location)
+    return TypedAssignExpr(null, variable.name, value, value.ty, Subst(), expr.location)
   }
 
   override fun visitSetExpr(expr: SetExpr): TypedExpr {
@@ -351,7 +360,15 @@ class Infer(tree: ModuleTree) :
       return newValue.violate(TypeMismatch(property.ty, newValue.ty))
     }
 
-    return TypedSetExpr(receiver, property.name, newValue, struct, property.ty, expr.location)
+    return TypedSetExpr(
+      receiver,
+      property.name,
+      newValue,
+      struct,
+      property.ty,
+      Subst(),
+      expr.location
+    )
   }
 
   override fun visitGetExpr(expr: GetExpr): TypedExpr {
@@ -380,11 +397,11 @@ class Infer(tree: ModuleTree) :
     val property = struct.members[expr.property]
       ?: return expr.property.violate(UnresolvedStructMember(expr.property, struct))
 
-    return TypedGetExpr(receiver, property.name, struct, property.ty, expr.location)
+    return TypedGetExpr(receiver, property.name, struct, property.ty, Subst(), expr.location)
   }
 
   override fun visitGroupExpr(expr: GroupExpr): TypedExpr {
-    return TypedGroupExpr(visitExpr(expr.value), expr.location)
+    return TypedGroupExpr(visitExpr(expr.value), Subst(), expr.location)
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr): TypedExpr {
@@ -418,15 +435,15 @@ class Infer(tree: ModuleTree) :
       ),
     )
 
-    return TypedInstanceExpr(arguments, struct, ty ap subst, expr.location)
+    return TypedInstanceExpr(arguments, struct, ty ap subst, Subst(), expr.location)
   }
 
   override fun visitSizeofExpr(expr: SizeofExpr): TypedExpr {
-    return TypedSizeofExpr(visitTypeRef(expr.type), expr.location)
+    return TypedSizeofExpr(visitTypeRef(expr.type), Subst(), expr.location)
   }
 
   override fun visitRefExpr(expr: RefExpr): TypedExpr {
-    return TypedRefExpr(visitExpr(expr.value), expr.location)
+    return TypedRefExpr(visitExpr(expr.value), Subst(), expr.location)
   }
 
   override fun visitDerefExpr(expr: DerefExpr): TypedExpr {
@@ -434,7 +451,7 @@ class Infer(tree: ModuleTree) :
 
     val ty = value.ty as? PtrTy ?: return expr.value.violate(TypeIsNotPointer(value.ty))
 
-    return TypedDerefExpr(value, ty.arg, expr.location)
+    return TypedDerefExpr(value, ty.arg, Subst(), expr.location)
   }
 
   override fun visitNoBody(body: NoBody): ResolvedFunctionBody {
@@ -458,13 +475,19 @@ class Infer(tree: ModuleTree) :
 
     val properties = visitPatterns(pattern.properties)
 
-    return TypedNamedTuplePattern(properties, enum, ConstTy(enum.name.text), pattern.location)
+    return TypedNamedTuplePattern(
+      properties,
+      enum,
+      enum.ty,
+      Subst(),
+      pattern.location
+    )
   }
 
   override fun visitIdentPattern(pattern: IdentPattern): TypedPattern {
     val variable = findVariable(pattern.name)
 
-    return TypedIdentPattern(pattern.name, variable.ty, pattern.location)
+    return TypedIdentPattern(pattern.name, variable.ty, Subst(), pattern.location)
   }
 
   override fun visitThenBranch(branch: ThenBranch): TypedIfBranch {
@@ -519,8 +542,6 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitEnumDecl(decl: EnumDecl): ResolvedStmt {
-    currentScope.create(EnumInfo(decl.name))
-
     val ty = inst(
       Scheme(
         decl.names.map { it.text }.toSet(),
@@ -530,10 +551,12 @@ class Infer(tree: ModuleTree) :
       ),
     )
 
+    currentScope.create(EnumInfo(decl.name, ty))
+
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
 
-      val memberInfo = currentScope.create(EnumMemberInfo(name, types, FunTy(ty, types)))
+      val memberInfo = currentScope.create(EnumMemberInfo(name, ty, types, FunTy(ty, types)))
 
       if (types.isEmpty()) {
         currentScope.declare(name, ty)
@@ -544,14 +567,12 @@ class Infer(tree: ModuleTree) :
       name to memberInfo
     }
 
-    val info = currentScope.create(EnumInfo(decl.name, decl.names, members))
+    val info = currentScope.create(EnumInfo(decl.name, ty, decl.names, members))
 
     return ResolvedEnumDecl(info, ty, decl.location)
   }
 
   override fun visitStructDecl(decl: StructDecl): ResolvedStmt {
-    currentScope.create(StructInfo(decl.name))
-
     val ty = inst(
       Scheme(
         decl.names.map { it.text }.toSet(),
@@ -561,11 +582,13 @@ class Infer(tree: ModuleTree) :
       ),
     )
 
+    currentScope.create(StructInfo(decl.name, ty))
+
     val properties = decl.properties.associate { (mutable, name, type) ->
       name to StructMemberInfo(name, visitTypeRef(type), mutable)
     }
 
-    val info = currentScope.create(StructInfo(decl.name, decl.names, properties))
+    val info = currentScope.create(StructInfo(decl.name, ty, decl.names, properties))
 
     return ResolvedStructDecl(info, ty, decl.location)
   }
@@ -580,8 +603,8 @@ class Infer(tree: ModuleTree) :
 
     val returnType = visitTypeRef(decl.returnType)
 
-    val info = FunctionInfo(name, returnType, parameters)
     val ty = FunTy(returnType, parameters.values)
+    val info = FunctionInfo(name, ty, returnType, parameters)
 
     val isNested = !currentScope.isTopLevelScope
     val references = linkedMapOf<Identifier, Ty>()
@@ -599,7 +622,7 @@ class Infer(tree: ModuleTree) :
       visitFunctionBody(decl.body)
     }
 
-    return ResolvedFunDecl(body, attributes, references, info, isNested, ty, decl.location)
+    return ResolvedFunDecl(body, attributes, references, info, isNested, ty, Subst(), decl.location)
   }
 
   override fun visitLetDecl(decl: LetDecl): ResolvedStmt {
@@ -615,7 +638,7 @@ class Infer(tree: ModuleTree) :
 
     currentScope.declare(name, value, mutable)
 
-    return ResolvedLetDecl(name, mutable, value, isNested, value.ty, decl.location)
+    return ResolvedLetDecl(name, mutable, value, isNested, value.ty, Subst(), decl.location)
   }
 
   override fun visitAccessTypeRef(ref: AccessTypeRef): Ty {
@@ -651,7 +674,7 @@ class Infer(tree: ModuleTree) :
   }
 
   private fun unitValue(): TypedExpr {
-    return TypedConstExpr(Unit, unitTy, Location.Generated)
+    return TypedConstExpr(Unit, unitTy, Subst(), Location.Generated)
   }
 
   private fun violate(error: AnalyzerViolation, loc: Location = Location.Generated) {
@@ -668,17 +691,17 @@ class Infer(tree: ModuleTree) :
   private fun PlankElement.violatedPattern(error: AnalyzerViolation): TypedPattern {
     violations += error.withLocation(location)
 
-    return TypedIdentPattern(Identifier("<error>"), undefTy, location)
+    return TypedIdentPattern(Identifier("<error>"), undefTy, Subst(), location)
   }
 
   private fun PlankElement.violate(error: AnalyzerViolation): TypedExpr {
     violations += error.withLocation(location)
 
-    return TypedConstExpr(Unit, undefTy, location)
+    return TypedConstExpr(Unit, undefTy, Subst(), location)
   }
 
   private fun undeclared(ty: Ty): TypedExpr {
-    return TypedConstExpr(Unit, ty, Location.Generated)
+    return TypedConstExpr(Unit, ty, Subst(), Location.Generated)
   }
 
   private val scopes: Stack<Scope> = Stack<Scope>().also { stack ->
@@ -801,7 +824,7 @@ class Infer(tree: ModuleTree) :
 
   private fun findTyInfo(ty: Ty): TyInfo? {
     return when (ty) {
-      is AppTy -> null
+      is AppTy -> findTyInfo(ty.fn)
       is FunTy -> null
       is PtrTy -> null
       is ConstTy -> currentScope.findTyInfo(ty.name.toIdentifier())
