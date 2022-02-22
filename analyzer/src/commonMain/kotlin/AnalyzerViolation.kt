@@ -30,7 +30,7 @@ class TypeMismatch(expected: Ty, got: Ty, location: Location = Location.Generate
   AnalyzerViolation("Type mismatch: expected $expected, got $got", location)
 
 class TypeIsInfinite(name: VarTy, ty: Ty, location: Location = Location.Generated) :
-  AnalyzerViolation("Type $ty is infinite", location)
+  AnalyzerViolation("Type $name $ty is infinite", location)
 
 class TypeIsNotCallable(ty: Ty, location: Location = Location.Generated) :
   AnalyzerViolation("Type $ty is not callable", location)
@@ -55,6 +55,9 @@ class TypeInfoCanNotBeDestructured(info: TyInfo, location: Location = Location.G
 
 class ScopeIsNotReturnable(scope: Scope, location: Location = Location.Generated) :
   AnalyzerViolation("Can not return in a not function scope `${scope.name.text}`", location)
+
+class Redeclaration(name: Identifier, location: Location = Location.Generated) :
+  AnalyzerViolation("Redeclaration of `${name.text}`", location)
 
 class UnresolvedVariable(
   name: Identifier,

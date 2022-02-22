@@ -7,6 +7,7 @@ import org.plank.analyzer.CanNotReassignImmutableStructMember
 import org.plank.analyzer.CanNotReassignImmutableVariable
 import org.plank.analyzer.IncorrectArity
 import org.plank.analyzer.IncorrectEnumArity
+import org.plank.analyzer.Redeclaration
 import org.plank.analyzer.ScopeIsNotReturnable
 import org.plank.analyzer.TypeInfoCanNotBeDestructured
 import org.plank.analyzer.TypeIsInfinite
@@ -551,6 +552,10 @@ class Infer(tree: ModuleTree) :
       ),
     )
 
+    if (currentScope.findTyInfo(decl.name) != null) {
+      return decl.name.violate(Redeclaration(decl.name)).stmt()
+    }
+
     currentScope.create(EnumInfo(decl.name, ty))
 
     val members = decl.members.associate { (name, parameters) ->
@@ -582,6 +587,10 @@ class Infer(tree: ModuleTree) :
       ),
     )
 
+    if (currentScope.findTyInfo(decl.name) != null) {
+      return decl.name.violate(Redeclaration(decl.name)).stmt()
+    }
+
     currentScope.create(StructInfo(decl.name, ty))
 
     val properties = decl.properties.associate { (mutable, name, type) ->
@@ -608,6 +617,10 @@ class Infer(tree: ModuleTree) :
 
     val isNested = !currentScope.isTopLevelScope
     val references = linkedMapOf<Identifier, Ty>()
+
+    if (currentScope.findVariable(name) != null) {
+      return name.violate(Redeclaration(name)).stmt()
+    }
 
     currentScope.declare(name, ty)
 
