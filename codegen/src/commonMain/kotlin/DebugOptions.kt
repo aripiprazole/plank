@@ -3,7 +3,7 @@ package org.plank.codegen
 class DebugOptions {
   var treeDebug = false
   var plainAstDebug = false
-  var resolvedAstDebug = false
+  var prettyDebug = false
   var llvmIrDebug = false
   var parserDebug = false
   var compilationDebug = false

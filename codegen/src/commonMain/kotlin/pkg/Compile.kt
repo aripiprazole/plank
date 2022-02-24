@@ -3,6 +3,7 @@ package org.plank.codegen.pkg
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.infer.FileScope
 import org.plank.analyzer.infer.ModuleTree
+import org.plank.analyzer.pretty
 import org.plank.codegen.DebugOptions
 import org.plank.codegen.Entrypoint
 import org.plank.codegen.ScopeContext
@@ -12,7 +13,6 @@ import org.plank.codegen.intrinsics.Intrinsics
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.Module
 import org.plank.shared.depthFirstSearch
-import org.plank.syntax.debug.dumpTree
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.message.SimpleCompilerLogger
@@ -27,9 +27,9 @@ fun compile(
 ): Module {
   val main = analyze(plainMain, tree).check()
 
-  if (debug.resolvedAstDebug) {
-    logger.debug("Typed AST:")
-    logger.debug(main.dumpTree())
+  if (debug.prettyDebug) {
+    logger.debug("Pretty dump:")
+    logger.debug(main.pretty())
     logger.debug()
   }
 

@@ -64,24 +64,22 @@ class TestCompilation(
 
     fun debugTree(): Builder = apply { options.treeDebug = true }
     fun debugPlainAst(): Builder = apply { options.plainAstDebug = true }
-    fun debugResolvedAst(): Builder = apply { options.resolvedAstDebug = true }
+    fun debugPretty(): Builder = apply { options.prettyDebug = true }
     fun debugLlvmIR(): Builder = apply { options.llvmIrDebug = true }
     fun debugParser(): Builder = apply { options.parserDebug = true }
     fun debugCompilation(): Builder = apply { options.compilationDebug = true }
     fun linkerVerbose(): Builder = apply { options.linkerVerbose = true }
 
     fun debugAll(): Builder = apply {
-//      debugTree()
-//      debugPlainAst()
-//      debugResolvedAst()
+      debugPretty()
       debugLlvmIR()
-//      debugParser()
       debugCompilation()
-//      linkerVerbose()
     }
 
     @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
+      installDebugPretty()
+
       val pkg = Package(code, File("..")) {
         linker = locateBinary("clang++")
         workingDir = createTempDirectory("plank-test")

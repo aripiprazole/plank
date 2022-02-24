@@ -573,8 +573,10 @@ class Infer(tree: ModuleTree) :
         currentScope.declare(name, Scheme(funTy))
       }
 
+      val (variantTy) = inst(Scheme(variantScheme.names, ConstTy(name.text)))
+
       val memberInfo =
-        currentScope.create(EnumMemberInfo(name, instantiated, types, funTy, variantScheme))
+        currentScope.create(EnumMemberInfo(name, variantTy, types, funTy, variantScheme))
 
       name to memberInfo
     }
