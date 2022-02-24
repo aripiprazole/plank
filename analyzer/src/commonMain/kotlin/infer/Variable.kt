@@ -7,7 +7,7 @@ import org.plank.syntax.element.Identifier
 sealed interface Variable {
   val mutable: Boolean
   val name: Identifier
-  val scheme: Scheme
+  val ty: Ty
   val declaredIn: Scope
   val isInScope: Boolean
 
@@ -17,25 +17,42 @@ sealed interface Variable {
   fun notInScope(): Variable
 }
 
-data class SimpleVariable(
+data class RankedVariable(
+  val scheme: Scheme,
   override val mutable: Boolean,
   override val name: Identifier,
-  override val scheme: Scheme,
   override val declaredIn: Scope,
   override val isInScope: Boolean = false,
 ) : Variable {
-  override fun name(name: Identifier): SimpleVariable = copy(name = name)
-  override fun inScope(): SimpleVariable = copy(isInScope = true)
-  override fun notInScope(): SimpleVariable = copy(isInScope = false)
+  override val ty: Ty = scheme.ty
+
+  override fun name(name: Identifier): RankedVariable = copy(name = name)
+  override fun inScope(): RankedVariable = copy(isInScope = true)
+  override fun notInScope(): RankedVariable = copy(isInScope = false)
 
   override fun toString(): String =
-    "SimpleVariable(mutable=$mutable, name=$name, scheme=$scheme, isInScope=$isInScope)"
+    "RankedVariable(mutable=$mutable, name=$name, scheme=$scheme, isInScope=$isInScope)"
+}
+
+data class LocalVariable(
+  override val mutable: Boolean,
+  override val name: Identifier,
+  override val ty: Ty,
+  override val declaredIn: Scope,
+  override val isInScope: Boolean = false,
+) : Variable {
+  override fun name(name: Identifier): LocalVariable = copy(name = name)
+  override fun inScope(): LocalVariable = copy(isInScope = true)
+  override fun notInScope(): LocalVariable = copy(isInScope = false)
+
+  override fun toString(): String =
+    "LocalVariable(mutable=$mutable, name=$name, scheme=$ty, isInScope=$isInScope)"
 }
 
 data class InlineVariable(
   override val mutable: Boolean,
   override val name: Identifier,
-  override val scheme: Scheme,
+  override val ty: Ty,
   override val declaredIn: Scope,
   override val isInScope: Boolean = false,
   val inlineCall: (List<TypedExpr>) -> ResolvedFunctionBody,
@@ -45,5 +62,5 @@ data class InlineVariable(
   override fun notInScope(): InlineVariable = copy(isInScope = false)
 
   override fun toString(): String =
-    "InlineVariable(mutable=$mutable, name=$name, scheme=$scheme, isInScope=$isInScope)"
+    "InlineVariable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
 }

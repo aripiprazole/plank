@@ -130,13 +130,18 @@ sealed class Scope {
    * Declares a compiler-defined variable with type [scheme] in the context
    */
   fun declare(name: Identifier, scheme: Scheme, mutable: Boolean = false): Scheme {
-    variables[name] = SimpleVariable(mutable, name, scheme, this)
+    variables[name] = RankedVariable(scheme, mutable, name, this)
     return scheme
+  }
+
+  fun declare(name: Identifier, ty: Ty, mutable: Boolean = false): Scheme {
+    variables[name] = LocalVariable(mutable, name, ty, this)
+    return Scheme(emptySet(), ty)
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false): Scheme {
     val scheme = Scheme(emptySet(), value.ty)
-    variables[name] = SimpleVariable(mutable, name, scheme, this)
+    variables[name] = LocalVariable(mutable, name, scheme.ty, this)
     return scheme
   }
 
@@ -150,7 +155,7 @@ sealed class Scope {
       InlineVariable(
         false,
         Identifier(name),
-        Scheme(FunTy(returnTy, parameters.toList())),
+        FunTy(returnTy, parameters.toList()),
         this,
         false
       ) {
