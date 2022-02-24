@@ -15,13 +15,15 @@ value class Subst(val map: Map<VarTy, Ty> = emptyMap()) {
 fun Map<VarTy, Ty>.toSubst(): Subst = Subst(this)
 
 fun Ty.ftv(): Set<String> {
-  return when (this) {
+  val a = when (this) {
     is ConstTy -> emptySet()
     is VarTy -> setOf(name)
     is AppTy -> fn.ftv() + arg.ftv()
     is PtrTy -> arg.ftv()
     is FunTy -> returnTy.ftv() + parameterTy.ftv()
   }
+
+  return a
 }
 
 infix fun Ty.ap(subst: Subst): Ty {

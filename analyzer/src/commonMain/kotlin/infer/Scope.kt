@@ -1,7 +1,6 @@
 package org.plank.analyzer.infer
 
 import org.plank.analyzer.element.ResolvedExprBody
-import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedIntAddExpr
 import org.plank.analyzer.element.TypedIntDivExpr
@@ -16,50 +15,6 @@ import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.PlankFile
 import kotlin.native.concurrent.ThreadLocal
-
-sealed interface Variable {
-  val mutable: Boolean
-  val name: Identifier
-  val ty: Ty
-  val declaredIn: Scope
-  val isInScope: Boolean
-
-  fun name(name: Identifier): Variable
-
-  fun inScope(): Variable
-  fun notInScope(): Variable
-}
-
-data class SimpleVariable(
-  override val mutable: Boolean,
-  override val name: Identifier,
-  override val ty: Ty,
-  override val declaredIn: Scope,
-  override val isInScope: Boolean = false,
-) : Variable {
-  override fun name(name: Identifier): SimpleVariable = copy(name = name)
-  override fun inScope(): SimpleVariable = copy(isInScope = true)
-  override fun notInScope(): SimpleVariable = copy(isInScope = false)
-
-  override fun toString(): String =
-    "SimpleVariable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
-}
-
-data class InlineVariable(
-  override val mutable: Boolean,
-  override val name: Identifier,
-  override val ty: Ty,
-  override val declaredIn: Scope,
-  override val isInScope: Boolean = false,
-  val inlineCall: (List<TypedExpr>) -> ResolvedFunctionBody,
-) : Variable {
-  override fun name(name: Identifier): InlineVariable = copy(name = name)
-  override fun inScope(): InlineVariable = copy(isInScope = true)
-  override fun notInScope(): InlineVariable = copy(isInScope = false)
-
-  override fun toString(): String =
-    "InlineVariable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
-}
 
 class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
   /**
@@ -148,14 +103,14 @@ sealed class Scope {
   private val variables = mutableMapOf<Identifier, Variable>()
 
   /**
-   * Declares a compiler-defined variable with type [ty] in the context
+   * Declares a compiler-defined variable with type [scheme] in the context
    */
-  fun declare(name: Identifier, ty: Ty, mutable: Boolean = false) {
-    variables[name] = SimpleVariable(mutable, name, ty, this)
+  fun declare(name: Identifier, scheme: Scheme, mutable: Boolean = false) {
+    variables[name] = SimpleVariable(mutable, name, scheme, this)
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
-    variables[name] = SimpleVariable(mutable, name, value.ty, this)
+    variables[name] = SimpleVariable(mutable, name, Scheme(value.ty), this)
   }
 
   fun declareInline(
@@ -165,7 +120,13 @@ sealed class Scope {
     builder: (List<TypedExpr>) -> TypedExpr,
   ) {
     variables[Identifier(name)] =
-      InlineVariable(false, Identifier(name), FunTy(returnTy, parameters.toList()), this, false) {
+      InlineVariable(
+        false,
+        Identifier(name),
+        Scheme(FunTy(returnTy, parameters.toList())),
+        this,
+        false
+      ) {
         ResolvedExprBody(builder(it))
       }
   }

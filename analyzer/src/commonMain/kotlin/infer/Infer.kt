@@ -254,10 +254,10 @@ class Infer(tree: ModuleTree) :
       variable.declaredIn !is FileScope &&
       variable.declaredIn !is GlobalScope
     ) {
-      currentScope.references[variable.name] = variable.ty
+      currentScope.references[variable.name] = inst(variable.scheme)
     }
 
-    return TypedAccessExpr(null, variable, expr.location)
+    return TypedAccessExpr(null, variable, inst(variable.scheme), expr.location)
   }
 
   override fun visitCallExpr(expr: CallExpr): TypedExpr {
@@ -317,8 +317,10 @@ class Infer(tree: ModuleTree) :
       return expr.violate(CanNotReassignImmutableVariable(variable.name))
     }
 
-    if (variable.ty != value.ty) {
-      return value.violate(TypeMismatch(variable.ty, value.ty))
+    val ty = inst(variable.scheme)
+
+    if (ty ap unify(value.ty, ty) != value.ty ap unify(value.ty, ty)) {
+      return value.violate(TypeMismatch(ty, value.ty))
     }
 
     return TypedAssignExpr(null, variable.name, value, value.ty, Subst(), expr.location)
@@ -336,7 +338,7 @@ class Infer(tree: ModuleTree) :
             val variable = value.scope.findVariable(expr.property)
               ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
-            return TypedAccessExpr(value, variable, receiver.location)
+            return TypedAccessExpr(value, variable, inst(variable.scheme), receiver.location)
           }
           else -> visitExpr(receiver)
         }
@@ -382,7 +384,7 @@ class Infer(tree: ModuleTree) :
             val variable = value.scope.findVariable(expr.property)
               ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
-            return TypedAccessExpr(value, variable, receiver.location)
+            return TypedAccessExpr(value, variable, inst(variable.scheme), receiver.location)
           }
           else -> visitExpr(receiver)
         }
@@ -488,7 +490,7 @@ class Infer(tree: ModuleTree) :
   override fun visitIdentPattern(pattern: IdentPattern): TypedPattern {
     val variable = findVariable(pattern.name)
 
-    return TypedIdentPattern(pattern.name, variable.ty, Subst(), pattern.location)
+    return TypedIdentPattern(pattern.name, inst(variable.scheme), Subst(), pattern.location)
   }
 
   override fun visitThenBranch(branch: ThenBranch): TypedIfBranch {
@@ -543,11 +545,12 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitEnumDecl(decl: EnumDecl): ResolvedStmt {
+    val names = decl.names.map { it.text }.toSet()
     val ty = inst(
       Scheme(
-        decl.names.map { it.text }.toSet(),
-        decl.names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
-          AppTy(acc, VarTy(next.text))
+        names,
+        names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
+          AppTy(acc, VarTy(next))
         }
       ),
     )
@@ -564,9 +567,9 @@ class Infer(tree: ModuleTree) :
       val memberInfo = currentScope.create(EnumMemberInfo(name, ty, types, FunTy(ty, types)))
 
       if (types.isEmpty()) {
-        currentScope.declare(name, ty)
+        currentScope.declare(name, Scheme(ty))
       } else {
-        currentScope.declare(name, FunTy(ty, types))
+        currentScope.declare(name, Scheme(FunTy(ty, types)))
       }
 
       name to memberInfo
@@ -622,14 +625,14 @@ class Infer(tree: ModuleTree) :
       return name.violate(Redeclaration(name)).stmt()
     }
 
-    currentScope.declare(name, ty)
+    currentScope.declare(name, Scheme(ty.ftv(), ty))
 
     val scope = FunctionScope(info, name, currentScope, currentModuleTree, references)
     val body = scoped(name, scope) {
       decl.parameters
         .mapKeys { it.key }
         .forEach { (name, type) ->
-          declare(name, visitTypeRef(type))
+          declare(name, Scheme(visitTypeRef(type)))
         }
 
       visitFunctionBody(decl.body)
@@ -649,7 +652,7 @@ class Infer(tree: ModuleTree) :
       return value.violate(TypeMismatch(ty, value.ty)).stmt()
     }
 
-    currentScope.declare(name, value, mutable)
+    currentScope.declare(name, Scheme(ty.ftv(), ty), mutable)
 
     return ResolvedLetDecl(name, mutable, value, isNested, value.ty, Subst(), decl.location)
   }
@@ -758,8 +761,12 @@ class Infer(tree: ModuleTree) :
   }
 
   private fun findVariable(name: Identifier): Variable {
-    return currentScope.findVariable(name)
-      ?: SimpleVariable(false, name, name.violate(UnresolvedVariable(name)).ty, currentScope)
+    return currentScope.findVariable(name) ?: SimpleVariable(
+      false,
+      name,
+      Scheme(name.violate(UnresolvedVariable(name)).ty),
+      currentScope
+    )
   }
 
   private inline fun <T> scoped(scope: Scope, body: Scope.() -> T): T {

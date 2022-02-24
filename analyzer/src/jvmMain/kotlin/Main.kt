@@ -9,21 +9,26 @@ fun main() {
     """
     module Main;
 
-
     enum List[a] {
       Cons(a, List[a]),
       Nil
     }
 
+    enum Maybe[a] {
+      Just(a),
+      Nothing
+    }
+
     @intrinsic
     fun ty(value: a) -> *Char;
 
-    fun show_list(list: List[a]) -> *Char {
-      ty(list)
-    }
+    fun fst(list: List[a]) -> Maybe[a] = match list {
+      Cons(x, _) => Just(x)
+      Nil => Nothing
+    };
 
     fun main(argc: Int32, argv: **Char) {
-      show_list(Cons("Hello", Nil));
+      fst(Cons("Hello", Nil));
     }
     """.trimIndent()
   )

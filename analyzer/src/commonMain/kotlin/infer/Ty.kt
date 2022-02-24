@@ -17,10 +17,9 @@ data class PtrTy(val arg: Ty) : Ty {
 }
 
 data class FunTy(val returnTy: Ty, val parameterTy: Ty) : Ty {
-  override fun toString(): String = if (parameterTy is FunTy) {
-    "($parameterTy) -> $returnTy"
-  } else {
-    "$parameterTy -> $returnTy"
+  override fun toString(): String = when (parameterTy) {
+    is FunTy -> "($parameterTy) -> $returnTy"
+    else -> "$parameterTy -> $returnTy"
   }
 
   fun nest(index: Int): Ty {
@@ -70,5 +69,10 @@ val floatTy: Ty = ConstTy("Float")
 val doubleTy: Ty = ConstTy("Double")
 
 data class Scheme(val names: Set<String>, val ty: Ty) {
-  override fun toString(): String = "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
+  constructor(ty: Ty) : this(ty.ftv().sorted().toSet(), ty)
+
+  override fun toString(): String = when {
+    names.isEmpty() -> ty.toString()
+    else -> "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
+  }
 }
