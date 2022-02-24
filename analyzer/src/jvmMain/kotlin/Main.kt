@@ -21,7 +21,7 @@ fun main() {
     @intrinsic
     fun ty(value: a) -> *Char;
 
-    fun fst(list: List[a]) -> Maybe[a] = match list {
+    fun fst(list: List[*Char]) -> Maybe[*Char] = match list {
       Cons(x, _) => Just(x),
       Nil() => Nothing
     };

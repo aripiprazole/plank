@@ -52,6 +52,13 @@ fun FunTy(returnTy: Ty, parameters: Collection<Ty>): FunTy =
     .fold(returnTy) { acc, ty -> FunTy(acc, ty) } as FunTy
 
 data class AppTy(val fn: Ty, val arg: Ty) : Ty {
+  fun unapply(): List<Ty> = buildList {
+    var ty: Ty = this@AppTy
+    while (ty is AppTy) {
+      add(ty.arg)
+      ty = ty.fn
+    }
+  }
   override fun toString(): String = "$fn $arg"
 }
 

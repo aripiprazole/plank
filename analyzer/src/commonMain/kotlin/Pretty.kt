@@ -271,7 +271,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
       val nameLength = members.keys.maxByOrNull { it.text.length }!!.text.length
 
       append("enum ").append(name.text).space()
-      append(info.names.text().joinToString(" ") { "'$it" })
+      append(info.generics.text().joinToString(" ") { "'$it" })
 
       members.forEach { (name, value) ->
         appendLine()

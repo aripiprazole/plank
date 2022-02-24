@@ -194,7 +194,7 @@ class Infer(tree: ModuleTree) :
     val fst = patterns.values.first()
     var subst = Subst()
     val ty = patterns.values.drop(1).fold(fst.ty) { acc, next ->
-      subst = subst compose unify(acc, next.ty)
+      subst = subst compose unify(next.ty, acc)
 
       if (acc ap subst != next.ty ap subst) {
         return next.violate(TypeMismatch(acc ap subst, next.ty ap subst))
@@ -203,7 +203,7 @@ class Infer(tree: ModuleTree) :
       acc
     }
 
-    return TypedMatchExpr(subject, patterns, ty, subst, expr.location)
+    return TypedMatchExpr(subject, patterns, ty ap subst, subst, expr.location)
   }
 
   override fun visitIfExpr(expr: IfExpr): TypedExpr {
@@ -426,8 +426,8 @@ class Infer(tree: ModuleTree) :
 
     val ty = inst(
       Scheme(
-        struct.names.map { it.text }.toSet(),
-        struct.names.fold(ConstTy(struct.name.text) as Ty) { acc, next ->
+        struct.generics.map { it.text }.toSet(),
+        struct.generics.fold(ConstTy(struct.name.text) as Ty) { acc, next ->
           AppTy(acc, VarTy(next.text))
         }
       ),
@@ -611,16 +611,18 @@ class Infer(tree: ModuleTree) :
     val returnType = visitTypeRef(decl.returnType)
 
     val ty = FunTy(returnType, parameters.values)
-    val info = FunctionInfo(name, ty, returnType, parameters)
-
-    val isNested = !currentScope.isTopLevelScope
-    val references = linkedMapOf<Identifier, Ty>()
 
     if (currentScope.findVariable(name) != null) {
       return name.violate(Redeclaration(name)).stmt()
     }
 
     val scheme = currentScope.declare(name, Scheme(ty))
+
+    val info =
+      FunctionInfo(name, ty, scheme.names.map { it.toIdentifier() }.toSet(), returnType, parameters)
+
+    val isNested = !currentScope.isTopLevelScope
+    val references = linkedMapOf<Identifier, Ty>()
 
     val scope = FunctionScope(info, name, currentScope, currentModuleTree, references)
     val body = scoped(name, scope) {
@@ -749,7 +751,13 @@ class Infer(tree: ModuleTree) :
             )
           }
 
-          deconstruct(subPattern, undeclared(subType), enum)
+          val subst = enum.generics
+            .zip((subject.ty as AppTy).unapply())
+            .toMap()
+            .mapKeys { VarTy(it.key.text) }
+            .toSubst()
+
+          deconstruct(subPattern, undeclared(subType ap subst), enum)
         }
       }
     }

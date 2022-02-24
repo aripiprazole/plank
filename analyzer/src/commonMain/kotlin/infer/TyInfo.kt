@@ -5,12 +5,14 @@ import org.plank.syntax.element.toIdentifier
 
 sealed interface TyInfo {
   val name: Identifier
+  val generics: Set<Identifier>
   val ty: Ty
 }
 
 data class FunctionInfo(
   override val name: Identifier,
   override val ty: Ty,
+  override val generics: Set<Identifier>,
   val returnTy: Ty,
   val parameters: Map<Identifier, Ty>,
   val isInline: Boolean = false,
@@ -21,7 +23,7 @@ data class FunctionInfo(
 data class StructInfo(
   override val name: Identifier,
   override val ty: Ty,
-  val names: Set<Identifier> = emptySet(),
+  override val generics: Set<Identifier> = emptySet(),
   val members: Map<Identifier, StructMemberInfo> = emptyMap(),
 ) : TyInfo {
   override fun toString(): String = name.text
@@ -32,13 +34,15 @@ data class StructMemberInfo(
   override val ty: Ty,
   val mutable: Boolean,
 ) : TyInfo {
+  override val generics: Set<Identifier> = emptySet()
+
   override fun toString(): String = name.text
 }
 
 data class EnumInfo(
   override val name: Identifier,
   override val ty: Ty,
-  val names: Set<Identifier> = emptySet(),
+  override val generics: Set<Identifier> = emptySet(),
   val members: Map<Identifier, EnumMemberInfo> = emptyMap(),
 ) : TyInfo {
   override fun toString(): String = name.text
@@ -51,6 +55,8 @@ data class EnumMemberInfo(
   val funTy: FunTy,
   val scheme: Scheme,
 ) : TyInfo {
+  override val generics: Set<Identifier> = emptySet()
+
   override fun toString(): String = name.text
 }
 
@@ -60,6 +66,8 @@ data class IntInfo(
   val size: Int,
   val unsigned: Boolean = false,
 ) : TyInfo {
+  override val generics: Set<Identifier> = emptySet()
+
   constructor(name: String, ty: Ty, size: Int, unsigned: Boolean = false) :
     this(name.toIdentifier(), ty, size, unsigned)
 
@@ -69,6 +77,7 @@ data class IntInfo(
 object DoubleInfo : TyInfo {
   override val name: Identifier = Identifier("Double")
   override val ty: Ty = doubleTy
+  override val generics: Set<Identifier> = emptySet()
 
   override fun toString(): String = "{double}"
 }
@@ -76,6 +85,7 @@ object DoubleInfo : TyInfo {
 object FloatInfo : TyInfo {
   override val name: Identifier = Identifier("Float")
   override val ty: Ty = floatTy
+  override val generics: Set<Identifier> = emptySet()
 
   override fun toString(): String = "{float}"
 }
