@@ -293,7 +293,7 @@ class Infer(tree: ModuleTree) :
         var subst = Subst()
 
         if (parameter == null) {
-          argument.violate(IncorrectArity(parameters.size, i))
+          argument.violate(IncorrectArity(parameters.size, i + 1))
         } else {
           subst = unify(argument.ty, parameter)
           parameterTy = parameter ap subst
@@ -750,7 +750,7 @@ class Infer(tree: ModuleTree) :
         pattern.properties.forEachIndexed { index, subPattern ->
           val subType = member.parameters.getOrNull(index) ?: return run {
             subPattern.violatedPattern(
-              IncorrectEnumArity(member.parameters.size, index, member.name)
+              IncorrectEnumArity(member.parameters.size, index + 1, member.name)
             )
           }
 
