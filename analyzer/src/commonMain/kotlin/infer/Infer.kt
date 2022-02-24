@@ -552,52 +552,60 @@ class Infer(tree: ModuleTree) :
     val ty = names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
       AppTy(acc, VarTy(next))
     }
-    val (scheme, subst) = inst(Scheme(ty))
+
+    val (instantiated, subst) = inst(Scheme(ty))
+
+    val generics = instantiated.ftv().sorted().map { it.toIdentifier() }.toSet()
 
     if (currentScope.findTyInfo(decl.name) != null) {
       return decl.name.violate(Redeclaration(decl.name)).stmt()
     }
 
-    currentScope.create(EnumInfo(decl.name, ty))
+    currentScope.create(EnumInfo(decl.name, instantiated))
 
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
-      val funTy = FunTy(scheme, types).ap(subst) as FunTy
+      val funTy = FunTy(instantiated, types).ap(subst) as FunTy
 
       val variantScheme = if (types.isEmpty()) {
-        currentScope.declare(name, Scheme(scheme))
+        currentScope.declare(name, Scheme(instantiated))
       } else {
         currentScope.declare(name, Scheme(funTy))
       }
 
-      val memberInfo = currentScope.create(EnumMemberInfo(name, ty, types, funTy, variantScheme))
+      val memberInfo =
+        currentScope.create(EnumMemberInfo(name, instantiated, types, funTy, variantScheme))
 
       name to memberInfo
     }
 
-    val info = currentScope.create(EnumInfo(decl.name, ty, decl.names, members))
+    val info = currentScope.create(EnumInfo(decl.name, instantiated, generics, members))
 
-    return ResolvedEnumDecl(info, ty, decl.location)
+    return ResolvedEnumDecl(info, instantiated, decl.location)
   }
 
   override fun visitStructDecl(decl: StructDecl): ResolvedStmt {
-    val ty = decl.names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
-      AppTy(acc, VarTy(next.text))
-    }
-
     if (currentScope.findTyInfo(decl.name) != null) {
       return decl.name.violate(Redeclaration(decl.name)).stmt()
     }
 
-    currentScope.create(StructInfo(decl.name, ty))
+    val ty = decl.names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
+      AppTy(acc, VarTy(next.text))
+    }
+
+    val (instantiated, _) = inst(Scheme(ty))
+
+    val generics = instantiated.ftv().sorted().map { it.toIdentifier() }.toSet()
+
+    currentScope.create(StructInfo(decl.name, instantiated))
 
     val properties = decl.properties.associate { (mutable, name, type) ->
       name to StructMemberInfo(name, visitTypeRef(type), mutable)
     }
 
-    val info = currentScope.create(StructInfo(decl.name, ty, decl.names, properties))
+    val info = currentScope.create(StructInfo(decl.name, instantiated, generics, properties))
 
-    return ResolvedStructDecl(info, ty, decl.location)
+    return ResolvedStructDecl(info, instantiated, decl.location)
   }
 
   override fun visitFunDecl(decl: FunDecl): ResolvedStmt {
