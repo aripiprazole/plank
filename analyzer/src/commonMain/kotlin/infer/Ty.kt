@@ -52,13 +52,6 @@ fun FunTy(returnTy: Ty, parameters: Collection<Ty>): FunTy =
     .fold(returnTy) { acc, ty -> FunTy(acc, ty) } as FunTy
 
 data class AppTy(val fn: Ty, val arg: Ty) : Ty {
-  fun unapply(): List<Ty> = buildList {
-    var ty: Ty = this@AppTy
-    while (ty is AppTy) {
-      add(ty.arg)
-      ty = ty.fn
-    }
-  }
   override fun toString(): String = "$fn $arg"
 }
 
@@ -78,8 +71,16 @@ val doubleTy: Ty = ConstTy("Double")
 data class Scheme(val names: Set<String>, val ty: Ty) {
   constructor(ty: Ty) : this(ty.ftv().sorted().toSet(), ty)
 
-  override fun toString(): String = when {
-    names.isEmpty() -> ty.toString()
-    else -> "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
+  override fun toString(): String = "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
+}
+
+fun Ty.unapply(): List<Ty> = when (this) {
+  is AppTy -> buildList {
+    var ty: Ty = this@unapply
+    while (ty is AppTy) {
+      add(ty.arg)
+      ty = ty.fn
+    }
   }
+  else -> emptyList()
 }

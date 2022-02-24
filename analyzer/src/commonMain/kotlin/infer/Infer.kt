@@ -760,7 +760,7 @@ class Infer(tree: ModuleTree) :
           }
 
           val subst = enum.generics
-            .zip((subject.ty as AppTy).unapply())
+            .zip(subject.ty.unapply())
             .toMap()
             .mapKeys { VarTy(it.key.text) }
             .toSubst()

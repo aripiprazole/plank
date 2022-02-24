@@ -160,7 +160,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
         appendLine()
         append("$indent  ")
         paren {
-          append(leftpad(pattern.pretty("$indent  "), patternLength)).space()
+          append(pattern.pretty("$indent  ").padEnd(patternLength)).space()
           append(value.pretty("$indent  "))
         }
       }
@@ -248,7 +248,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
         appendLine()
         append("$indent  ")
         paren {
-          append(leftpad(name.text, nameLength)).space()
+          append(name.text.padEnd(nameLength)).space()
           paren(property.ty)
         }
       }
@@ -269,7 +269,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
         appendLine()
         append("$indent  ")
         paren {
-          append(leftpad(name.text, nameLength)).space()
+          append(name.text.padEnd(nameLength)).space()
           paren(value.scheme)
         }
       }
@@ -340,9 +340,3 @@ private fun StringBuilder.paren(fn: StringBuilder.() -> Unit): StringBuilder {
   rparen()
   return this
 }
-
-private fun leftpad(string: String, length: Int): String {
-  return format("%-$length.${length}s", string)
-}
-
-expect fun format(format: String, vararg args: Any?): String
