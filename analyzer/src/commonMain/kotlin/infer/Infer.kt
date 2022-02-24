@@ -563,14 +563,14 @@ class Infer(tree: ModuleTree) :
 
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
-
-      val memberInfo = currentScope.create(EnumMemberInfo(name, ty, types, FunTy(ty, types)))
-
-      if (types.isEmpty()) {
+      val funTy = FunTy(ty, types)
+      val scheme = if (types.isEmpty()) {
         currentScope.declare(name, Scheme(ty))
       } else {
-        currentScope.declare(name, Scheme(FunTy(ty, types)))
+        currentScope.declare(name, Scheme(funTy))
       }
+
+      val memberInfo = currentScope.create(EnumMemberInfo(name, ty, types, funTy, scheme))
 
       name to memberInfo
     }
@@ -625,7 +625,7 @@ class Infer(tree: ModuleTree) :
       return name.violate(Redeclaration(name)).stmt()
     }
 
-    currentScope.declare(name, Scheme(ty.ftv(), ty))
+    val scheme = currentScope.declare(name, Scheme(ty))
 
     val scope = FunctionScope(info, name, currentScope, currentModuleTree, references)
     val body = scoped(name, scope) {
@@ -638,7 +638,7 @@ class Infer(tree: ModuleTree) :
       visitFunctionBody(decl.body)
     }
 
-    return ResolvedFunDecl(body, attributes, references, info, isNested, ty, Subst(), decl.location)
+    return ResolvedFunDecl(body, attributes, references, info, isNested, ty, scheme, decl.location)
   }
 
   override fun visitLetDecl(decl: LetDecl): ResolvedStmt {
@@ -652,9 +652,9 @@ class Infer(tree: ModuleTree) :
       return value.violate(TypeMismatch(ty, value.ty)).stmt()
     }
 
-    currentScope.declare(name, Scheme(ty.ftv(), ty), mutable)
+    val scheme = currentScope.declare(name, Scheme(ty.ftv(), ty), mutable)
 
-    return ResolvedLetDecl(name, mutable, value, isNested, value.ty, Subst(), decl.location)
+    return ResolvedLetDecl(name, mutable, value, isNested, scheme, ty, value.subst, decl.location)
   }
 
   override fun visitAccessTypeRef(ref: AccessTypeRef): Ty {
@@ -735,8 +735,8 @@ class Infer(tree: ModuleTree) :
     info: TyInfo,
   ) {
     when (pattern) {
-      is IdentPattern -> {
-        info.getAs<EnumInfo>()?.members?.get(pattern.name) ?: return declare(pattern.name, subject)
+      is IdentPattern -> info.getAs<EnumInfo>()?.members?.get(pattern.name) ?: return run {
+        declare(pattern.name, subject)
       }
       is NamedTuplePattern -> {
         val enum = info.getAs<EnumInfo>() ?: return run {

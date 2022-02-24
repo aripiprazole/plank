@@ -5,6 +5,7 @@ import org.plank.analyzer.infer.EnumMemberInfo
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.FunctionInfo
 import org.plank.analyzer.infer.Module
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.StructMemberInfo
 import org.plank.analyzer.infer.Subst
@@ -61,10 +62,10 @@ data class ResolvedFunDecl(
   val references: LinkedHashMap<Identifier, Ty> = LinkedHashMap(),
   val info: FunctionInfo,
   val isNested: Boolean,
-  override val ty: FunTy,
-  override val subst: Subst,
+  val ty: FunTy,
+  val scheme: Scheme,
   override val location: Location,
-) : ResolvedDecl, TypedPlankElement {
+) : ResolvedDecl {
   val name: Identifier = info.name
   val parameters: Map<Identifier, Ty> = info.parameters
   val returnTy: Ty = info.returnTy
@@ -87,6 +88,7 @@ data class ResolvedLetDecl(
   val mutable: Boolean,
   val value: TypedExpr,
   val isNested: Boolean,
+  val scheme: Scheme,
   override val ty: Ty,
   override val subst: Subst,
   override val location: Location,

@@ -105,12 +105,15 @@ sealed class Scope {
   /**
    * Declares a compiler-defined variable with type [scheme] in the context
    */
-  fun declare(name: Identifier, scheme: Scheme, mutable: Boolean = false) {
+  fun declare(name: Identifier, scheme: Scheme, mutable: Boolean = false): Scheme {
     variables[name] = SimpleVariable(mutable, name, scheme, this)
+    return scheme
   }
 
-  fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false) {
-    variables[name] = SimpleVariable(mutable, name, Scheme(value.ty), this)
+  fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false): Scheme {
+    val scheme = Scheme(value.ty)
+    variables[name] = SimpleVariable(mutable, name, scheme, this)
+    return scheme
   }
 
   fun declareInline(

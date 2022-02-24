@@ -49,6 +49,7 @@ data class EnumMemberInfo(
   override val ty: Ty,
   val parameters: List<Ty>,
   val funTy: FunTy,
+  val scheme: Scheme,
 ) : TyInfo {
   override fun toString(): String = name.text
 }

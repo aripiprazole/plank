@@ -24,4 +24,6 @@ data class Identifier(val text: String, override val location: Location = Locati
   }
 }
 
+fun Iterable<Identifier>.text(): Iterable<String> = map { it.text }
+
 fun String.toIdentifier(): Identifier = Identifier(this)
