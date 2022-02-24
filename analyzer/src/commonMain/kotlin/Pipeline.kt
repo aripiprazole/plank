@@ -3,6 +3,7 @@ package org.plank.analyzer
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.infer.Infer
 import org.plank.analyzer.infer.ModuleTree
+import org.plank.analyzer.phases.ReifyTypesPhase
 import org.plank.syntax.element.PlankFile
 
 /**
@@ -10,5 +11,5 @@ import org.plank.syntax.element.PlankFile
  * with typed declarations/statements/expressions.
  */
 fun analyze(file: PlankFile, tree: ModuleTree = ModuleTree()): ResolvedPlankFile {
-  return Infer(tree).analyze(file)
+  return Infer(tree).analyze(file).transform(ReifyTypesPhase())
 }

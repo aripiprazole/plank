@@ -22,6 +22,7 @@ import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
+import org.plank.analyzer.element.TypedEraseExpr
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
@@ -34,6 +35,7 @@ import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
+import org.plank.analyzer.element.TypedReifyExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.analyzer.element.TypedThenBranch
@@ -155,6 +157,14 @@ open class IrTransformingPhase :
   }
 
   open fun transformMatchExpr(expr: TypedMatchExpr): TypedExpr {
+    return expr
+  }
+
+  open fun transformReifyExpr(expr: TypedReifyExpr): TypedExpr {
+    return expr
+  }
+
+  open fun transformEraseExpr(expr: TypedEraseExpr): TypedExpr {
     return expr
   }
 
@@ -363,6 +373,14 @@ open class IrTransformingPhase :
         }
       )
     )
+  }
+
+  final override fun visitReifyExpr(expr: TypedReifyExpr): TypedExpr {
+    return transformReifyExpr(expr.copy(value = visitExpr(expr.value)))
+  }
+
+  final override fun visitEraseExpr(expr: TypedEraseExpr): TypedExpr {
+    return transformEraseExpr(expr.copy(value = visitExpr(expr.value)))
   }
 
   final override fun visitNamedTuplePattern(pattern: TypedNamedTuplePattern): TypedPattern {
