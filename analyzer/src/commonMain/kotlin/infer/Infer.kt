@@ -192,18 +192,15 @@ class Infer(tree: ModuleTree) :
     }
 
     val fst = patterns.values.first()
-    var subst: Subst = fst.subst
-
+    var subst = Subst()
     val ty = patterns.values.drop(1).fold(fst.ty) { acc, next ->
       subst = subst compose unify(acc, next.ty)
 
-      val ty = acc ap subst
-
-      if (ty != next.ty ap subst) {
-        return next.violate(TypeMismatch(acc, next.ty))
+      if (acc ap subst != next.ty ap subst) {
+        return next.violate(TypeMismatch(acc ap subst, next.ty ap subst))
       }
 
-      ty
+      acc
     }
 
     return TypedMatchExpr(subject, patterns, ty, subst, expr.location)
@@ -220,11 +217,13 @@ class Infer(tree: ModuleTree) :
     val elseBranch = expr.elseBranch?.let { visitIfBranch(it) }
       ?: return TypedIfExpr(cond, thenBranch, null, thenBranch.ty, thenBranch.subst, expr.location)
 
-    val subst = thenBranch.subst compose elseBranch.subst
-    val ty = thenBranch.ty ap subst
+    val subst = unify(thenBranch.ty, elseBranch.ty) compose
+      thenBranch.subst compose
+      elseBranch.subst
 
-    if (ty != elseBranch.ty) {
-      return elseBranch.violate(TypeMismatch(ty, elseBranch.ty))
+    val ty = thenBranch.ty ap subst
+    if (ty != elseBranch.ty ap subst) {
+      return elseBranch.violate(TypeMismatch(ty, elseBranch.ty ap subst))
     }
 
     return TypedIfExpr(cond, thenBranch, elseBranch, ty, subst, expr.location)
@@ -254,10 +253,10 @@ class Infer(tree: ModuleTree) :
       variable.declaredIn !is FileScope &&
       variable.declaredIn !is GlobalScope
     ) {
-      currentScope.references[variable.name] = inst(variable.scheme)
+      currentScope.references[variable.name] = inst(variable.scheme).first
     }
 
-    return TypedAccessExpr(null, variable, inst(variable.scheme), expr.location)
+    return TypedAccessExpr(null, variable, inst(variable.scheme).first, expr.location)
   }
 
   override fun visitCallExpr(expr: CallExpr): TypedExpr {
@@ -286,20 +285,16 @@ class Infer(tree: ModuleTree) :
     return visitExprs(expr.arguments)
       .ifEmpty { listOf(unitValue()) }
       .foldIndexed(callee) { i, acc, argument ->
-        val parameter = parameters.elementAtOrNull(i)
-        var parameterTy = parameter ?: argument.ty
-        var argumentTy = argument.ty
-        var nestTy = ty.nest(i)
-        var subst = Subst()
-
-        if (parameter == null) {
+        val parameter = parameters.elementAtOrNull(i) ?: run {
           argument.violate(IncorrectArity(parameters.size, i + 1))
-        } else {
-          subst = unify(argument.ty, parameter)
-          parameterTy = parameter ap subst
-          argumentTy = argumentTy ap subst
-          nestTy = nestTy ap subst
+          argument.ty
         }
+
+        val subst = unify(parameter, argument.ty)
+
+        val parameterTy = parameter ap subst
+        val argumentTy = argument.ty ap subst
+        val nestTy = ty.nest(i) ap subst
 
         if (parameterTy != argumentTy) {
           argument.violate(TypeMismatch(parameterTy, argumentTy))
@@ -317,7 +312,7 @@ class Infer(tree: ModuleTree) :
       return expr.violate(CanNotReassignImmutableVariable(variable.name))
     }
 
-    val ty = inst(variable.scheme)
+    val ty = inst(variable.scheme).first
 
     if (ty ap unify(value.ty, ty) != value.ty ap unify(value.ty, ty)) {
       return value.violate(TypeMismatch(ty, value.ty))
@@ -338,7 +333,7 @@ class Infer(tree: ModuleTree) :
             val variable = value.scope.findVariable(expr.property)
               ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
-            return TypedAccessExpr(value, variable, inst(variable.scheme), receiver.location)
+            return TypedAccessExpr(value, variable, inst(variable.scheme).first, receiver.location)
           }
           else -> visitExpr(receiver)
         }
@@ -384,7 +379,7 @@ class Infer(tree: ModuleTree) :
             val variable = value.scope.findVariable(expr.property)
               ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
-            return TypedAccessExpr(value, variable, inst(variable.scheme), receiver.location)
+            return TypedAccessExpr(value, variable, inst(variable.scheme).first, receiver.location)
           }
           else -> visitExpr(receiver)
         }
@@ -438,7 +433,7 @@ class Infer(tree: ModuleTree) :
       ),
     )
 
-    return TypedInstanceExpr(arguments, struct, ty ap subst, Subst(), expr.location)
+    return TypedInstanceExpr(arguments, struct, ty.first ap subst, subst, expr.location)
   }
 
   override fun visitSizeofExpr(expr: SizeofExpr): TypedExpr {
@@ -462,7 +457,15 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitExprBody(body: ExprBody): ResolvedFunctionBody {
-    return ResolvedExprBody(visitExpr(body.expr), body.location)
+    val value = visitExpr(body.expr)
+
+    val scope = currentScope as FunctionScope
+
+    if (scope.returnTy != value.ty) {
+      return body.violate(TypeMismatch(scope.returnTy, value.ty)).body()
+    }
+
+    return ResolvedExprBody(value, body.location)
   }
 
   override fun visitCodeBody(body: CodeBody): ResolvedFunctionBody {
@@ -490,7 +493,7 @@ class Infer(tree: ModuleTree) :
   override fun visitIdentPattern(pattern: IdentPattern): TypedPattern {
     val variable = findVariable(pattern.name)
 
-    return TypedIdentPattern(pattern.name, inst(variable.scheme), Subst(), pattern.location)
+    return TypedIdentPattern(pattern.name, inst(variable.scheme).first, Subst(), pattern.location)
   }
 
   override fun visitThenBranch(branch: ThenBranch): TypedIfBranch {
@@ -546,14 +549,10 @@ class Infer(tree: ModuleTree) :
 
   override fun visitEnumDecl(decl: EnumDecl): ResolvedStmt {
     val names = decl.names.map { it.text }.toSet()
-    val ty = inst(
-      Scheme(
-        names,
-        names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
-          AppTy(acc, VarTy(next))
-        }
-      ),
-    )
+    val ty = names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
+      AppTy(acc, VarTy(next))
+    }
+    val (scheme, subst) = inst(Scheme(ty))
 
     if (currentScope.findTyInfo(decl.name) != null) {
       return decl.name.violate(Redeclaration(decl.name)).stmt()
@@ -563,14 +562,15 @@ class Infer(tree: ModuleTree) :
 
     val members = decl.members.associate { (name, parameters) ->
       val types = visitTypeRefs(parameters)
-      val funTy = FunTy(ty, types)
-      val scheme = if (types.isEmpty()) {
-        currentScope.declare(name, Scheme(ty))
+      val funTy = FunTy(scheme, types).ap(subst) as FunTy
+
+      val variantScheme = if (types.isEmpty()) {
+        currentScope.declare(name, Scheme(scheme))
       } else {
         currentScope.declare(name, Scheme(funTy))
       }
 
-      val memberInfo = currentScope.create(EnumMemberInfo(name, ty, types, funTy, scheme))
+      val memberInfo = currentScope.create(EnumMemberInfo(name, ty, types, funTy, variantScheme))
 
       name to memberInfo
     }
@@ -581,14 +581,9 @@ class Infer(tree: ModuleTree) :
   }
 
   override fun visitStructDecl(decl: StructDecl): ResolvedStmt {
-    val ty = inst(
-      Scheme(
-        decl.names.map { it.text }.toSet(),
-        decl.names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
-          AppTy(acc, VarTy(next.text))
-        }
-      ),
-    )
+    val ty = decl.names.fold(ConstTy(decl.name.text) as Ty) { acc, next ->
+      AppTy(acc, VarTy(next.text))
+    }
 
     if (currentScope.findTyInfo(decl.name) != null) {
       return decl.name.violate(Redeclaration(decl.name)).stmt()
@@ -664,7 +659,7 @@ class Infer(tree: ModuleTree) :
       return if (ref.path.fullPath.size > 1) {
         ref.violate(UnresolvedTypeAccess(path)).ty
       } else {
-        currentScope.fresh()
+        VarTy(path.text)
       }
     }
 
@@ -790,16 +785,18 @@ class Infer(tree: ModuleTree) :
   }
 
   // Infer
-  private fun inst(scheme: Scheme): Ty {
+  private fun inst(scheme: Scheme): Pair<Ty, Subst> {
     val env = currentScope
 
-    val subst = scheme.names
-      .zip(scheme.names.map { env.fresh() })
-      .toMap()
-      .mapKeys { VarTy(it.key) }
-      .toSubst()
+    val map: Map<VarTy, Ty> = buildMap {
+      scheme.names.forEach {
+        getOrPut(VarTy(it)) { env.fresh() }
+      }
+    }
 
-    return scheme.ty ap subst
+    val subst = map.toSubst()
+
+    return (scheme.ty ap subst) to subst
   }
 
   private fun unify(a: Ty, b: Ty): Subst {

@@ -41,6 +41,7 @@ sealed interface TypedExpr : TypedPlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 
   fun stmt(): ResolvedStmt = ResolvedExprStmt(this, location)
+  fun body(): ResolvedFunctionBody = ResolvedExprBody(this, location)
 }
 
 data class TypedEraseExpr(

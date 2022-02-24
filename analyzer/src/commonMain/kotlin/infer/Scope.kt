@@ -45,8 +45,32 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     declareInline("<", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTExpr(a, b) }
   }
 
+  private var count: Int = 0
+
   override val name = Identifier("Global")
   override val enclosing: Scope? = null
+
+  override fun fresh(): Ty {
+    return VarTy(letters.elementAt(count)).also { count++ }
+  }
+
+  @ThreadLocal
+  companion object {
+    private val letters: Sequence<String> = sequence {
+      var prefix = ""
+      var i = 0
+      while (true) {
+        i++
+        ('a'..'z').forEach { c ->
+          yield("$prefix$c")
+        }
+        if (i > Char.MAX_VALUE.code) {
+          i = 0
+        }
+        prefix += "${i.toChar()}"
+      }
+    }
+  }
 }
 
 data class FileScope(
@@ -111,7 +135,7 @@ sealed class Scope {
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false): Scheme {
-    val scheme = Scheme(value.ty)
+    val scheme = Scheme(emptySet(), value.ty)
     variables[name] = SimpleVariable(mutable, name, scheme, this)
     return scheme
   }
@@ -157,27 +181,5 @@ sealed class Scope {
         ?.notInScope()
   }
 
-  fun fresh(): Ty {
-    return VarTy(letters.elementAt(count)).also { count++ }
-  }
-
-  @ThreadLocal
-  companion object {
-    private var count: Int = 0
-
-    private val letters: Sequence<String> = sequence {
-      var prefix = ""
-      var i = 0
-      while (true) {
-        i++
-        ('a'..'z').forEach { c ->
-          yield("$prefix$c")
-        }
-        if (i > Char.MAX_VALUE.code) {
-          i = 0
-        }
-        prefix += "${i.toChar()}"
-      }
-    }
-  }
+  open fun fresh(): Ty = enclosing!!.fresh()
 }

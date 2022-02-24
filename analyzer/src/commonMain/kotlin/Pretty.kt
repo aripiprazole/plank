@@ -61,7 +61,7 @@ fun ResolvedPlankFile.pretty(): String = buildString {
   }
 }
 
-fun TypedIfBranch.pretty(indent: String): String = buildString {
+fun TypedIfBranch.pretty(indent: String = ""): String = buildString {
   when (this@pretty) {
     is TypedThenBranch -> append(value.pretty(indent))
     is TypedBlockBranch -> paren {
@@ -75,7 +75,7 @@ fun TypedIfBranch.pretty(indent: String): String = buildString {
   }
 }
 
-fun TypedPattern.pretty(indent: String): String = buildString {
+fun TypedPattern.pretty(indent: String = ""): String = buildString {
   when (this@pretty) {
     is TypedNamedTuplePattern -> paren {
       append(info.name.text)
@@ -88,7 +88,7 @@ fun TypedPattern.pretty(indent: String): String = buildString {
   }
 }
 
-fun TypedExpr.pretty(indent: String): String = buildString {
+fun TypedExpr.pretty(indent: String = ""): String = buildString {
   when (this@pretty) {
     is TypedAccessExpr -> append(name.text)
     is TypedGroupExpr -> paren(value.pretty(indent))
@@ -203,7 +203,7 @@ fun TypedExpr.pretty(indent: String): String = buildString {
   }
 }
 
-fun ResolvedFunctionBody.pretty(indent: String) = buildString {
+fun ResolvedFunctionBody.pretty(indent: String = ""): String = buildString {
   append(indent)
   when (this@pretty) {
     is ResolvedCodeBody -> {
@@ -226,7 +226,7 @@ fun ResolvedFunctionBody.pretty(indent: String) = buildString {
   }
 }
 
-fun ResolvedStmt.pretty(indent: String, topLevel: Boolean = false): String = buildString {
+fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String = buildString {
   if (topLevel) {
     appendLine()
     appendLine()
