@@ -15,8 +15,6 @@ sealed interface TypedExpr : TypedPlankElement {
   interface Visitor<T> {
     fun visitExpr(expr: TypedExpr): T = expr.accept(this)
 
-    fun visitEraseExpr(expr: TypedEraseExpr): T
-    fun visitReifyExpr(expr: TypedReifyExpr): T
     fun visitBlockExpr(expr: TypedBlockExpr): T
     fun visitConstExpr(expr: TypedConstExpr): T
     fun visitIfExpr(expr: TypedIfExpr): T
@@ -42,28 +40,6 @@ sealed interface TypedExpr : TypedPlankElement {
 
   fun stmt(): ResolvedStmt = ResolvedExprStmt(this, location)
   fun body(): ResolvedFunctionBody = ResolvedExprBody(this, location)
-}
-
-data class TypedEraseExpr(
-  val value: TypedExpr,
-  override val ty: Ty,
-  override val subst: Subst,
-  override val location: Location,
-) : TypedExpr {
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitEraseExpr(this)
-  }
-}
-
-data class TypedReifyExpr(
-  val value: TypedExpr,
-  override val ty: Ty,
-  override val subst: Subst,
-  override val location: Location,
-) : TypedExpr {
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitReifyExpr(this)
-  }
 }
 
 data class TypedBlockExpr(

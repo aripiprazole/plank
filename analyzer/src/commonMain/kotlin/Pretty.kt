@@ -23,7 +23,6 @@ import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
-import org.plank.analyzer.element.TypedEraseExpr
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
@@ -46,7 +45,6 @@ import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
-import org.plank.analyzer.element.TypedReifyExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.analyzer.element.TypedThenBranch
@@ -97,12 +95,6 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
     }
     is TypedSizeofExpr -> paren {
       append("sizeof ").append(ty)
-    }
-    is TypedEraseExpr -> paren {
-      append("erase ").append(value.pretty(indent))
-    }
-    is TypedReifyExpr -> paren {
-      append("reify ").append(value.pretty(indent))
     }
     is TypedRefExpr -> paren {
       append("ref ").append(value.pretty(indent))
