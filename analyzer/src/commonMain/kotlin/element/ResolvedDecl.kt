@@ -89,10 +89,10 @@ data class ResolvedLetDecl(
   val value: TypedExpr,
   val isNested: Boolean,
   val scheme: Scheme,
-  override val ty: Ty,
-  override val subst: Subst,
+  val ty: Ty,
+  val subst: Subst,
   override val location: Location,
-) : ResolvedDecl, TypedPlankElement {
+) : ResolvedDecl {
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitLetDecl(this)
   }

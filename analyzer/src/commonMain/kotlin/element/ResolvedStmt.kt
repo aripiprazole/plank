@@ -31,6 +31,8 @@ data class ResolvedExprStmt(val expr: TypedExpr, override val location: Location
   override val ty: Ty = expr.ty
   override val subst: Subst = expr.subst
 
+  override fun ap(subst: Subst): ResolvedExprStmt = copy(expr = expr.ap(subst))
+
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitExprStmt(this)
   }
@@ -41,6 +43,8 @@ data class ResolvedReturnStmt(val value: TypedExpr?, override val location: Loca
   TypedPlankElement {
   override val ty: Ty = value?.ty ?: unitTy
   override val subst: Subst = value?.subst ?: Subst()
+
+  override fun ap(subst: Subst): ResolvedReturnStmt = copy(value = value?.ap(subst))
 
   override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
     return visitor.visitReturnStmt(this)

@@ -400,7 +400,7 @@ class Infer(private val tree: ModuleTree) :
   }
 
   override fun visitGroupExpr(expr: GroupExpr): TypedExpr {
-    return TypedGroupExpr(visitExpr(expr.value), Subst(), expr.location)
+    return TypedGroupExpr(visitExpr(expr.value), expr.location)
   }
 
   override fun visitInstanceExpr(expr: InstanceExpr): TypedExpr {

@@ -31,6 +31,8 @@ data class ResolvedExprBody(
   override val ty: Ty = expr.ty
   override val subst: Subst = expr.subst
 
+  override fun ap(subst: Subst): ResolvedExprBody = copy(expr = expr.ap(subst))
+
   override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {
     return visitor.visitExprBody(this)
   }

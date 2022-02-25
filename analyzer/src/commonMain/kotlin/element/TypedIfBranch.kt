@@ -12,6 +12,8 @@ sealed interface TypedIfBranch : TypedPlankElement {
     fun visitBlockBranch(branch: TypedBlockBranch): T
   }
 
+  override fun ap(subst: Subst): TypedIfBranch
+
   fun <T> accept(visitor: Visitor<T>): T
 }
 
@@ -21,6 +23,8 @@ data class TypedThenBranch(
 ) : TypedIfBranch {
   override val ty: Ty = value.ty
   override val subst: Subst = value.subst
+
+  override fun ap(subst: Subst): TypedThenBranch = copy(value = value.ap(subst))
 
   override fun <T> accept(visitor: TypedIfBranch.Visitor<T>): T {
     return visitor.visitThenBranch(this)
@@ -35,6 +39,8 @@ data class TypedBlockBranch(
 ) : TypedIfBranch {
   override val ty: Ty = value.ty
   override val subst: Subst = value.subst
+
+  override fun ap(subst: Subst): TypedBlockBranch = copy(value = value.ap(subst))
 
   override fun <T> accept(visitor: TypedIfBranch.Visitor<T>): T {
     return visitor.visitBlockBranch(this)
