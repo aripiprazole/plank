@@ -48,6 +48,15 @@ import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.analyzer.element.TypedThenBranch
+import org.plank.analyzer.infer.DoubleInfo
+import org.plank.analyzer.infer.EnumInfo
+import org.plank.analyzer.infer.FloatInfo
+import org.plank.analyzer.infer.InlineVariable
+import org.plank.analyzer.infer.IntInfo
+import org.plank.analyzer.infer.LocalVariable
+import org.plank.analyzer.infer.RankedVariable
+import org.plank.analyzer.infer.Scope
+import org.plank.analyzer.infer.StructInfo
 import org.plank.syntax.element.text
 
 fun ResolvedPlankFile.pretty(): String = buildString {
@@ -325,6 +334,91 @@ fun StringBuilder.prettyCallee(indent: String, expr: TypedExpr) {
       prettyArgument(indent, expr.argument)
     }
     else -> append(expr.pretty(indent))
+  }
+}
+
+fun Scope.pretty(indent: String = ""): String = buildString {
+  val variableLength = variables.keys
+    .maxByOrNull { it.text.length }
+    ?.text?.length ?: -1
+
+  expanded.forEach { scope ->
+    append(indent)
+    appendLine("expand ${scope.name.text}")
+    appendLine()
+  }
+
+  tree.modules.forEach { (name, module) ->
+    append(indent)
+    appendLine("module ${name.text}")
+    appendLine(module.scope.pretty("$indent  "))
+  }
+
+  types.forEach { (name, info) ->
+    when (info) {
+      is EnumInfo -> {
+        val variantLength = info.members.keys
+          .maxByOrNull { it.text.length }
+          ?.text?.length ?: -1
+
+        append(indent)
+        append("enum ${name.text}")
+        appendLine()
+        info.members.values.forEach { member ->
+          append("$indent  ")
+          append("variant ${member.name.text.padEnd(variantLength)} : ${member.scheme}")
+
+          appendLine()
+        }
+        appendLine()
+      }
+      is StructInfo -> {
+        val variantLength = info.members.keys
+          .maxByOrNull { it.text.length }
+          ?.text?.length ?: -1
+
+        append(indent)
+        append("struct ${name.text}")
+        appendLine()
+        info.members.values.forEach { member ->
+          append("$indent  ")
+          append("member ${member.name.text.padEnd(variantLength)} : ${member.ty}")
+
+          appendLine()
+        }
+        appendLine()
+      }
+      is DoubleInfo -> {
+        append(indent)
+        append("double ${name.text}")
+        appendLine()
+      }
+      is FloatInfo -> {
+        append(indent)
+        append("float ${name.text}")
+        appendLine()
+      }
+      is IntInfo -> {
+        append(indent)
+        append("int ")
+        if (info.unsigned) {
+          append("unsigned ")
+        }
+        append(name.text)
+        appendLine()
+      }
+      else -> {}
+    }
+  }
+
+  variables.forEach { (name, variable) ->
+    append(indent)
+    when (variable) {
+      is InlineVariable -> append("inline ${name.text.padEnd(variableLength)} : ${variable.ty}")
+      is LocalVariable -> append("local ${name.text.padEnd(variableLength)} : ${variable.ty}")
+      is RankedVariable -> append("ranked ${name.text.padEnd(variableLength)} : ${variable.scheme}")
+    }
+    appendLine()
   }
 }
 
