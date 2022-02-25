@@ -462,15 +462,26 @@ class Infer(private val tree: ModuleTree) :
 
     val scope = currentScope as FunctionScope
 
-    if (scope.returnTy != value.ty) {
-      return body.violate(TypeMismatch(scope.returnTy, value.ty)).body()
+    val subst = unify(scope.returnTy, value.ty)
+    if (scope.returnTy ap subst != value.ty ap subst) {
+      return body.violate(TypeMismatch(scope.returnTy ap subst, value.ty ap subst)).body()
     }
 
     return ResolvedExprBody(value, body.location)
   }
 
   override fun visitCodeBody(body: CodeBody): ResolvedFunctionBody {
-    return ResolvedCodeBody(visitStmts(body.stmts), body.value?.let(::visitExpr), body.location)
+    val stmts = visitStmts(body.stmts)
+    val value = body.value?.let(::visitExpr) ?: unitValue()
+
+    val scope = currentScope as FunctionScope
+
+    val subst = unify(scope.returnTy, value.ty)
+    if (scope.returnTy ap subst != value.ty ap subst) {
+      return body.violate(TypeMismatch(scope.returnTy ap subst, value.ty ap subst)).body()
+    }
+
+    return ResolvedCodeBody(stmts, value, body.location)
   }
 
   override fun visitNamedTuplePattern(pattern: NamedTuplePattern): TypedPattern {
