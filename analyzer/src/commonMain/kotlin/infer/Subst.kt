@@ -6,6 +6,10 @@ import kotlin.jvm.JvmInline
 value class Subst(val map: Map<VarTy, Ty> = emptyMap()) {
   constructor(name: String, ty: Ty) : this(mapOf(VarTy(name) to ty))
 
+  infix fun compose(other: Subst): Subst {
+    return Subst((map + other.map).mapValues { it.value ap this })
+  }
+
   operator fun get(name: String): Ty? = map[VarTy(name)]
 
   override fun toString(): String =

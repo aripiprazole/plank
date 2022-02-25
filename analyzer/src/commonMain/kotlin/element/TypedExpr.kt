@@ -67,7 +67,8 @@ data class TypedConstExpr(
   override val subst: Subst,
   override val location: Location,
 ) : TypedExpr {
-  override fun ap(subst: Subst): TypedConstExpr = copy(ty = ty.ap(subst))
+  override fun ap(subst: Subst): TypedConstExpr =
+    copy(ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitConstExpr(this)
@@ -86,7 +87,8 @@ data class TypedIfExpr(
     cond = cond.ap(subst),
     thenBranch = thenBranch.ap(subst),
     elseBranch = elseBranch?.ap(subst),
-    ty = ty.ap(subst)
+    ty = ty.ap(subst),
+    subst = subst.compose(subst),
   )
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
@@ -98,12 +100,13 @@ data class TypedAccessExpr(
   val module: Module? = null,
   val variable: Variable,
   override val ty: Ty,
+  override val subst: Subst,
   override val location: Location,
 ) : TypedExpr {
   val name: Identifier = variable.name
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedAccessExpr = copy(ty = ty.ap(subst))
+  override fun ap(subst: Subst): TypedAccessExpr =
+    copy(ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitAccessExpr(this)
@@ -132,7 +135,8 @@ data class TypedAssignExpr(
   override val subst: Subst,
   override val location: Location,
 ) : TypedExpr {
-  override fun ap(subst: Subst): TypedAssignExpr = copy(value = value.ap(subst), ty = ty.ap(subst))
+  override fun ap(subst: Subst): TypedAssignExpr =
+    copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitAssignExpr(this)
@@ -149,7 +153,12 @@ data class TypedSetExpr(
   override val location: Location,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedSetExpr =
-    copy(receiver = receiver.ap(subst), value = value.ap(subst), ty = ty.ap(subst))
+    copy(
+      receiver = receiver.ap(subst),
+      value = value.ap(subst),
+      ty = ty.ap(subst),
+      subst = subst.compose(subst),
+    )
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitSetExpr(this)
@@ -165,7 +174,7 @@ data class TypedGetExpr(
   override val location: Location,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedGetExpr =
-    copy(receiver = receiver.ap(subst), ty = ty.ap(subst))
+    copy(receiver = receiver.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitGetExpr(this)
@@ -191,7 +200,7 @@ data class TypedIntAddExpr(
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
-  override val subst: Subst = rhs.subst
+  override val subst: Subst = lhs.subst compose rhs.subst
 
   override fun ap(subst: Subst): TypedIntAddExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
 }
@@ -204,7 +213,7 @@ data class TypedIntSubExpr(
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
-  override val subst: Subst = rhs.subst
+  override val subst: Subst = lhs.subst compose rhs.subst
 
   override fun ap(subst: Subst): TypedIntSubExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
 }
@@ -217,7 +226,7 @@ data class TypedIntMulExpr(
   override val location: Location = Location.Generated,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
-  override val subst: Subst = rhs.subst
+  override val subst: Subst = lhs.subst compose rhs.subst
 
   override fun ap(subst: Subst): TypedIntMulExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
 }
@@ -228,11 +237,12 @@ data class TypedIntDivExpr(
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
+  override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = i32Ty
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedIntDivExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
+  override fun ap(subst: Subst): TypedIntDivExpr =
+    copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst), subst = subst.compose(subst))
 }
 
 data class TypedIntEQExpr(
@@ -241,11 +251,12 @@ data class TypedIntEQExpr(
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
+  override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedIntEQExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
+  override fun ap(subst: Subst): TypedIntEQExpr =
+    copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst), subst = subst.compose(subst))
 }
 
 data class TypedIntNEQExpr(
@@ -254,11 +265,12 @@ data class TypedIntNEQExpr(
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
+  override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedIntNEQExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
+  override fun ap(subst: Subst): TypedIntNEQExpr =
+    copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst), subst = subst.compose(subst))
 }
 
 data class TypedIntGTExpr(
@@ -267,11 +279,12 @@ data class TypedIntGTExpr(
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
+  override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedIntGTExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
+  override fun ap(subst: Subst): TypedIntGTExpr =
+    copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst), subst = subst.compose(subst))
 }
 
 data class TypedIntGTEExpr(
@@ -280,11 +293,12 @@ data class TypedIntGTEExpr(
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
+  override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedIntGTEExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
+  override fun ap(subst: Subst): TypedIntGTEExpr =
+    copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst), subst = subst.compose(subst))
 }
 
 data class TypedIntLTExpr(
@@ -293,11 +307,12 @@ data class TypedIntLTExpr(
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
+  override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedIntLTExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
+  override fun ap(subst: Subst): TypedIntLTExpr =
+    copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst), subst = subst.compose(subst))
 }
 
 data class TypedIntLTEExpr(
@@ -306,11 +321,12 @@ data class TypedIntLTEExpr(
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
   override val location: Location = Location.Generated,
+  override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
-  override val subst: Subst = Subst()
 
-  override fun ap(subst: Subst): TypedIntLTEExpr = copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst))
+  override fun ap(subst: Subst): TypedIntLTEExpr =
+    copy(lhs = lhs.ap(subst), rhs = rhs.ap(subst), subst = subst.compose(subst))
 }
 
 data class TypedCallExpr(
@@ -321,7 +337,12 @@ data class TypedCallExpr(
   override val location: Location,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedCallExpr =
-    copy(callee = callee.ap(subst), argument = argument.ap(subst), ty = ty.ap(subst))
+    copy(
+      callee = callee.ap(subst),
+      argument = argument.ap(subst),
+      ty = ty.ap(subst),
+      subst = subst.compose(subst),
+    )
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitCallExpr(this)
@@ -336,7 +357,11 @@ data class TypedInstanceExpr(
   override val location: Location,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedInstanceExpr =
-    copy(arguments = arguments.mapValues { it.value ap subst }, ty = ty.ap(subst))
+    copy(
+      arguments = arguments.mapValues { it.value ap subst },
+      ty = ty.ap(subst),
+      subst = subst.compose(subst),
+    )
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitInstanceExpr(this)
@@ -348,7 +373,8 @@ data class TypedSizeofExpr(
   override val subst: Subst,
   override val location: Location,
 ) : TypedExpr {
-  override fun ap(subst: Subst): TypedSizeofExpr = copy(ty = ty.ap(subst))
+  override fun ap(subst: Subst): TypedSizeofExpr =
+    copy(ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitSizeofExpr(this)
@@ -362,7 +388,8 @@ data class TypedRefExpr(
 ) : TypedExpr {
   override val ty: Ty = PtrTy(value.ty)
 
-  override fun ap(subst: Subst): TypedRefExpr = copy(value = value.ap(subst))
+  override fun ap(subst: Subst): TypedRefExpr =
+    copy(value = value.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitRefExpr(this)
@@ -375,7 +402,8 @@ data class TypedDerefExpr(
   override val subst: Subst,
   override val location: Location,
 ) : TypedExpr {
-  override fun ap(subst: Subst): TypedDerefExpr = copy(value = value.ap(subst), ty = ty.ap(subst))
+  override fun ap(subst: Subst): TypedDerefExpr =
+    copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitDerefExpr(this)
@@ -393,7 +421,8 @@ data class TypedMatchExpr(
     copy(
       subject = subject.ap(subst),
       patterns = patterns.mapKeys { it.key ap subst }.mapValues { it.value ap subst },
-      ty = ty.ap(subst)
+      ty = ty.ap(subst),
+      subst = subst.compose(subst),
     )
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {

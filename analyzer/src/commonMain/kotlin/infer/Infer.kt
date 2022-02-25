@@ -204,7 +204,7 @@ class Infer(private val tree: ModuleTree) :
       acc
     }
 
-    return TypedMatchExpr(subject, patterns, ty ap subst, subst, expr.location)
+    return TypedMatchExpr(subject, patterns, ty ap subst, subst, expr.location) ap subst
   }
 
   override fun visitIfExpr(expr: IfExpr): TypedExpr {
@@ -227,7 +227,7 @@ class Infer(private val tree: ModuleTree) :
       return elseBranch.violate(TypeMismatch(ty, elseBranch.ty ap subst))
     }
 
-    return TypedIfExpr(cond, thenBranch, elseBranch, ty, subst, expr.location)
+    return TypedIfExpr(cond, thenBranch, elseBranch, ty, subst, expr.location) ap subst
   }
 
   override fun visitConstExpr(expr: ConstExpr): TypedExpr {
@@ -257,7 +257,7 @@ class Infer(private val tree: ModuleTree) :
       currentScope.references[variable.name] = variable.ty
     }
 
-    return TypedAccessExpr(null, variable, variable.ty, expr.location)
+    return TypedAccessExpr(null, variable, variable.ty, Subst(), expr.location)
   }
 
   override fun visitCallExpr(expr: CallExpr): TypedExpr {
@@ -301,7 +301,7 @@ class Infer(private val tree: ModuleTree) :
           argument.violate(TypeMismatch(parameterTy, argumentTy))
         }
 
-        TypedCallExpr(acc, argument, nestTy, subst, expr.location)
+        TypedCallExpr(acc, argument, nestTy, subst, expr.location) ap subst
       }
   }
 
@@ -319,7 +319,7 @@ class Infer(private val tree: ModuleTree) :
       return value.violate(TypeMismatch(ty, value.ty))
     }
 
-    return TypedAssignExpr(null, variable.name, value, value.ty, Subst(), expr.location)
+    return TypedAssignExpr(null, variable.name, value, value.ty, value.subst, expr.location)
   }
 
   override fun visitSetExpr(expr: SetExpr): TypedExpr {
@@ -334,7 +334,7 @@ class Infer(private val tree: ModuleTree) :
             val variable = value.scope.findVariable(expr.property)
               ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
-            return TypedAccessExpr(value, variable, variable.ty, receiver.location)
+            return TypedAccessExpr(value, variable, variable.ty, Subst(), receiver.location)
           }
           else -> visitExpr(receiver)
         }
@@ -365,7 +365,7 @@ class Infer(private val tree: ModuleTree) :
       newValue,
       struct,
       property.ty,
-      Subst(),
+      newValue.subst,
       expr.location
     )
   }
@@ -380,7 +380,7 @@ class Infer(private val tree: ModuleTree) :
             val variable = value.scope.findVariable(expr.property)
               ?: return expr.property.violate(UnresolvedVariable(expr.property, value))
 
-            return TypedAccessExpr(value, variable, variable.ty, receiver.location)
+            return TypedAccessExpr(value, variable, variable.ty, Subst(), receiver.location)
           }
           else -> visitExpr(receiver)
         }
@@ -434,7 +434,7 @@ class Infer(private val tree: ModuleTree) :
       ),
     )
 
-    return TypedInstanceExpr(arguments, struct, ty.first ap subst, subst, expr.location)
+    return TypedInstanceExpr(arguments, struct, ty.first ap subst, subst, expr.location) ap subst
   }
 
   override fun visitSizeofExpr(expr: SizeofExpr): TypedExpr {
@@ -852,10 +852,6 @@ class Infer(private val tree: ModuleTree) :
       }
       else -> Subst(name, other)
     }
-  }
-
-  private infix fun Subst.compose(other: Subst): Subst {
-    return Subst((map + other.map).mapValues { it.value ap this })
   }
 
   private fun findTyInfo(ty: Ty): TyInfo? {

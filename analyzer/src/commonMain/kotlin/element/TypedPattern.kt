@@ -29,7 +29,8 @@ data class TypedNamedTuplePattern(
   override val subst: Subst,
   override val location: Location,
 ) : TypedPattern {
-  override fun ap(subst: Subst): TypedNamedTuplePattern = copy(ty = ty.ap(subst))
+  override fun ap(subst: Subst): TypedNamedTuplePattern =
+    copy(ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
     return visitor.visitNamedTuplePattern(this)
@@ -42,7 +43,8 @@ data class TypedIdentPattern(
   override val subst: Subst,
   override val location: Location,
 ) : TypedPattern {
-  override fun ap(subst: Subst): TypedIdentPattern = copy(ty = ty.ap(subst))
+  override fun ap(subst: Subst): TypedIdentPattern =
+    copy(ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
     return visitor.visitIdentPattern(this)

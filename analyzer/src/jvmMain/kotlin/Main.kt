@@ -18,23 +18,25 @@ fun main() {
       Nothing
     }
 
-    fun fst(list: List[a]) -> Maybe[a] {
-      let value = match list {
-        Cons(x, _) => {
-          fun batata() -> a = x;
+    @intrinsic
+    fun panic(message: *Char) -> a;
 
-          let a = x;
+    @intrinsic
+    fun println(message: *Char) -> ();
 
-          Just(batata())
-        },
-        Nil() => Nothing
-      };
+    fun unwrap(m: Maybe[a]) -> a = match m {
+      Just(x)   => x,
+      Nothing() => panic("unwrap called on `Nothing`")
+    }
 
-      value
+    fun fst(list: List[a]) -> Maybe[a] = match list {
+      Cons(x, _) => Just(x),
+      Nil()      => Nothing
     }
 
     fun main(argc: Int32, argv: **Char) {
-      fst(Cons("Hello", Nil));
+      let list = Cons("Hello", Nil);
+      println(unwrap(fst(list)));
     }
     """.trimIndent()
   )
