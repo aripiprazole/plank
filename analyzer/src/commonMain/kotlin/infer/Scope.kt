@@ -14,7 +14,7 @@ import org.plank.analyzer.element.TypedIntNEQExpr
 import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.PlankFile
-import kotlin.native.concurrent.ThreadLocal
+import org.plank.syntax.element.text
 
 class GlobalScope(override val tree: ModuleTree) : Scope() {
   /**
@@ -49,30 +49,28 @@ class GlobalScope(override val tree: ModuleTree) : Scope() {
 
   override val name = Identifier("Global")
   override val enclosing: Scope? = null
+  override val names: Set<String> = emptySet()
 
   override fun fresh(): Ty {
     return VarTy(letters.elementAt(count)).also { count++ }
   }
 
-  override fun toString(): String = "Global"
-
-  @ThreadLocal
-  companion object {
-    private val letters: Sequence<String> = sequence {
-      var prefix = ""
-      var i = 0
-      while (true) {
-        i++
-        ('a'..'z').forEach { c ->
-          yield("$prefix$c")
-        }
-        if (i > Char.MAX_VALUE.code) {
-          i = 0
-        }
-        prefix += "${i.toChar()}"
+  override val letters: Sequence<String> = sequence {
+    var prefix = ""
+    var i = 0
+    while (true) {
+      i++
+      ('a'..'z').forEach { c ->
+        yield("$prefix$c")
       }
+      if (i > Char.MAX_VALUE.code) {
+        i = 0
+      }
+      prefix += "${i.toChar()}"
     }
   }
+
+  override fun toString(): String = "Global"
 }
 
 data class FileScope(
@@ -103,12 +101,20 @@ class FunctionScope(
   override val tree: ModuleTree = ModuleTree(),
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
 ) : Scope() {
+  override val names: Set<String> = function.generics.text().toSet()
   override val isTopLevelScope: Boolean = false
 
   val returnTy: Ty = function.returnTy
   val parameters: Map<Identifier, Ty> = function.parameters
 
-  override fun toString(): String = "Function($name, ${function.ty}) <: $enclosing"
+  private fun showNames(): String {
+    return when {
+      names.isEmpty() -> ""
+      else -> "[${names.joinToString(" ")}]"
+    }
+  }
+
+  override fun toString(): String = "Function${showNames()}($name, ${function.ty}) <: $enclosing"
 }
 
 open class ClosureScope(
@@ -128,8 +134,11 @@ sealed class Scope {
   abstract val tree: ModuleTree
 
   open val isTopLevelScope: Boolean = true
+
   open val nested: Boolean get() = enclosing != null
   open val module: Module get() = enclosing!!.module
+  open val letters: Sequence<String> get() = enclosing!!.letters
+  open val names: Set<String> get() = enclosing!!.names
 
   open val references = mutableMapOf<Identifier, Ty>()
 

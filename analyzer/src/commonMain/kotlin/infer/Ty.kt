@@ -69,8 +69,6 @@ val floatTy: Ty = ConstTy("Float")
 val doubleTy: Ty = ConstTy("Double")
 
 data class Scheme(val names: Set<String>, val ty: Ty) {
-  constructor(ty: Ty) : this(ty.ftv().sorted().toSet(), ty)
-
   override fun toString(): String = "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
 }
 

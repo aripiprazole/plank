@@ -554,7 +554,7 @@ class Infer(private val tree: ModuleTree) :
       AppTy(acc, VarTy(next))
     }
 
-    val (instantiated, subst) = inst(Scheme(ty))
+    val (instantiated, subst) = inst(scheme(ty))
 
     val generics = instantiated.ftv().sorted().map { it.toIdentifier() }.toSet()
 
@@ -569,9 +569,9 @@ class Infer(private val tree: ModuleTree) :
       val funTy = FunTy(instantiated, types).ap(subst) as FunTy
 
       val variantScheme = if (types.isEmpty()) {
-        currentScope.declare(name, Scheme(instantiated))
+        currentScope.declare(name, scheme(instantiated))
       } else {
-        currentScope.declare(name, Scheme(funTy))
+        currentScope.declare(name, scheme(funTy))
       }
 
       val (variantTy) = inst(Scheme(variantScheme.names, ConstTy(name.text)))
@@ -596,7 +596,7 @@ class Infer(private val tree: ModuleTree) :
       AppTy(acc, VarTy(next.text))
     }
 
-    val (instantiated, _) = inst(Scheme(ty))
+    val (instantiated, _) = inst(scheme(ty))
 
     val generics = instantiated.ftv().sorted().map { it.toIdentifier() }.toSet()
 
@@ -627,7 +627,7 @@ class Infer(private val tree: ModuleTree) :
       return name.violate(Redeclaration(name)).stmt()
     }
 
-    val scheme = currentScope.declare(name, Scheme(ty))
+    val scheme = currentScope.declare(name, scheme(ty))
 
     val info =
       FunctionInfo(name, ty, scheme.names.map { it.toIdentifier() }.toSet(), returnType, parameters)
@@ -660,7 +660,7 @@ class Infer(private val tree: ModuleTree) :
       return value.violate(TypeMismatch(ty, value.ty)).stmt()
     }
 
-    val scheme = currentScope.declare(name, Scheme(ty), mutable)
+    val scheme = currentScope.declare(name, scheme(ty), mutable)
 
     return ResolvedLetDecl(name, mutable, value, isNested, scheme, ty, value.subst, decl.location)
   }
@@ -866,5 +866,11 @@ class Infer(private val tree: ModuleTree) :
       is ConstTy -> currentScope.findTyInfo(ty.name.toIdentifier())
       is VarTy -> currentScope.findTyInfo(ty.name.toIdentifier())
     }
+  }
+
+  private fun scheme(ty: Ty): Scheme {
+    val names = currentScope.names
+
+    return Scheme(ty.ftv().sorted().filter { it !in names }.toSet(), ty)
   }
 }

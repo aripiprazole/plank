@@ -296,7 +296,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
         append("mut ")
       }
       append(name.text).space()
-      paren(ty)
+      paren(scheme)
       appendLine()
       append("$indent  ")
       append(value.pretty("$indent  "))
