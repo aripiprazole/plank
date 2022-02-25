@@ -6,7 +6,7 @@ data class Identifier(val text: String, override val location: Location = Locati
     fun visitIdentifier(identifier: Identifier): T
   }
 
-  override fun toString(): String = "Identifier($text)"
+  override fun toString(): String = ":$text"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

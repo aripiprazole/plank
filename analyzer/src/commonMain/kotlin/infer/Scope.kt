@@ -16,7 +16,7 @@ import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.PlankFile
 import kotlin.native.concurrent.ThreadLocal
 
-class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
+class GlobalScope(override val tree: ModuleTree) : Scope() {
   /**
    * Init compiler-defined functions
    */
@@ -54,6 +54,8 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
     return VarTy(letters.elementAt(count)).also { count++ }
   }
 
+  override fun toString(): String = "Global"
+
   @ThreadLocal
   companion object {
     private val letters: Sequence<String> = sequence {
@@ -75,17 +77,21 @@ class GlobalScope(override val moduleTree: ModuleTree) : Scope() {
 
 data class FileScope(
   val file: PlankFile,
+  override val module: Module,
   override val enclosing: Scope? = null,
-  override val moduleTree: ModuleTree = ModuleTree(),
+  override val tree: ModuleTree = ModuleTree(),
 ) : Scope() {
   override val name = file.module
   override val nested = false
+
+  override fun toString(): String =
+    "File(${file.path}, tree=$tree) <: $enclosing"
 }
 
 data class ModuleScope(
-  val module: Module,
+  override val module: Module,
   override val enclosing: Scope,
-  override val moduleTree: ModuleTree = ModuleTree(),
+  override val tree: ModuleTree = ModuleTree(),
 ) : Scope() {
   override val name: Identifier = Identifier("${enclosing.name}.${module.name}")
 }
@@ -94,54 +100,64 @@ class FunctionScope(
   val function: FunctionInfo,
   override val name: Identifier,
   override val enclosing: Scope? = null,
-  override val moduleTree: ModuleTree = ModuleTree(),
+  override val tree: ModuleTree = ModuleTree(),
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
 ) : Scope() {
   override val isTopLevelScope: Boolean = false
 
   val returnTy: Ty = function.returnTy
   val parameters: Map<Identifier, Ty> = function.parameters
+
+  override fun toString(): String = "Function($name, ${function.ty}) <: $enclosing"
 }
 
 open class ClosureScope(
   override val name: Identifier,
   override val enclosing: Scope,
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
-  override val moduleTree: ModuleTree = ModuleTree(),
+  override val tree: ModuleTree = ModuleTree(),
 ) : Scope() {
   override val isTopLevelScope: Boolean = false
+
+  override fun toString(): String = "Closure($name) <: $enclosing"
 }
 
 sealed class Scope {
   abstract val name: Identifier
   abstract val enclosing: Scope?
-  abstract val moduleTree: ModuleTree
+  abstract val tree: ModuleTree
 
   open val isTopLevelScope: Boolean = true
   open val nested: Boolean get() = enclosing != null
+  open val module: Module get() = enclosing!!.module
 
   open val references = mutableMapOf<Identifier, Ty>()
 
-  private val types = mutableMapOf<Identifier, TyInfo>()
-  private val expanded = mutableListOf<Scope>()
-  private val variables = mutableMapOf<Identifier, Variable>()
+  private val _expanded = mutableListOf<Scope>()
+  val expanded: List<Scope> get() = _expanded
+
+  private val _types = mutableMapOf<Identifier, TyInfo>()
+  val types: Map<Identifier, TyInfo> get() = _types
+
+  private val _variables = mutableMapOf<Identifier, Variable>()
+  val variables: Map<Identifier, Variable> get() = _variables
 
   /**
    * Declares a compiler-defined variable with type [scheme] in the context
    */
   fun declare(name: Identifier, scheme: Scheme, mutable: Boolean = false): Scheme {
-    variables[name] = RankedVariable(scheme, mutable, name, this)
+    _variables[name] = RankedVariable(scheme, mutable, name, this)
     return scheme
   }
 
   fun declare(name: Identifier, ty: Ty, mutable: Boolean = false): Scheme {
-    variables[name] = LocalVariable(mutable, name, ty, this)
+    _variables[name] = LocalVariable(mutable, name, ty, this)
     return Scheme(emptySet(), ty)
   }
 
   fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false): Scheme {
     val scheme = Scheme(emptySet(), value.ty)
-    variables[name] = LocalVariable(mutable, name, scheme.ty, this)
+    _variables[name] = LocalVariable(mutable, name, scheme.ty, this)
     return scheme
   }
 
@@ -151,7 +167,7 @@ sealed class Scope {
     vararg parameters: Ty,
     builder: (List<TypedExpr>) -> TypedExpr,
   ) {
-    variables[Identifier(name)] =
+    _variables[Identifier(name)] =
       InlineVariable(
         false,
         Identifier(name),
@@ -164,27 +180,113 @@ sealed class Scope {
   }
 
   fun <T : TyInfo> create(info: T): T {
-    types[info.name] = info
+    _types[info.name] = info
     return info
   }
 
   fun findModule(name: Identifier): Module? {
-    return moduleTree.findModule(name)
+    return tree.findModule(name)
       ?: enclosing?.findModule(name)
   }
 
   fun findTyInfo(name: Identifier): TyInfo? {
-    return types[name]
+    return _types[name]
       ?: enclosing?.findTyInfo(name)
-      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findTyInfo(name) }
+      ?: _expanded.filter { it != this }.firstNotNullOfOrNull { it.findTyInfo(name) }
   }
 
   fun findVariable(name: Identifier): Variable? {
-    return variables[name]?.inScope()
+    return _variables[name]?.inScope()
       ?: enclosing?.findVariable(name)?.notInScope()
-      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
+      ?: _expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
         ?.notInScope()
   }
 
   open fun fresh(): Ty = enclosing!!.fresh()
+}
+
+@Suppress("LongMethod", "ComplexMethod")
+fun Scope.pretty(indent: String = ""): String = buildString {
+  val variableLength = variables.keys
+    .maxByOrNull { it.text.length }
+    ?.text?.length ?: -1
+
+  expanded.forEach { scope ->
+    append(indent)
+    appendLine("expand ${scope.name.text}")
+    appendLine()
+  }
+
+  tree.modules.forEach { (name, module) ->
+    append(indent)
+    appendLine("module ${name.text}")
+    appendLine(module.scope.pretty("$indent  "))
+  }
+
+  types.forEach { (name, info) ->
+    when (info) {
+      is EnumInfo -> {
+        val variantLength = info.members.keys
+          .maxByOrNull { it.text.length }
+          ?.text?.length ?: -1
+
+        append(indent)
+        append("enum ${name.text}")
+        appendLine()
+        info.members.values.forEach { member ->
+          append("$indent  ")
+          append("variant ${member.name.text.padEnd(variantLength)} : ${member.scheme}")
+
+          appendLine()
+        }
+        appendLine()
+      }
+      is StructInfo -> {
+        val variantLength = info.members.keys
+          .maxByOrNull { it.text.length }
+          ?.text?.length ?: -1
+
+        append(indent)
+        append("struct ${name.text}")
+        appendLine()
+        info.members.values.forEach { member ->
+          append("$indent  ")
+          append("member ${member.name.text.padEnd(variantLength)} : ${member.ty}")
+
+          appendLine()
+        }
+        appendLine()
+      }
+      is DoubleInfo -> {
+        append(indent)
+        append("double ${name.text}")
+        appendLine()
+      }
+      is FloatInfo -> {
+        append(indent)
+        append("float ${name.text}")
+        appendLine()
+      }
+      is IntInfo -> {
+        append(indent)
+        append("int ")
+        if (info.unsigned) {
+          append("unsigned ")
+        }
+        append(name.text)
+        appendLine()
+      }
+      else -> {}
+    }
+  }
+
+  variables.forEach { (name, variable) ->
+    append(indent)
+    when (variable) {
+      is InlineVariable -> append("inline ${name.text.padEnd(variableLength)} : ${variable.ty}")
+      is LocalVariable -> append("local ${name.text.padEnd(variableLength)} : ${variable.ty}")
+      is RankedVariable -> append("ranked ${name.text.padEnd(variableLength)} : ${variable.scheme}")
+    }
+    appendLine()
+  }
 }

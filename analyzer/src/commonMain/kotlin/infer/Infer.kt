@@ -109,7 +109,7 @@ import org.plank.syntax.element.toIdentifier
 import pw.binom.Stack
 
 @Suppress("UnusedPrivateMember")
-class Infer(tree: ModuleTree) :
+class Infer(private val tree: ModuleTree) :
   PlankFile.Visitor<ResolvedPlankFile>,
   Expr.Visitor<TypedExpr>,
   Stmt.Visitor<ResolvedStmt>,
@@ -122,7 +122,7 @@ class Infer(tree: ModuleTree) :
     val fileModule = currentModuleTree
       .createModule(file.module, globalScope, file.program)
       .apply {
-        scope = FileScope(file, globalScope)
+        scope = FileScope(file, this, globalScope)
       }
 
     return file
@@ -157,8 +157,9 @@ class Infer(tree: ModuleTree) :
 
   override fun visitPlankFile(file: PlankFile): ResolvedPlankFile {
     val program = visitStmts(file.program).filterIsInstance<ResolvedDecl>()
+    val module = currentScope.module
 
-    return ResolvedPlankFile(file, program, analyzerViolations = violations.toList())
+    return ResolvedPlankFile(program, module, tree, file, analyzerViolations = violations.toList())
   }
 
   override fun visitBlockExpr(expr: BlockExpr): TypedExpr {
@@ -734,7 +735,7 @@ class Infer(tree: ModuleTree) :
   private val violations: MutableSet<AnalyzerViolation> = mutableSetOf()
 
   private val currentScope: Scope get() = scopes.peekLast()
-  private val currentModuleTree: ModuleTree get() = scopes.peekLast().moduleTree
+  private val currentModuleTree: ModuleTree get() = scopes.peekLast().tree
 
   private fun Scope.deconstruct(
     pattern: Pattern,

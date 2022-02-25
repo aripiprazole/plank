@@ -9,16 +9,17 @@ import org.plank.syntax.element.PlankFile
 data class Module(val name: Identifier, val content: List<Decl>) {
   lateinit var scope: Scope
 
-  override fun toString(): String = "Module($name, ${scope::class.simpleName})"
+  override fun toString(): String = "Module($name, scope=${scope::class.simpleName})"
 }
 
 class ModuleTree(files: List<PlankFile> = emptyList()) {
-  private val modules = mutableMapOf<Identifier, Module>()
+  private val _modules = mutableMapOf<Identifier, Module>()
+  val modules: Map<Identifier, Module> get() = _modules
 
   init {
     files.forEach { file ->
-      modules[file.module] = Module(file.module, file.program).apply {
-        scope = FileScope(file)
+      _modules[file.module] = Module(file.module, file.program).apply {
+        scope = FileScope(file, this)
       }
     }
   }
@@ -28,7 +29,7 @@ class ModuleTree(files: List<PlankFile> = emptyList()) {
   }
 
   fun findFiles(): List<PlankFile> {
-    return modules.values
+    return _modules.values
       .map(Module::scope)
       .filterIsInstance<FileScope>()
       .map(FileScope::file)
@@ -45,12 +46,19 @@ class ModuleTree(files: List<PlankFile> = emptyList()) {
       scope = ModuleScope(this, enclosing, ModuleTree())
     }
 
-    modules[name] = module
+    _modules[name] = module
 
     return module
   }
 
   fun findModule(name: Identifier): Module? {
-    return dependencies.depthFirstSearch(name).firstOrNull()?.let(modules::get)
+    return dependencies.depthFirstSearch(name).firstOrNull()?.let(_modules::get)
+  }
+
+  override fun toString(): String {
+    val unsignedHashCode = hashCode().toLong() and 0xffffffffL
+    val hashCodeStr = unsignedHashCode.toString(16)
+
+    return "ModuleTree@$hashCodeStr"
   }
 }

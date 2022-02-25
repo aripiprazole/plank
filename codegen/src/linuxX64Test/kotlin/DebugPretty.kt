@@ -5,7 +5,7 @@ import kotlinx.cinterop.toKString
 import llvm.LLVMFatalErrorHandler
 
 val fatalErrorHandler: LLVMFatalErrorHandler = staticCFunction { reason ->
-  handleFatalError(reason?.toKString() ?: "Unknown")
+  handleFatalError(reason?.toKString() ?: "Unknown").toString()
 }
 
 actual fun setupDebugPretty() {
