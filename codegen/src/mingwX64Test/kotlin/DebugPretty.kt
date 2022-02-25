@@ -11,5 +11,5 @@ val fatalErrorHandler: LLVMFatalErrorHandler = staticCFunction { reason ->
 actual fun setupDebugPretty() {
   llvm.LLVMResetFatalErrorHandler()
   llvm.LLVMInstallFatalErrorHandler(fatalErrorHandler)
-//  llvm.LLVMEnablePrettyStackTrace()
+  llvm.LLVMEnablePrettyStackTrace()
 }

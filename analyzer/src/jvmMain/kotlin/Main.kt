@@ -1,5 +1,6 @@
 package org.plank.analyzer
 
+import org.plank.syntax.debug.dumpTree
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.SimpleCompilerLogger
 
@@ -21,7 +22,7 @@ fun main() {
     @intrinsic
     fun ty(value: a) -> *Char;
 
-    fun fst(list: List[*Char]) -> Maybe[*Char] = match list {
+    fun fst(list: List[a]) -> Maybe[a] = match list {
       Cons(x, _) => Just(x),
       Nil() => Nothing
     };
@@ -36,5 +37,5 @@ fun main() {
 
   resolved.analyzerViolations.forEach { it.render(logger) }
 
-  println(resolved.pretty())
+  println(resolved.dumpTree())
 }

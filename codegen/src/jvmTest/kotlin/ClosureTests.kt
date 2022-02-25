@@ -1,3 +1,5 @@
+@file:Suppress("MaximumLineLength", "MaxLineLength")
+
 package org.plank.codegen
 
 import kotlin.test.Test
@@ -290,7 +292,6 @@ class ClosureTests {
       }
   }
 
-  @Suppress("MaximumLineLength", "MaxLineLength")
   @Test
   fun `test calling a two parameterized closure function with one level of nesting accessing a variable from the enclosing scope`() {
     TestCompilation

@@ -20,12 +20,4 @@ fun File.child(name: String, recreate: Boolean = false, dir: Boolean = false): F
   return file
 }
 
-fun createTempDirectory(name: String): File {
-  return File.temporalDirectory!!.child(
-    generateTempDirectoryName(name),
-    recreate = true,
-    dir = true
-  )
-}
-
-expect fun generateTempDirectoryName(name: String): String
+expect fun createTempDirectory(name: String): File

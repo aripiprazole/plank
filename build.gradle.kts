@@ -68,6 +68,16 @@ subprojects {
     linuxX64("linuxX64")
     mingwX64("mingwX64")
 
+    jvm {
+      compilations.all {
+        kotlinOptions.jvmTarget = "16"
+      }
+
+      testRuns["test"].executionTask.configure {
+        useJUnitPlatform()
+      }
+    }
+
     sourceSets {
       val commonMain by getting
       val commonTest by getting {

@@ -5,13 +5,14 @@ lsp4j = "0.10.0"
 binom = "0.1.32"
 antlr4 = "4.7.1"
 antlr-kotlin = "160bc0b70f"
-llvm4j = "0.1.0-SNAPSHOT"
-llvmplatform = "11.1.0-1.5.5"
 arrow = "1.0.1"
 jupiter = "5.6.0"
 clikt = "3.1.0"
 mordant = "2.0.0-beta4"
 llvm4k = "dev"
+bytedeco-llvm = "13.0.1-1.5.7"
+bytedeco-libffi = "3.4.2-1.5.7"
+jna = "5.5.0"
 
 # Libraries
 [libraries.kt-reflect]
@@ -23,7 +24,7 @@ module = "org.jetbrains.kotlin:kotlin-test-common"
 version.ref = "kt"
 
 [libraries.kt-test-junit]
-module = "org.jetbrains.kotlin:kotlin-test-junit"
+module = "org.jetbrains.kotlin:kotlin-test-junit5"
 version.ref = "kt"
 
 [libraries.kt-test-annotations-common]
@@ -66,14 +67,6 @@ version.ref = "antlr-kotlin"
 module = "com.strumenta.antlr-kotlin:antlr-kotlin-runtime"
 version.ref = "antlr-kotlin"
 
-[libraries.llvm4j]
-module = "org.llvm4j:llvm4j"
-version.ref = "llvm4j"
-
-[libraries.bytedeco-llvmplatform]
-module = "org.bytedeco:llvm-platform"
-version.ref = "llvmplatform"
-
 [libraries.llvm4k-common]
 module = "org.plank.llvm4k:llvm4k"
 version.ref = "llvm4k"
@@ -89,6 +82,18 @@ version.ref = "llvm4k"
 [libraries.llvm4k-jvm]
 module = "org.plank.llvm4k:llvm4k-jvm"
 version.ref = "llvm4k"
+
+[libraries.bytedeco-llvm]
+module = "org.bytedeco:llvm-platform"
+version.ref = "bytedeco-llvm"
+
+[libraries.bytedeco-libffi]
+module = "org.bytedeco:libffi-platform"
+version.ref = "bytedeco-libffi"
+
+[libraries.jna]
+module = "net.java.dev.jna:jna"
+version.ref = "jna"
 
 [libraries.arrow-core]
 module = "io.arrow-kt:arrow-core"

@@ -91,6 +91,23 @@ kotlin {
       }
     }
 
+    val jvmMain by getting {
+      dependencies {
+        implementation(libs.llvm4k.jvm)
+        implementation(libs.bytedeco.llvm)
+        implementation(libs.bytedeco.libffi)
+        implementation(libs.jna)
+      }
+    }
+
+    val jvmTest by getting {
+      dependencies {
+        implementation(libs.kt.test.junit)
+        implementation(libs.jupiter.api)
+        implementation(libs.jupiter.engine)
+      }
+    }
+
     val linuxX64Main by getting {
       dependencies {
         implementation(libs.llvm4k.linuxX64)
