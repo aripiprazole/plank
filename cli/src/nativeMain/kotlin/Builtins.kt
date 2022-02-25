@@ -1,6 +1,6 @@
 package org.plank.cli
 
-import org.plank.analyzer.ModuleTree
+import org.plank.analyzer.infer.ModuleTree
 import org.plank.syntax.element.PlankFile
 
 @ThreadLocal
