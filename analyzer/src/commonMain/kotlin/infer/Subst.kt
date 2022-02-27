@@ -18,16 +18,24 @@ value class Subst(val map: Map<VarTy, Ty> = emptyMap()) {
 
 fun Map<VarTy, Ty>.toSubst(): Subst = Subst(this)
 
+fun nullSubst(): Subst = Subst()
+
+fun Scheme.ftv(): Set<String> {
+  return ty.ftv().toMutableSet().also { it.removeAll(names) }
+}
+
+fun TyEnv.ftv(): Set<String> {
+  return map.values.flatMap { it.ftv() }.toSet()
+}
+
 fun Ty.ftv(): Set<String> {
-  val a = when (this) {
+  return when (this) {
     is ConstTy -> emptySet()
     is VarTy -> setOf(name)
     is AppTy -> fn.ftv() + arg.ftv()
     is PtrTy -> arg.ftv()
     is FunTy -> returnTy.ftv() + parameterTy.ftv()
   }
-
-  return a
 }
 
 infix fun Ty.ap(subst: Subst): Ty {
@@ -36,6 +44,6 @@ infix fun Ty.ap(subst: Subst): Ty {
     is VarTy -> subst.map[this] ?: this
     is AppTy -> AppTy(fn ap subst, arg ap subst)
     is PtrTy -> PtrTy(arg ap subst)
-    is FunTy -> FunTy(returnTy ap subst, parameterTy ap subst)
+    is FunTy -> FunTy(parameterTy ap subst, returnTy ap subst)
   }
 }

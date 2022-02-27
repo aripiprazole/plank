@@ -1,7 +1,9 @@
-package org.plank.analyzer.infer
+package org.plank.analyzer.resolver
 
 import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.infer.Scheme
+import org.plank.analyzer.infer.Ty
 import org.plank.syntax.element.Identifier
 
 sealed interface Variable {
@@ -15,6 +17,14 @@ sealed interface Variable {
 
   fun inScope(): Variable
   fun notInScope(): Variable
+
+  fun scheme(): Scheme {
+    return when (this) {
+      is InlineVariable -> Scheme(ty)
+      is LocalVariable -> Scheme(ty)
+      is RankedVariable -> scheme
+    }
+  }
 }
 
 data class RankedVariable(

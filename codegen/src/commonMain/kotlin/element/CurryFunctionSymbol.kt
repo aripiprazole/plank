@@ -69,7 +69,7 @@ class CurryFunctionSymbol(
     index: Int,
     builder: ExecContext.(returnType: Ty) -> Unit = { generate() },
   ): ClosureFunctionSymbol {
-    val ty = FunTy(ty.nest(index), parameters[index].second)
+    val ty = FunTy(parameters[index].second, ty.nest(index))
 
     return ClosureFunctionSymbol(
       name = "$mangled#$index",

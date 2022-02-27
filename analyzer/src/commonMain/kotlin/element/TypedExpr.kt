@@ -1,14 +1,15 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.infer.Module
 import org.plank.analyzer.infer.PtrTy
-import org.plank.analyzer.infer.StructInfo
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
-import org.plank.analyzer.infer.Variable
 import org.plank.analyzer.infer.ap
 import org.plank.analyzer.infer.boolTy
 import org.plank.analyzer.infer.i32Ty
+import org.plank.analyzer.infer.nullSubst
+import org.plank.analyzer.resolver.Scope
+import org.plank.analyzer.resolver.StructInfo
+import org.plank.analyzer.resolver.Variable
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
 
@@ -31,6 +32,7 @@ sealed interface TypedExpr : TypedPlankElement {
     fun visitRefExpr(expr: TypedRefExpr): T
     fun visitDerefExpr(expr: TypedDerefExpr): T
     fun visitMatchExpr(expr: TypedMatchExpr): T
+    fun visitEnumIndexAccess(expr: TypedEnumIndexAccess): T
 
     fun visitTypedExprs(many: List<TypedExpr>): List<T> = many.map(::visitExpr)
   }
@@ -64,8 +66,8 @@ data class TypedBlockExpr(
 data class TypedConstExpr(
   val value: Any,
   override val ty: Ty,
-  override val subst: Subst,
-  override val location: Location,
+  override val subst: Subst = nullSubst(),
+  override val location: Location = Location.Generated,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedConstExpr =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
@@ -97,12 +99,12 @@ data class TypedIfExpr(
 }
 
 data class TypedAccessExpr(
-  val module: Module? = null,
   val variable: Variable,
   override val ty: Ty,
   override val subst: Subst,
   override val location: Location,
 ) : TypedExpr {
+  val scope: Scope = variable.declaredIn
   val name: Identifier = variable.name
 
   override fun ap(subst: Subst): TypedAccessExpr =
@@ -128,7 +130,7 @@ data class TypedGroupExpr(
 }
 
 data class TypedAssignExpr(
-  val module: Module? = null,
+  val scope: Scope,
   val name: Identifier,
   val value: TypedExpr,
   override val ty: Ty,
@@ -383,13 +385,13 @@ data class TypedSizeofExpr(
 
 data class TypedRefExpr(
   val value: TypedExpr,
-  override val subst: Subst,
   override val location: Location,
 ) : TypedExpr {
+  override val subst: Subst = value.subst
   override val ty: Ty = PtrTy(value.ty)
 
   override fun ap(subst: Subst): TypedRefExpr =
-    copy(value = value.ap(subst), subst = subst.compose(subst))
+    copy(value = value.ap(subst))
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitRefExpr(this)
@@ -407,6 +409,21 @@ data class TypedDerefExpr(
 
   override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
     return visitor.visitDerefExpr(this)
+  }
+}
+
+data class TypedEnumIndexAccess(
+  val value: TypedExpr,
+  val index: Int,
+  override val ty: Ty,
+  override val subst: Subst,
+  override val location: Location,
+) : TypedExpr {
+  override fun ap(subst: Subst): TypedEnumIndexAccess =
+    copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
+
+  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
+    return visitor.visitEnumIndexAccess(this)
   }
 }
 

@@ -18,12 +18,21 @@ data class NamedTuplePattern(
   val properties: List<Pattern>,
   override val location: Location,
 ) : Pattern {
+  constructor(
+    type: QualifiedPath,
+    vararg properties: Pattern,
+    location: Location = Location.Generated,
+  ) : this(type, properties.toList(), location)
+
   override fun <T> accept(visitor: Pattern.Visitor<T>): T {
     return visitor.visitNamedTuplePattern(this)
   }
 }
 
-data class IdentPattern(val name: Identifier, override val location: Location) : Pattern {
+data class IdentPattern(
+  val name: Identifier,
+  override val location: Location = Location.Generated,
+) : Pattern {
   override fun <T> accept(visitor: Pattern.Visitor<T>): T {
     return visitor.visitIdentPattern(this)
   }

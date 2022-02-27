@@ -161,10 +161,10 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitEnumDecl(ctx: EnumDeclContext): EnumDecl {
     return EnumDecl(
       visitToken(ctx.name!!),
-      ctx.names?.IDENTIFIER()?.map(::visitTerminal)?.toSet().orEmpty(),
       ctx.findEnumMember().map { member ->
         EnumDecl.Member(visitToken(member.name!!), member.findTypeRef().map(::visitTypeRef))
       },
+      ctx.names?.IDENTIFIER()?.map(::visitTerminal)?.toSet().orEmpty(),
       ctx.location,
     )
   }
@@ -260,7 +260,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitAssignExpr(ctx: AssignExprContext): AssignExpr {
-    return AssignExpr(visitToken(ctx.name!!), visitExpr(ctx.value!!), ctx.location)
+    return AssignExpr(visitToken(ctx.name!!), visitExpr(ctx.value!!), null, ctx.location)
   }
 
   override fun visitSetExpr(ctx: SetExprContext): SetExpr {
@@ -324,7 +324,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitBlockExpr(ctx: BlockExprContext): Expr {
-    return BlockExpr(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
+    return BlockExpr(ctx.value?.let(::visitExpr), ctx.findStmt().map(::visitStmt), ctx.location)
   }
 
   private fun visitExpr(ctx: ExprContext): Expr = when (ctx) {
@@ -365,7 +365,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitAccessExpr(ctx: AccessExprContext): AccessExpr {
-    return AccessExpr(QualifiedPath(visitToken(ctx.value!!)), ctx.location)
+    return AccessExpr(visitToken(ctx.value!!), null, ctx.location)
   }
 
   override fun visitTrueExpr(ctx: TrueExprContext): ConstExpr {
@@ -474,8 +474,9 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
 
   override fun visitApplyTypeRef(ctx: ApplyTypeRefContext): ApplyTypeRef {
     val arguments = ctx.findTypeRef().map(::visitTypeRef)
+    val path = visitQualifiedPath(ctx.path!!)
 
-    return ApplyTypeRef(visitQualifiedPath(ctx.path!!), arguments, ctx.location)
+    return ApplyTypeRef(AccessTypeRef(path, path.location), arguments, ctx.location)
   }
 
   override fun visitPointerTypeRef(ctx: PointerTypeRefContext): PointerTypeRef {
@@ -547,7 +548,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     get() = Location(start!!.startIndex, stop!!.stopIndex, file)
 
   private fun Identifier.asAccessExpr(): AccessExpr {
-    return AccessExpr(QualifiedPath(this), location)
+    return AccessExpr(this, null, location)
   }
 
   private fun callFold(acc: Expr, next: ArgContext): Expr {

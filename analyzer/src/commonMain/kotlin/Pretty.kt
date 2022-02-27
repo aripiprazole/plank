@@ -48,15 +48,15 @@ import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.analyzer.element.TypedThenBranch
-import org.plank.analyzer.infer.DoubleInfo
-import org.plank.analyzer.infer.EnumInfo
-import org.plank.analyzer.infer.FloatInfo
-import org.plank.analyzer.infer.InlineVariable
-import org.plank.analyzer.infer.IntInfo
-import org.plank.analyzer.infer.LocalVariable
-import org.plank.analyzer.infer.RankedVariable
-import org.plank.analyzer.infer.Scope
-import org.plank.analyzer.infer.StructInfo
+import org.plank.analyzer.resolver.DoubleInfo
+import org.plank.analyzer.resolver.EnumInfo
+import org.plank.analyzer.resolver.FloatInfo
+import org.plank.analyzer.resolver.InlineVariable
+import org.plank.analyzer.resolver.IntInfo
+import org.plank.analyzer.resolver.LocalVariable
+import org.plank.analyzer.resolver.RankedVariable
+import org.plank.analyzer.resolver.Scope
+import org.plank.analyzer.resolver.StructInfo
 import org.plank.syntax.element.text
 
 fun ResolvedPlankFile.pretty(): String = buildString {
@@ -85,7 +85,7 @@ fun TypedIfBranch.pretty(indent: String = ""): String = buildString {
 fun TypedPattern.pretty(indent: String = ""): String = buildString {
   when (this@pretty) {
     is TypedNamedTuplePattern -> paren {
-      append(info.name.text)
+      append(name.text)
       properties.forEach { pattern ->
         space()
         append(pattern.pretty(indent))
@@ -133,11 +133,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
     }
     is TypedAssignExpr -> paren {
       append("assign ")
-      if (module != null) {
-        append(module.name.text)
-        space()
-      }
-      append(name.text).space()
+      append(scope.name.text).append(".").append(name.text).space()
       prettyArgument(indent, value)
     }
     is TypedInstanceExpr -> paren {

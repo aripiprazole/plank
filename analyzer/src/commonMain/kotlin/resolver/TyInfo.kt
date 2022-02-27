@@ -1,5 +1,11 @@
-package org.plank.analyzer.infer
+package org.plank.analyzer.resolver
 
+import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Scheme
+import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.chainParameters
+import org.plank.analyzer.infer.doubleTy
+import org.plank.analyzer.infer.floatTy
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.toIdentifier
 
@@ -7,20 +13,24 @@ sealed interface TyInfo {
   val name: Identifier
   val generics: Set<Identifier>
   val ty: Ty
+  val declaredIn: Scope
 }
 
 data class FunctionInfo(
+  override val declaredIn: Scope,
   override val name: Identifier,
-  override val ty: Ty,
-  override val generics: Set<Identifier>,
-  val returnTy: Ty,
-  val parameters: Map<Identifier, Ty>,
+  override val ty: FunTy,
+  val scheme: Scheme,
+  override val generics: Set<Identifier> = emptySet(),
+  val returnTy: Ty = ty.returnTy,
+  val parameters: Map<Identifier, Ty> = emptyMap(),
   val isInline: Boolean = false,
 ) : TyInfo {
   override fun toString(): String = name.text
 }
 
 data class StructInfo(
+  override val declaredIn: Scope,
   override val name: Identifier,
   override val ty: Ty,
   override val generics: Set<Identifier> = emptySet(),
@@ -30,6 +40,7 @@ data class StructInfo(
 }
 
 data class StructMemberInfo(
+  override val declaredIn: Scope,
   override val name: Identifier,
   override val ty: Ty,
   val mutable: Boolean,
@@ -40,6 +51,7 @@ data class StructMemberInfo(
 }
 
 data class EnumInfo(
+  override val declaredIn: Scope,
   override val name: Identifier,
   override val ty: Ty,
   override val generics: Set<Identifier> = emptySet(),
@@ -49,18 +61,20 @@ data class EnumInfo(
 }
 
 data class EnumMemberInfo(
+  override val declaredIn: Scope,
   override val name: Identifier,
   override val ty: Ty,
-  val parameters: List<Ty>,
   val funTy: FunTy,
   val scheme: Scheme,
 ) : TyInfo {
+  val parameters: List<Ty> = funTy.chainParameters()
   override val generics: Set<Identifier> = emptySet()
 
   override fun toString(): String = name.text
 }
 
 data class IntInfo(
+  override val declaredIn: Scope,
   override val name: Identifier,
   override val ty: Ty,
   val size: Int,
@@ -68,13 +82,13 @@ data class IntInfo(
 ) : TyInfo {
   override val generics: Set<Identifier> = emptySet()
 
-  constructor(name: String, ty: Ty, size: Int, unsigned: Boolean = false) :
-    this(name.toIdentifier(), ty, size, unsigned)
+  constructor(declaredIn: Scope, name: String, ty: Ty, size: Int, unsigned: Boolean = false) :
+    this(declaredIn, name.toIdentifier(), ty, size, unsigned)
 
   override fun toString(): String = "{${name.text}}"
 }
 
-object DoubleInfo : TyInfo {
+class DoubleInfo(override val declaredIn: Scope) : TyInfo {
   override val name: Identifier = Identifier("Double")
   override val ty: Ty = doubleTy
   override val generics: Set<Identifier> = emptySet()
@@ -82,7 +96,7 @@ object DoubleInfo : TyInfo {
   override fun toString(): String = "{double}"
 }
 
-object FloatInfo : TyInfo {
+class FloatInfo(override val declaredIn: Scope) : TyInfo {
   override val name: Identifier = Identifier("Float")
   override val ty: Ty = floatTy
   override val generics: Set<Identifier> = emptySet()

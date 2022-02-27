@@ -1,9 +1,8 @@
 package org.plank.analyzer.element
 
 import org.plank.analyzer.AnalyzerViolation
-import org.plank.analyzer.infer.Module
-import org.plank.analyzer.infer.ModuleTree
-import org.plank.analyzer.phases.IrTransformingPhase
+import org.plank.analyzer.resolver.Module
+import org.plank.analyzer.resolver.ModuleTree
 import org.plank.syntax.debug.DontDump
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.mapper.SyntaxViolation
@@ -30,8 +29,4 @@ data class ResolvedPlankFile(
   val path = delegate.path
 
   override val location = delegate.location
-
-  fun transform(irTransformingPhase: IrTransformingPhase): ResolvedPlankFile {
-    return irTransformingPhase.visitPlankFile(this)
-  }
 }

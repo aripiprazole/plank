@@ -1,4 +1,4 @@
-package org.plank.analyzer.infer
+package org.plank.analyzer.resolver
 
 import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.TypedExpr
@@ -12,23 +12,39 @@ import org.plank.analyzer.element.TypedIntLTExpr
 import org.plank.analyzer.element.TypedIntMulExpr
 import org.plank.analyzer.element.TypedIntNEQExpr
 import org.plank.analyzer.element.TypedIntSubExpr
+import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Scheme
+import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.boolTy
+import org.plank.analyzer.infer.charTy
+import org.plank.analyzer.infer.i16Ty
+import org.plank.analyzer.infer.i32Ty
+import org.plank.analyzer.infer.i8Ty
 import org.plank.syntax.element.Identifier
+import org.plank.syntax.element.Pattern
 import org.plank.syntax.element.PlankFile
+import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.text
+import org.plank.syntax.element.toIdentifier
 
 class GlobalScope(override val tree: ModuleTree) : Scope() {
+  override val name = Identifier("Global")
+  override val enclosing: Scope? = null
+  override val names: Set<String> = emptySet()
+  override val content: List<Stmt> = emptyList()
+
   /**
    * Init compiler-defined functions
    */
   init {
-    create(IntInfo("Char", charTy, 8))
-    create(IntInfo("Bool", boolTy, 8))
-    create(DoubleInfo)
-    create(FloatInfo)
+    create(IntInfo(this, "Char", charTy, 8))
+    create(IntInfo(this, "Bool", boolTy, 8))
+    create(DoubleInfo(this))
+    create(FloatInfo(this))
 
-    create(IntInfo("Int8", i8Ty, 8))
-    create(IntInfo("Int16", i16Ty, 16))
-    create(IntInfo("Int32", i32Ty, 32))
+    create(IntInfo(this, "Int8", i8Ty, 8))
+    create(IntInfo(this, "Int16", i16Ty, 16))
+    create(IntInfo(this, "Int32", i32Ty, 32))
 
     // Add default binary operators
     declareInline("+", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntAddExpr(a, b) }
@@ -45,45 +61,28 @@ class GlobalScope(override val tree: ModuleTree) : Scope() {
     declareInline("<", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTExpr(a, b) }
   }
 
-  private var count: Int = 0
-
-  override val name = Identifier("Global")
-  override val enclosing: Scope? = null
-  override val names: Set<String> = emptySet()
-
-  override fun fresh(): Ty {
-    return VarTy(letters.elementAt(count)).also { count++ }
-  }
-
-  override val letters: Sequence<String> = sequence {
-    var prefix = ""
-    var i = 0
-    while (true) {
-      i++
-      ('a'..'z').forEach { c ->
-        yield("$prefix$c")
-      }
-      if (i > Char.MAX_VALUE.code) {
-        i = 0
-      }
-      prefix += "${i.toChar()}"
-    }
-  }
+  override fun enclose(scope: Scope): Scope = this
 
   override fun toString(): String = "Global"
 }
 
 data class FileScope(
-  val file: PlankFile,
+  var file: PlankFile,
   override val module: Module,
-  override val enclosing: Scope? = null,
+  override val enclosing: GlobalScope,
   override val tree: ModuleTree = ModuleTree(),
 ) : Scope() {
+  override val content: List<Stmt> = file.program
   override val name = file.module
   override val nested = false
 
+  override fun enclose(scope: Scope): FileScope = when (scope) {
+    is GlobalScope -> copy(enclosing = scope)
+    else -> this
+  }
+
   override fun toString(): String =
-    "File(${file.path}, tree=$tree) <: $enclosing"
+    "File(${file.module}) <: $enclosing"
 }
 
 data class ModuleScope(
@@ -91,15 +90,22 @@ data class ModuleScope(
   override val enclosing: Scope,
   override val tree: ModuleTree = ModuleTree(),
 ) : Scope() {
-  override val name: Identifier = Identifier("${enclosing.name}.${module.name}")
+  override val content: List<Stmt> = module.content
+  override val name: Identifier = module.name
+
+  override fun enclose(scope: Scope): ModuleScope = copy(enclosing = scope)
+
+  override fun toString(): String =
+    "Module(${module.name}) <: $enclosing"
 }
 
-class FunctionScope(
+data class FunctionScope(
   val function: FunctionInfo,
-  override val name: Identifier,
+  override val content: List<Stmt>,
   override val enclosing: Scope? = null,
   override val tree: ModuleTree = ModuleTree(),
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
+  override val name: Identifier = function.name,
 ) : Scope() {
   override val names: Set<String> = function.generics.text().toSet()
   override val isTopLevelScope: Boolean = false
@@ -114,17 +120,44 @@ class FunctionScope(
     }
   }
 
-  override fun toString(): String = "Function${showNames()}($name, ${function.ty}) <: $enclosing"
+  override fun enclose(scope: Scope): FunctionScope = copy(enclosing = scope)
+
+  override fun hashCode(): Int = super.hashCode()
+  override fun equals(other: Any?): Boolean = super.equals(other)
+  override fun toString(): String =
+    "Function${showNames()}($name, ${function.ty}) <: $enclosing"
 }
 
-open class ClosureScope(
+data class PatternScope(
+  val pattern: Pattern,
+  override val enclosing: Scope,
+  override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
+  override val tree: ModuleTree = ModuleTree(),
+) : Scope() {
+  override val content: List<Stmt> = emptyList()
+  override val name: Identifier = "Pattern".toIdentifier()
+  override val isTopLevelScope: Boolean = false
+
+  override fun enclose(scope: Scope): PatternScope = copy(enclosing = scope)
+
+  override fun hashCode(): Int = super.hashCode()
+  override fun equals(other: Any?): Boolean = super.equals(other)
+  override fun toString(): String = "Pattern($pattern) <: $enclosing"
+}
+
+data class ClosureScope(
   override val name: Identifier,
+  override val content: List<Stmt>,
   override val enclosing: Scope,
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
   override val tree: ModuleTree = ModuleTree(),
 ) : Scope() {
   override val isTopLevelScope: Boolean = false
 
+  override fun enclose(scope: Scope): ClosureScope = copy(enclosing = scope)
+
+  override fun hashCode(): Int = super.hashCode()
+  override fun equals(other: Any?): Boolean = super.equals(other)
   override fun toString(): String = "Closure($name) <: $enclosing"
 }
 
@@ -132,6 +165,7 @@ sealed class Scope {
   abstract val name: Identifier
   abstract val enclosing: Scope?
   abstract val tree: ModuleTree
+  abstract val content: List<Stmt>
 
   open val isTopLevelScope: Boolean = true
 
@@ -193,23 +227,38 @@ sealed class Scope {
     return info
   }
 
+  fun expand(scope: Scope) {
+    _expanded += scope
+  }
+
   fun findModule(name: Identifier): Module? {
     return tree.findModule(name)
       ?: enclosing?.findModule(name)
   }
 
-  fun findTyInfo(name: Identifier): TyInfo? {
+  fun findTyInfo(name: Identifier, original: Scope = this, inScope: Boolean = true): TyInfo? {
+    if (original == this && !inScope) return null
+
     return _types[name]
-      ?: enclosing?.findTyInfo(name)
-      ?: _expanded.filter { it != this }.firstNotNullOfOrNull { it.findTyInfo(name) }
+      ?: enclosing?.findTyInfo(name, original, false)
+      ?: _expanded
+        .filter { it != this }
+        .firstNotNullOfOrNull { it.findTyInfo(name, original, false) }
   }
 
-  fun findVariable(name: Identifier): Variable? {
+  fun containsVariable(name: Identifier): Boolean {
+    return lookupVariable(name) != null
+  }
+
+  fun lookupVariable(name: Identifier, original: Scope = this, inScope: Boolean = true): Variable? {
+    if (original == this && !inScope) return null
+
     return _variables[name]?.inScope()
-      ?: enclosing?.findVariable(name)?.notInScope()
-      ?: _expanded.filter { it != this }.firstNotNullOfOrNull { it.findVariable(name) }
+      ?: enclosing?.lookupVariable(name, original, false)?.notInScope()
+      ?: _expanded.filter { it != this }
+        .firstNotNullOfOrNull { it.lookupVariable(name, original, false) }
         ?.notInScope()
   }
 
-  open fun fresh(): Ty = enclosing!!.fresh()
+  abstract fun enclose(scope: Scope): Scope
 }

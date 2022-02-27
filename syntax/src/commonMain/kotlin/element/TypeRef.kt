@@ -5,6 +5,7 @@ sealed interface TypeRef : PlankElement {
     fun visitTypeRef(ref: TypeRef): T = ref.accept(this)
 
     fun visitAccessTypeRef(ref: AccessTypeRef): T
+    fun visitGenericTypeRef(ref: GenericTypeRef): T
     fun visitPointerTypeRef(ref: PointerTypeRef): T
     fun visitApplyTypeRef(ref: ApplyTypeRef): T
     fun visitFunctionTypeRef(ref: FunctionTypeRef): T
@@ -22,20 +23,33 @@ data class UnitTypeRef(override val location: Location = Location.Generated) : T
   }
 }
 
-data class AccessTypeRef(val path: QualifiedPath, override val location: Location) : TypeRef {
+data class GenericTypeRef(
+  val name: Identifier,
+  override val location: Location = Location.Generated,
+) : TypeRef {
+  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
+    return visitor.visitGenericTypeRef(this)
+  }
+}
+
+data class AccessTypeRef(
+  val path: QualifiedPath,
+  override val location: Location = Location.Generated,
+) : TypeRef {
   override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
     return visitor.visitAccessTypeRef(this)
   }
 }
 
-data class PointerTypeRef(val type: TypeRef, override val location: Location) : TypeRef {
+data class PointerTypeRef(val type: TypeRef, override val location: Location = Location.Generated) :
+  TypeRef {
   override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
     return visitor.visitPointerTypeRef(this)
   }
 }
 
 data class ApplyTypeRef(
-  val function: QualifiedPath,
+  val function: TypeRef,
   val arguments: List<TypeRef>,
   override val location: Location,
 ) : TypeRef {
@@ -47,7 +61,7 @@ data class ApplyTypeRef(
 data class FunctionTypeRef(
   val parameterType: TypeRef,
   val returnType: TypeRef,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : TypeRef {
   override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
     return visitor.visitFunctionTypeRef(this)

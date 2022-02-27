@@ -1,11 +1,11 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.infer.EnumMemberInfo
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.ap
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
+import org.plank.syntax.element.QualifiedPath
 
 sealed interface TypedPattern : TypedPlankElement {
   interface Visitor<T> {
@@ -24,7 +24,7 @@ sealed interface TypedPattern : TypedPlankElement {
 
 data class TypedNamedTuplePattern(
   val properties: List<TypedPattern>,
-  val info: EnumMemberInfo,
+  val name: QualifiedPath,
   override val ty: Ty,
   override val subst: Subst,
   override val location: Location,

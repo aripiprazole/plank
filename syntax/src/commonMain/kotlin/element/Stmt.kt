@@ -20,13 +20,14 @@ sealed interface Stmt : PlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class ExprStmt(val expr: Expr, override val location: Location) : Stmt {
+data class ExprStmt(val expr: Expr, override val location: Location = Location.Generated) : Stmt {
   override fun <T> accept(visitor: Stmt.Visitor<T>): T {
     return visitor.visitExprStmt(this)
   }
 }
 
-data class ReturnStmt(val value: Expr?, override val location: Location) : Stmt {
+data class ReturnStmt(val value: Expr?, override val location: Location = Location.Generated) :
+  Stmt {
   override fun <T> accept(visitor: Stmt.Visitor<T>): T {
     return visitor.visitReturnStmt(this)
   }

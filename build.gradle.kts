@@ -2,6 +2,7 @@
 
 import io.gitlab.arturbosch.detekt.DetektPlugin
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -75,6 +76,8 @@ subprojects {
 
       testRuns["test"].executionTask.configure {
         useJUnitPlatform()
+        testLogging.showStandardStreams = true
+        testLogging.exceptionFormat = TestExceptionFormat.FULL
       }
     }
 

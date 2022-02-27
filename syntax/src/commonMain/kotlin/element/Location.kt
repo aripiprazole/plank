@@ -8,6 +8,8 @@ sealed interface Location {
   @DontDump
   val file: PlankFile
 
+  fun endIn(location: Location): Location
+
   data class Range internal constructor(val a: Int, val b: Int, override val file: PlankFile) :
     Location {
     val start = Point(a)
@@ -19,6 +21,11 @@ sealed interface Location {
 
     override fun toString(): String {
       return "${file.path}:${start.line}:${start.column}"
+    }
+
+    override fun endIn(location: Location): Location = when (location) {
+      is Range -> copy(b = location.b)
+      is Generated -> this
     }
 
     override fun equals(other: Any?): Boolean {
@@ -81,6 +88,8 @@ sealed interface Location {
     @DontDump
     override val file: PlankFile
       get() = error("Should not get location of generated code")
+
+    override fun endIn(location: Location): Location = Generated
 
     override fun toString(): String = "Generated"
   }

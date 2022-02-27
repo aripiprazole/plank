@@ -10,14 +10,18 @@ sealed interface IfBranch : PlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class ThenBranch(val value: Expr, override val location: Location) : IfBranch {
+data class ThenBranch(val value: Expr, override val location: Location = Location.Generated) :
+  IfBranch {
   override fun <T> accept(visitor: IfBranch.Visitor<T>): T {
     return visitor.visitThenBranch(this)
   }
 }
 
-data class BlockBranch(val stmts: List<Stmt>, val value: Expr?, override val location: Location) :
-  IfBranch {
+data class BlockBranch(
+  val stmts: List<Stmt>,
+  val value: Expr?,
+  override val location: Location = Location.Generated,
+) : IfBranch {
   override fun <T> accept(visitor: IfBranch.Visitor<T>): T {
     return visitor.visitBlockBranch(this)
   }

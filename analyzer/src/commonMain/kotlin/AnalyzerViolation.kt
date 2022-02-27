@@ -1,10 +1,10 @@
 package org.plank.analyzer
 
-import org.plank.analyzer.infer.Module
-import org.plank.analyzer.infer.Scope
 import org.plank.analyzer.infer.Ty
-import org.plank.analyzer.infer.TyInfo
 import org.plank.analyzer.infer.VarTy
+import org.plank.analyzer.resolver.Module
+import org.plank.analyzer.resolver.Scope
+import org.plank.analyzer.resolver.TyInfo
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
 import org.plank.syntax.message.CompilerLogger
@@ -89,7 +89,8 @@ class CanNotReassignImmutableStructMember(
   name: Identifier,
   info: TyInfo,
   location: Location = Location.Generated,
-) : AnalyzerViolation("Can not reassign immutable property `${name.text}` of struct $info", location)
+) :
+  AnalyzerViolation("Can not reassign immutable property `${name.text}` of struct $info", location)
 
 class UnresolvedStructMember(
   name: Identifier,
@@ -99,9 +100,8 @@ class UnresolvedStructMember(
 
 class UnresolvedEnumVariant(
   name: Identifier,
-  info: TyInfo,
   location: Location = Location.Generated,
-) : AnalyzerViolation("Unresolved variant `${name.text}` of enum `${info.name.text}`", location)
+) : AnalyzerViolation("Unresolved variant `${name.text}`", location)
 
 class IncorrectArity(expected: Int, got: Int, location: Location = Location.Generated) :
   AnalyzerViolation("Incorrect arity: expected $expected, got $got", location)

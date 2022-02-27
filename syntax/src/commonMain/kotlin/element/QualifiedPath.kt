@@ -1,14 +1,17 @@
 package org.plank.syntax.element
 
 data class QualifiedPath(
-  val fullPath: List<Identifier>,
+  val fullPath: List<Identifier> = emptyList(),
   override val location: Location = Location.Generated,
 ) : PlankElement {
+  constructor(vararg identifiers: Identifier, location: Location) :
+    this(identifiers.toList(), location)
+
   constructor(identifier: Identifier) :
     this(listOf(identifier), identifier.location)
 
   constructor(stringPath: String, location: Location = Location.Generated) :
-    this(stringPath.split(".").reversed().map(::Identifier), location)
+    this(stringPath.split(".").map(::Identifier), location)
 
   interface Visitor<T> {
     fun visitQualifiedPath(path: QualifiedPath): T
@@ -19,4 +22,38 @@ data class QualifiedPath(
   fun toIdentifier(): Identifier {
     return Identifier(text, location)
   }
+
+  fun reversed(): QualifiedPath {
+    return copy(fullPath = fullPath.reversed())
+  }
+
+  operator fun plus(other: QualifiedPath): QualifiedPath {
+    return QualifiedPath(fullPath + other.fullPath, location)
+  }
+
+  operator fun plus(other: Identifier): QualifiedPath {
+    return QualifiedPath(fullPath + other, location)
+  }
+
+  operator fun plus(other: String): QualifiedPath {
+    return QualifiedPath(fullPath + other.toIdentifier(), location)
+  }
+
+  override fun toString(): String = "QualifiedPath $fullPath"
+}
+
+operator fun Identifier.plus(other: QualifiedPath): QualifiedPath {
+  return QualifiedPath(text) + other
+}
+
+operator fun Identifier.plus(other: Identifier): QualifiedPath {
+  return QualifiedPath(text) + other
+}
+
+fun QualifiedPath?.orEmpty(): QualifiedPath {
+  return this ?: QualifiedPath()
+}
+
+fun String.toQualifiedPath(): QualifiedPath {
+  return QualifiedPath(this)
 }

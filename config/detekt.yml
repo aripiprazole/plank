@@ -84,9 +84,9 @@ complexity:
   ComplexMethod:
     active: true
     threshold: 15
-    ignoreSingleWhenExpression: false
-    ignoreSimpleWhenEntries: false
-    ignoreNestingFunctions: false
+    ignoreSingleWhenExpression: true
+    ignoreSimpleWhenEntries: true
+    ignoreNestingFunctions: true
     nestingFunctions: [ run, let, apply, with, also, use, forEach, isNotNull, ifNull ]
   LabeledExpression:
     active: false
@@ -95,7 +95,7 @@ complexity:
     active: true
     threshold: 600
   LongMethod:
-    active: true
+    active: false
     threshold: 60
   LongParameterList:
     active: true
@@ -668,7 +668,7 @@ style:
   SpacingBetweenPackageAndImports:
     active: false
   ThrowsCount:
-    active: true
+    active: false
     max: 2
   TrailingWhitespace:
     active: false

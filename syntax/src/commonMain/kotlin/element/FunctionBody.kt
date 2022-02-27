@@ -12,13 +12,13 @@ sealed interface FunctionBody : PlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class NoBody(override val location: Location) : FunctionBody {
+data class NoBody(override val location: Location = Location.Generated) : FunctionBody {
   override fun <T> accept(visitor: FunctionBody.Visitor<T>): T {
     return visitor.visitNoBody(this)
   }
 }
 
-data class ExprBody(val expr: Expr, override val location: Location) : FunctionBody {
+data class ExprBody(val expr: Expr, override val location: Location = Location.Generated) : FunctionBody {
   override fun <T> accept(visitor: FunctionBody.Visitor<T>): T {
     return visitor.visitExprBody(this)
   }
@@ -27,7 +27,7 @@ data class ExprBody(val expr: Expr, override val location: Location) : FunctionB
 data class CodeBody(
   val stmts: List<Stmt>,
   val value: Expr?,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : FunctionBody {
   override fun <T> accept(visitor: FunctionBody.Visitor<T>): T {
     return visitor.visitCodeBody(this)

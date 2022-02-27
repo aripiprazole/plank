@@ -26,10 +26,13 @@ sealed interface Expr : PlankElement {
 }
 
 data class BlockExpr(
-  val stmts: List<Stmt>,
-  val value: Expr?,
-  override val location: Location,
+  val value: Expr? = null,
+  val stmts: List<Stmt> = emptyList(),
+  override val location: Location = Location.Generated,
 ) : Expr {
+  constructor(vararg stmts: Stmt, value: Expr? = null, location: Location = Location.Generated) :
+    this(value, stmts.toList(), location)
+
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitBlockExpr(this)
   }
@@ -38,7 +41,7 @@ data class BlockExpr(
 data class MatchExpr(
   val subject: Expr,
   val patterns: Map<Pattern, Expr>,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitMatchExpr(this)
@@ -49,26 +52,31 @@ data class IfExpr(
   val cond: Expr,
   val thenBranch: IfBranch,
   val elseBranch: IfBranch?,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitIfExpr(this)
   }
 }
 
-data class ConstExpr(val value: Any, override val location: Location) : Expr {
+data class ConstExpr(val value: Any, override val location: Location = Location.Generated) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitConstExpr(this)
   }
 }
 
-data class AccessExpr(val path: QualifiedPath, override val location: Location) : Expr {
+data class AccessExpr(
+  val name: Identifier,
+  val module: QualifiedPath? = null,
+  override val location: Location = Location.Generated,
+) :
+  Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitAccessExpr(this)
   }
 }
 
-data class GroupExpr(val value: Expr, override val location: Location) : Expr {
+data class GroupExpr(val value: Expr, override val location: Location = Location.Generated) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitGroupExpr(this)
   }
@@ -77,7 +85,8 @@ data class GroupExpr(val value: Expr, override val location: Location) : Expr {
 data class AssignExpr(
   val name: Identifier,
   val value: Expr,
-  override val location: Location,
+  val module: QualifiedPath? = null,
+  override val location: Location = Location.Generated,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitAssignExpr(this)
@@ -88,7 +97,7 @@ data class SetExpr(
   val receiver: Expr,
   val property: Identifier,
   val value: Expr,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitSetExpr(this)
@@ -98,7 +107,7 @@ data class SetExpr(
 data class GetExpr(
   val receiver: Expr,
   val property: Identifier,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitGetExpr(this)
@@ -108,8 +117,11 @@ data class GetExpr(
 data class CallExpr(
   val callee: Expr,
   val arguments: List<Expr>,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : Expr {
+  constructor(callee: Expr, vararg arguments: Expr, location: Location = Location.Generated) :
+    this(callee, arguments.toList(), location)
+
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitCallExpr(this)
   }
@@ -118,26 +130,27 @@ data class CallExpr(
 data class InstanceExpr(
   val type: TypeRef,
   val arguments: Map<Identifier, Expr>,
-  override val location: Location,
+  override val location: Location = Location.Generated,
 ) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitInstanceExpr(this)
   }
 }
 
-data class SizeofExpr(val type: TypeRef, override val location: Location) : Expr {
+data class SizeofExpr(val type: TypeRef, override val location: Location = Location.Generated) :
+  Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitSizeofExpr(this)
   }
 }
 
-data class RefExpr(val value: Expr, override val location: Location) : Expr {
+data class RefExpr(val value: Expr, override val location: Location = Location.Generated) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitRefExpr(this)
   }
 }
 
-data class DerefExpr(val value: Expr, override val location: Location) : Expr {
+data class DerefExpr(val value: Expr, override val location: Location = Location.Generated) : Expr {
   override fun <T> accept(visitor: Expr.Visitor<T>): T {
     return visitor.visitDerefExpr(this)
   }

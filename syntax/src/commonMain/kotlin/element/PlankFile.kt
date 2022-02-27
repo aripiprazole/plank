@@ -37,7 +37,7 @@ data class PlankFile(
   override val location = Location.Generated
 
   companion object {
-    fun parser(text: String): PlankParser {
+    private fun parser(text: String): PlankParser {
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
       val parser = PlankParser(CommonTokenStream(lexer))
@@ -104,4 +104,7 @@ data class PlankFile(
       }
     }
   }
+
+  override fun toString(): String =
+    "PlankFile(module=$module, moduleName=$moduleName, path=$path, violations=$violations)"
 }
