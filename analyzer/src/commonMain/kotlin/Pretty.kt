@@ -23,6 +23,7 @@ import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
+import org.plank.analyzer.element.TypedEnumIndexAccess
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
@@ -48,6 +49,7 @@ import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.analyzer.element.TypedThenBranch
+import org.plank.analyzer.infer.ungeneralize
 import org.plank.analyzer.resolver.DoubleInfo
 import org.plank.analyzer.resolver.EnumInfo
 import org.plank.analyzer.resolver.FloatInfo
@@ -97,7 +99,7 @@ fun TypedPattern.pretty(indent: String = ""): String = buildString {
 
 fun TypedExpr.pretty(indent: String = ""): String = buildString {
   when (this@pretty) {
-    is TypedAccessExpr -> append(name.text)
+    is TypedAccessExpr -> append(scope.name.text).append(".").append(name.text)
     is TypedGroupExpr -> paren(value.pretty(indent))
     is TypedCallExpr -> paren {
       prettyCall(indent, this@pretty)
@@ -196,6 +198,9 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
       is TypedIntMulExpr -> {}
       is TypedIntNEQExpr -> {}
       is TypedIntSubExpr -> {}
+    }
+    is TypedEnumIndexAccess -> paren {
+      append("enum-index ").append(value.ty.ungeneralize()).space().append(index)
     }
   }
 }
