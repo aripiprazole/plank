@@ -78,9 +78,7 @@ class GlobalVariableTests {
 
         use Std.IO;
 
-        fun buildString() -> *Char {
-          return "hello, world";
-        }
+        fun buildString() -> *Char { "hello, world" }
 
         let x = buildString();
 
