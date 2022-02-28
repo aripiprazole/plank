@@ -68,7 +68,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
     runCatching {
       val module = requireNotNull(tree.findModule(file.module)) { "Could not find file in tree" }
 
-      return scoped(module.scope) {
+      return scoped(FileScope(file, module, tree.globalScope)) {
         val program = file.program.map(::checkStmt).filterIsInstance<ResolvedDecl>()
 
         ResolvedPlankFile(program, module, tree, file)
