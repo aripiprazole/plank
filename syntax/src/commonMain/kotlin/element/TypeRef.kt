@@ -7,12 +7,16 @@ data class UnitTypeRef(override val loc: Loc = GeneratedLoc) : TypeRef
 data class GenericTypeRef(
   val name: Identifier,
   override val loc: Loc = GeneratedLoc,
-) : TypeRef
+) : TypeRef {
+  constructor(name: String, loc: Loc = GeneratedLoc) : this(name.toIdentifier(), loc)
+}
 
 data class AccessTypeRef(
   val path: QualifiedPath,
   override val loc: Loc = GeneratedLoc,
-) : TypeRef
+) : TypeRef {
+  constructor(name: String, loc: Loc = GeneratedLoc) : this(name.toQualifiedPath(), loc)
+}
 
 data class PointerTypeRef(val type: TypeRef, override val loc: Loc = GeneratedLoc) :
   TypeRef

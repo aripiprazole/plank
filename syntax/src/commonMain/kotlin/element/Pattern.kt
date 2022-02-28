@@ -7,11 +7,13 @@ data class EnumVariantPattern(
   val properties: List<Pattern>,
   override val loc: Loc,
 ) : Pattern {
-  constructor(type: QualifiedPath, vararg properties: Pattern, loc: Loc = GeneratedLoc) :
-    this(type, properties.toList(), loc)
+  constructor(type: String, vararg properties: Pattern, loc: Loc = GeneratedLoc) :
+    this(type.toQualifiedPath(), properties.toList(), loc)
 }
 
 data class IdentPattern(
   val name: Identifier,
   override val loc: Loc = GeneratedLoc,
-) : Pattern
+) : Pattern {
+  constructor(name: String, loc: Loc = GeneratedLoc) : this(name.toIdentifier(), loc)
+}

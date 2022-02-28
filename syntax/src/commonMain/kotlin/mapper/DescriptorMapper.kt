@@ -148,12 +148,12 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitStructDecl(ctx: StructDeclContext): StructDecl {
     return StructDecl(
       visitToken(ctx.name!!),
-      ctx.names?.IDENTIFIER()?.map(::visitTerminal)?.toSet().orEmpty(),
       ctx.findProp().map { prop ->
         val mutable = prop.MUTABLE() != null
 
         StructDecl.Property(mutable, visitToken(prop.name!!), visitTypeRef(prop.type!!))
       },
+      ctx.names?.IDENTIFIER()?.map(::visitTerminal)?.toSet().orEmpty(),
       ctx.loc
     )
   }

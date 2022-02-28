@@ -19,49 +19,32 @@ data class QualifiedPath(
 
   val text: String get() = fullPath.joinToString(".") { it.text }
 
-  fun toIdentifier(): Identifier {
-    return Identifier(text, loc)
-  }
+  fun first(): Identifier = fullPath.first()
+  fun last(): Identifier = fullPath.last()
 
-  fun reversed(): QualifiedPath {
-    return copy(fullPath = fullPath.reversed())
-  }
+  fun dropLast(): QualifiedPath = QualifiedPath(fullPath.dropLast(1), loc)
 
-  operator fun plus(other: QualifiedPath): QualifiedPath {
-    return QualifiedPath(fullPath + other.fullPath, loc)
-  }
+  fun reversed(): QualifiedPath = copy(fullPath = fullPath.reversed())
 
-  operator fun plus(other: Identifier): QualifiedPath {
-    return QualifiedPath(fullPath + other, loc)
-  }
+  operator fun plus(other: QualifiedPath): QualifiedPath =
+    QualifiedPath(fullPath + other.fullPath, loc)
 
-  operator fun plus(other: String): QualifiedPath {
-    return QualifiedPath(fullPath + other.toIdentifier(), loc)
-  }
+  operator fun plus(other: Identifier): QualifiedPath =
+    QualifiedPath(fullPath + other, loc)
+
+  operator fun plus(other: String): QualifiedPath =
+    QualifiedPath(fullPath + other.toIdentifier(), loc)
+
+  fun toIdentifier(): Identifier = Identifier(text, loc)
 
   override fun toString(): String = "QualifiedPath $fullPath"
 }
 
-operator fun Identifier.plus(other: QualifiedPath): QualifiedPath {
-  return QualifiedPath(text) + other
-}
+fun QualifiedPath?.orEmpty(): QualifiedPath = this ?: QualifiedPath()
 
-operator fun Identifier.plus(other: Identifier): QualifiedPath {
-  return QualifiedPath(text) + other
-}
+operator fun Identifier.plus(other: QualifiedPath): QualifiedPath = QualifiedPath(text) + other
+operator fun Identifier.plus(other: Identifier): QualifiedPath = QualifiedPath(text) + other
 
-fun List<Identifier>.toQualifiedPath(): QualifiedPath {
-  return QualifiedPath(this)
-}
-
-fun QualifiedPath?.orEmpty(): QualifiedPath {
-  return this ?: QualifiedPath()
-}
-
-fun Identifier.toQualifiedPath(): QualifiedPath {
-  return QualifiedPath(text)
-}
-
-fun String.toQualifiedPath(): QualifiedPath {
-  return QualifiedPath(this)
-}
+fun List<Identifier>.toQualifiedPath(): QualifiedPath = QualifiedPath(this)
+fun Identifier.toQualifiedPath(): QualifiedPath = QualifiedPath(text)
+fun String.toQualifiedPath(): QualifiedPath = QualifiedPath(this)

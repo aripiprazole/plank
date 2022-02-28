@@ -51,26 +51,24 @@ import org.plank.syntax.element.SizeofExpr
 import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.ThenBranch
 import org.plank.syntax.element.UnitTypeRef
-import org.plank.syntax.element.toIdentifier
-import org.plank.syntax.element.toQualifiedPath
 import kotlin.test.assertEquals
 
 class InferTest {
   @Test
   fun `test sizeof expr`() {
-    expectTy(i32Ty, SizeofExpr(AccessTypeRef("foo".toQualifiedPath())))
+    expectTy(i32Ty, SizeofExpr(AccessTypeRef("foo")))
   }
 
   @Test
   fun `test access expr`() {
-    expectTy(i32Ty, AccessExpr("foo".toIdentifier())) {
+    expectTy(i32Ty, AccessExpr("foo")) {
       put("foo", Scheme(i32Ty))
     }
   }
 
   @Test
   fun `test get expr`() {
-    expectTy(strTy, GetExpr(AccessExpr("person".toIdentifier()), "name".toIdentifier())) {
+    expectTy(strTy, GetExpr(AccessExpr("person"), "name")) {
       val person = ConstTy("Person")
 
       put("person", Scheme(person))
@@ -80,10 +78,7 @@ class InferTest {
 
   @Test
   fun `test set expr`() {
-    expectTy(
-      strTy,
-      SetExpr(AccessExpr("person".toIdentifier()), "name".toIdentifier(), ConstExpr("foo"))
-    ) {
+    expectTy(strTy, SetExpr(AccessExpr("person"), "name", ConstExpr("foo"))) {
       val person = ConstTy("Person")
 
       put("person", Scheme(person))
@@ -93,13 +88,7 @@ class InferTest {
 
   @Test
   fun `test instance expr`() {
-    expectTy(
-      ConstTy("foo"),
-      InstanceExpr(
-        AccessTypeRef("foo".toQualifiedPath()),
-        mapOf("name".toIdentifier() to ConstExpr(1))
-      )
-    )
+    expectTy(ConstTy("foo"), InstanceExpr(AccessTypeRef("foo"), "name" to ConstExpr(1)))
   }
 
   @Test
@@ -114,21 +103,21 @@ class InferTest {
 
   @Test
   fun `test assign expr`() {
-    expectTy(i32Ty, AssignExpr("foo".toIdentifier(), ConstExpr(10))) {
+    expectTy(i32Ty, AssignExpr("foo", ConstExpr(10))) {
       put("foo", Scheme(i32Ty))
     }
   }
 
   @Test
   fun `test ref expr`() {
-    expectTy(PtrTy(i32Ty), RefExpr(AccessExpr("foo".toIdentifier()))) {
+    expectTy(PtrTy(i32Ty), RefExpr(AccessExpr("foo"))) {
       put("foo", Scheme(i32Ty))
     }
   }
 
   @Test
   fun `test deref expr`() {
-    expectTy(i32Ty, DerefExpr(AccessExpr("foo".toIdentifier()))) {
+    expectTy(i32Ty, DerefExpr(AccessExpr("foo"))) {
       put("foo", Scheme(PtrTy(i32Ty)))
     }
   }
@@ -139,14 +128,14 @@ class InferTest {
       put("foo", Scheme(i32Ty))
     }
 
-    expectFail(DerefExpr(AccessExpr("foo".toIdentifier())), env) {
+    expectFail(DerefExpr(AccessExpr("foo")), env) {
       "Unable to unify Int32 and *'a"
     }
   }
 
   @Test
   fun `test group expr`() {
-    expectTy(FunTy(i32Ty, i32Ty), GroupExpr(AccessExpr("foo".toIdentifier()))) {
+    expectTy(FunTy(i32Ty, i32Ty), GroupExpr(AccessExpr("foo"))) {
       put("foo", Scheme(i32Ty arr i32Ty))
     }
   }
@@ -178,24 +167,16 @@ class InferTest {
   @Test
   fun `test match expr with named tuple pattern`() {
     expectEnv(
-      EnumDecl(
-        name = "Person".toIdentifier(),
-        members = listOf(
-          EnumDecl.Member(
-            name = "MkPerson".toIdentifier(),
-            PointerTypeRef(AccessTypeRef("Char".toQualifiedPath())),
-          ),
-        ),
-      ),
+      EnumDecl("Person") {
+        member("MkPerson", PointerTypeRef(AccessTypeRef("Char")))
+      },
       LetDecl(
-        name = "foo".toIdentifier(),
+        name = "foo",
         value = MatchExpr(
-          subject = CallExpr(AccessExpr("MkPerson".toIdentifier()), ConstExpr("John")),
+          subject = CallExpr(AccessExpr("MkPerson"), ConstExpr("John")),
           patterns = mapOf(
-            EnumVariantPattern(
-              type = "MkPerson".toQualifiedPath(),
-              IdentPattern("name".toIdentifier()),
-            ) to AccessExpr("name".toIdentifier()),
+            EnumVariantPattern("MkPerson", IdentPattern("name"))
+              to AccessExpr("name"),
           ),
         ),
       )
@@ -206,14 +187,14 @@ class InferTest {
 
   @Test
   fun `test call expr`() {
-    expectTy(i32Ty, CallExpr(AccessExpr("foo".toIdentifier()), listOf(ConstExpr(10)))) {
+    expectTy(i32Ty, CallExpr(AccessExpr("foo"), listOf(ConstExpr(10)))) {
       put("foo", Scheme(i32Ty arr i32Ty))
     }
   }
 
   @Test
   fun `test call expr with scheme`() {
-    expectTy(i32Ty, CallExpr(AccessExpr("foo".toIdentifier()), listOf(ConstExpr(10)))) {
+    expectTy(i32Ty, CallExpr(AccessExpr("foo"), listOf(ConstExpr(10)))) {
       put("foo", Scheme(setOf("a"), VarTy("a") arr i32Ty))
     }
   }
@@ -224,14 +205,14 @@ class InferTest {
       put("foo", Scheme(i16Ty arr i32Ty))
     }
 
-    expectFail(CallExpr(AccessExpr("foo".toIdentifier()), listOf(ConstExpr(10))), env) {
+    expectFail(CallExpr(AccessExpr("foo"), listOf(ConstExpr(10))), env) {
       "Unable to unify Int16 and Int32"
     }
   }
 
   @Test
   fun `test let decl`() {
-    expectEnv(LetDecl("foo".toIdentifier(), ConstExpr(10))) { env ->
+    expectEnv(LetDecl("foo", ConstExpr(10))) { env ->
       assertEquals(Scheme(i32Ty), env.lookup("foo"))
     }
   }
@@ -239,19 +220,10 @@ class InferTest {
   @Test
   fun `test enum decl`() {
     expectEnv(
-      EnumDecl(
-        name = "Person".toIdentifier(),
-        members = listOf(
-          EnumDecl.Member(
-            name = "MkPerson".toIdentifier(),
-            PointerTypeRef(AccessTypeRef("Char".toQualifiedPath())),
-          ),
-        ),
-      ),
-      LetDecl(
-        "foo".toIdentifier(),
-        CallExpr(AccessExpr("MkPerson".toIdentifier()), ConstExpr("John"))
-      )
+      EnumDecl("Person", "a") {
+        member("MkPerson", PointerTypeRef(AccessTypeRef("Char")))
+      },
+      LetDecl("foo", CallExpr(AccessExpr("MkPerson"), ConstExpr("John")))
     ) { env ->
       expectSchemeEquals(env, ConstTy("Person"), env.lookup("foo"))
     }
@@ -260,20 +232,10 @@ class InferTest {
   @Test
   fun `test enum decl with generics`() {
     expectEnv(
-      EnumDecl(
-        name = "Person".toIdentifier(),
-        generics = setOf("a".toIdentifier()),
-        members = listOf(
-          EnumDecl.Member(
-            name = "MkPerson".toIdentifier(),
-            PointerTypeRef(AccessTypeRef("Char".toQualifiedPath())),
-          ),
-        ),
-      ),
-      LetDecl(
-        "foo".toIdentifier(),
-        CallExpr(AccessExpr("MkPerson".toIdentifier()), ConstExpr("John"))
-      )
+      EnumDecl("Person", "a") {
+        member("MkPerson", PointerTypeRef(AccessTypeRef("Char")))
+      },
+      LetDecl("foo", CallExpr(AccessExpr("MkPerson"), ConstExpr("John")))
     ) { env ->
       expectSchemeEquals(env, AppTy(ConstTy("Person"), VarTy("a")), env.lookup("foo"))
     }
@@ -283,9 +245,9 @@ class InferTest {
   fun `test fun decl`() {
     expectEnv(
       FunDecl(
-        name = "foo".toIdentifier(),
-        parameters = mapOf("x".toIdentifier() to AccessTypeRef("Int32".toQualifiedPath())),
-        returnType = AccessTypeRef("Int32".toQualifiedPath()),
+        name = "foo",
+        parameters = mapOf("x" to AccessTypeRef("Int32")),
+        returnType = AccessTypeRef("Int32"),
         body = ExprBody(ConstExpr(0)),
       ),
     ) { env ->
@@ -297,13 +259,13 @@ class InferTest {
   fun `test module decl`() {
     expectEnv(
       ModuleDecl(
-        path = "Foo".toQualifiedPath(),
+        path = "Foo",
         FunDecl(
-          name = "bar".toIdentifier(),
+          name = "bar",
           parameters = mapOf(),
           returnType = UnitTypeRef(),
           body = NoBody(),
-        )
+        ),
       ),
     ) { env ->
       expectSchemeEquals(env, unitTy arr unitTy, env.lookup("Foo.bar"))
@@ -314,9 +276,9 @@ class InferTest {
   fun `test fun decl generic`() {
     expectEnv(
       FunDecl(
-        name = "foo".toIdentifier(),
-        parameters = mapOf("x".toIdentifier() to GenericTypeRef("a".toIdentifier())),
-        returnType = AccessTypeRef("Int32".toQualifiedPath()),
+        name = "foo",
+        parameters = mapOf("x" to GenericTypeRef("a")),
+        returnType = AccessTypeRef("Int32"),
         body = ExprBody(ConstExpr(0)),
       ),
     ) { env ->

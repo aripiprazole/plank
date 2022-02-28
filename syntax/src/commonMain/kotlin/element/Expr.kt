@@ -24,13 +24,29 @@ data class IfExpr(
   override val loc: Loc = GeneratedLoc,
 ) : Expr
 
-data class ConstExpr(val value: Any, override val loc: Loc = GeneratedLoc) : Expr
+data class ConstExpr(val value: Any, override val loc: Loc = GeneratedLoc) : Expr {
+  override fun toString(): String {
+    val string = when (value) {
+      is Char -> "'$value'"
+      is String -> "\"$value\""
+      else -> value.toString()
+    }
+
+    return "ConstExpr(value=$string, loc=$loc)"
+  }
+}
 
 data class AccessExpr(
   val name: Identifier,
   val module: QualifiedPath? = null,
   override val loc: Loc = GeneratedLoc,
-) : Expr
+) : Expr {
+  constructor(name: String, loc: Loc = GeneratedLoc) : this(
+    name = name.toQualifiedPath().last(),
+    module = name.toQualifiedPath().dropLast(),
+    loc = loc,
+  )
+}
 
 data class GroupExpr(val value: Expr, override val loc: Loc = GeneratedLoc) : Expr
 
@@ -39,20 +55,33 @@ data class AssignExpr(
   val value: Expr,
   val module: QualifiedPath? = null,
   override val loc: Loc = GeneratedLoc,
-) : Expr
+) : Expr {
+  constructor(name: String, value: Expr, loc: Loc = GeneratedLoc) : this(
+    name = name.toQualifiedPath().last(),
+    value = value,
+    module = name.toQualifiedPath().dropLast(),
+    loc = loc,
+  )
+}
 
 data class SetExpr(
   val receiver: Expr,
   val property: Identifier,
   val value: Expr,
   override val loc: Loc = GeneratedLoc,
-) : Expr
+) : Expr {
+  constructor(receiver: Expr, property: String, value: Expr, loc: Loc = GeneratedLoc) :
+    this(receiver, property.toIdentifier(), value, loc)
+}
 
 data class GetExpr(
   val receiver: Expr,
   val property: Identifier,
   override val loc: Loc = GeneratedLoc,
-) : Expr
+) : Expr {
+  constructor(receiver: Expr, property: String, loc: Loc = GeneratedLoc) :
+    this(receiver, property.toIdentifier(), loc)
+}
 
 data class CallExpr(
   val callee: Expr,
@@ -67,7 +96,10 @@ data class InstanceExpr(
   val type: TypeRef,
   val arguments: Map<Identifier, Expr>,
   override val loc: Loc = GeneratedLoc,
-) : Expr
+) : Expr {
+  constructor(type: TypeRef, vararg arguments: Pair<String, Expr>, loc: Loc = GeneratedLoc) :
+    this(type, arguments.toMap().mapKeys { it.key.toIdentifier() }, loc)
+}
 
 data class SizeofExpr(val type: TypeRef, override val loc: Loc = GeneratedLoc) :
   Expr

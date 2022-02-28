@@ -96,9 +96,9 @@ data class TextRange internal constructor(val a: Int, val b: Int, override val f
 }
 
 fun Loc(token: Token, file: PlankFile): Loc {
-  return Loc(token.startIndex, token.stopIndex, file)
+  return TextRange(token.startIndex, token.stopIndex, file)
 }
 
 fun Loc(start: Int, end: Int, file: PlankFile): Loc {
-  return Loc(start, end, file)
+  return TextRange(start, end, file)
 }
