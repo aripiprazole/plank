@@ -52,7 +52,7 @@ fun FunTy(returnTy: Ty, parameters: Collection<Ty>): FunTy =
     .fold(returnTy) { acc, ty -> FunTy(ty, acc) } as FunTy
 
 data class AppTy(val fn: Ty, val arg: Ty) : Ty {
-  override fun toString(): String = "$fn $arg"
+  override fun toString(): String = "($fn $arg)"
 }
 
 val undefTy: Ty = ConstTy("!")
@@ -73,7 +73,10 @@ val strTy = PtrTy(charTy)
 data class Scheme(val names: Set<String>, val ty: Ty) {
   constructor(ty: Ty) : this(emptySet(), ty)
 
-  override fun toString(): String = "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
+  override fun toString(): String = when {
+    names.isEmpty() -> "$ty"
+    else -> "∀ ${names.joinToString(" ") { "'$it" }}. $ty"
+  }
 }
 
 infix fun Ty.arr(other: Ty): FunTy {

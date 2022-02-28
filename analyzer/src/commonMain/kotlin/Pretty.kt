@@ -49,6 +49,9 @@ import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.analyzer.element.TypedThenBranch
+import org.plank.analyzer.infer.AppTy
+import org.plank.analyzer.infer.Scheme
+import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.ungeneralize
 import org.plank.analyzer.resolver.DoubleInfo
 import org.plank.analyzer.resolver.EnumInfo
@@ -274,7 +277,6 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
       val nameLength = members.keys.maxByOrNull { it.text.length }!!.text.length
 
       append("enum ").append(name.text).space()
-      append(info.generics.text().joinToString(" ") { "'$it" })
 
       members.forEach { (name, value) ->
         appendLine()
@@ -287,7 +289,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
     }
     is ResolvedFunDecl -> paren {
       append("defun ").append(name.text).space()
-      paren(scheme).space()
+      append(scheme.pretty()).space()
       bracket(" " + parameters.keys.text().joinToString(" ") + " ")
       appendLine()
       append(body.pretty("$indent  "))
@@ -298,7 +300,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
         append("mut ")
       }
       append(name.text).space()
-      paren(scheme)
+      append(scheme.pretty())
       appendLine()
       append("$indent  ")
       append(value.pretty("$indent  "))
@@ -336,6 +338,20 @@ fun StringBuilder.prettyCallee(indent: String, expr: TypedExpr) {
       prettyArgument(indent, expr.argument)
     }
     else -> append(expr.pretty(indent))
+  }
+}
+
+fun Ty.pretty(): String = buildString {
+  when (this@pretty) {
+    is AppTy -> append(this@pretty)
+    else -> paren(this@pretty)
+  }
+}
+
+fun Scheme.pretty(): String = buildString {
+  when (ty) {
+    is AppTy -> append(this@pretty)
+    else -> paren(this@pretty)
   }
 }
 

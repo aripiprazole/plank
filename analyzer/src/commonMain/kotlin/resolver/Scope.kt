@@ -161,19 +161,17 @@ data class FunctionScope(
   val returnTy: Ty = function.returnTy
   val parameters: Map<Identifier, Ty> = function.parameters
 
-  private fun showNames(): String {
-    return when {
-      names.isEmpty() -> ""
-      else -> "[${names.joinToString(" ")}]"
-    }
-  }
-
   override fun enclose(scope: Scope): FunctionScope = copy(enclosing = scope)
 
   override fun hashCode(): Int = super.hashCode()
   override fun equals(other: Any?): Boolean = super.equals(other)
-  override fun toString(): String =
-    "Function${showNames()}($name, ${function.ty}) <: $enclosing"
+  override fun toString(): String {
+    val names = when {
+      names.isEmpty() -> ""
+      else -> "[${names.joinToString(" ") { "'$it" }}]"
+    }
+    return "Function$names($name, ${function.ty}) <: $enclosing"
+  }
 }
 
 data class PatternScope(
