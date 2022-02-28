@@ -59,6 +59,7 @@ import org.plank.analyzer.resolver.LocalVariable
 import org.plank.analyzer.resolver.RankedVariable
 import org.plank.analyzer.resolver.Scope
 import org.plank.analyzer.resolver.StructInfo
+import org.plank.analyzer.resolver.fullPath
 import org.plank.syntax.element.text
 
 fun ResolvedPlankFile.pretty(): String = buildString {
@@ -99,7 +100,7 @@ fun TypedPattern.pretty(indent: String = ""): String = buildString {
 
 fun TypedExpr.pretty(indent: String = ""): String = buildString {
   when (this@pretty) {
-    is TypedAccessExpr -> append(scope.name.text).append(".").append(name.text)
+    is TypedAccessExpr -> append((scope.fullPath() + name.text).text)
     is TypedGroupExpr -> paren(value.pretty(indent))
     is TypedCallExpr -> paren {
       prettyCall(indent, this@pretty)
@@ -135,7 +136,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
     }
     is TypedAssignExpr -> paren {
       append("assign ")
-      append(scope.name.text).append(".").append(name.text).space()
+      append((scope.fullPath() + name.text).text).space()
       prettyArgument(indent, value)
     }
     is TypedInstanceExpr -> paren {
