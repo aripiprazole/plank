@@ -26,7 +26,8 @@ fun Infer.inferExpr(env: TyEnv, expr: Expr): Pair<Ty, Subst> = when (expr) {
 
   is AccessExpr -> {
     val path = (expr.module.orEmpty() + expr.name)
-    val scheme = env.lookup(path.text) ?: throw UnboundVar(path.toIdentifier())
+    val scheme = env.lookup(path.text)
+      ?: throw UnboundVar(path.toIdentifier())
 
     instantiate(scheme) to nullSubst()
   }

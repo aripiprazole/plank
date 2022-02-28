@@ -229,7 +229,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
             argument.ty
           }
           val s2 = unify(t2, argument.ty)
-          val s3 = unify(t1 ap s2, (t2 ap s2) arr tv)
+          val s3 = unify((t2 ap s2) arr tv, t1 ap s2)
 
           TypedCallExpr(acc, argument, tv ap s3, nullSubst(), expr.loc) ap
             (s3 compose s2 compose s1)
@@ -255,7 +255,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
           val ty = patterns.values.drop(1).fold(fst.ty) { acc, next ->
             s = s compose unify(acc, next.ty)
 
-            if (acc ap s != next.ty ap s) {
+            if (next.ty != acc ap s) {
               violate<TypedExpr>(next, TypeMismatch(acc ap s, next.ty ap s))
             }
 

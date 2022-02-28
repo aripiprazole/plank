@@ -34,13 +34,13 @@ class Infer {
   }
 
   fun instantiate(scheme: Scheme): Ty {
-    val map: Map<VarTy, Ty> = buildMap {
-      scheme.names.forEach {
-        getOrPut(VarTy(it)) { fresh() }
-      }
-    }
+    val s = scheme.names
+      .zip(scheme.names.map { fresh() })
+      .toMap()
+      .mapKeys { VarTy(it.key) }
+      .toSubst()
 
-    return scheme.ty ap map.toSubst()
+    return scheme.ty ap s
   }
 
   fun fresh(): Ty = VarTy(letters.elementAt(state)).also { state++ }

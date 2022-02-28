@@ -23,7 +23,6 @@ import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.TyError
 import org.plank.analyzer.infer.UnboundVar
 import org.plank.analyzer.infer.UnificationFail
-import org.plank.analyzer.infer.ftv
 import org.plank.analyzer.infer.inferExpr
 import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.infer.undefTy
@@ -84,7 +83,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
   }
 
   fun Ty.generalize(): Scheme {
-    return Scheme(ftv().sorted().filter { it !in scope.names }.toSet(), this)
+    return with(infer) { scope.asTyEnv().generalize(this@generalize) }
   }
 
   fun fresh(): Ty = infer.fresh()
