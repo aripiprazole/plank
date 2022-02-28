@@ -1,7 +1,7 @@
 package org.plank.codegen.pkg
 
 import org.plank.analyzer.analyze
-import org.plank.analyzer.infer.FileScope
+import org.plank.analyzer.resolver.FileScope
 import org.plank.shared.depthFirstSearch
 import org.plank.syntax.debug.dumpTree
 import org.plank.syntax.element.PlankFile
@@ -21,7 +21,7 @@ fun Package.compileBinary(): File {
     .depthFirstSearch(main.module)
     .asSequence()
     .mapNotNull(tree::findModule)
-    .map(org.plank.analyzer.infer.Module::scope)
+    .map(org.plank.analyzer.resolver.Module::scope)
     .filterIsInstance<FileScope>()
     .map(FileScope::file)
     .map { generateIR(it) }

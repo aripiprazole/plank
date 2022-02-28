@@ -20,6 +20,7 @@ import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
+import org.plank.syntax.element.Loc
 import org.plank.syntax.element.QualifiedPath
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -30,7 +31,6 @@ sealed interface CodegenContext : Context, IRBuilder {
   val file: ResolvedPlankFile
   val debug: DebugContext
   val currentModule: Module
-  val mapper: InstructionMapper
   val loc: Loc
   val path: QualifiedPath
   val enclosing: CodegenContext?
@@ -73,8 +73,8 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun ResolvedPlankElement.codegen(): Value =
     DescriptorContext(this, scopeContext()).let { context ->
       when (context.descriptor) {
-        is TypedExpr -> mapper.visitExpr(context.descriptor).run { context.codegen() }
-        is ResolvedStmt -> mapper.visitStmt(context.descriptor).run { context.codegen() }
+        is TypedExpr -> exprToInstruction(context.descriptor).run { context.codegen() }
+        is ResolvedStmt -> stmtToInstruction(context.descriptor).run { context.codegen() }
         else -> error("No available value mapping for ${this::class.simpleName}")
       }
     }
@@ -102,7 +102,6 @@ data class ScopeContext(
   override val scope: String = file.module.text,
   override val currentModule: Module = llvm.createModule(file.module.text),
   private val irBuilder: IRBuilder = llvm.createIRBuilder(),
-  override val mapper: InstructionMapper = InstructionMapper,
   override val loc: Loc = file.loc,
   override val enclosing: CodegenContext? = null,
 ) : IRBuilder by irBuilder, Context by llvm, CodegenContext {

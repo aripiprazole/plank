@@ -1,6 +1,6 @@
 package org.plank.codegen.pkg
 
-import org.plank.analyzer.infer.ModuleTree
+import org.plank.analyzer.resolver.ModuleTree
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 import pw.binom.io.file.File

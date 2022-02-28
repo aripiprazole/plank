@@ -1,8 +1,8 @@
 package org.plank.codegen.pkg
 
-import org.plank.analyzer.AnalyzerViolation
-import org.plank.syntax.mapper.SyntaxViolation
+import org.plank.analyzer.checker.CheckViolation
+import org.plank.syntax.SyntaxViolation
 
 class SyntaxError(val violations: Set<SyntaxViolation>) : RuntimeException()
 
-class AnalyzerError(val violations: Set<AnalyzerViolation>) : RuntimeException()
+class AnalyzerError(val violations: Set<CheckViolation>) : RuntimeException()

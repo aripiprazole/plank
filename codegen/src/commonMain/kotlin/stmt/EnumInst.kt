@@ -18,19 +18,21 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
 
     addStruct(descriptor.name.text, enum.pointer(AddrSpace.Generic))
 
-    descriptor.members.values.forEachIndexed { tag, (name, _, types, funTy) ->
+    descriptor.members.values.forEachIndexed { tag, member ->
+      val (_, name, _, funTy) = member
+
       val mangled = mangle(name, descriptor.name)
       val construct = mangle(name, descriptor.name, Identifier("construct"))
 
-      val member = createNamedStruct(mangled) {
-        elements = listOf(i8, *types.typegen().toTypedArray())
+      val memberStruct = createNamedStruct(mangled) {
+        elements = listOf(i8, *member.parameters.typegen().toTypedArray())
       }
 
-      addStruct(name.text, member)
+      addStruct(name.text, memberStruct)
 
       when {
-        types.isEmpty() -> setSymbolLazy(name.text, descriptor.ty) {
-          val instance = createMalloc(member)
+        member.parameters.isEmpty() -> setSymbolLazy(name.text, descriptor.ty) {
+          val instance = createMalloc(memberStruct)
           createStore(i8.getConstant(tag, false), getField(instance, 0))
           createBitCast(instance, enum.pointer(AddrSpace.Generic))
         }
@@ -38,10 +40,12 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
           funTy,
           name.text,
           construct,
-          parameters = types.withIndex().associate { Identifier(it.index.toString()) to it.value },
+          parameters = member.parameters
+            .withIndex()
+            .associate { Identifier(it.index.toString()) to it.value },
         ) {
           var idx = 1
-          val instance = createMalloc(member)
+          val instance = createMalloc(memberStruct)
           createStore(i8.getConstant(tag, false), getField(instance, 0))
 
           arguments.values.forEach { argument ->

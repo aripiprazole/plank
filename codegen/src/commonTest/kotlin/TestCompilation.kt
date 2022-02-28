@@ -2,6 +2,7 @@
 
 package org.plank.codegen
 
+import org.plank.analyzer.checker.CheckViolation
 import org.plank.codegen.pkg.AnalyzerError
 import org.plank.codegen.pkg.Command
 import org.plank.codegen.pkg.CommandFailedException
@@ -13,7 +14,7 @@ import org.plank.codegen.pkg.createTempDirectory
 import org.plank.codegen.pkg.exec
 import org.plank.codegen.pkg.locateBinary
 import org.plank.llvm4k.LLVMError
-import org.plank.syntax.mapper.SyntaxViolation
+import org.plank.syntax.SyntaxViolation
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.message.lineSeparator
 import pw.binom.io.file.File
@@ -24,7 +25,7 @@ import kotlin.test.fail
 class TestCompilation(
   private val pkg: Package,
   private val syntaxViolations: Set<SyntaxViolation>,
-  private val analyzerViolations: Set<org.plank.analyzer.AnalyzerViolation>,
+  private val checkViolations: Set<CheckViolation>,
   private val exitCode: Int,
 ) {
   fun expectSyntaxViolation(message: String): TestCompilation = apply {
@@ -32,7 +33,7 @@ class TestCompilation(
   }
 
   fun expectBindingViolation(message: String): TestCompilation = apply {
-    assertNotNull(analyzerViolations.find { it.message == message })
+    assertNotNull(checkViolations.find { it.message == message })
   }
 
   fun expectExitCode(actual: Int): TestCompilation = apply {
@@ -46,15 +47,15 @@ class TestCompilation(
       pkg.logger.severe()
     }
 
-    if (analyzerViolations.isNotEmpty()) {
+    if (checkViolations.isNotEmpty()) {
       pkg.logger.severe("Binding violations:")
-      analyzerViolations.forEach { it.render(pkg.logger) }
+      checkViolations.forEach { it.render(pkg.logger) }
       pkg.logger.severe()
     }
 
     expectExitCode(0)
 
-    if (analyzerViolations.isNotEmpty() || syntaxViolations.isNotEmpty()) {
+    if (checkViolations.isNotEmpty() || syntaxViolations.isNotEmpty()) {
       fail("Compilation failed")
     }
   }
@@ -89,7 +90,7 @@ class TestCompilation(
       }
 
       var syntaxViolations: Set<SyntaxViolation> = emptySet()
-      var analyzerViolations: Set<org.plank.analyzer.AnalyzerViolation> = emptySet()
+      var analyzerViolations: Set<CheckViolation> = emptySet()
       var exitCode = 0
 
       try {
