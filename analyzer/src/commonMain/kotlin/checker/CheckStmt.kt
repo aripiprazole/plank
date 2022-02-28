@@ -30,6 +30,7 @@ import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.EnumDecl
 import org.plank.syntax.element.ExprStmt
 import org.plank.syntax.element.FunDecl
+import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.LetDecl
 import org.plank.syntax.element.ModuleDecl
 import org.plank.syntax.element.ReturnStmt
@@ -159,9 +160,18 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         scheme = scheme,
         generics = names,
         returnTy = returnTy,
-        parameters = stmt.parameters.keys.zip(parameters).toMap(),
+        parameters = stmt.parameters.keys
+          .zip(parameters)
+          .ifEmpty { listOf("_".toIdentifier() to unitTy) }
+          .toMap(),
       )
-      val scope = FunctionScope(info, statements(stmt.body), scope, ModuleTree(scope.tree))
+      val references = mutableMapOf<Identifier, Ty>()
+      val scope = FunctionScope(
+        function = info,
+        content = statements(stmt.body),
+        enclosing = scope,
+        tree = ModuleTree(scope.tree), references = references,
+      )
       val body = scoped(scope) {
         stmt.parameters.forEach { (name, type) ->
           declare(name, checkTy(type.ty()))
@@ -170,7 +180,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         checkBody(stmt.body)
       }
 
-      ResolvedFunDecl(body, stmt.attributes, scope.references, info, isNested, stmt.loc)
+      ResolvedFunDecl(body, stmt.attributes, references, info, isNested, stmt.loc)
     }
   }
 }

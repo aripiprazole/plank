@@ -43,7 +43,7 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun addFunction(function: FunctionSymbol): Value
   fun addStruct(name: String, struct: Type)
 
-  fun getSymbol(name: String): User
+  fun getSymbol(scope: CodegenContext, name: String): User
   fun setSymbol(name: String, value: Symbol): Value
 
   fun setSymbol(name: String, type: Ty, variable: User): Value {
@@ -146,9 +146,9 @@ data class ScopeContext(
     structs[name] = struct
   }
 
-  override fun getSymbol(name: String): User {
+  override fun getSymbol(scope: CodegenContext, name: String): User {
     return findAlloca(name)
-      ?: findFunction(name)?.run { access() }
+      ?: findFunction(name)?.run { with(scope) { access() } }
       ?: codegenError("Unresolved symbol `$name`")
   }
 

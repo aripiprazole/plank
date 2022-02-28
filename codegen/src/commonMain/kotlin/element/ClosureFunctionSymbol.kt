@@ -25,7 +25,7 @@ class ClosureFunctionSymbol(
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   override fun CodegenContext.access(): User {
-    return getSymbol(mangled)
+    return getSymbol(this, mangled)
   }
 
   override fun CodegenContext.codegen(): Value {

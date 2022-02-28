@@ -11,7 +11,7 @@ class AssignInst(private val descriptor: TypedAssignExpr) : CodegenInstruction {
     val module = findModule(descriptor.scope.fullPath().text) ?: this
 
     val value = descriptor.value.codegen()
-    val variable = module.getSymbol(descriptor.name.text)
+    val variable = module.getSymbol(this, descriptor.name.text)
 
     return createStore(value, variable)
   }

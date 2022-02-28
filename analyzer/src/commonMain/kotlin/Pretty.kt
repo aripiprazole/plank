@@ -290,6 +290,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
       append(scheme.pretty()).space()
       bracket(" " + parameters.keys.text().joinToString(" ") + " ")
       appendLine()
+      appendLine("$indent  ; References ${references.keys}")
       append(body.pretty("$indent  "))
     }
     is ResolvedLetDecl -> paren {

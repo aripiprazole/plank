@@ -10,6 +10,6 @@ class AccessInst(private val descriptor: TypedAccessExpr) : CodegenInstruction {
   override fun CodegenContext.codegen(): Value {
     val module = findModule(descriptor.scope.fullPath().text) ?: this
 
-    return createLoad(module.getSymbol(descriptor.name.text))
+    return createLoad(module.getSymbol(this, descriptor.name.text))
   }
 }
