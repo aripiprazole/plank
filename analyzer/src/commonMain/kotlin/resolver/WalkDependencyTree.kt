@@ -18,7 +18,7 @@ fun walkDependencyTree(f: PlankFile, graph: Graph<Identifier>, tree: ModuleTree,
         val path = currentScope.name + decl.path
 
         val module = Module(path.toIdentifier(), decl.content).apply {
-          currentScope = ModuleScope(name, content, currentScope, ModuleTree(tree))
+          scope = ModuleScope(name, content, currentScope, ModuleTree(tree))
         }
 
         tree.createModule(module)
