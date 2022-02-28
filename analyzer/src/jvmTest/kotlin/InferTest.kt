@@ -225,7 +225,7 @@ class InferTest {
       },
       LetDecl("foo", CallExpr(AccessExpr("MkPerson"), ConstExpr("John")))
     ) { env ->
-      expectSchemeEquals(env, ConstTy("Person"), env.lookup("foo"))
+      expectSchemeEquals(env, AppTy(ConstTy("Person"), VarTy("a")), env.lookup("foo"))
     }
   }
 
