@@ -80,10 +80,14 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is AccessExpr -> {
-      val variableScope = scope.findModule(expr.module.orEmpty().toIdentifier())?.scope ?: scope
+      val scope = scope.findModule(expr.module.orEmpty().toIdentifier())?.scope ?: scope
 
-      val variable = variableScope.lookupVariable(expr.name)
+      val variable = scope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
+
+      if (!variable.isInScope && !variable.declaredIn.isTopLevelScope) {
+        scope.references[variable.name] = variable.ty
+      }
 
       TypedAccessExpr(variable, instantiate(variable.scheme), nullSubst(), expr.loc)
     }

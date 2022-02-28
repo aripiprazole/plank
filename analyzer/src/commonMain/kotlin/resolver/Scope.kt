@@ -121,6 +121,7 @@ data class ModuleScope(
   override val enclosing: Scope,
   override val tree: ModuleTree = ModuleTree(),
 ) : Scope() {
+  override val isTopLevelScope: Boolean = enclosing.isTopLevelScope
   override val content: List<Stmt> = module.content
   override val name: Identifier = module.name
 
@@ -133,7 +134,7 @@ data class ModuleScope(
 data class FunctionScope(
   val function: FunctionInfo,
   override val content: List<Stmt>,
-  override val enclosing: Scope? = null,
+  override val enclosing: Scope,
   override val tree: ModuleTree = ModuleTree(),
   override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
   override val name: Identifier = function.name,
