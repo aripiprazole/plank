@@ -10,6 +10,7 @@ import org.plank.syntax.element.Expr
 import org.plank.syntax.element.FunDecl
 import org.plank.syntax.element.GenericTypeRef
 import org.plank.syntax.element.GetExpr
+import org.plank.syntax.element.LetDecl
 import org.plank.syntax.element.ModuleDecl
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.QualifiedPath
@@ -69,6 +70,10 @@ fun resolveUses(
         currentScope.expand(module.scope)
       }
 
+      is LetDecl -> decl.apply {
+        currentScope.declare(name, undefTy)
+      }
+
       is ModuleDecl,
       is FunDecl,
       -> decl.apply { currentScope = currentScope.enclosing!! }
@@ -121,6 +126,11 @@ fun resolveUses(
           AccessExpr(name = expr.property, module = path, loc = expr.loc)
         }
         else -> expr
+      }
+      is AccessExpr -> {
+        val variable = currentScope.lookupVariable(expr.name) ?: return expr
+
+        expr.copy(module = variable.declaredIn.fullPath())
       }
       else -> expr
     }
