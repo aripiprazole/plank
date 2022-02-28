@@ -1,7 +1,5 @@
 package org.plank.analyzer.checker
 
-import org.plank.analyzer.IncorrectEnumArity
-import org.plank.analyzer.UnresolvedEnumVariant
 import org.plank.analyzer.element.TypedEnumIndexAccess
 import org.plank.analyzer.element.TypedEnumVariantPattern
 import org.plank.analyzer.element.TypedExpr
@@ -26,7 +24,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
       val scheme = scope.lookupVariable(name)
         ?.scheme() ?: return TypedIdentPattern(name, subject.ty, subject.subst, location)
 
-      val ty = infer.instantiate(scheme)
+      val ty = instantiate(scheme)
 
       TypedEnumVariantPattern(name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
     }
@@ -37,7 +35,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         ?.scheme()
         ?: return violate(pattern.type, UnresolvedEnumVariant(name))
 
-      val ty = infer.instantiate(scheme).enumVariant()
+      val ty = instantiate(scheme).enumVariant()
       val parameters = ty.chainParameters()
 
       val properties = pattern.properties.mapIndexed { i, next ->

@@ -1,6 +1,5 @@
 package org.plank.analyzer.checker
 
-import org.plank.analyzer.AnalyzerViolation
 import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedExprStmt
 import org.plank.analyzer.element.ResolvedFunctionBody
@@ -11,12 +10,22 @@ import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.infer.CanNotUngeneralize
+import org.plank.analyzer.infer.IncorrectEnumArity
 import org.plank.analyzer.infer.Infer
+import org.plank.analyzer.infer.InfiniteTy
+import org.plank.analyzer.infer.IsNotCallable
+import org.plank.analyzer.infer.IsNotConstructor
+import org.plank.analyzer.infer.LitNotSupported
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.TyError
+import org.plank.analyzer.infer.UnboundVar
+import org.plank.analyzer.infer.UnificationFail
 import org.plank.analyzer.infer.ftv
 import org.plank.analyzer.infer.inferExpr
+import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.infer.undefTy
 import org.plank.analyzer.resolver.FileScope
 import org.plank.analyzer.resolver.ResolveResult
@@ -35,13 +44,13 @@ fun ResolveResult.typeCheck(logger: CompilerLogger = NoopCompilerLogger): Resolv
 }
 
 class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
+  private val infer = Infer()
+
   val dependencies = result.dependencies
   val file = result.file
   val tree = result.tree
 
-  val infer = Infer()
-
-  var violations: List<AnalyzerViolation> = emptyList()
+  val violations: MutableSet<CheckViolation> = mutableSetOf()
   var scope: Scope = tree.globalScope
 
   fun check(): ResolvedPlankFile {
@@ -53,7 +62,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
         checkFile(it.file)
       }
 
-    return checkFile(file).copy(dependencies = dependencies, analyzerViolations = violations)
+    return checkFile(file).copy(dependencies = dependencies, checkViolations = violations.toList())
   }
 
   fun checkFile(file: PlankFile): ResolvedPlankFile {
@@ -78,16 +87,35 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
     return Scheme(ftv().sorted().filter { it !in scope.names }.toSet(), this)
   }
 
-  fun infer(expr: Expr): Pair<Ty, Subst> {
-    return with(infer) { inferExpr(scope.asTyEnv(), expr) }
+  fun fresh(): Ty = infer.fresh()
+
+  fun instantiate(scheme: Scheme): Ty = try {
+    infer.instantiate(scheme)
+  } catch (error: TyError) {
+    violations += error.asViolation()
+    undefTy
+  }
+
+  fun unify(a: Ty, b: Ty): Subst = try {
+    org.plank.analyzer.infer.unify(a, b)
+  } catch (error: TyError) {
+    violations += error.asViolation()
+    nullSubst()
+  }
+
+  fun infer(expr: Expr): Pair<Ty, Subst> = try {
+    with(infer) { inferExpr(scope.asTyEnv(), expr) }
+  } catch (error: TyError) {
+    violations += error.asViolation()
+    undefTy to nullSubst()
   }
 
   inline fun <reified A : ResolvedPlankElement> violate(
     el: PlankElement,
-    violation: AnalyzerViolation,
+    violation: CheckViolation,
     fn: () -> A = { violatedElement(el.loc, A::class) },
   ): A {
-    return fn().also { violations = violations + violation.withLocation(el.loc) }
+    return fn().also { violations += violation.withLocation(el.loc) }
   }
 
   @Suppress("Unchecked_Cast")
@@ -109,6 +137,17 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
       }
       else -> error("Unsupported type: $type")
     }
+  }
+
+  fun TyError.asViolation(): CheckViolation = when (this) {
+    is CanNotUngeneralize -> UnresolvedType(ty)
+    is IncorrectEnumArity -> IncorrectEnumArity(expected, arity, variant.toIdentifier())
+    is InfiniteTy -> TypeIsInfinite(variable, ty)
+    is IsNotCallable -> TypeIsNotCallable(ty)
+    is IsNotConstructor -> TypeIsNotStruct(ty)
+    is LitNotSupported -> UnsupportedConstType(value::class)
+    is UnboundVar -> UnresolvedVariable(name)
+    is UnificationFail -> TypeMismatch(a, b)
   }
 
   inline fun <A> scoped(scope: Scope, block: Scope.() -> A): A = this.scope.let { oldScope ->

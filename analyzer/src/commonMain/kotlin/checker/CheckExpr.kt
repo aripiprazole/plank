@@ -1,16 +1,5 @@
 package org.plank.analyzer.checker
 
-import org.plank.analyzer.CanNotReassignImmutableStructMember
-import org.plank.analyzer.CanNotReassignImmutableVariable
-import org.plank.analyzer.IncorrectArity
-import org.plank.analyzer.TypeIsNotCallable
-import org.plank.analyzer.TypeIsNotPointer
-import org.plank.analyzer.TypeIsNotStruct
-import org.plank.analyzer.TypeIsNotStructAndCanNotGet
-import org.plank.analyzer.TypeMismatch
-import org.plank.analyzer.UnresolvedStructMember
-import org.plank.analyzer.UnresolvedType
-import org.plank.analyzer.UnresolvedVariable
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
 import org.plank.analyzer.element.TypedBlockExpr
@@ -40,7 +29,6 @@ import org.plank.analyzer.infer.boolTy
 import org.plank.analyzer.infer.chainParameters
 import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.infer.ty
-import org.plank.analyzer.infer.unify
 import org.plank.analyzer.infer.unitTy
 import org.plank.analyzer.resolver.ClosureScope
 import org.plank.analyzer.resolver.PatternScope
@@ -96,7 +84,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val variable = variableScope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
 
-      TypedAccessExpr(variable, infer.instantiate(variable.scheme()), nullSubst(), expr.loc)
+      TypedAccessExpr(variable, instantiate(variable.scheme()), nullSubst(), expr.loc)
     }
 
     is IfExpr -> {
@@ -130,7 +118,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val variable = scope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
 
-      TypedAccessExpr(variable, infer.instantiate(variable.scheme()), nullSubst(), expr.loc)
+      TypedAccessExpr(variable, instantiate(variable.scheme()), nullSubst(), expr.loc)
 
       if (!variable.mutable) {
         violate<TypedExpr>(expr.value, CanNotReassignImmutableVariable(variable.name))
@@ -194,7 +182,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val info = lookupInfo(structTy) ?: return violate(expr.type, UnresolvedType(structTy))
       val struct = info.getAs<StructInfo>() ?: return violate(expr.type, TypeIsNotStruct(structTy))
 
-      val ty = infer.instantiate(
+      val ty = instantiate(
         Scheme(
           struct.generics.map { it.text }.toSet(),
           struct.generics.fold(ConstTy(struct.name.text) as Ty) { acc, next ->
@@ -234,7 +222,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
           val t1 = acc.ty
           val s1 = acc.subst
 
-          val tv = infer.fresh()
+          val tv = fresh()
 
           val t2 = parameters.elementAtOrNull(i) ?: run {
             violate<TypedExpr>(argument, IncorrectArity(parameters.size, i + 1))

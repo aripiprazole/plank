@@ -1,6 +1,5 @@
 package org.plank.analyzer.checker
 
-import org.plank.analyzer.UnresolvedType
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.infer.AppTy
 import org.plank.analyzer.infer.ConstTy

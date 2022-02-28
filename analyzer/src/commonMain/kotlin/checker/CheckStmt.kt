@@ -1,7 +1,5 @@
 package org.plank.analyzer.checker
 
-import org.plank.analyzer.Redeclaration
-import org.plank.analyzer.UnresolvedModule
 import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedEnumDecl
 import org.plank.analyzer.element.ResolvedExprStmt
@@ -19,7 +17,6 @@ import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
 import org.plank.analyzer.infer.ap
 import org.plank.analyzer.infer.ty
-import org.plank.analyzer.infer.unify
 import org.plank.analyzer.infer.unitTy
 import org.plank.analyzer.resolver.EnumInfo
 import org.plank.analyzer.resolver.EnumMemberInfo
@@ -62,7 +59,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         }
         .generalize()
 
-      val ty = infer.instantiate(scheme).also {
+      val ty = instantiate(scheme).also {
         scope.create(StructInfo(scope, stmt.name, it, stmt.generics))
       }
 
@@ -89,7 +86,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
     }
 
     is LetDecl -> {
-      val tv = infer.fresh()
+      val tv = fresh()
 
       val (t1, s1) = infer(stmt.value)
       val t2 = stmt.type?.ty()?.let(::checkTy) ?: t1
@@ -120,7 +117,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         }
         .generalize()
 
-      val ty = infer.instantiate(scheme).also {
+      val ty = instantiate(scheme).also {
         scope.create(StructInfo(scope, stmt.name, it, stmt.generics))
       }
 
@@ -130,10 +127,10 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         val variantScheme = if (params.isEmpty()) {
           scope.declare(name, scheme)
         } else {
-          scope.declare(name, infer.instantiate(funTy.generalize()).generalize())
+          scope.declare(name, instantiate(funTy.generalize()).generalize())
         }
 
-        val variantTy = infer.instantiate(Scheme(variantScheme.names, ConstTy(name.text)))
+        val variantTy = instantiate(Scheme(variantScheme.names, ConstTy(name.text)))
         val memberInfo = scope.create(
           EnumMemberInfo(scope, name, variantTy, funTy, variantScheme),
         )

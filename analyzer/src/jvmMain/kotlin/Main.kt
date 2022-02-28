@@ -57,7 +57,7 @@ fun main() {
   val tree = ModuleTree(maybePlank, ioPlank)
   val file = resolveImports(mainPlank, tree).typeCheck(logger)
 
-  file.analyzerViolations.forEach {
+  file.checkViolations.forEach {
     it.render(logger)
   }
 

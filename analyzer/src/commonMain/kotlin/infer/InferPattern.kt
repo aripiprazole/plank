@@ -15,8 +15,11 @@ fun Infer.inferPattern(env: TyEnv, pattern: Pattern, subject: Ty): TyEnv {
       val scheme = env.lookup(pattern.type.text) ?: throw UnboundVar(pattern.type.toIdentifier())
       val parameters = instantiate(scheme).callable().chainParameters()
 
+      val expected = parameters.size
+
       pattern.properties.foldIndexed(env) { i, acc, next ->
-        val tv = parameters.elementAtOrNull(i) ?: throw IncorrectEnumArity(i + 1, pattern.type.text)
+        val tv = parameters.elementAtOrNull(i)
+          ?: throw IncorrectEnumArity(i + 1, expected, pattern.type.text)
 
         inferPattern(acc, next, tv)
       }
