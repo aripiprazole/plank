@@ -58,6 +58,10 @@ fun QualifiedPath?.orEmpty(): QualifiedPath {
   return this ?: QualifiedPath()
 }
 
+fun Identifier.toQualifiedPath(): QualifiedPath {
+  return QualifiedPath(text)
+}
+
 fun String.toQualifiedPath(): QualifiedPath {
   return QualifiedPath(this)
 }

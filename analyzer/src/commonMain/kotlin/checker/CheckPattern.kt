@@ -13,13 +13,22 @@ import org.plank.analyzer.infer.nullSubst
 import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.NamedTuplePattern
 import org.plank.syntax.element.Pattern
+import org.plank.syntax.element.toQualifiedPath
 
 fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
   return when (pattern) {
     is IdentPattern -> {
-      scope.declare(pattern.name, subject.ty)
+      val name = pattern.name
+      val location = pattern.location
 
-      TypedIdentPattern(pattern.name, subject.ty, subject.subst, pattern.location)
+      scope.declare(name, subject.ty)
+
+      val scheme = scope.lookupVariable(name)
+        ?.scheme() ?: return TypedIdentPattern(name, subject.ty, subject.subst, location)
+
+      val ty = infer.instantiate(scheme)
+
+      TypedNamedTuplePattern(name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
     }
     is NamedTuplePattern -> {
       val name = pattern.type.toIdentifier()
@@ -38,7 +47,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         checkPattern(next, TypedEnumIndexAccess(subject, i, tv, nullSubst(), next.location))
       }
 
-      TypedNamedTuplePattern(properties, pattern.type, ty, nullSubst(), pattern.location)
+      TypedNamedTuplePattern(pattern.type, properties, ty, nullSubst(), pattern.location)
     }
   }
 }

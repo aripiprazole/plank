@@ -23,8 +23,8 @@ sealed interface TypedPattern : TypedPlankElement {
 }
 
 data class TypedNamedTuplePattern(
-  val properties: List<TypedPattern>,
   val name: QualifiedPath,
+  val properties: List<TypedPattern> = emptyList(),
   override val ty: Ty,
   override val subst: Subst,
   override val location: Location,

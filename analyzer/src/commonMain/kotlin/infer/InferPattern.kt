@@ -4,16 +4,22 @@ import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.NamedTuplePattern
 import org.plank.syntax.element.Pattern
 
-fun Infer.inferPattern(env: TyEnv, pattern: Pattern, subject: Ty): TyEnv = when (pattern) {
-  is IdentPattern -> env.extend(pattern.name.text, env.generalize(subject))
-  is NamedTuplePattern -> {
-    val scheme = env.lookup(pattern.type.text) ?: throw UnboundVar(pattern.type.toIdentifier())
-    val parameters = instantiate(scheme).callable().chainParameters()
+fun Infer.inferPattern(env: TyEnv, pattern: Pattern, subject: Ty): TyEnv {
+  return when (pattern) {
+    is IdentPattern -> {
+      env.lookup(pattern.name.text) ?: return env.extend(pattern.name.text, env.generalize(subject))
 
-    pattern.properties.foldIndexed(env) { i, acc, next ->
-      val tv = parameters.elementAtOrNull(i) ?: throw IncorrectEnumArity(i + 1, pattern.type.text)
+      env
+    }
+    is NamedTuplePattern -> {
+      val scheme = env.lookup(pattern.type.text) ?: throw UnboundVar(pattern.type.toIdentifier())
+      val parameters = instantiate(scheme).callable().chainParameters()
 
-      inferPattern(acc, next, tv)
+      pattern.properties.foldIndexed(env) { i, acc, next ->
+        val tv = parameters.elementAtOrNull(i) ?: throw IncorrectEnumArity(i + 1, pattern.type.text)
+
+        inferPattern(acc, next, tv)
+      }
     }
   }
 }
