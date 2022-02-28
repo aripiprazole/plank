@@ -6,6 +6,7 @@ import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.chainParameters
 import org.plank.analyzer.infer.doubleTy
 import org.plank.analyzer.infer.floatTy
+import org.plank.analyzer.infer.unitTy
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.toIdentifier
 
@@ -94,6 +95,14 @@ class DoubleInfo(override val declaredIn: Scope) : TyInfo {
   override val generics: Set<Identifier> = emptySet()
 
   override fun toString(): String = "{double}"
+}
+
+class UnitInfo(override val declaredIn: Scope) : TyInfo {
+  override val name: Identifier = Identifier("()")
+  override val ty: Ty = unitTy
+  override val generics: Set<Identifier> = emptySet()
+
+  override fun toString(): String = "{unit}"
 }
 
 class FloatInfo(override val declaredIn: Scope) : TyInfo {

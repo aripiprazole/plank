@@ -26,13 +26,14 @@ import org.plank.syntax.element.Location
 import org.plank.syntax.element.PlankElement
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.toIdentifier
+import org.plank.syntax.message.SimpleCompilerLogger
 import kotlin.reflect.KClass
 
-fun ResolveResult.typeCheck(): ResolvedPlankFile {
-  return TypeCheck(this).check()
+fun ResolveResult.typeCheck(logger: SimpleCompilerLogger? = null): ResolvedPlankFile {
+  return TypeCheck(this, logger).check()
 }
 
-class TypeCheck(result: ResolveResult) {
+class TypeCheck(result: ResolveResult, val logger: SimpleCompilerLogger?) {
   val dependencies = result.dependencies
   val file = result.file
   val tree = result.tree
@@ -55,13 +56,23 @@ class TypeCheck(result: ResolveResult) {
   }
 
   fun checkFile(file: PlankFile): ResolvedPlankFile {
-    val module = requireNotNull(tree.findModule(file.module)) { "Could not find file in tree" }
+    runCatching {
+      val module = requireNotNull(tree.findModule(file.module)) { "Could not find file in tree" }
 
-    return scoped(module.scope) {
-      val program = file.program.map(::checkStmt).filterIsInstance<ResolvedDecl>()
+      return scoped(module.scope) {
+        val program = file.program.map(::checkStmt).filterIsInstance<ResolvedDecl>()
 
-      ResolvedPlankFile(program, module, tree, file)
+        ResolvedPlankFile(program, module, tree, file)
+      }
+    }.onFailure { error ->
+      if (logger != null) {
+        violations.forEach { it.render(logger) }
+      }
+
+      throw error
     }
+
+    error("unreachable")
   }
 
   fun Ty.generalize(): Scheme {

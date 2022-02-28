@@ -1,6 +1,8 @@
 package org.plank.analyzer
 
+import org.plank.analyzer.checker.typeCheck
 import org.plank.analyzer.resolver.ModuleTree
+import org.plank.analyzer.resolver.resolveImports
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.SimpleCompilerLogger
 
@@ -53,7 +55,7 @@ val logger = SimpleCompilerLogger(debug = true, verbose = true)
 
 fun main() {
   val tree = ModuleTree(maybePlank, ioPlank)
-  val file = analyze(mainPlank, tree)
+  val file = resolveImports(mainPlank, tree).typeCheck(logger)
 
   file.analyzerViolations.forEach {
     it.render(logger)

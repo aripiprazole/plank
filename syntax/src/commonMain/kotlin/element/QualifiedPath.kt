@@ -50,6 +50,10 @@ operator fun Identifier.plus(other: Identifier): QualifiedPath {
   return QualifiedPath(text) + other
 }
 
+fun List<Identifier>.toQualifiedPath(): QualifiedPath {
+  return QualifiedPath(this)
+}
+
 fun QualifiedPath?.orEmpty(): QualifiedPath {
   return this ?: QualifiedPath()
 }

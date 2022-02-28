@@ -2,164 +2,15 @@ package org.plank.analyzer.resolver
 
 import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.TypedExpr
-import org.plank.analyzer.element.TypedIntAddExpr
-import org.plank.analyzer.element.TypedIntDivExpr
-import org.plank.analyzer.element.TypedIntEQExpr
-import org.plank.analyzer.element.TypedIntGTEExpr
-import org.plank.analyzer.element.TypedIntGTExpr
-import org.plank.analyzer.element.TypedIntLTEExpr
-import org.plank.analyzer.element.TypedIntLTExpr
-import org.plank.analyzer.element.TypedIntMulExpr
-import org.plank.analyzer.element.TypedIntNEQExpr
-import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
-import org.plank.analyzer.infer.boolTy
-import org.plank.analyzer.infer.charTy
-import org.plank.analyzer.infer.i16Ty
-import org.plank.analyzer.infer.i32Ty
-import org.plank.analyzer.infer.i8Ty
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Pattern
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.text
 import org.plank.syntax.element.toIdentifier
-
-class GlobalScope(override val tree: ModuleTree) : Scope() {
-  override val name = Identifier("Global")
-  override val enclosing: Scope? = null
-  override val names: Set<String> = emptySet()
-  override val content: List<Stmt> = emptyList()
-
-  /**
-   * Init compiler-defined functions
-   */
-  init {
-    create(IntInfo(this, "Char", charTy, 8))
-    create(IntInfo(this, "Bool", boolTy, 8))
-    create(DoubleInfo(this))
-    create(FloatInfo(this))
-
-    create(IntInfo(this, "Int8", i8Ty, 8))
-    create(IntInfo(this, "Int16", i16Ty, 16))
-    create(IntInfo(this, "Int32", i32Ty, 32))
-
-    // Add default binary operators
-    declareInline("+", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntAddExpr(a, b) }
-    declareInline("-", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntSubExpr(a, b) }
-    declareInline("*", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntMulExpr(a, b) }
-    declareInline("/", i32Ty, i32Ty, i32Ty) { (a, b) -> TypedIntDivExpr(a, b) }
-
-    // Add default logical operators
-    declareInline("==", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntEQExpr(a, b) }
-    declareInline("!=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntNEQExpr(a, b) }
-    declareInline(">=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntGTEExpr(a, b) }
-    declareInline(">", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntGTExpr(a, b) }
-    declareInline("<=", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTEExpr(a, b) }
-    declareInline("<", boolTy, i32Ty, i32Ty) { (a, b) -> TypedIntLTExpr(a, b) }
-  }
-
-  override fun enclose(scope: Scope): Scope = this
-
-  override fun toString(): String = "Global"
-}
-
-data class FileScope(
-  var file: PlankFile,
-  override val module: Module,
-  override val enclosing: GlobalScope,
-  override val tree: ModuleTree = ModuleTree(),
-) : Scope() {
-  override val content: List<Stmt> = file.program
-  override val name = file.module
-  override val nested = false
-
-  override fun enclose(scope: Scope): FileScope = when (scope) {
-    is GlobalScope -> copy(enclosing = scope)
-    else -> this
-  }
-
-  override fun toString(): String =
-    "File(${file.module}) <: $enclosing"
-}
-
-data class ModuleScope(
-  override val module: Module,
-  override val enclosing: Scope,
-  override val tree: ModuleTree = ModuleTree(),
-) : Scope() {
-  override val content: List<Stmt> = module.content
-  override val name: Identifier = module.name
-
-  override fun enclose(scope: Scope): ModuleScope = copy(enclosing = scope)
-
-  override fun toString(): String =
-    "Module(${module.name}) <: $enclosing"
-}
-
-data class FunctionScope(
-  val function: FunctionInfo,
-  override val content: List<Stmt>,
-  override val enclosing: Scope? = null,
-  override val tree: ModuleTree = ModuleTree(),
-  override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
-  override val name: Identifier = function.name,
-) : Scope() {
-  override val names: Set<String> = function.generics.text().toSet()
-  override val isTopLevelScope: Boolean = false
-
-  val returnTy: Ty = function.returnTy
-  val parameters: Map<Identifier, Ty> = function.parameters
-
-  private fun showNames(): String {
-    return when {
-      names.isEmpty() -> ""
-      else -> "[${names.joinToString(" ")}]"
-    }
-  }
-
-  override fun enclose(scope: Scope): FunctionScope = copy(enclosing = scope)
-
-  override fun hashCode(): Int = super.hashCode()
-  override fun equals(other: Any?): Boolean = super.equals(other)
-  override fun toString(): String =
-    "Function${showNames()}($name, ${function.ty}) <: $enclosing"
-}
-
-data class PatternScope(
-  val pattern: Pattern,
-  override val enclosing: Scope,
-  override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
-  override val tree: ModuleTree = ModuleTree(),
-) : Scope() {
-  override val content: List<Stmt> = emptyList()
-  override val name: Identifier = "Pattern".toIdentifier()
-  override val isTopLevelScope: Boolean = false
-
-  override fun enclose(scope: Scope): PatternScope = copy(enclosing = scope)
-
-  override fun hashCode(): Int = super.hashCode()
-  override fun equals(other: Any?): Boolean = super.equals(other)
-  override fun toString(): String = "Pattern($pattern) <: $enclosing"
-}
-
-data class ClosureScope(
-  override val name: Identifier,
-  override val content: List<Stmt>,
-  override val enclosing: Scope,
-  override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
-  override val tree: ModuleTree = ModuleTree(),
-) : Scope() {
-  override val isTopLevelScope: Boolean = false
-
-  override fun enclose(scope: Scope): ClosureScope = copy(enclosing = scope)
-
-  override fun hashCode(): Int = super.hashCode()
-  override fun equals(other: Any?): Boolean = super.equals(other)
-  override fun toString(): String = "Closure($name) <: $enclosing"
-}
 
 sealed class Scope {
   abstract val name: Identifier
@@ -261,4 +112,99 @@ sealed class Scope {
   }
 
   abstract fun enclose(scope: Scope): Scope
+}
+
+data class FileScope(
+  var file: PlankFile,
+  override val module: Module,
+  override val enclosing: GlobalScope,
+  override val tree: ModuleTree = ModuleTree(),
+) : Scope() {
+  override val content: List<Stmt> = file.program
+  override val name = file.module
+  override val nested = false
+
+  override fun enclose(scope: Scope): FileScope = when (scope) {
+    is GlobalScope -> copy(enclosing = scope)
+    else -> this
+  }
+
+  override fun toString(): String =
+    "File(${file.module}) <: $enclosing"
+}
+
+data class ModuleScope(
+  override val module: Module,
+  override val enclosing: Scope,
+  override val tree: ModuleTree = ModuleTree(),
+) : Scope() {
+  override val content: List<Stmt> = module.content
+  override val name: Identifier = module.name
+
+  override fun enclose(scope: Scope): ModuleScope = copy(enclosing = scope)
+
+  override fun toString(): String =
+    "Module(${module.name}) <: $enclosing"
+}
+
+data class FunctionScope(
+  val function: FunctionInfo,
+  override val content: List<Stmt>,
+  override val enclosing: Scope? = null,
+  override val tree: ModuleTree = ModuleTree(),
+  override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
+  override val name: Identifier = function.name,
+) : Scope() {
+  override val names: Set<String> = function.generics.text().toSet()
+  override val isTopLevelScope: Boolean = false
+
+  val returnTy: Ty = function.returnTy
+  val parameters: Map<Identifier, Ty> = function.parameters
+
+  private fun showNames(): String {
+    return when {
+      names.isEmpty() -> ""
+      else -> "[${names.joinToString(" ")}]"
+    }
+  }
+
+  override fun enclose(scope: Scope): FunctionScope = copy(enclosing = scope)
+
+  override fun hashCode(): Int = super.hashCode()
+  override fun equals(other: Any?): Boolean = super.equals(other)
+  override fun toString(): String =
+    "Function${showNames()}($name, ${function.ty}) <: $enclosing"
+}
+
+data class PatternScope(
+  val pattern: Pattern,
+  override val enclosing: Scope,
+  override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
+  override val tree: ModuleTree = ModuleTree(),
+) : Scope() {
+  override val content: List<Stmt> = emptyList()
+  override val name: Identifier = "Pattern".toIdentifier()
+  override val isTopLevelScope: Boolean = false
+
+  override fun enclose(scope: Scope): PatternScope = copy(enclosing = scope)
+
+  override fun hashCode(): Int = super.hashCode()
+  override fun equals(other: Any?): Boolean = super.equals(other)
+  override fun toString(): String = "Pattern($pattern) <: $enclosing"
+}
+
+data class ClosureScope(
+  override val name: Identifier,
+  override val content: List<Stmt>,
+  override val enclosing: Scope,
+  override val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
+  override val tree: ModuleTree = ModuleTree(),
+) : Scope() {
+  override val isTopLevelScope: Boolean = false
+
+  override fun enclose(scope: Scope): ClosureScope = copy(enclosing = scope)
+
+  override fun hashCode(): Int = super.hashCode()
+  override fun equals(other: Any?): Boolean = super.equals(other)
+  override fun toString(): String = "Closure($name) <: $enclosing"
 }
