@@ -6,12 +6,12 @@ import org.antlr.v4.kotlinruntime.DiagnosticErrorListener
 import org.antlr.v4.kotlinruntime.atn.PredictionMode
 import org.plank.parser.PlankLexer
 import org.plank.parser.PlankParser
+import org.plank.syntax.SyntaxErrorListener
+import org.plank.syntax.SyntaxViolation
 import org.plank.syntax.debug.DontDump
-import org.plank.syntax.mapper.DescriptorMapper
-import org.plank.syntax.mapper.SyntaxErrorListener
-import org.plank.syntax.mapper.SyntaxViolation
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.parser.toParseTree
+import org.plank.syntax.parsing.fileToAst
 import pw.binom.io.file.File
 import pw.binom.io.file.name
 import pw.binom.io.file.nameWithoutExtension
@@ -82,21 +82,16 @@ data class PlankFile(
         }
       }
 
-      return runCatching {
-        DescriptorMapper(file)
-          .visitFile(
-            parser.file().also { tree ->
-              if (treeDebug) {
-                logger.debug("Parse tree:")
-                logger.debug(tree.toParseTree().multilineString())
-                logger.debug()
-              }
-            }
-          )
-          .copy(violations = syntaxErrorListener.violations)
-      }.getOrElse {
-        file.copy(violations = syntaxErrorListener.violations)
-      }
+      return parser.file()
+        .also { tree ->
+          if (treeDebug) {
+            logger.debug("Parse tree:")
+            logger.debug(tree.toParseTree().multilineString())
+            logger.debug()
+          }
+        }
+        .fileToAst(file)
+        .copy(violations = syntaxErrorListener.violations)
     }
   }
 

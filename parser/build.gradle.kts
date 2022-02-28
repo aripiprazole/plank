@@ -40,7 +40,7 @@ tasks {
       dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinVersion")
     )
     maxHeapSize = "64m"
-    arguments = listOf("-visitor")
+    arguments = emptyList()
     source = project.objects
       .sourceDirectorySet("commonAntlr", "commonAntlr")
       .srcDir("src/commonAntlr/antlr").apply {

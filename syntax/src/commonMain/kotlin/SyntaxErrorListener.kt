@@ -1,4 +1,4 @@
-package org.plank.syntax.mapper
+package org.plank.syntax
 
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.RecognitionException

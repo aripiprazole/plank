@@ -48,7 +48,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
     is UseDecl -> {
       val module = scope.findModule(stmt.path.toIdentifier())
-        ?: violate(stmt.path, UnresolvedModule(stmt.path.toIdentifier()))
+        ?: return violate(stmt.path, UnresolvedModule(stmt.path.toIdentifier()))
 
       scope.expand(module.scope)
 

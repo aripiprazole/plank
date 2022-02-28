@@ -1,4 +1,4 @@
-package org.plank.syntax.mapper
+package org.plank.syntax
 
 import org.plank.syntax.element.Loc
 import org.plank.syntax.message.CompilerLogger
