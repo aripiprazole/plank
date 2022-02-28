@@ -38,7 +38,7 @@ fun resolveUses(
         val info = FunctionInfo(currentScope, name, ty, Scheme(ty))
         val scope = FunctionScope(info, statements(body), currentScope, tree = ModuleTree(tree))
 
-        scope.declare(name, info.ty)
+        currentScope.declare(name, info.ty)
 
         currentScope = scope
       }
