@@ -16,7 +16,6 @@ import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
 import org.plank.analyzer.element.TypedSizeofExpr
 import org.plank.analyzer.infer.AppTy
-import org.plank.analyzer.infer.ConstTy
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.PtrTy
 import org.plank.analyzer.infer.Scheme
@@ -29,6 +28,7 @@ import org.plank.analyzer.infer.boolTy
 import org.plank.analyzer.infer.chainParameters
 import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.infer.ty
+import org.plank.analyzer.infer.ungeneralize
 import org.plank.analyzer.infer.unitTy
 import org.plank.analyzer.resolver.ClosureScope
 import org.plank.analyzer.resolver.InlineVariable
@@ -190,7 +190,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val ty = instantiate(
         Scheme(
           struct.generics.map { it.text }.toSet(),
-          struct.generics.fold(ConstTy(struct.name.text) as Ty) { acc, next ->
+          struct.generics.fold(structTy.ungeneralize() as Ty) { acc, next ->
             AppTy(acc, VarTy(next.text))
           }
         ),
