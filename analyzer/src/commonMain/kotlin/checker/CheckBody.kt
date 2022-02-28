@@ -4,7 +4,6 @@ import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.ResolvedNoBody
-import org.plank.analyzer.infer.ap
 import org.plank.analyzer.resolver.FunctionScope
 import org.plank.syntax.element.CodeBody
 import org.plank.syntax.element.ConstExpr
@@ -19,9 +18,8 @@ fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
       val value = checkExpr(body.value ?: ConstExpr(Unit))
       val scope = scope as FunctionScope
 
-      val s = unify(scope.returnTy, value.ty)
-      if (scope.returnTy ap s != value.ty) {
-        violate<ResolvedFunctionBody>(body, TypeMismatch(scope.returnTy ap s, value.ty))
+      if (scope.returnTy != value.ty) {
+        violate<ResolvedFunctionBody>(body, TypeMismatch(scope.returnTy, value.ty))
       }
 
       ResolvedCodeBody(stmts, value, body.loc)
@@ -30,9 +28,8 @@ fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
       val value = checkExpr(body.expr)
       val scope = scope as FunctionScope
 
-      val s = unify(value.ty, scope.returnTy)
-      if (scope.returnTy != value.ty ap s) {
-        violate<ResolvedFunctionBody>(body, TypeMismatch(scope.returnTy, value.ty ap s))
+      if (scope.returnTy != value.ty) {
+        violate<ResolvedFunctionBody>(body, TypeMismatch(scope.returnTy, value.ty))
       }
 
       ResolvedExprBody(value, body.loc)

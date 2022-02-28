@@ -10,6 +10,7 @@ sealed interface Variable {
   val mutable: Boolean
   val name: Identifier
   val ty: Ty
+  val scheme: Scheme
   val declaredIn: Scope
   val isInScope: Boolean
 
@@ -17,18 +18,10 @@ sealed interface Variable {
 
   fun inScope(): Variable
   fun notInScope(): Variable
-
-  fun scheme(): Scheme {
-    return when (this) {
-      is InlineVariable -> Scheme(ty)
-      is LocalVariable -> Scheme(ty)
-      is RankedVariable -> scheme
-    }
-  }
 }
 
 data class RankedVariable(
-  val scheme: Scheme,
+  override val scheme: Scheme,
   override val mutable: Boolean,
   override val name: Identifier,
   override val declaredIn: Scope,
@@ -48,9 +41,11 @@ data class LocalVariable(
   override val mutable: Boolean,
   override val name: Identifier,
   override val ty: Ty,
+  override val scheme: Scheme,
   override val declaredIn: Scope,
   override val isInScope: Boolean = false,
 ) : Variable {
+
   override fun name(name: Identifier): LocalVariable = copy(name = name)
   override fun inScope(): LocalVariable = copy(isInScope = true)
   override fun notInScope(): LocalVariable = copy(isInScope = false)
@@ -63,6 +58,7 @@ data class InlineVariable(
   override val mutable: Boolean,
   override val name: Identifier,
   override val ty: Ty,
+  override val scheme: Scheme,
   override val declaredIn: Scope,
   override val isInScope: Boolean = false,
   val inlineCall: (List<TypedExpr>) -> ResolvedFunctionBody,

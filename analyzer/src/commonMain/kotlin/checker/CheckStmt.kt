@@ -15,7 +15,6 @@ import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
-import org.plank.analyzer.infer.ap
 import org.plank.analyzer.infer.ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.analyzer.resolver.EnumInfo
@@ -87,26 +86,25 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
     }
 
     is LetDecl -> {
-      val tv = fresh()
-
       val (t1, s1) = infer(stmt.value)
       val t2 = stmt.type?.ty()?.let(::checkTy) ?: t1
-      val s2 = unify(t2 ap s1, tv)
 
-      val ty = t2 ap s2
+      if (t2 != t1) {
+        violate<ResolvedDecl>(stmt.value, TypeMismatch(t2, t1))
+      }
 
       val value = checkExpr(stmt.value)
 
-      val scheme = scope.declare(stmt.name, ty.generalize())
+      val scheme = scope.declare(stmt.name, t2.generalize())
 
       ResolvedLetDecl(
         name = stmt.name,
         value = value,
         scheme = scheme,
-        ty = ty,
+        ty = t2,
         isNested = !scope.isTopLevelScope,
         mutable = stmt.mutable,
-        subst = s2 compose s1,
+        subst = s1,
         loc = stmt.loc,
       )
     }

@@ -84,7 +84,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val variable = variableScope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
 
-      TypedAccessExpr(variable, instantiate(variable.scheme()), nullSubst(), expr.loc)
+      TypedAccessExpr(variable, instantiate(variable.scheme), nullSubst(), expr.loc)
     }
 
     is IfExpr -> {
@@ -118,7 +118,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val variable = scope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
 
-      TypedAccessExpr(variable, instantiate(variable.scheme()), nullSubst(), expr.loc)
+      TypedAccessExpr(variable, instantiate(variable.scheme), nullSubst(), expr.loc)
 
       if (!variable.mutable) {
         violate<TypedExpr>(expr.value, CanNotReassignImmutableVariable(variable.name))
@@ -253,13 +253,13 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
           var s = nullSubst()
           val fst = patterns.values.first()
           val ty = patterns.values.drop(1).fold(fst.ty) { acc, next ->
-            s = s compose unify(acc, next.ty)
+            s = s compose unify(next.ty, acc)
 
-            if (next.ty != acc ap s) {
-              violate<TypedExpr>(next, TypeMismatch(acc ap s, next.ty ap s))
+            if (acc != next.ty ap s) {
+              violate<TypedExpr>(next, TypeMismatch(acc, next.ty ap s))
             }
 
-            next.ty ap s
+            acc
           }
 
           TypedMatchExpr(subject, patterns, ty, s, expr.loc) ap s

@@ -45,14 +45,8 @@ sealed class Scope {
   }
 
   fun declare(name: Identifier, ty: Ty, mutable: Boolean = false): Scheme {
-    _variables[name] = LocalVariable(mutable, name, ty, this)
+    _variables[name] = LocalVariable(mutable, name, ty, Scheme(ty), this)
     return Scheme(emptySet(), ty)
-  }
-
-  fun declare(name: Identifier, value: TypedExpr, mutable: Boolean = false): Scheme {
-    val scheme = Scheme(emptySet(), value.ty)
-    _variables[name] = LocalVariable(mutable, name, scheme.ty, this)
-    return scheme
   }
 
   fun declareInline(
@@ -61,14 +55,9 @@ sealed class Scope {
     vararg parameters: Ty,
     builder: (List<TypedExpr>) -> TypedExpr,
   ) {
+    val ty = FunTy(returnTy, parameters.toList())
     _variables[Identifier(name)] =
-      InlineVariable(
-        false,
-        Identifier(name),
-        FunTy(returnTy, parameters.toList()),
-        this,
-        false
-      ) {
+      InlineVariable(false, Identifier(name), ty, Scheme(ty), this, false) {
         ResolvedExprBody(builder(it))
       }
   }

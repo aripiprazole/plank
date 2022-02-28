@@ -29,7 +29,7 @@ private val maybePlank = PlankFile.of(
     Nothing
   }
 
-  fun unwrap(m: Maybe[a]) -> b = match m {
+  fun unwrap(m: Maybe[a]) -> a = match m {
     Just(x) => x,
     Nothing => panic("unwrap: Nothing")
   }
