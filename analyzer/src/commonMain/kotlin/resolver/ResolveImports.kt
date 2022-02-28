@@ -63,11 +63,11 @@ class ResolveImports(val file: PlankFile, val tree: ModuleTree) {
 
   fun Graph<Identifier>.runDependencyTreeWalker(f: PlankFile) {
     val module = tree.findModule(f.module)
-      ?.apply { scope = FileScope(f, tree.globalScope) }
+      ?.apply { scope = FileScope(f, tree.globalScope, tree) }
       ?: Module(f.module, f.program).apply {
         tree.createModule(this)
 
-        scope = FileScope(f, tree.globalScope)
+        scope = FileScope(f, tree.globalScope, tree)
       }
 
     val scope = module.scope as FileScope
