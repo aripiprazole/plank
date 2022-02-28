@@ -311,14 +311,16 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
 }
 
 fun StringBuilder.prettyArgument(indent: String, expr: TypedExpr) {
-  paren {
-    if (expr is TypedCallExpr) {
+  when {
+    expr is TypedConstExpr && expr.value == Unit -> paren()
+    expr is TypedCallExpr -> paren {
       prettyCall(indent, expr)
-    } else {
-      append(expr.pretty(indent))
+      append(" : ").append(expr.ty)
     }
-
-    append(" : ").append(expr.ty)
+    else -> paren {
+      append(expr.pretty(indent))
+      append(" : ").append(expr.ty)
+    }
   }
 }
 
@@ -444,7 +446,7 @@ private fun StringBuilder.paren(value: Any): StringBuilder = append("($value)")
 private fun StringBuilder.bracket(value: Any): StringBuilder = append("[$value]")
 private fun StringBuilder.space(): StringBuilder = append(" ")
 
-private fun StringBuilder.paren(fn: StringBuilder.() -> Unit): StringBuilder {
+private fun StringBuilder.paren(fn: StringBuilder.() -> Unit = {}): StringBuilder {
   lparen()
   fn()
   rparen()
