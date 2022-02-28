@@ -66,28 +66,28 @@ import org.plank.syntax.element.toIdentifier
 
 fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
   return when (expr) {
-    is SizeofExpr -> TypedSizeofExpr(checkTy(expr.type.ty()), nullSubst(), expr.location)
-    is RefExpr -> TypedRefExpr(checkExpr(expr.value), expr.location)
-    is GroupExpr -> TypedGroupExpr(checkExpr(expr.value), expr.location)
+    is SizeofExpr -> TypedSizeofExpr(checkTy(expr.type.ty()), nullSubst(), expr.loc)
+    is RefExpr -> TypedRefExpr(checkExpr(expr.value), expr.loc)
+    is GroupExpr -> TypedGroupExpr(checkExpr(expr.value), expr.loc)
 
     is DerefExpr -> {
       val value = checkExpr(expr.value)
       val ty = value.ty as? PtrTy ?: return violate(expr.value, TypeIsNotPointer(value.ty))
 
-      TypedDerefExpr(value, ty.arg, value.subst, expr.location)
+      TypedDerefExpr(value, ty.arg, value.subst, expr.loc)
     }
 
     is ConstExpr -> {
       val (ty, s) = infer(expr)
 
-      TypedConstExpr(expr.value, ty, s, expr.location)
+      TypedConstExpr(expr.value, ty, s, expr.loc)
     }
 
     is BlockExpr -> scoped(ClosureScope("Block".toIdentifier(), expr.stmts, scope)) {
       val stmts = expr.stmts.map(::checkStmt)
       val value = checkExpr(expr.value ?: ConstExpr(Unit))
 
-      TypedBlockExpr(stmts, value, references, expr.location)
+      TypedBlockExpr(stmts, value, references, expr.loc)
     }
 
     is AccessExpr -> {
@@ -96,11 +96,11 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val variable = variableScope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
 
-      TypedAccessExpr(variable, infer.instantiate(variable.scheme()), nullSubst(), expr.location)
+      TypedAccessExpr(variable, infer.instantiate(variable.scheme()), nullSubst(), expr.loc)
     }
 
     is IfExpr -> {
-      val location = expr.location
+      val location = expr.loc
       val cond = checkExpr(expr.cond)
 
       if (boolTy != cond.ty) {
@@ -130,7 +130,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val variable = scope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
 
-      TypedAccessExpr(variable, infer.instantiate(variable.scheme()), nullSubst(), expr.location)
+      TypedAccessExpr(variable, infer.instantiate(variable.scheme()), nullSubst(), expr.loc)
 
       if (!variable.mutable) {
         violate<TypedExpr>(expr.value, CanNotReassignImmutableVariable(variable.name))
@@ -144,7 +144,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
         return violate(value, TypeMismatch(t1 ap s1, value.ty ap s1))
       }
 
-      return TypedAssignExpr(scope, variable.name, value, value.ty, s2, expr.location)
+      return TypedAssignExpr(scope, variable.name, value, value.ty, s2, expr.loc)
     }
 
     is GetExpr -> {
@@ -160,7 +160,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val member = struct.members[expr.property]
         ?: return violate(property, UnresolvedStructMember(expr.property, struct))
 
-      TypedGetExpr(receiver, member.name, struct, member.ty, nullSubst(), expr.location)
+      TypedGetExpr(receiver, member.name, struct, member.ty, nullSubst(), expr.loc)
     }
 
     is SetExpr -> {
@@ -185,7 +185,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
         violate<TypedExpr>(value, TypeMismatch(member.ty, value.ty))
       }
 
-      TypedSetExpr(receiver, member.name, value, struct, member.ty, value.subst, expr.location)
+      TypedSetExpr(receiver, member.name, value, struct, member.ty, value.subst, expr.loc)
     }
 
     is InstanceExpr -> {
@@ -219,7 +219,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
         value
       }
 
-      TypedInstanceExpr(arguments, struct, ty, subst, expr.location) ap subst
+      TypedInstanceExpr(arguments, struct, ty, subst, expr.loc) ap subst
     }
 
     is CallExpr -> {
@@ -243,7 +243,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
           val s2 = unify(t2, argument.ty)
           val s3 = unify(t1 ap s2, (t2 ap s2) arr tv)
 
-          TypedCallExpr(acc, argument, tv ap s3, nullSubst(), expr.location) ap
+          TypedCallExpr(acc, argument, tv ap s3, nullSubst(), expr.loc) ap
             (s3 compose s2 compose s1)
         }
     }
@@ -253,7 +253,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
 
       when {
         expr.patterns.isEmpty() -> {
-          TypedMatchExpr(subject, emptyMap(), unitTy, Subst(), expr.location)
+          TypedMatchExpr(subject, emptyMap(), unitTy, Subst(), expr.loc)
         }
         else -> {
           val patterns = expr.patterns.entries.associate { (pattern, value) ->
@@ -274,7 +274,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
             next.ty ap s
           }
 
-          TypedMatchExpr(subject, patterns, ty, s, expr.location) ap s
+          TypedMatchExpr(subject, patterns, ty, s, expr.loc) ap s
         }
       }
     }

@@ -10,11 +10,12 @@ import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.resolver.Scope
 import org.plank.analyzer.resolver.StructInfo
 import org.plank.analyzer.resolver.Variable
+import org.plank.syntax.element.GeneratedLoc
 import org.plank.syntax.element.Identifier
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
 
 sealed interface TypedExpr : TypedPlankElement {
-  override val location: Location
+  override val loc: Loc
 
   override infix fun ap(subst: Subst): TypedExpr
 }
@@ -23,7 +24,7 @@ data class TypedBlockExpr(
   val stmts: List<ResolvedStmt>,
   val value: TypedExpr,
   val references: MutableMap<Identifier, Ty> = mutableMapOf(),
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override val ty: Ty = value.ty
   override val subst: Subst = value.subst
@@ -35,7 +36,7 @@ data class TypedConstExpr(
   val value: Any,
   override val ty: Ty,
   override val subst: Subst = nullSubst(),
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedConstExpr =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
@@ -47,7 +48,7 @@ data class TypedIfExpr(
   val elseBranch: TypedIfBranch?,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedIfExpr = copy(
     cond = cond.ap(subst),
@@ -62,7 +63,7 @@ data class TypedAccessExpr(
   val variable: Variable,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   val scope: Scope = variable.declaredIn
   val name: Identifier = variable.name
@@ -73,7 +74,7 @@ data class TypedAccessExpr(
 
 data class TypedGroupExpr(
   val value: TypedExpr,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override val ty: Ty = value.ty
   override val subst: Subst = value.subst
@@ -87,7 +88,7 @@ data class TypedAssignExpr(
   val value: TypedExpr,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedAssignExpr =
     copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
@@ -100,7 +101,7 @@ data class TypedSetExpr(
   val info: StructInfo,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedSetExpr =
     copy(
@@ -117,7 +118,7 @@ data class TypedGetExpr(
   val info: StructInfo,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedGetExpr =
     copy(receiver = receiver.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
@@ -135,7 +136,7 @@ data class TypedIntAddExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
   override val subst: Subst = lhs.subst compose rhs.subst
@@ -148,7 +149,7 @@ data class TypedIntSubExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
   override val subst: Subst = lhs.subst compose rhs.subst
@@ -161,7 +162,7 @@ data class TypedIntMulExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
 ) : TypedIntOperationExpr {
   override val ty: Ty = rhs.ty
   override val subst: Subst = lhs.subst compose rhs.subst
@@ -174,7 +175,7 @@ data class TypedIntDivExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
   override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = i32Ty
@@ -188,7 +189,7 @@ data class TypedIntEQExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
   override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -202,7 +203,7 @@ data class TypedIntNEQExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
   override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -216,7 +217,7 @@ data class TypedIntGTExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
   override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -230,7 +231,7 @@ data class TypedIntGTEExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
   override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -244,7 +245,7 @@ data class TypedIntLTExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
   override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -258,7 +259,7 @@ data class TypedIntLTEExpr(
   override val rhs: TypedExpr,
   override val isConst: Boolean = false,
   override val unsigned: Boolean = false,
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
   override val subst: Subst = Subst(),
 ) : TypedIntOperationExpr {
   override val ty: Ty = boolTy
@@ -272,7 +273,7 @@ data class TypedCallExpr(
   val argument: TypedExpr,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedCallExpr =
     copy(
@@ -288,7 +289,7 @@ data class TypedInstanceExpr(
   val info: StructInfo,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedInstanceExpr =
     copy(
@@ -301,7 +302,7 @@ data class TypedInstanceExpr(
 data class TypedSizeofExpr(
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedSizeofExpr =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
@@ -309,7 +310,7 @@ data class TypedSizeofExpr(
 
 data class TypedRefExpr(
   val value: TypedExpr,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override val subst: Subst = value.subst
   override val ty: Ty = PtrTy(value.ty)
@@ -322,7 +323,7 @@ data class TypedDerefExpr(
   val value: TypedExpr,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedDerefExpr =
     copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
@@ -333,7 +334,7 @@ data class TypedEnumIndexAccess(
   val index: Int,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedEnumIndexAccess =
     copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
@@ -344,7 +345,7 @@ data class TypedMatchExpr(
   val patterns: Map<TypedPattern, TypedExpr>,
   override val ty: Ty,
   override val subst: Subst,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedMatchExpr =
     copy(

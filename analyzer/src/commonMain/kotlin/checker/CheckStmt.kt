@@ -43,8 +43,8 @@ import org.plank.syntax.element.toIdentifier
 
 fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
   return when (stmt) {
-    is ReturnStmt -> ResolvedExprStmt(checkExpr(stmt.value ?: ConstExpr(Unit)), stmt.location)
-    is ExprStmt -> ResolvedExprStmt(checkExpr(stmt.expr), stmt.location)
+    is ReturnStmt -> ResolvedExprStmt(checkExpr(stmt.value ?: ConstExpr(Unit)), stmt.loc)
+    is ExprStmt -> ResolvedExprStmt(checkExpr(stmt.expr), stmt.loc)
 
     is UseDecl -> {
       val module = scope.findModule(stmt.path.toIdentifier())
@@ -52,7 +52,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
       scope.expand(module.scope)
 
-      ResolvedUseDecl(module, stmt.location)
+      ResolvedUseDecl(module, stmt.loc)
     }
 
     is StructDecl -> {
@@ -71,7 +71,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
       }
       val info = scope.create(StructInfo(scope, stmt.name, ty, stmt.generics, members))
 
-      ResolvedStructDecl(info, stmt.location)
+      ResolvedStructDecl(info, stmt.loc)
     }
 
     is ModuleDecl -> {
@@ -85,7 +85,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         stmt.content.map(::checkStmt).filterIsInstance<ResolvedDecl>()
       }
 
-      ResolvedModuleDecl(stmt.path, content, stmt.location)
+      ResolvedModuleDecl(stmt.path, content, stmt.loc)
     }
 
     is LetDecl -> {
@@ -109,7 +109,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         isNested = !scope.isTopLevelScope,
         mutable = stmt.mutable,
         subst = s2 compose s1,
-        location = stmt.location,
+        loc = stmt.loc,
       )
     }
 
@@ -142,7 +142,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
       }
       val info = scope.create(EnumInfo(scope, stmt.name, ty, stmt.generics, members))
 
-      ResolvedEnumDecl(info, stmt.location)
+      ResolvedEnumDecl(info, stmt.loc)
     }
 
     is FunDecl -> {
@@ -174,7 +174,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         checkBody(stmt.body)
       }
 
-      ResolvedFunDecl(body, stmt.attributes, scope.references, info, isNested, stmt.location)
+      ResolvedFunDecl(body, stmt.attributes, scope.references, info, isNested, stmt.loc)
     }
   }
 }

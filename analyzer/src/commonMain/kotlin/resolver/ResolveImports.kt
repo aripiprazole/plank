@@ -82,12 +82,12 @@ fun qualifiedPath(vararg ids: Identifier): QualifiedPath {
   val first = ids.first()
   val last = ids.last()
 
-  return QualifiedPath(ids.toList(), first.location.endIn(last.location))
+  return QualifiedPath(ids.toList(), first.loc.endIn(last.loc))
 }
 
 fun Scope.fullPath(): QualifiedPath = when (this) {
-  is ModuleScope -> QualifiedPath(module.name.text, module.name.location)
-  is FileScope -> QualifiedPath(module.name.text, module.name.location)
+  is ModuleScope -> QualifiedPath(module.name.text, module.name.loc)
+  is FileScope -> QualifiedPath(module.name.text, module.name.loc)
   else -> QualifiedPath()
 }
 

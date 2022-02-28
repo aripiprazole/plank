@@ -12,7 +12,8 @@ import com.github.ajalt.mordant.rendering.TextStyles.bold
 import com.github.ajalt.mordant.table.Borders
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
+import org.plank.syntax.element.TextRange
 
 enum class LogLevel(val prefix: String, val color: TextColors) {
   Debug("debug", brightRed),
@@ -23,19 +24,19 @@ enum class LogLevel(val prefix: String, val color: TextColors) {
 }
 
 interface CompilerLogger {
-  fun log(level: LogLevel, message: String, location: Location?)
+  fun log(level: LogLevel, message: String, loc: Loc?)
 
-  fun debug(message: String = "", location: Location? = null): Unit =
-    log(LogLevel.Debug, message, location)
+  fun debug(message: String = "", loc: Loc? = null): Unit =
+    log(LogLevel.Debug, message, loc)
 
-  fun verbose(message: String = "", location: Location? = null): Unit =
-    log(LogLevel.Verbose, message, location)
+  fun verbose(message: String = "", loc: Loc? = null): Unit =
+    log(LogLevel.Verbose, message, loc)
 
-  fun severe(message: String = "", location: Location? = null): Unit =
-    log(LogLevel.Severe, message, location)
+  fun severe(message: String = "", loc: Loc? = null): Unit =
+    log(LogLevel.Severe, message, loc)
 
-  fun warning(message: String = "", location: Location? = null) =
-    log(LogLevel.Warning, message, location)
+  fun warning(message: String = "", loc: Loc? = null) =
+    log(LogLevel.Warning, message, loc)
 
   fun info(message: String): Unit = log(LogLevel.Info, message, null)
 }
@@ -47,7 +48,7 @@ fun CompilerLogger(debug: Boolean = false, verbose: Boolean = false): CompilerLo
 expect val lineSeparator: String
 
 object NoopCompilerLogger : CompilerLogger {
-  override fun log(level: LogLevel, message: String, location: Location?) {
+  override fun log(level: LogLevel, message: String, loc: Loc?) {
     return
   }
 }
@@ -56,11 +57,11 @@ private class CompilerLoggerImpl(val debug: Boolean = false, val verbose: Boolea
   CompilerLogger {
   private val terminal = Terminal(AnsiLevel.TRUECOLOR, tabWidth = 1)
 
-  override fun log(level: LogLevel, message: String, location: Location?) {
+  override fun log(level: LogLevel, message: String, loc: Loc?) {
     message.split(lineSeparator).forEach { lineMessage ->
       terminal.println(bold(level.color(level.prefix) + brightWhite(": $lineMessage")))
 
-      if (location is Location.Range) {
+      if (loc is TextRange) {
         val dump = table {
           borderStyle = BorderStyle.BLANK
 
@@ -82,12 +83,12 @@ private class CompilerLoggerImpl(val debug: Boolean = false, val verbose: Boolea
           }
 
           body {
-            val lines = location.lines.filterNot { it.isBlank() || it.isEmpty() }
+            val lines = loc.lines.filterNot { it.isBlank() || it.isEmpty() }
             val line = lines.first()
 
-            row("", "-->", location) { borders = Borders.NONE }
+            row("", "-->", loc) { borders = Borders.NONE }
             row("", "|", "") { borders = Borders.NONE }
-            row(location.start.line, "|", line) {
+            row(loc.start.line, "|", line) {
               borders = Borders.NONE
             }
 
@@ -95,7 +96,7 @@ private class CompilerLoggerImpl(val debug: Boolean = false, val verbose: Boolea
               row("", "|", "") { borders = Borders.NONE }
             } else {
               val errorIndicator = MutableList(line.length) { " " }
-              for (i in location.start.column..location.end.column) {
+              for (i in loc.start.column..loc.end.column) {
                 errorIndicator[i] = "^"
               }
 
@@ -112,11 +113,11 @@ private class CompilerLoggerImpl(val debug: Boolean = false, val verbose: Boolea
     }
   }
 
-  override fun debug(message: String, location: Location?) {
-    if (debug) super.debug(message, location)
+  override fun debug(message: String, loc: Loc?) {
+    if (debug) super.debug(message, loc)
   }
 
-  override fun verbose(message: String, location: Location?) {
-    if (verbose) super.verbose(message, location)
+  override fun verbose(message: String, loc: Loc?) {
+    if (verbose) super.verbose(message, loc)
   }
 }

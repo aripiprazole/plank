@@ -4,7 +4,7 @@ import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Recognizer
 import org.antlr.v4.kotlinruntime.Token
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
 import org.plank.syntax.element.PlankFile
 
 class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
@@ -21,7 +21,7 @@ class SyntaxErrorListener(private val file: PlankFile) : BaseErrorListener() {
     e: RecognitionException?,
   ) {
     if (offendingSymbol is Token) {
-      _violations += SyntaxViolation(msg, Location(offendingSymbol, file))
+      _violations += SyntaxViolation(msg, Loc(offendingSymbol, file))
     }
   }
 }

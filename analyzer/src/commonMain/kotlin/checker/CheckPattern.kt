@@ -19,7 +19,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
   return when (pattern) {
     is IdentPattern -> {
       val name = pattern.name
-      val location = pattern.location
+      val location = pattern.loc
 
       scope.declare(name, subject.ty)
 
@@ -44,10 +44,10 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         val tv = parameters.elementAtOrNull(i)
           ?: return violate(next, IncorrectEnumArity(parameters.size, i + 1, name))
 
-        checkPattern(next, TypedEnumIndexAccess(subject, i, tv, nullSubst(), next.location))
+        checkPattern(next, TypedEnumIndexAccess(subject, i, tv, nullSubst(), next.loc))
       }
 
-      TypedEnumVariantPattern(pattern.type, properties, ty, nullSubst(), pattern.location)
+      TypedEnumVariantPattern(pattern.type, properties, ty, nullSubst(), pattern.loc)
     }
   }
 }

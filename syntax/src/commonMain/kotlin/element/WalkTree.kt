@@ -1,6 +1,6 @@
 package org.plank.syntax.element
 
-fun <A : PlankElement> walkTree(
+fun <A : SimplePlankElement> walkTree(
   value: A,
   enterExpr: (Expr) -> Any = {},
   exitExpr: (Expr) -> Any = {},

@@ -92,7 +92,7 @@ fun resolveUses(
           val name = ref.path.toIdentifier()
 
           val info = currentScope.findTyInfo(ref.path.toIdentifier())
-            ?: return GenericTypeRef(name, ref.location)
+            ?: return GenericTypeRef(name, ref.loc)
 
           ref.copy(path = info.declaredIn.fullPath() + name)
         }
@@ -110,7 +110,7 @@ fun resolveUses(
 
           dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
 
-          AccessExpr(name = expr.property, module = path, location = expr.location)
+          AccessExpr(name = expr.property, module = path, loc = expr.loc)
         }
         is AccessExpr -> {
           val fullPath = receiver.module?.fullPath.orEmpty().toTypedArray()
@@ -118,7 +118,7 @@ fun resolveUses(
 
           dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
 
-          AccessExpr(name = expr.property, module = path, location = expr.location)
+          AccessExpr(name = expr.property, module = path, loc = expr.loc)
         }
         else -> expr
       }

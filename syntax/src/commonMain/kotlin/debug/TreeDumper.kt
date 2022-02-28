@@ -1,6 +1,6 @@
 package org.plank.syntax.debug
 
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
 import org.plank.syntax.element.PlankElement
 
 fun PlankElement.dumpTree(): String {
@@ -27,7 +27,7 @@ fun isComplex(map: Map<*, *>): Boolean {
       is PlankElement -> isComplex(it.asMap())
       is String, is Boolean, is Int, is Float, is Byte, is Short, is Char, is Double -> false
       is List<*> -> true
-      is Location -> false
+      is Loc -> false
       else -> true // has a complex element
     }
   }

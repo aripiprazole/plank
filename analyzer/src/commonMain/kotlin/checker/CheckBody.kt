@@ -26,7 +26,7 @@ fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
         violate<ResolvedFunctionBody>(body, TypeMismatch(scope.returnTy ap s, value.ty))
       }
 
-      ResolvedCodeBody(stmts, value, body.location)
+      ResolvedCodeBody(stmts, value, body.loc)
     }
     is ExprBody -> {
       val value = checkExpr(body.expr)
@@ -37,8 +37,8 @@ fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
         violate<ResolvedFunctionBody>(body, TypeMismatch(scope.returnTy, value.ty ap s))
       }
 
-      ResolvedExprBody(value, body.location)
+      ResolvedExprBody(value, body.loc)
     }
-    is NoBody -> ResolvedNoBody(body.location)
+    is NoBody -> ResolvedNoBody(body.loc)
   }
 }

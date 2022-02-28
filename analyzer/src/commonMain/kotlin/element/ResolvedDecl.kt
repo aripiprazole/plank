@@ -11,20 +11,21 @@ import org.plank.analyzer.resolver.Module
 import org.plank.analyzer.resolver.StructInfo
 import org.plank.analyzer.resolver.StructMemberInfo
 import org.plank.syntax.element.Attribute
+import org.plank.syntax.element.GeneratedLoc
 import org.plank.syntax.element.Identifier
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
 import org.plank.syntax.element.QualifiedPath
 
 sealed interface ResolvedDecl : ResolvedStmt
 
-data class ResolvedEnumDecl(val info: EnumInfo, override val location: Location) :
+data class ResolvedEnumDecl(val info: EnumInfo, override val loc: Loc) :
   ResolvedDecl {
   val ty: Ty = info.ty
   val name: Identifier = info.name
   val members: Map<Identifier, EnumMemberInfo> = info.members
 }
 
-data class ResolvedStructDecl(val info: StructInfo, override val location: Location) :
+data class ResolvedStructDecl(val info: StructInfo, override val loc: Loc) :
   ResolvedDecl {
   val ty: Ty = info.ty
   val name: Identifier = info.name
@@ -33,13 +34,13 @@ data class ResolvedStructDecl(val info: StructInfo, override val location: Locat
 
 data class ResolvedUseDecl(
   val module: Module,
-  override val location: Location,
+  override val loc: Loc,
 ) : ResolvedDecl
 
 data class ResolvedModuleDecl(
   val name: QualifiedPath,
   val content: List<ResolvedDecl>,
-  override val location: Location,
+  override val loc: Loc,
 ) : ResolvedDecl
 
 data class ResolvedFunDecl(
@@ -48,7 +49,7 @@ data class ResolvedFunDecl(
   val references: MutableMap<Identifier, Ty> = LinkedHashMap(),
   val info: FunctionInfo,
   val isNested: Boolean,
-  override val location: Location,
+  override val loc: Loc,
 ) : ResolvedDecl {
   val ty: FunTy = info.ty
   val scheme: Scheme = info.scheme
@@ -73,5 +74,5 @@ data class ResolvedLetDecl(
   val isNested: Boolean = false,
   val mutable: Boolean = false,
   val subst: Subst = Subst(),
-  override val location: Location = Location.Generated,
+  override val loc: Loc = GeneratedLoc,
 ) : ResolvedDecl

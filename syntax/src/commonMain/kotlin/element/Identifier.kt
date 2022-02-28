@@ -1,6 +1,6 @@
 package org.plank.syntax.element
 
-data class Identifier(val text: String, override val location: Location = Location.Generated) :
+data class Identifier(val text: String, override val loc: Loc = GeneratedLoc) :
   PlankElement {
   override fun toString(): String = ":$text"
 

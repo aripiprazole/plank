@@ -22,7 +22,7 @@ import org.plank.analyzer.resolver.FileScope
 import org.plank.analyzer.resolver.ResolveResult
 import org.plank.analyzer.resolver.Scope
 import org.plank.syntax.element.Expr
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
 import org.plank.syntax.element.PlankElement
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.toIdentifier
@@ -85,26 +85,26 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
   inline fun <reified A : ResolvedPlankElement> violate(
     el: PlankElement,
     violation: AnalyzerViolation,
-    fn: () -> A = { violatedElement(el.location, A::class) },
+    fn: () -> A = { violatedElement(el.loc, A::class) },
   ): A {
-    return fn().also { violations = violations + violation.withLocation(el.location) }
+    return fn().also { violations = violations + violation.withLocation(el.loc) }
   }
 
   @Suppress("Unchecked_Cast")
-  fun <A : ResolvedPlankElement> violatedElement(loc: Location, type: KClass<A>): A {
+  fun <A : ResolvedPlankElement> violatedElement(loc: Loc, type: KClass<A>): A {
     return when (type) {
       ResolvedFunctionBody::class -> ResolvedNoBody(loc) as A
-      TypedExpr::class -> TypedConstExpr(Unit, undefTy, location = loc) as A
+      TypedExpr::class -> TypedConstExpr(Unit, undefTy, loc = loc) as A
       ResolvedStmt::class -> {
-        ResolvedExprStmt(TypedConstExpr(Unit, undefTy, location = loc), loc) as A
+        ResolvedExprStmt(TypedConstExpr(Unit, undefTy, loc = loc), loc) as A
       }
       ResolvedDecl::class -> {
         ResolvedLetDecl(
           name = "<undef>".toIdentifier(),
-          value = TypedConstExpr(Unit, undefTy, location = loc),
+          value = TypedConstExpr(Unit, undefTy, loc = loc),
           scheme = Scheme(undefTy),
           ty = undefTy,
-          location = loc,
+          loc = loc,
         ) as A
       }
       else -> error("Unsupported type: $type")

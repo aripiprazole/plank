@@ -24,12 +24,12 @@ data class PlankFile(
   val path: String = "Anonymous",
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
-) : PlankElement {
+) : SimplePlankElement {
   val realFile = File(path)
   val module = moduleName?.toIdentifier() ?: Identifier(realFile.name)
   val isValid get() = violations.isEmpty()
 
-  override val location = Location.Generated
+  override val loc: Loc = GeneratedLoc
 
   companion object {
     private fun parser(text: String): PlankParser {

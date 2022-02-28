@@ -1,8 +1,8 @@
 package org.plank.syntax.element
 
-sealed interface Stmt : PlankElement
+sealed interface Stmt : SimplePlankElement
 
-data class ExprStmt(val expr: Expr, override val location: Location = Location.Generated) : Stmt
+data class ExprStmt(val expr: Expr, override val loc: Loc = GeneratedLoc) : Stmt
 
-data class ReturnStmt(val value: Expr?, override val location: Location = Location.Generated) :
+data class ReturnStmt(val value: Expr?, override val loc: Loc = GeneratedLoc) :
   Stmt

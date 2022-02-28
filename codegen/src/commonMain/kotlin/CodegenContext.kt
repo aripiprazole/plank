@@ -20,7 +20,6 @@ import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
-import org.plank.syntax.element.Location
 import org.plank.syntax.element.QualifiedPath
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -32,7 +31,7 @@ sealed interface CodegenContext : Context, IRBuilder {
   val debug: DebugContext
   val currentModule: Module
   val mapper: InstructionMapper
-  val location: Location
+  val loc: Loc
   val path: QualifiedPath
   val enclosing: CodegenContext?
 
@@ -92,7 +91,7 @@ class DescriptorContext(
   val descriptor: ResolvedPlankElement,
   override val enclosing: ScopeContext,
 ) : CodegenContext by enclosing {
-  override val location: Location = descriptor.location
+  override val loc: Loc = descriptor.loc
 }
 
 data class ScopeContext(
@@ -104,7 +103,7 @@ data class ScopeContext(
   override val currentModule: Module = llvm.createModule(file.module.text),
   private val irBuilder: IRBuilder = llvm.createIRBuilder(),
   override val mapper: InstructionMapper = InstructionMapper,
-  override val location: Location = file.location,
+  override val loc: Loc = file.loc,
   override val enclosing: CodegenContext? = null,
 ) : IRBuilder by irBuilder, Context by llvm, CodegenContext {
   /** TODO: add support for nested function intrinsics*/

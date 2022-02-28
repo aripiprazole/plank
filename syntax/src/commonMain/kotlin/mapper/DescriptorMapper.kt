@@ -110,7 +110,7 @@ import org.plank.syntax.element.IfExpr
 import org.plank.syntax.element.InstanceExpr
 import org.plank.syntax.element.IntAttributeExpr
 import org.plank.syntax.element.LetDecl
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
 import org.plank.syntax.element.MatchExpr
 import org.plank.syntax.element.ModuleDecl
 import org.plank.syntax.element.NoBody
@@ -136,7 +136,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   override fun visitChildren(node: RuleNode): PlankElement? = null
   override fun visitErrorNode(node: ErrorNode): Expr? = null
   override fun visitTerminal(node: TerminalNode): Identifier =
-    Identifier(node.text, node.sourceInterval.location)
+    Identifier(node.text, node.sourceInterval.loc)
 
   override fun visitFile(ctx: FileContext): PlankFile {
     return file.copy(
@@ -154,7 +154,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
 
         StructDecl.Property(mutable, visitToken(prop.name!!), visitTypeRef(prop.type!!))
       },
-      ctx.location
+      ctx.loc
     )
   }
 
@@ -165,16 +165,16 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
         EnumDecl.Member(visitToken(member.name!!), member.findTypeRef().map(::visitTypeRef))
       },
       ctx.names?.IDENTIFIER()?.map(::visitTerminal)?.toSet().orEmpty(),
-      ctx.location,
+      ctx.loc,
     )
   }
 
   override fun visitModuleDecl(ctx: ModuleDeclContext): ModuleDecl {
-    return ModuleDecl(visitQualifiedPath(ctx.path!!), ctx.findDecl().map(::visitDecl), ctx.location)
+    return ModuleDecl(visitQualifiedPath(ctx.path!!), ctx.findDecl().map(::visitDecl), ctx.loc)
   }
 
   override fun visitUseDecl(ctx: UseDeclContext): UseDecl {
-    return UseDecl(visitQualifiedPath(ctx.path!!), ctx.location)
+    return UseDecl(visitQualifiedPath(ctx.path!!), ctx.loc)
   }
 
   override fun visitFunDecl(ctx: FunDeclContext): FunDecl {
@@ -186,7 +186,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
         visitToken(param.name!!) to visitTypeRef(param.type!!)
       },
       returnType = ctx.returnType?.let(::visitTypeRef) ?: UnitTypeRef(),
-      location = ctx.location,
+      loc = ctx.loc,
     )
   }
 
@@ -196,7 +196,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       mutable = ctx.MUTABLE() != null,
       type = null,
       value = visitExpr(ctx.value!!),
-      location = ctx.location
+      loc = ctx.loc
     )
   }
 
@@ -206,20 +206,20 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       mutable = ctx.MUTABLE() != null,
       type = visitTypeRef(ctx.type!!),
       value = visitExpr(ctx.value!!),
-      location = ctx.location
+      loc = ctx.loc
     )
   }
 
   override fun visitNoBody(ctx: NoBodyContext): FunctionBody {
-    return NoBody(ctx.location)
+    return NoBody(ctx.loc)
   }
 
   override fun visitExprBody(ctx: ExprBodyContext): FunctionBody {
-    return ExprBody(visitExpr(ctx.value!!), ctx.location)
+    return ExprBody(visitExpr(ctx.value!!), ctx.loc)
   }
 
   override fun visitCodeBody(ctx: CodeBodyContext): FunctionBody {
-    return CodeBody(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
+    return CodeBody(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.loc)
   }
 
   private fun visitFunctionBody(ctx: FunctionBodyContext): FunctionBody = when (ctx) {
@@ -245,11 +245,11 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitExprStmt(ctx: ExprStmtContext): ExprStmt {
-    return ExprStmt(visitExpr(ctx.value!!), ctx.location)
+    return ExprStmt(visitExpr(ctx.value!!), ctx.loc)
   }
 
   override fun visitReturnStmt(ctx: ReturnStmtContext): ReturnStmt {
-    return ReturnStmt(ctx.value?.let(::visitExpr), ctx.location)
+    return ReturnStmt(ctx.value?.let(::visitExpr), ctx.loc)
   }
 
   private fun visitStmt(ctx: StmtContext): Stmt = when (ctx) {
@@ -260,21 +260,21 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitAssignExpr(ctx: AssignExprContext): AssignExpr {
-    return AssignExpr(visitToken(ctx.name!!), visitExpr(ctx.value!!), null, ctx.location)
+    return AssignExpr(visitToken(ctx.name!!), visitExpr(ctx.value!!), null, ctx.loc)
   }
 
   override fun visitSetExpr(ctx: SetExprContext): SetExpr {
     val property = ctx.findArg().fold(visitExpr(ctx.receiver!!), ::callFold)
       as? GetExpr ?: error("Receiver must be a GetExpr when setting up a variable")
 
-    return SetExpr(property.receiver, property.property, visitExpr(ctx.value!!), ctx.location)
+    return SetExpr(property.receiver, property.property, visitExpr(ctx.value!!), ctx.loc)
   }
 
   override fun visitBinaryExpr(ctx: BinaryExprContext): CallExpr {
     return CallExpr(
       callee = visitToken(ctx.op!!).asAccessExpr(),
       arguments = listOf(visitExpr(ctx.lhs!!), visitExpr(ctx.rhs!!)),
-      location = ctx.location
+      loc = ctx.loc
     )
   }
 
@@ -282,7 +282,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return CallExpr(
       callee = visitToken(ctx.op!!).asAccessExpr(),
       arguments = listOf(visitExpr(ctx.rhs!!)),
-      location = ctx.location
+      loc = ctx.loc
     )
   }
 
@@ -296,7 +296,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       ctx.findInstanceArg().associate { arg ->
         visitToken(arg.name!!) to visitExpr(arg.value!!)
       },
-      ctx.location
+      ctx.loc
     )
   }
 
@@ -305,12 +305,12 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       visitExpr(ctx.cond!!),
       visitThenBranch(ctx.mainBranch!!),
       ctx.otherwiseBranch?.let(::visitElseBranch),
-      ctx.location
+      ctx.loc
     )
   }
 
   override fun visitSizeofExpr(ctx: SizeofExprContext): SizeofExpr {
-    return SizeofExpr(visitTypeRef(ctx.type!!), ctx.location)
+    return SizeofExpr(visitTypeRef(ctx.type!!), ctx.loc)
   }
 
   override fun visitMatchExpr(ctx: MatchExprContext): MatchExpr {
@@ -319,12 +319,12 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
       ctx.findMatchPattern().associate {
         visitPattern(it.key!!) to visitExpr(it.value!!)
       },
-      ctx.location
+      ctx.loc
     )
   }
 
   override fun visitBlockExpr(ctx: BlockExprContext): Expr {
-    return BlockExpr(ctx.value?.let(::visitExpr), ctx.findStmt().map(::visitStmt), ctx.location)
+    return BlockExpr(ctx.value?.let(::visitExpr), ctx.findStmt().map(::visitStmt), ctx.loc)
   }
 
   private fun visitExpr(ctx: ExprContext): Expr = when (ctx) {
@@ -342,44 +342,44 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitRefExpr(ctx: RefExprContext): RefExpr {
-    return RefExpr(visitExpr(ctx.value!!), ctx.location)
+    return RefExpr(visitExpr(ctx.value!!), ctx.loc)
   }
 
   override fun visitDerefExpr(ctx: DerefExprContext): DerefExpr {
-    return DerefExpr(visitExpr(ctx.value!!), ctx.location)
+    return DerefExpr(visitExpr(ctx.value!!), ctx.loc)
   }
 
   override fun visitIntExpr(ctx: IntExprContext): ConstExpr {
-    return ConstExpr(ctx.value!!.text!!.toInt(), ctx.location)
+    return ConstExpr(ctx.value!!.text!!.toInt(), ctx.loc)
   }
 
   override fun visitDecimalExpr(ctx: DecimalExprContext): ConstExpr {
-    return ConstExpr(ctx.value!!.text!!.toDouble(), ctx.location)
+    return ConstExpr(ctx.value!!.text!!.toDouble(), ctx.loc)
   }
 
   override fun visitStringExpr(ctx: StringExprContext): ConstExpr {
     return ConstExpr(
       ctx.value!!.text!!.substring(1, ctx.value!!.text!!.length - 1),
-      ctx.location
+      ctx.loc
     )
   }
 
   override fun visitAccessExpr(ctx: AccessExprContext): AccessExpr {
-    return AccessExpr(visitToken(ctx.value!!), null, ctx.location)
+    return AccessExpr(visitToken(ctx.value!!), null, ctx.loc)
   }
 
   override fun visitTrueExpr(ctx: TrueExprContext): ConstExpr {
-    return ConstExpr(true, ctx.location)
+    return ConstExpr(true, ctx.loc)
   }
 
   override fun visitFalseExpr(ctx: FalseExprContext): ConstExpr {
-    return ConstExpr(false, ctx.location)
+    return ConstExpr(false, ctx.loc)
   }
 
   override fun visitGroupExpr(ctx: GroupExprContext): Expr {
-    val value = ctx.value ?: return ConstExpr(Unit, ctx.location)
+    val value = ctx.value ?: return ConstExpr(Unit, ctx.loc)
 
-    return GroupExpr(visitExpr(value), ctx.location)
+    return GroupExpr(visitExpr(value), ctx.loc)
   }
 
   private fun visitExpr(ctx: PrimaryContext): Expr = when (ctx) {
@@ -399,12 +399,12 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     return EnumVariantPattern(
       visitQualifiedPath(ctx.type!!),
       ctx.findPattern().map(::visitPattern),
-      ctx.location,
+      ctx.loc,
     )
   }
 
   override fun visitIdentPattern(ctx: IdentPatternContext): IdentPattern {
-    return IdentPattern(visitToken(ctx.name!!), ctx.location)
+    return IdentPattern(visitToken(ctx.name!!), ctx.loc)
   }
 
   private fun visitPattern(ctx: PatternContext): Pattern = when (ctx) {
@@ -414,30 +414,30 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitAttrIntExpr(ctx: AttrIntExprContext): AttributeExpr<Int> {
-    return IntAttributeExpr(ctx.value!!.text!!.toInt(), ctx.location)
+    return IntAttributeExpr(ctx.value!!.text!!.toInt(), ctx.loc)
   }
 
   override fun visitAttrDecimalExpr(ctx: AttrDecimalExprContext): AttributeExpr<Double> {
-    return DecimalAttributeExpr(ctx.value!!.text!!.toDouble(), ctx.location)
+    return DecimalAttributeExpr(ctx.value!!.text!!.toDouble(), ctx.loc)
   }
 
   override fun visitAttrStringExpr(ctx: AttrStringExprContext): AttributeExpr<String> {
     return StringAttributeExpr(
       ctx.value!!.text!!.substring(1, ctx.value!!.text!!.length - 1),
-      ctx.location
+      ctx.loc
     )
   }
 
   override fun visitAttrAccessExpr(ctx: AttrAccessExprContext): AttributeExpr<Identifier> {
-    return AccessAttributeExpr(visitToken(ctx.value!!), ctx.location)
+    return AccessAttributeExpr(visitToken(ctx.value!!), ctx.loc)
   }
 
   override fun visitAttrTrueExpr(ctx: AttrTrueExprContext): AttributeExpr<Boolean> {
-    return BoolAttributeExpr(true, ctx.location)
+    return BoolAttributeExpr(true, ctx.loc)
   }
 
   override fun visitAttrFalseExpr(ctx: AttrFalseExprContext): AttributeExpr<Boolean> {
-    return BoolAttributeExpr(false, ctx.location)
+    return BoolAttributeExpr(false, ctx.loc)
   }
 
   private fun visitAttrExpr(ctx: AttrExprContext): AttributeExpr<*> = when (ctx) {
@@ -451,14 +451,14 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitAttr(ctx: AttrContext): Attribute {
-    return Attribute(visitToken(ctx.name!!), ctx.findAttrExpr().map(::visitAttrExpr), ctx.location)
+    return Attribute(visitToken(ctx.name!!), ctx.findAttrExpr().map(::visitAttrExpr), ctx.loc)
   }
 
   override fun visitFunctionTypeRef(ctx: FunctionTypeRefContext): FunctionTypeRef {
     return FunctionTypeRef(
       visitTypeRef(ctx.parameter!!),
       visitTypeRef(ctx.returnType!!),
-      location = ctx.location,
+      loc = ctx.loc,
     )
   }
 
@@ -469,18 +469,18 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitAccessTypeRef(ctx: AccessTypeRefContext): AccessTypeRef {
-    return AccessTypeRef(visitQualifiedPath(ctx.path!!), ctx.location)
+    return AccessTypeRef(visitQualifiedPath(ctx.path!!), ctx.loc)
   }
 
   override fun visitApplyTypeRef(ctx: ApplyTypeRefContext): ApplyTypeRef {
     val arguments = ctx.findTypeRef().map(::visitTypeRef)
     val path = visitQualifiedPath(ctx.path!!)
 
-    return ApplyTypeRef(AccessTypeRef(path, path.location), arguments, ctx.location)
+    return ApplyTypeRef(AccessTypeRef(path, path.loc), arguments, ctx.loc)
   }
 
   override fun visitPointerTypeRef(ctx: PointerTypeRefContext): PointerTypeRef {
-    return PointerTypeRef(visitTypeRef(ctx.type!!), ctx.location)
+    return PointerTypeRef(visitTypeRef(ctx.type!!), ctx.loc)
   }
 
   override fun visitGroupTypeRef(ctx: GroupTypeRefContext): TypeRef {
@@ -488,7 +488,7 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitUnitTypeRef(ctx: UnitTypeRefContext): TypeRef {
-    return UnitTypeRef(ctx.location)
+    return UnitTypeRef(ctx.loc)
   }
 
   private fun visitTypeRef(ctx: TypePrimaryContext): TypeRef = when (ctx) {
@@ -501,19 +501,19 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitMainThenBranch(ctx: MainThenBranchContext): IfBranch {
-    return ThenBranch(visitExpr(ctx.value!!), ctx.location)
+    return ThenBranch(visitExpr(ctx.value!!), ctx.loc)
   }
 
   override fun visitBlockThenBranch(ctx: BlockThenBranchContext): IfBranch {
-    return BlockBranch(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
+    return BlockBranch(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.loc)
   }
 
   override fun visitMainElseBranch(ctx: MainElseBranchContext): IfBranch {
-    return ThenBranch(visitExpr(ctx.value!!), ctx.location)
+    return ThenBranch(visitExpr(ctx.value!!), ctx.loc)
   }
 
   override fun visitBlockElseBranch(ctx: BlockElseBranchContext): IfBranch {
-    return BlockBranch(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.location)
+    return BlockBranch(ctx.findStmt().map(::visitStmt), ctx.value?.let(::visitExpr), ctx.loc)
   }
 
   private fun visitThenBranch(ctx: ThenBranchContext): IfBranch = when (ctx) {
@@ -533,31 +533,31 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
   }
 
   override fun visitQualifiedPath(ctx: QualifiedPathContext): QualifiedPath {
-    return QualifiedPath(ctx.IDENTIFIER().map(::visitTerminal), ctx.location)
+    return QualifiedPath(ctx.IDENTIFIER().map(::visitTerminal), ctx.loc)
   }
 
   private fun visitToken(token: Token): Identifier {
     val text = token.text ?: error("No text received in Token")
 
-    return Identifier(text, Location(token.startIndex, token.stopIndex, file))
+    return Identifier(text, Loc(token.startIndex, token.stopIndex, file))
   }
 
-  private val Interval.location
-    get() = Location(a, b, file)
-  private val ParserRuleContext.location
-    get() = Location(start!!.startIndex, stop!!.stopIndex, file)
+  private val Interval.loc
+    get() = Loc(a, b, file)
+  private val ParserRuleContext.loc
+    get() = Loc(start!!.startIndex, stop!!.stopIndex, file)
 
   private fun Identifier.asAccessExpr(): AccessExpr {
-    return AccessExpr(this, null, location)
+    return AccessExpr(this, null, loc)
   }
 
   private fun callFold(acc: Expr, next: ArgContext): Expr {
     return when (next) {
-      is GetArgContext -> GetExpr(acc, visitToken(next.name!!), next.location)
+      is GetArgContext -> GetExpr(acc, visitToken(next.name!!), next.loc)
       is CallArgContext -> next.findExpr()
-        .ifEmpty { return CallExpr(acc, emptyList(), next.location) }
+        .ifEmpty { return CallExpr(acc, emptyList(), next.loc) }
         .fold(acc) { callee, arg ->
-          CallExpr(callee, listOf(visitExpr(arg)), arg.location)
+          CallExpr(callee, listOf(visitExpr(arg)), arg.loc)
         }
       else -> error("Unsupported arg ${next::class.simpleName}")
     }

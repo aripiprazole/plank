@@ -2,10 +2,7 @@ package org.plank.syntax.element
 
 import org.plank.shared.id
 
-inline fun <reified T : PlankElement> filtering(noinline fn: (T) -> T): (PlankElement) -> PlankElement =
-  { if (it is T) fn(it) else it }
-
-fun <A : PlankElement> transformTree(
+fun <A : SimplePlankElement> transformTree(
   value: A,
   enterExpr: (Expr) -> Expr = ::id,
   exitExpr: (Expr) -> Expr = ::id,

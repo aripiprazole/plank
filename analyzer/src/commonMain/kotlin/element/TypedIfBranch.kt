@@ -3,7 +3,7 @@ package org.plank.analyzer.element
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.syntax.element.Identifier
-import org.plank.syntax.element.Location
+import org.plank.syntax.element.Loc
 
 sealed interface TypedIfBranch : TypedPlankElement {
   override fun ap(subst: Subst): TypedIfBranch
@@ -11,7 +11,7 @@ sealed interface TypedIfBranch : TypedPlankElement {
 
 data class TypedThenBranch(
   val value: TypedExpr,
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedIfBranch {
   override val ty: Ty = value.ty
   override val subst: Subst = value.subst
@@ -23,7 +23,7 @@ data class TypedBlockBranch(
   val stmts: List<ResolvedStmt>,
   val value: TypedExpr,
   val references: MutableMap<Identifier, Ty> = mutableMapOf(),
-  override val location: Location,
+  override val loc: Loc,
 ) : TypedIfBranch {
   override val ty: Ty = value.ty
   override val subst: Subst = value.subst
