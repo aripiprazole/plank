@@ -14,37 +14,9 @@ import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Location
 
 sealed interface TypedExpr : TypedPlankElement {
-  interface Visitor<T> {
-    fun visitExpr(expr: TypedExpr): T = expr.accept(this)
-
-    fun visitBlockExpr(expr: TypedBlockExpr): T
-    fun visitConstExpr(expr: TypedConstExpr): T
-    fun visitIfExpr(expr: TypedIfExpr): T
-    fun visitAccessExpr(expr: TypedAccessExpr): T
-    fun visitIntOperationExpr(expr: TypedIntOperationExpr): T
-    fun visitCallExpr(expr: TypedCallExpr): T
-    fun visitAssignExpr(expr: TypedAssignExpr): T
-    fun visitSetExpr(expr: TypedSetExpr): T
-    fun visitGetExpr(expr: TypedGetExpr): T
-    fun visitGroupExpr(expr: TypedGroupExpr): T
-    fun visitInstanceExpr(expr: TypedInstanceExpr): T
-    fun visitSizeofExpr(expr: TypedSizeofExpr): T
-    fun visitRefExpr(expr: TypedRefExpr): T
-    fun visitDerefExpr(expr: TypedDerefExpr): T
-    fun visitMatchExpr(expr: TypedMatchExpr): T
-    fun visitEnumIndexAccess(expr: TypedEnumIndexAccess): T
-
-    fun visitTypedExprs(many: List<TypedExpr>): List<T> = many.map(::visitExpr)
-  }
-
   override val location: Location
 
   override infix fun ap(subst: Subst): TypedExpr
-
-  fun <T> accept(visitor: Visitor<T>): T
-
-  fun stmt(): ResolvedStmt = ResolvedExprStmt(this, location)
-  fun body(): ResolvedFunctionBody = ResolvedExprBody(this, location)
 }
 
 data class TypedBlockExpr(
@@ -57,10 +29,6 @@ data class TypedBlockExpr(
   override val subst: Subst = value.subst
 
   override fun ap(subst: Subst): TypedBlockExpr = copy(value = value.ap(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitBlockExpr(this)
-  }
 }
 
 data class TypedConstExpr(
@@ -71,10 +39,6 @@ data class TypedConstExpr(
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedConstExpr =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitConstExpr(this)
-  }
 }
 
 data class TypedIfExpr(
@@ -92,10 +56,6 @@ data class TypedIfExpr(
     ty = ty.ap(subst),
     subst = subst.compose(subst),
   )
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitIfExpr(this)
-  }
 }
 
 data class TypedAccessExpr(
@@ -109,10 +69,6 @@ data class TypedAccessExpr(
 
   override fun ap(subst: Subst): TypedAccessExpr =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitAccessExpr(this)
-  }
 }
 
 data class TypedGroupExpr(
@@ -123,10 +79,6 @@ data class TypedGroupExpr(
   override val subst: Subst = value.subst
 
   override fun ap(subst: Subst): TypedGroupExpr = copy(value = value.ap(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitGroupExpr(this)
-  }
 }
 
 data class TypedAssignExpr(
@@ -139,10 +91,6 @@ data class TypedAssignExpr(
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedAssignExpr =
     copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitAssignExpr(this)
-  }
 }
 
 data class TypedSetExpr(
@@ -161,10 +109,6 @@ data class TypedSetExpr(
       ty = ty.ap(subst),
       subst = subst.compose(subst),
     )
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitSetExpr(this)
-  }
 }
 
 data class TypedGetExpr(
@@ -177,10 +121,6 @@ data class TypedGetExpr(
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedGetExpr =
     copy(receiver = receiver.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitGetExpr(this)
-  }
 }
 
 sealed interface TypedIntOperationExpr : TypedExpr {
@@ -188,10 +128,6 @@ sealed interface TypedIntOperationExpr : TypedExpr {
   val rhs: TypedExpr
   val isConst: Boolean
   val unsigned: Boolean
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitIntOperationExpr(this)
-  }
 }
 
 data class TypedIntAddExpr(
@@ -345,10 +281,6 @@ data class TypedCallExpr(
       ty = ty.ap(subst),
       subst = subst.compose(subst),
     )
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitCallExpr(this)
-  }
 }
 
 data class TypedInstanceExpr(
@@ -364,10 +296,6 @@ data class TypedInstanceExpr(
       ty = ty.ap(subst),
       subst = subst.compose(subst),
     )
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitInstanceExpr(this)
-  }
 }
 
 data class TypedSizeofExpr(
@@ -377,10 +305,6 @@ data class TypedSizeofExpr(
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedSizeofExpr =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitSizeofExpr(this)
-  }
 }
 
 data class TypedRefExpr(
@@ -392,10 +316,6 @@ data class TypedRefExpr(
 
   override fun ap(subst: Subst): TypedRefExpr =
     copy(value = value.ap(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitRefExpr(this)
-  }
 }
 
 data class TypedDerefExpr(
@@ -406,10 +326,6 @@ data class TypedDerefExpr(
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedDerefExpr =
     copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitDerefExpr(this)
-  }
 }
 
 data class TypedEnumIndexAccess(
@@ -421,10 +337,6 @@ data class TypedEnumIndexAccess(
 ) : TypedExpr {
   override fun ap(subst: Subst): TypedEnumIndexAccess =
     copy(value = value.ap(subst), ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitEnumIndexAccess(this)
-  }
 }
 
 data class TypedMatchExpr(
@@ -441,8 +353,4 @@ data class TypedMatchExpr(
       ty = ty.ap(subst),
       subst = subst.compose(subst),
     )
-
-  override fun <T> accept(visitor: TypedExpr.Visitor<T>): T {
-    return visitor.visitMatchExpr(this)
-  }
 }

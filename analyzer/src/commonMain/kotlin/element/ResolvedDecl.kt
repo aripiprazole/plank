@@ -22,10 +22,6 @@ data class ResolvedEnumDecl(val info: EnumInfo, override val location: Location)
   val ty: Ty = info.ty
   val name: Identifier = info.name
   val members: Map<Identifier, EnumMemberInfo> = info.members
-
-  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitEnumDecl(this)
-  }
 }
 
 data class ResolvedStructDecl(val info: StructInfo, override val location: Location) :
@@ -33,30 +29,18 @@ data class ResolvedStructDecl(val info: StructInfo, override val location: Locat
   val ty: Ty = info.ty
   val name: Identifier = info.name
   val members: Map<Identifier, StructMemberInfo> = info.members
-
-  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitStructDecl(this)
-  }
 }
 
 data class ResolvedUseDecl(
   val module: Module,
   override val location: Location,
-) : ResolvedDecl {
-  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitUseDecl(this)
-  }
-}
+) : ResolvedDecl
 
 data class ResolvedModuleDecl(
   val name: QualifiedPath,
   val content: List<ResolvedDecl>,
   override val location: Location,
-) : ResolvedDecl {
-  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitModuleDecl(this)
-  }
-}
+) : ResolvedDecl
 
 data class ResolvedFunDecl(
   val body: ResolvedFunctionBody,
@@ -79,10 +63,6 @@ data class ResolvedFunDecl(
   fun hasAttribute(name: String): Boolean {
     return attributes.any { it.name.text == name }
   }
-
-  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitFunDecl(this)
-  }
 }
 
 data class ResolvedLetDecl(
@@ -94,8 +74,4 @@ data class ResolvedLetDecl(
   val mutable: Boolean = false,
   val subst: Subst = Subst(),
   override val location: Location = Location.Generated,
-) : ResolvedDecl {
-  override fun <T> accept(visitor: ResolvedStmt.Visitor<T>): T {
-    return visitor.visitLetDecl(this)
-  }
-}
+) : ResolvedDecl

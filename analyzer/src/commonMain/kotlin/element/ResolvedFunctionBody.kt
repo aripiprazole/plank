@@ -5,24 +5,10 @@ import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.syntax.element.Location
 
-sealed interface ResolvedFunctionBody : ResolvedPlankElement {
-  interface Visitor<T> {
-    fun visitFunctionBody(body: ResolvedFunctionBody): T = body.accept(this)
-
-    fun visitNoBody(body: ResolvedNoBody): T
-    fun visitExprBody(body: ResolvedExprBody): T
-    fun visitCodeBody(body: ResolvedCodeBody): T
-  }
-
-  fun <T> accept(visitor: Visitor<T>): T
-}
+sealed interface ResolvedFunctionBody : ResolvedPlankElement
 
 data class ResolvedNoBody(override val location: Location = Location.Generated) :
-  ResolvedFunctionBody {
-  override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {
-    return visitor.visitNoBody(this)
-  }
-}
+  ResolvedFunctionBody
 
 data class ResolvedExprBody(
   val expr: TypedExpr,
@@ -32,10 +18,6 @@ data class ResolvedExprBody(
   override val subst: Subst = expr.subst
 
   override fun ap(subst: Subst): ResolvedExprBody = copy(expr = expr.ap(subst))
-
-  override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {
-    return visitor.visitExprBody(this)
-  }
 }
 
 data class ResolvedCodeBody(
@@ -46,8 +28,4 @@ data class ResolvedCodeBody(
   val hasReturnedUnit: Boolean
     get(): Boolean = value?.ty == unitTy ||
       stmts.filterIsInstance<ResolvedReturnStmt>().isNotEmpty()
-
-  override fun <T> accept(visitor: ResolvedFunctionBody.Visitor<T>): T {
-    return visitor.visitCodeBody(this)
-  }
 }

@@ -8,18 +8,7 @@ import org.plank.syntax.element.Location
 import org.plank.syntax.element.QualifiedPath
 
 sealed interface TypedPattern : TypedPlankElement {
-  interface Visitor<T> {
-    fun visitPattern(pattern: TypedPattern): T = pattern.accept(this)
-
-    fun visitNamedTuplePattern(pattern: TypedEnumVariantPattern): T
-    fun visitIdentPattern(pattern: TypedIdentPattern): T
-
-    fun visitPatterns(many: List<TypedPattern>): List<T> = many.map(::visitPattern)
-  }
-
   override fun ap(subst: Subst): TypedPattern
-
-  fun <T> accept(visitor: Visitor<T>): T
 }
 
 data class TypedEnumVariantPattern(
@@ -31,10 +20,6 @@ data class TypedEnumVariantPattern(
 ) : TypedPattern {
   override fun ap(subst: Subst): TypedEnumVariantPattern =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
-    return visitor.visitNamedTuplePattern(this)
-  }
 }
 
 data class TypedIdentPattern(
@@ -45,8 +30,4 @@ data class TypedIdentPattern(
 ) : TypedPattern {
   override fun ap(subst: Subst): TypedIdentPattern =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
-
-  override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {
-    return visitor.visitIdentPattern(this)
-  }
 }
