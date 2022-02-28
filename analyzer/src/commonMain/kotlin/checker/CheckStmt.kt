@@ -83,7 +83,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
       val value = checkExpr(stmt.value)
 
-      val scheme = scope.declare(stmt.name, t2.generalize())
+      val scheme = scope.declare(stmt.name, t2.generalize(), stmt.mutable)
 
       ResolvedLetDecl(
         name = stmt.name,
