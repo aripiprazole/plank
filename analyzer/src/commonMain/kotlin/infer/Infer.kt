@@ -1,5 +1,3 @@
-@file:Suppress("MemberVisibilityCanBePrivate")
-
 package org.plank.analyzer.infer
 
 import org.plank.syntax.element.Expr
