@@ -17,15 +17,6 @@ import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
 import org.plank.analyzer.infer.ty
 import org.plank.analyzer.infer.unitTy
-import org.plank.analyzer.resolver.EnumInfo
-import org.plank.analyzer.resolver.EnumMemberInfo
-import org.plank.analyzer.resolver.FunctionInfo
-import org.plank.analyzer.resolver.FunctionScope
-import org.plank.analyzer.resolver.ModuleTree
-import org.plank.analyzer.resolver.StructInfo
-import org.plank.analyzer.resolver.StructMemberInfo
-import org.plank.analyzer.resolver.fullPath
-import org.plank.analyzer.resolver.statements
 import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.EnumDecl
 import org.plank.syntax.element.ExprStmt
@@ -45,10 +36,10 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
     is ExprStmt -> ResolvedExprStmt(checkExpr(stmt.expr), stmt.loc)
 
     is UseDecl -> {
-      val module = scope.findModule(stmt.path.toIdentifier())
+      val module = scope.lookupModule(stmt.path.toIdentifier())
         ?: return violate(stmt.path, UnresolvedModule(stmt.path.toIdentifier()))
 
-      scope.expand(module.scope)
+      scope.expand(module)
 
       ResolvedUseDecl(module, stmt.loc)
     }
@@ -61,25 +52,21 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         .generalize()
 
       val ty = instantiate(scheme).also {
-        scope.create(StructInfo(scope, stmt.name, it, stmt.generics))
+        scope.createTyInfo(StructInfo(scope, stmt.name, it, stmt.generics))
       }
 
       val members = stmt.properties.associate { (mutable, name, type) ->
         name to StructMemberInfo(scope, name, checkTy(type.ty()), mutable)
       }
-      val info = scope.create(StructInfo(scope, stmt.name, ty, stmt.generics, members))
+      val info = scope.createTyInfo(StructInfo(scope, stmt.name, ty, stmt.generics, members))
 
       ResolvedStructDecl(info, stmt.loc)
     }
 
     is ModuleDecl -> {
-      val module = scope.tree.createModule(
-        name = stmt.path.toIdentifier(),
-        enclosing = scope,
-        content = stmt.content,
-      )
+      val module = scope.createModule(ModuleScope(stmt.path.toIdentifier(), scope))
 
-      val content = scoped(module.scope) {
+      val content = scoped(module) {
         stmt.content.map(::checkStmt).filterIsInstance<ResolvedDecl>()
       }
 
@@ -118,7 +105,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         .generalize()
 
       val ty = instantiate(scheme).also {
-        scope.create(StructInfo(scope, stmt.name, it, stmt.generics))
+        scope.createTyInfo(StructInfo(scope, stmt.name, it, stmt.generics))
       }
 
       val members = stmt.members.associate { (name, params) ->
@@ -131,13 +118,13 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         }
 
         val variantTy = instantiate(Scheme(variantScheme.names, ConstTy(name.text)))
-        val memberInfo = scope.create(
+        val memberInfo = scope.createTyInfo(
           EnumMemberInfo(scope, name, variantTy, funTy, variantScheme),
         )
 
         name to memberInfo
       }
-      val info = scope.create(EnumInfo(scope, stmt.name, ty, stmt.generics, members))
+      val info = scope.createTyInfo(EnumInfo(scope, stmt.name, ty, stmt.generics, members))
 
       ResolvedEnumDecl(info, stmt.loc)
     }
@@ -168,9 +155,8 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
       val references = mutableMapOf<Identifier, Ty>()
       val scope = FunctionScope(
         function = info,
-        content = statements(stmt.body),
         enclosing = scope,
-        tree = ModuleTree(scope.tree), references = references,
+        references = references,
       )
       val body = scoped(scope) {
         stmt.parameters.forEach { (name, type) ->

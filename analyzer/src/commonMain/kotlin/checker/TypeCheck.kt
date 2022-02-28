@@ -26,9 +26,7 @@ import org.plank.analyzer.infer.UnificationFail
 import org.plank.analyzer.infer.inferExpr
 import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.infer.undefTy
-import org.plank.analyzer.resolver.FileScope
 import org.plank.analyzer.resolver.ResolveResult
-import org.plank.analyzer.resolver.Scope
 import org.plank.syntax.element.Expr
 import org.plank.syntax.element.Loc
 import org.plank.syntax.element.PlankElement
@@ -50,12 +48,12 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
   val tree = result.tree
 
   val violations: MutableSet<CheckViolation> = mutableSetOf()
-  var scope: Scope = tree.globalScope
+  var scope: Scope = GlobalScope
 
   fun check(): ResolvedPlankFile {
     val dependencies = dependencies
       .map { it.scope }
-      .filterIsInstance<FileScope>()
+      .filterIsInstance<org.plank.analyzer.resolver.FileScope>()
       .dropLast(1)
       .map {
         checkFile(it.file)
@@ -68,7 +66,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
     runCatching {
       val module = requireNotNull(tree.findModule(file.module)) { "Could not find file in tree" }
 
-      return scoped(FileScope(file, module, tree.globalScope)) {
+      return scoped(FileScope(file, scope).also(scope::createModule)) {
         val program = file.program.map(::checkStmt).filterIsInstance<ResolvedDecl>()
 
         ResolvedPlankFile(program, module, tree, file)

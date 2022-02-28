@@ -2,6 +2,16 @@
 
 package org.plank.analyzer
 
+import org.plank.analyzer.checker.DoubleInfo
+import org.plank.analyzer.checker.EnumInfo
+import org.plank.analyzer.checker.FloatInfo
+import org.plank.analyzer.checker.InlineVariable
+import org.plank.analyzer.checker.IntInfo
+import org.plank.analyzer.checker.LocalVariable
+import org.plank.analyzer.checker.RankedVariable
+import org.plank.analyzer.checker.Scope
+import org.plank.analyzer.checker.StructInfo
+import org.plank.analyzer.checker.fullPath
 import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedEnumDecl
 import org.plank.analyzer.element.ResolvedExprBody
@@ -53,16 +63,6 @@ import org.plank.analyzer.infer.AppTy
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.ungeneralize
-import org.plank.analyzer.resolver.DoubleInfo
-import org.plank.analyzer.resolver.EnumInfo
-import org.plank.analyzer.resolver.FloatInfo
-import org.plank.analyzer.resolver.InlineVariable
-import org.plank.analyzer.resolver.IntInfo
-import org.plank.analyzer.resolver.LocalVariable
-import org.plank.analyzer.resolver.RankedVariable
-import org.plank.analyzer.resolver.Scope
-import org.plank.analyzer.resolver.StructInfo
-import org.plank.analyzer.resolver.fullPath
 import org.plank.syntax.element.text
 
 fun ResolvedPlankFile.pretty(): String = buildString {
@@ -365,12 +365,6 @@ fun Scope.pretty(indent: String = ""): String = buildString {
     append(indent)
     appendLine("expand ${scope.name.text}")
     appendLine()
-  }
-
-  tree.modules.forEach { (name, module) ->
-    append(indent)
-    appendLine("module ${name.text}")
-    appendLine(module.scope.pretty("$indent  "))
   }
 
   types.forEach { (name, info) ->

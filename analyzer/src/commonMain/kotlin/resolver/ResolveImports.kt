@@ -63,11 +63,11 @@ class ResolveImports(val file: PlankFile, val tree: ModuleTree) {
 
   fun Graph<Identifier>.runDependencyTreeWalker(f: PlankFile) {
     val module = tree.findModule(f.module)
-      ?.apply { scope = FileScope(f, this, tree.globalScope) }
+      ?.apply { scope = FileScope(f, tree.globalScope) }
       ?: Module(f.module, f.program).apply {
         tree.createModule(this)
 
-        scope = FileScope(f, this, tree.globalScope)
+        scope = FileScope(f, tree.globalScope)
       }
 
     val scope = module.scope as FileScope
@@ -85,17 +85,18 @@ fun qualifiedPath(vararg ids: Identifier): QualifiedPath {
   return QualifiedPath(ids.toList(), first.loc.endIn(last.loc))
 }
 
-fun Scope.fullPath(): QualifiedPath = when (this) {
-  is ModuleScope -> QualifiedPath(module.name.text, module.name.loc)
-  is FileScope -> QualifiedPath(module.name.text, module.name.loc)
+fun ResolverScope.fullPath(): QualifiedPath = when (this) {
+  is ModuleScope -> QualifiedPath(name.text, name.loc)
+  is FileScope -> QualifiedPath(name.text, name.loc)
   else -> QualifiedPath()
 }
 
-fun statements(body: FunctionBody): List<Stmt> = when (body) {
-  is CodeBody -> body.stmts
-  is ExprBody -> emptyList()
-  is NoBody -> emptyList()
-}
+val FunctionBody.stmts: List<Stmt>
+  get() = when (this) {
+    is CodeBody -> stmts
+    is ExprBody -> emptyList()
+    is NoBody -> emptyList()
+  }
 
 tailrec fun concatModule(expr: Expr, list: List<Identifier> = emptyList()): List<Identifier> {
   return when (expr) {

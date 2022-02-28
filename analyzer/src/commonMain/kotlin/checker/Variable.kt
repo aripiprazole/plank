@@ -1,4 +1,4 @@
-package org.plank.analyzer.resolver
+package org.plank.analyzer.checker
 
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.infer.Scheme

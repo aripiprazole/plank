@@ -1,5 +1,8 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.checker.Scope
+import org.plank.analyzer.checker.StructInfo
+import org.plank.analyzer.checker.Variable
 import org.plank.analyzer.infer.PtrTy
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
@@ -7,9 +10,6 @@ import org.plank.analyzer.infer.ap
 import org.plank.analyzer.infer.boolTy
 import org.plank.analyzer.infer.i32Ty
 import org.plank.analyzer.infer.nullSubst
-import org.plank.analyzer.resolver.Scope
-import org.plank.analyzer.resolver.StructInfo
-import org.plank.analyzer.resolver.Variable
 import org.plank.syntax.element.GeneratedLoc
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Loc

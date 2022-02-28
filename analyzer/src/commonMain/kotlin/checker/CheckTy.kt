@@ -8,8 +8,6 @@ import org.plank.analyzer.infer.PtrTy
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
 import org.plank.analyzer.infer.unitTy
-import org.plank.analyzer.resolver.TyInfo
-import org.plank.analyzer.resolver.UnitInfo
 import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.QualifiedPath
 import org.plank.syntax.element.toIdentifier
@@ -25,20 +23,20 @@ fun TypeCheck.checkTy(ty: Ty): Ty = when (ty) {
 }
 
 fun TypeCheck.lookupInfo(ty: Ty): TyInfo? = when (ty) {
-  unitTy -> UnitInfo(scope.tree.globalScope)
+  unitTy -> UnitInfo(GlobalScope)
   is AppTy -> lookupInfo(ty.fn)
-  is VarTy -> scope.findTyInfo(ty.name.toIdentifier())
+  is VarTy -> scope.lookupTyInfo(ty.name.toIdentifier())
   is ConstTy -> {
     val path = QualifiedPath(ty.name)
 
     when (path.fullPath.size) {
       0 -> error("const path must have at least one component")
-      1 -> scope.findTyInfo(ty.name.toIdentifier())
+      1 -> scope.lookupTyInfo(ty.name.toIdentifier())
       else -> {
-        val scope = scope.findModule(path.fullPath.dropLast(1).toQualifiedPath().toIdentifier())
-          ?.scope ?: scope
+        val scope = scope.lookupModule(path.fullPath.dropLast(1).toQualifiedPath().toIdentifier())
+          ?: scope
 
-        scope.findTyInfo(path.fullPath.last())
+        scope.lookupTyInfo(path.fullPath.last())
       }
     }
   }

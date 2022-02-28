@@ -1,4 +1,4 @@
-package org.plank.analyzer.resolver
+package org.plank.analyzer.checker
 
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Scheme

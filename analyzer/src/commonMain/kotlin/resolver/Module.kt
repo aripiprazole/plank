@@ -8,16 +8,16 @@ import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.Stmt
 
 data class Module(val name: Identifier, val content: List<Stmt>) {
-  lateinit var scope: Scope
+  lateinit var scope: ResolverScope
 
   override fun toString(): String = "Module($name, scope: $scope)"
 }
 
-class ModuleTree(scopes: List<Scope> = emptyList(), val enclosing: ModuleTree?) {
-  val globalScope: GlobalScope = GlobalScope(this)
+class ModuleTree(scopes: List<ResolverScope> = emptyList(), val enclosing: ModuleTree?) {
+  val globalScope: ResolverScope = GlobalScope
 
   val dependencies = Graph<Identifier>().apply {
-    scopes.map(Scope::name).forEach(this::addVertex)
+    scopes.map(ResolverScope::name).forEach(this::addVertex)
   }
 
   private val _modules = mutableMapOf<Identifier, Module>()
@@ -31,11 +31,12 @@ class ModuleTree(scopes: List<Scope> = emptyList(), val enclosing: ModuleTree?) 
     }
   }
 
-  constructor(enclosing: ModuleTree, scopes: List<Scope> = emptyList()) : this(scopes, enclosing)
+  constructor(enclosing: ModuleTree, scopes: List<ResolverScope> = emptyList()) :
+    this(scopes, enclosing)
 
-  constructor(files: List<PlankFile>) : this(emptyList<Scope>(), null) {
+  constructor(files: List<PlankFile>) : this(emptyList<ResolverScope>(), null) {
     files
-      .map { Module(it.module, it.program).apply { scope = FileScope(it, this, globalScope) } }
+      .map { Module(it.module, it.program).apply { scope = FileScope(it, globalScope) } }
       .map { it.scope }
       .forEach { module ->
         dependencies.addVertex(module.name)
@@ -46,9 +47,9 @@ class ModuleTree(scopes: List<Scope> = emptyList(), val enclosing: ModuleTree?) 
       }
   }
 
-  constructor(vararg files: PlankFile) : this(emptyList<Scope>(), null) {
+  constructor(vararg files: PlankFile) : this(emptyList<ResolverScope>(), null) {
     files
-      .map { Module(it.module, it.program).apply { scope = FileScope(it, this, globalScope) } }
+      .map { Module(it.module, it.program).apply { scope = FileScope(it, globalScope) } }
       .map { it.scope }
       .forEach { module ->
         dependencies.addVertex(module.name)
@@ -66,7 +67,7 @@ class ModuleTree(scopes: List<Scope> = emptyList(), val enclosing: ModuleTree?) 
       .map(FileScope::file) + enclosing?.findFiles().orEmpty()
   }
 
-  fun addDependency(scope: Scope, on: Scope) {
+  fun addDependency(scope: ResolverScope, on: ResolverScope) {
     dependencies.addEdge(scope.name, on.name)
   }
 
@@ -78,11 +79,11 @@ class ModuleTree(scopes: List<Scope> = emptyList(), val enclosing: ModuleTree?) 
     return module
   }
 
-  fun createModule(name: Identifier, enclosing: Scope, content: List<Decl>): Module {
+  fun createModule(name: Identifier, enclosing: ResolverScope, content: List<Decl>): Module {
     dependencies.addVertex(name)
 
     val module = Module(name, content).apply {
-      scope = ModuleScope(this, enclosing, this@ModuleTree)
+      scope = ModuleScope(name, content, enclosing, this@ModuleTree)
     }
 
     _modules[name] = module

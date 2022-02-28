@@ -9,7 +9,7 @@ import org.plank.syntax.element.UseDecl
 import org.plank.syntax.element.plus
 import org.plank.syntax.element.walkTree
 
-fun walkDependencyTree(f: PlankFile, graph: Graph<Identifier>, tree: ModuleTree, _scope: Scope) {
+fun walkDependencyTree(f: PlankFile, graph: Graph<Identifier>, tree: ModuleTree, _scope: ResolverScope) {
   var currentScope = _scope
 
   fun enterDecl(decl: Stmt) {
@@ -18,7 +18,7 @@ fun walkDependencyTree(f: PlankFile, graph: Graph<Identifier>, tree: ModuleTree,
         val path = currentScope.name + decl.path
 
         val module = Module(path.toIdentifier(), decl.content).apply {
-          currentScope = ModuleScope(this, currentScope, ModuleTree(tree))
+          currentScope = ModuleScope(name, content, currentScope, ModuleTree(tree))
         }
 
         tree.createModule(module)
@@ -31,7 +31,7 @@ fun walkDependencyTree(f: PlankFile, graph: Graph<Identifier>, tree: ModuleTree,
 
   fun exitDecl(decl: Stmt) {
     when (decl) {
-      is UseDecl -> graph.addEdge(currentScope.module.name, decl.path.toIdentifier())
+      is UseDecl -> graph.addEdge(currentScope.name, decl.path.toIdentifier())
       is ModuleDecl -> currentScope = currentScope.enclosing!!
       else -> {}
     }

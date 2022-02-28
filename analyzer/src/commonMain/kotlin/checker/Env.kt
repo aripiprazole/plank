@@ -2,13 +2,6 @@ package org.plank.analyzer.checker
 
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.TyEnv
-import org.plank.analyzer.resolver.GlobalScope
-import org.plank.analyzer.resolver.InlineVariable
-import org.plank.analyzer.resolver.LocalVariable
-import org.plank.analyzer.resolver.RankedVariable
-import org.plank.analyzer.resolver.Scope
-import org.plank.analyzer.resolver.Variable
-import org.plank.analyzer.resolver.fullPath
 
 fun Scope.allVariables(original: Scope = this, inScope: Boolean = true, indent: String = ""): Set<Variable> {
   if (original == this && !inScope) {

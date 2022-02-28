@@ -3,8 +3,6 @@ package org.plank.analyzer.checker
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
 import org.plank.analyzer.resolver.Module
-import org.plank.analyzer.resolver.Scope
-import org.plank.analyzer.resolver.TyInfo
 import org.plank.syntax.element.GeneratedLoc
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Loc

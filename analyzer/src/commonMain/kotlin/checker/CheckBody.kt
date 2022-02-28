@@ -4,7 +4,6 @@ import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.ResolvedNoBody
-import org.plank.analyzer.resolver.FunctionScope
 import org.plank.syntax.element.CodeBody
 import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.ExprBody

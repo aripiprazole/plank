@@ -30,11 +30,6 @@ import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.infer.ty
 import org.plank.analyzer.infer.ungeneralize
 import org.plank.analyzer.infer.unitTy
-import org.plank.analyzer.resolver.ClosureScope
-import org.plank.analyzer.resolver.InlineVariable
-import org.plank.analyzer.resolver.PatternScope
-import org.plank.analyzer.resolver.StructInfo
-import org.plank.analyzer.resolver.getAs
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.BlockExpr
@@ -72,7 +67,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       TypedConstExpr(expr.value, ty, s, expr.loc)
     }
 
-    is BlockExpr -> scoped(ClosureScope("Block".toIdentifier(), expr.stmts, scope)) {
+    is BlockExpr -> scoped(ClosureScope("Block".toIdentifier(), scope)) {
       val stmts = expr.stmts.map(::checkStmt)
       val value = checkExpr(expr.value ?: ConstExpr(Unit))
 
@@ -80,7 +75,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is AccessExpr -> {
-      val scope = scope.findModule(expr.module.orEmpty().toIdentifier())?.scope ?: scope
+      val scope = scope.lookupModule(expr.module.orEmpty().toIdentifier()) ?: scope
 
       val variable = scope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
@@ -119,7 +114,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     is AssignExpr -> {
       val value = checkExpr(expr.value)
 
-      val scope = scope.findModule(expr.module.orEmpty().toIdentifier())?.scope ?: scope
+      val scope = scope.lookupModule(expr.module.orEmpty().toIdentifier()) ?: scope
       val variable = scope.lookupVariable(expr.name)
         ?: return violate(expr, UnresolvedVariable(expr.name))
 

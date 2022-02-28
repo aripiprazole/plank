@@ -1,15 +1,15 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.checker.EnumInfo
+import org.plank.analyzer.checker.EnumMemberInfo
+import org.plank.analyzer.checker.FunctionInfo
+import org.plank.analyzer.checker.Scope
+import org.plank.analyzer.checker.StructInfo
+import org.plank.analyzer.checker.StructMemberInfo
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
-import org.plank.analyzer.resolver.EnumInfo
-import org.plank.analyzer.resolver.EnumMemberInfo
-import org.plank.analyzer.resolver.FunctionInfo
-import org.plank.analyzer.resolver.Module
-import org.plank.analyzer.resolver.StructInfo
-import org.plank.analyzer.resolver.StructMemberInfo
 import org.plank.syntax.element.Attribute
 import org.plank.syntax.element.GeneratedLoc
 import org.plank.syntax.element.Identifier
@@ -33,7 +33,7 @@ data class ResolvedStructDecl(val info: StructInfo, override val loc: Loc) :
 }
 
 data class ResolvedUseDecl(
-  val module: Module,
+  val module: Scope,
   override val loc: Loc,
 ) : ResolvedDecl
 

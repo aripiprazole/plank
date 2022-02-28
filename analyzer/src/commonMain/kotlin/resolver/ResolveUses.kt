@@ -1,8 +1,5 @@
 package org.plank.analyzer.resolver
 
-import org.plank.analyzer.infer.Scheme
-import org.plank.analyzer.infer.arr
-import org.plank.analyzer.infer.undefTy
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
 import org.plank.syntax.element.AssignExpr
@@ -26,26 +23,28 @@ fun resolveUses(
   f: PlankFile,
   dependencies: MutableList<Module>,
   tree: ModuleTree,
-  _scope: Scope,
+  _scope: ResolverScope,
 ): PlankFile {
   var currentScope = _scope
 
   fun enterDecl(decl: Stmt): Stmt {
     return when (decl) {
       is FunDecl -> decl.apply {
-        val ty = undefTy arr undefTy
+        val scope = FunctionScope(
+          name = name,
+          content = body.stmts,
+          enclosing = currentScope,
+          tree = ModuleTree(tree)
+        )
 
-        val info = FunctionInfo(currentScope, name, ty, Scheme(ty))
-        val scope = FunctionScope(info, statements(body), currentScope, tree = ModuleTree(tree))
-
-        currentScope.declare(name, info.ty)
+        currentScope.declare(name)
 
         currentScope = scope
       }
       is ModuleDecl -> decl.apply {
         val module = tree.findModule(decl.path.toIdentifier())
           ?: Module(decl.path.toIdentifier(), decl.content).apply {
-            scope = ModuleScope(this, currentScope, ModuleTree(tree))
+            scope = ModuleScope(name, content, currentScope, ModuleTree(tree))
 
             currentScope.tree.createModule(this)
           }
@@ -58,22 +57,14 @@ fun resolveUses(
 
   fun exitDecl(decl: Stmt): Stmt {
     return when (decl) {
-      is EnumDecl -> decl.apply {
-        currentScope.create(EnumInfo(currentScope, name, undefTy))
-      }
-
-      is StructDecl -> decl.apply {
-        currentScope.create(StructInfo(currentScope, name, undefTy))
-      }
+      is EnumDecl -> decl.apply { currentScope.create(name) }
+      is StructDecl -> decl.apply { currentScope.create(name) }
+      is LetDecl -> decl.apply { currentScope.declare(name) }
 
       is UseDecl -> decl.apply {
         val module = currentScope.findModule(path.toIdentifier()) ?: return decl
 
         currentScope.expand(module.scope)
-      }
-
-      is LetDecl -> decl.apply {
-        currentScope.declare(name, undefTy)
       }
 
       is ModuleDecl,
@@ -91,14 +82,14 @@ fun resolveUses(
           val module = ref.path.copy(fullPath = ref.path.fullPath.dropLast(1))
 
           val scope = currentScope.findModule(module.toIdentifier())?.scope ?: return ref
-          val info = scope.findTyInfo(name) ?: return ref
+          val info = scope.lookupTy(name) ?: return ref
 
           ref.copy(path = info.declaredIn.fullPath() + name)
         }
         else -> {
           val name = ref.path.toIdentifier()
 
-          val info = currentScope.findTyInfo(ref.path.toIdentifier())
+          val info = currentScope.lookupTy(ref.path.toIdentifier())
             ?: return GenericTypeRef(name, ref.loc)
 
           ref.copy(path = info.declaredIn.fullPath() + name)
