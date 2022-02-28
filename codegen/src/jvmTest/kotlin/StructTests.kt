@@ -60,15 +60,15 @@ class StructTests {
         type Person = {mutable name: *Char};
 
         fun create_gabrielle() -> *Person {
-          return &Person{name: "Gabrielle"};
+          &Person{name: "Gabrielle"}
         }
 
         fun create_alfredo() -> *Person {
-          return &Person{name: "Alfredo"};
+          &Person{name: "Alfredo"}
         }
 
         fun create_gerson() -> Person {
-          return Person{name: "Gerson"};
+          Person{name: "Gerson"}
         }
 
         fun main(argc: Int32, argv: **Char) -> () {
