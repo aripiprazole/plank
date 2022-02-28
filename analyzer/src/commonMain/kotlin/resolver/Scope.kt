@@ -1,7 +1,5 @@
 package org.plank.analyzer.resolver
 
-import org.plank.analyzer.element.ResolvedExprBody
-import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
@@ -49,17 +47,13 @@ sealed class Scope {
     return Scheme(emptySet(), ty)
   }
 
-  fun declareInline(
-    name: String,
-    returnTy: Ty,
-    vararg parameters: Ty,
-    builder: (List<TypedExpr>) -> TypedExpr,
-  ) {
+  fun declareInline(name: String, returnTy: Ty, vararg parameters: Ty, builder: InlineBuilder) {
     val ty = FunTy(returnTy, parameters.toList())
-    _variables[Identifier(name)] =
-      InlineVariable(false, Identifier(name), ty, Scheme(ty), this, false) {
-        ResolvedExprBody(builder(it))
-      }
+    val id = name.toIdentifier()
+
+    _variables[id] = InlineVariable(false, id, ty, Scheme(ty), this, false) {
+      builder(it)
+    }
   }
 
   fun <T : TyInfo> create(info: T): T {

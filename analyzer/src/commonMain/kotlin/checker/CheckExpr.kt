@@ -31,6 +31,7 @@ import org.plank.analyzer.infer.nullSubst
 import org.plank.analyzer.infer.ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.analyzer.resolver.ClosureScope
+import org.plank.analyzer.resolver.InlineVariable
 import org.plank.analyzer.resolver.PatternScope
 import org.plank.analyzer.resolver.StructInfo
 import org.plank.analyzer.resolver.getAs
@@ -214,6 +215,23 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
       val callee = checkExpr(expr.callee)
       val ty = callee.ty as? FunTy ?: return violate(callee, TypeIsNotCallable(callee.ty))
       val parameters = ty.chainParameters()
+
+      if (
+        callee is TypedAccessExpr &&
+        callee.variable is InlineVariable &&
+        parameters.size == expr.arguments.size
+      ) {
+        val variable = callee.variable
+        val arguments = expr.arguments.map(::checkExpr)
+
+        arguments.zip(parameters).forEach { (arg, param) ->
+          if (param != arg.ty) {
+            violate<TypedExpr>(arg, TypeMismatch(param, arg.ty))
+          }
+        }
+
+        return variable.inlineCall(arguments)
+      }
 
       expr.arguments
         .ifEmpty { listOf(ConstExpr(Unit)) }

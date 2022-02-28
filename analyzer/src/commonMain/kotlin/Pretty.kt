@@ -190,16 +190,16 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
       else -> append(value)
     }
     is TypedIntOperationExpr -> when (this@pretty) {
-      is TypedIntAddExpr -> {}
-      is TypedIntDivExpr -> {}
-      is TypedIntEQExpr -> {}
-      is TypedIntGTEExpr -> {}
-      is TypedIntGTExpr -> {}
-      is TypedIntLTEExpr -> {}
-      is TypedIntLTExpr -> {}
-      is TypedIntMulExpr -> {}
-      is TypedIntNEQExpr -> {}
-      is TypedIntSubExpr -> {}
+      is TypedIntAddExpr -> paren("iadd ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntDivExpr -> paren("idiv ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntEQExpr -> paren("ieq ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntGTEExpr -> paren("igte ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntGTExpr -> paren("igt ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntLTEExpr -> paren("ilte ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntLTExpr -> paren("ilt ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntMulExpr -> paren("imul ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntNEQExpr -> paren("ineq ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
+      is TypedIntSubExpr -> paren("isub ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
     }
     is TypedEnumIndexAccess -> paren {
       append("enum-index ").append(value.ty.ungeneralize()).space().append(index)

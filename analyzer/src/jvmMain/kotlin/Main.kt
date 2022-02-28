@@ -29,8 +29,8 @@ private val maybePlank = PlankFile.of(
     Nothing
   }
 
-  fun unwrap(m: Maybe[a]) -> a = match m {
-    Just(x) => x,
+  fun unwrap(m: Maybe[Int32]) -> Int32 = match m {
+    Just(x) => x + 1,
     Nothing => panic("unwrap: Nothing")
   }
   """.trimIndent(),

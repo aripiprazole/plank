@@ -1,6 +1,5 @@
 package org.plank.analyzer.resolver
 
-import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
@@ -51,7 +50,7 @@ data class LocalVariable(
   override fun notInScope(): LocalVariable = copy(isInScope = false)
 
   override fun toString(): String =
-    "LocalVariable(mutable=$mutable, name=$name, scheme=$ty, isInScope=$isInScope)"
+    "LocalVariable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
 }
 
 data class InlineVariable(
@@ -61,7 +60,7 @@ data class InlineVariable(
   override val scheme: Scheme,
   override val declaredIn: Scope,
   override val isInScope: Boolean = false,
-  val inlineCall: (List<TypedExpr>) -> ResolvedFunctionBody,
+  val inlineCall: (List<TypedExpr>) -> TypedExpr,
 ) : Variable {
   override fun name(name: Identifier): InlineVariable = copy(name = name)
   override fun inScope(): InlineVariable = copy(isInScope = true)
@@ -70,3 +69,5 @@ data class InlineVariable(
   override fun toString(): String =
     "InlineVariable(mutable=$mutable, name=$name, ty=$ty, isInScope=$isInScope)"
 }
+
+typealias InlineBuilder = (List<TypedExpr>) -> TypedExpr
