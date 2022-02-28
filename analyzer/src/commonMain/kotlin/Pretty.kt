@@ -179,9 +179,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
     is TypedConstExpr -> when (val value = value) {
       is String -> append("\"$value\"")
       is Char -> append("'$value'")
-      is Int -> append("${value}i32")
-      is Short -> append("${value}i16")
-      is Byte -> append("${value}i8")
+      is Int -> append("$value")
       is UInt -> append("${value}u32")
       is UShort -> append("${value}u16")
       is UByte -> append("${value}u8")

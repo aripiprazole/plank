@@ -29,10 +29,9 @@ private val maybePlank = PlankFile.of(
     Nothing
   }
 
-  fun unwrap(m: Maybe[a]) -> b {
-    fun batata() -> a = panic("batata");
-
-    batata()
+  fun unwrap(m: Maybe[a]) -> b = match m {
+    Just(x) => x,
+    Nothing => panic("unwrap: Nothing")
   }
   """.trimIndent(),
 )
@@ -46,6 +45,8 @@ private val mainPlank = PlankFile.of(
 
   fun main() {
     let unwrap = Std.Maybe.unwrap;
+
+    unwrap(Just(10));
   }
   """.trimIndent(),
 )

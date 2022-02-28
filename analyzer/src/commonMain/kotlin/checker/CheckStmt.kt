@@ -25,6 +25,7 @@ import org.plank.analyzer.resolver.FunctionScope
 import org.plank.analyzer.resolver.ModuleTree
 import org.plank.analyzer.resolver.StructInfo
 import org.plank.analyzer.resolver.StructMemberInfo
+import org.plank.analyzer.resolver.fullPath
 import org.plank.analyzer.resolver.statements
 import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.EnumDecl
@@ -54,7 +55,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
     is StructDecl -> {
       val scheme = stmt.generics
-        .fold(ConstTy(stmt.name.text) as Ty) { acc, n ->
+        .fold(ConstTy((scope.fullPath() + stmt.name.text).text) as Ty) { acc, n ->
           AppTy(acc, VarTy(n.text))
         }
         .generalize()
@@ -112,7 +113,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
     is EnumDecl -> {
       val scheme = stmt.generics
-        .fold(ConstTy(stmt.name.text) as Ty) { acc, n ->
+        .fold(ConstTy((scope.fullPath() + stmt.name.text).text) as Ty) { acc, n ->
           AppTy(acc, VarTy(n.text))
         }
         .generalize()
