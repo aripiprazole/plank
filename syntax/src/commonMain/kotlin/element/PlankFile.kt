@@ -11,7 +11,6 @@ import org.plank.syntax.mapper.DescriptorMapper
 import org.plank.syntax.mapper.SyntaxErrorListener
 import org.plank.syntax.mapper.SyntaxViolation
 import org.plank.syntax.message.CompilerLogger
-import org.plank.syntax.message.SimpleCompilerLogger
 import org.plank.syntax.parser.toParseTree
 import pw.binom.io.file.File
 import pw.binom.io.file.name
@@ -53,7 +52,7 @@ data class PlankFile(
       file: File,
       treeDebug: Boolean = false,
       parserDebug: Boolean = false,
-      logger: CompilerLogger = SimpleCompilerLogger(),
+      logger: CompilerLogger = CompilerLogger(),
     ): PlankFile {
       val module = file.nameWithoutExtension
       val path = file.path
@@ -75,7 +74,7 @@ data class PlankFile(
       path: String = module,
       treeDebug: Boolean = false,
       parserDebug: Boolean = false,
-      logger: CompilerLogger = SimpleCompilerLogger(),
+      logger: CompilerLogger = CompilerLogger(),
     ): PlankFile {
       val file = PlankFile(text, moduleName = QualifiedPath(module), path = path)
 

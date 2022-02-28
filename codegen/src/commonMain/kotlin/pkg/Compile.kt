@@ -15,14 +15,13 @@ import org.plank.llvm4k.Module
 import org.plank.shared.depthFirstSearch
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
-import org.plank.syntax.message.SimpleCompilerLogger
 
 fun compile(
   plainMain: PlankFile,
   analyze: (PlankFile, ModuleTree) -> ResolvedPlankFile,
   debug: DebugOptions,
   tree: ModuleTree = ModuleTree(),
-  logger: CompilerLogger = SimpleCompilerLogger(),
+  logger: CompilerLogger = CompilerLogger(),
   intrinsics: Intrinsics = DefaultIntrinsics,
 ): Module {
   val main = analyze(plainMain, tree).check()

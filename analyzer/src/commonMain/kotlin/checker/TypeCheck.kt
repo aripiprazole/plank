@@ -26,14 +26,15 @@ import org.plank.syntax.element.Location
 import org.plank.syntax.element.PlankElement
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.toIdentifier
-import org.plank.syntax.message.SimpleCompilerLogger
+import org.plank.syntax.message.CompilerLogger
+import org.plank.syntax.message.NoopCompilerLogger
 import kotlin.reflect.KClass
 
-fun ResolveResult.typeCheck(logger: SimpleCompilerLogger? = null): ResolvedPlankFile {
+fun ResolveResult.typeCheck(logger: CompilerLogger = NoopCompilerLogger): ResolvedPlankFile {
   return TypeCheck(this, logger).check()
 }
 
-class TypeCheck(result: ResolveResult, val logger: SimpleCompilerLogger?) {
+class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
   val dependencies = result.dependencies
   val file = result.file
   val tree = result.tree
@@ -65,9 +66,7 @@ class TypeCheck(result: ResolveResult, val logger: SimpleCompilerLogger?) {
         ResolvedPlankFile(program, module, tree, file)
       }
     }.onFailure { error ->
-      if (logger != null) {
-        violations.forEach { it.render(logger) }
-      }
+      violations.forEach { it.render(logger) }
 
       throw error
     }

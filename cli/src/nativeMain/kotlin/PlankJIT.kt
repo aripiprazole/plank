@@ -17,7 +17,7 @@ import org.plank.codegen.pkg.Package
 import org.plank.codegen.pkg.SyntaxError
 import org.plank.codegen.pkg.compile
 import org.plank.llvm4k.OptimizationLevel
-import org.plank.syntax.message.SimpleCompilerLogger
+import org.plank.syntax.message.CompilerLogger
 import pw.binom.io.file.File
 import pw.binom.io.file.isExist
 import kotlin.system.exitProcess
@@ -53,7 +53,7 @@ class PlankJIT : CliktCommand(
 
   override fun run() {
     val pkg = Package(file, workingDir, false) {
-      logger = SimpleCompilerLogger(
+      logger = CompilerLogger(
         debug = this@PlankJIT.debug || printLlvmModule,
         verbose = this@PlankJIT.verbose,
       )

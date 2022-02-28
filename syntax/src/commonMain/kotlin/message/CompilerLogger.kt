@@ -40,9 +40,19 @@ interface CompilerLogger {
   fun info(message: String): Unit = log(LogLevel.Info, message, null)
 }
 
+fun CompilerLogger(debug: Boolean = false, verbose: Boolean = false): CompilerLogger {
+  return CompilerLoggerImpl(debug, verbose)
+}
+
 expect val lineSeparator: String
 
-class SimpleCompilerLogger(val debug: Boolean = false, val verbose: Boolean = false) :
+object NoopCompilerLogger : CompilerLogger {
+  override fun log(level: LogLevel, message: String, location: Location?) {
+    return
+  }
+}
+
+private class CompilerLoggerImpl(val debug: Boolean = false, val verbose: Boolean = false) :
   CompilerLogger {
   private val terminal = Terminal(AnsiLevel.TRUECOLOR, tabWidth = 1)
 

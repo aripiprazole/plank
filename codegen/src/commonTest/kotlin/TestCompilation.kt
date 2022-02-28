@@ -14,7 +14,7 @@ import org.plank.codegen.pkg.exec
 import org.plank.codegen.pkg.locateBinary
 import org.plank.llvm4k.LLVMError
 import org.plank.syntax.mapper.SyntaxViolation
-import org.plank.syntax.message.SimpleCompilerLogger
+import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.message.lineSeparator
 import pw.binom.io.file.File
 import kotlin.test.assertEquals
@@ -85,7 +85,7 @@ class TestCompilation(
         workingDir = createTempDirectory("plank-test")
         output = workingDir.child("main")
         debug = options
-        logger = SimpleCompilerLogger(debug = true, verbose = true)
+        logger = CompilerLogger(debug = true, verbose = true)
       }
 
       var syntaxViolations: Set<SyntaxViolation> = emptySet()

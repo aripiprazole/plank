@@ -4,7 +4,7 @@ import org.plank.analyzer.checker.typeCheck
 import org.plank.analyzer.resolver.ModuleTree
 import org.plank.analyzer.resolver.resolveImports
 import org.plank.syntax.element.PlankFile
-import org.plank.syntax.message.SimpleCompilerLogger
+import org.plank.syntax.message.CompilerLogger
 
 private val ioPlank = PlankFile.of(
   """
@@ -51,7 +51,7 @@ private val mainPlank = PlankFile.of(
 
 typealias Transformer = (PlankFile, ModuleTree) -> PlankFile
 
-val logger = SimpleCompilerLogger(debug = true, verbose = true)
+val logger = CompilerLogger(debug = true, verbose = true)
 
 fun main() {
   val tree = ModuleTree(maybePlank, ioPlank)

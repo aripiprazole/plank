@@ -3,14 +3,13 @@ package org.plank.codegen.pkg
 import org.plank.codegen.DebugOptions
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
-import org.plank.syntax.message.SimpleCompilerLogger
 import pw.binom.io.file.File
 
 data class CompileOptions(val plankHome: File) {
   var debug = DebugOptions()
 
   var emitIR = false
-  var logger: CompilerLogger = SimpleCompilerLogger()
+  var logger: CompilerLogger = CompilerLogger()
 
   var linker = locateBinary("clang++")
   var output = File("main")
