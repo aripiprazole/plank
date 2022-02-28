@@ -24,6 +24,7 @@ import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.element.TypedConstExpr
 import org.plank.analyzer.element.TypedDerefExpr
 import org.plank.analyzer.element.TypedEnumIndexAccess
+import org.plank.analyzer.element.TypedEnumVariantPattern
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedGetExpr
 import org.plank.analyzer.element.TypedGroupExpr
@@ -43,7 +44,6 @@ import org.plank.analyzer.element.TypedIntNEQExpr
 import org.plank.analyzer.element.TypedIntOperationExpr
 import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.analyzer.element.TypedMatchExpr
-import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.element.TypedRefExpr
 import org.plank.analyzer.element.TypedSetExpr
@@ -87,7 +87,7 @@ fun TypedIfBranch.pretty(indent: String = ""): String = buildString {
 
 fun TypedPattern.pretty(indent: String = ""): String = buildString {
   when (this@pretty) {
-    is TypedNamedTuplePattern -> paren {
+    is TypedEnumVariantPattern -> paren {
       append(name.text)
       properties.forEach { pattern ->
         space()

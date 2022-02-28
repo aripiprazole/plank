@@ -3,15 +3,15 @@ package org.plank.analyzer.checker
 import org.plank.analyzer.IncorrectEnumArity
 import org.plank.analyzer.UnresolvedEnumVariant
 import org.plank.analyzer.element.TypedEnumIndexAccess
+import org.plank.analyzer.element.TypedEnumVariantPattern
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.element.TypedIdentPattern
-import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.infer.chainParameters
 import org.plank.analyzer.infer.enumVariant
 import org.plank.analyzer.infer.nullSubst
+import org.plank.syntax.element.EnumVariantPattern
 import org.plank.syntax.element.IdentPattern
-import org.plank.syntax.element.NamedTuplePattern
 import org.plank.syntax.element.Pattern
 import org.plank.syntax.element.toQualifiedPath
 
@@ -28,9 +28,9 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
 
       val ty = infer.instantiate(scheme)
 
-      TypedNamedTuplePattern(name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
+      TypedEnumVariantPattern(name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
     }
-    is NamedTuplePattern -> {
+    is EnumVariantPattern -> {
       val name = pattern.type.toIdentifier()
 
       val scheme = scope.lookupVariable(name)
@@ -47,7 +47,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         checkPattern(next, TypedEnumIndexAccess(subject, i, tv, nullSubst(), next.location))
       }
 
-      TypedNamedTuplePattern(pattern.type, properties, ty, nullSubst(), pattern.location)
+      TypedEnumVariantPattern(pattern.type, properties, ty, nullSubst(), pattern.location)
     }
   }
 }

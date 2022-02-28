@@ -82,7 +82,7 @@ open class TreeWalker :
   open fun walkBlockBranch(branch: BlockBranch) {
   }
 
-  open fun walkNamedTuplePattern(pattern: NamedTuplePattern) {
+  open fun walkNamedTuplePattern(pattern: EnumVariantPattern) {
   }
 
   open fun walkIdentPattern(pattern: IdentPattern) {
@@ -304,7 +304,7 @@ open class TreeWalker :
     walkUnitTypeRef(ref)
   }
 
-  override fun visitNamedTuplePattern(pattern: NamedTuplePattern) {
+  override fun visitNamedTuplePattern(pattern: EnumVariantPattern) {
     visitQualifiedPath(pattern.type)
     visitPatterns(pattern.properties)
     walkNamedTuplePattern(pattern)

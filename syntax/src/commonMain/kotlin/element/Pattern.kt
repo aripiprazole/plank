@@ -4,7 +4,7 @@ sealed interface Pattern : PlankElement {
   interface Visitor<T> {
     fun visitPattern(pattern: Pattern): T = pattern.accept(this)
 
-    fun visitNamedTuplePattern(pattern: NamedTuplePattern): T
+    fun visitNamedTuplePattern(pattern: EnumVariantPattern): T
     fun visitIdentPattern(pattern: IdentPattern): T
 
     fun visitPatterns(many: List<Pattern>): List<T> = many.map(::visitPattern)
@@ -13,7 +13,7 @@ sealed interface Pattern : PlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class NamedTuplePattern(
+data class EnumVariantPattern(
   val type: QualifiedPath,
   val properties: List<Pattern>,
   override val location: Location,

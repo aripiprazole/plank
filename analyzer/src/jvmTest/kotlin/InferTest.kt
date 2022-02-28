@@ -30,6 +30,7 @@ import org.plank.syntax.element.CallExpr
 import org.plank.syntax.element.ConstExpr
 import org.plank.syntax.element.DerefExpr
 import org.plank.syntax.element.EnumDecl
+import org.plank.syntax.element.EnumVariantPattern
 import org.plank.syntax.element.Expr
 import org.plank.syntax.element.ExprBody
 import org.plank.syntax.element.FunDecl
@@ -42,7 +43,6 @@ import org.plank.syntax.element.InstanceExpr
 import org.plank.syntax.element.LetDecl
 import org.plank.syntax.element.MatchExpr
 import org.plank.syntax.element.ModuleDecl
-import org.plank.syntax.element.NamedTuplePattern
 import org.plank.syntax.element.NoBody
 import org.plank.syntax.element.PointerTypeRef
 import org.plank.syntax.element.RefExpr
@@ -192,7 +192,7 @@ class InferTest {
         value = MatchExpr(
           subject = CallExpr(AccessExpr("MkPerson".toIdentifier()), ConstExpr("John")),
           patterns = mapOf(
-            NamedTuplePattern(
+            EnumVariantPattern(
               type = "MkPerson".toQualifiedPath(),
               IdentPattern("name".toIdentifier()),
             ) to AccessExpr("name".toIdentifier()),

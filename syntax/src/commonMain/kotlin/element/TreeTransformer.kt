@@ -103,7 +103,7 @@ open class TreeTransformer :
     return branch
   }
 
-  open fun transformNamedTuplePattern(pattern: NamedTuplePattern): Pattern {
+  open fun transformNamedTuplePattern(pattern: EnumVariantPattern): Pattern {
     return pattern
   }
 
@@ -374,7 +374,7 @@ open class TreeTransformer :
     return transformUnitTypeRef(ref)
   }
 
-  override fun visitNamedTuplePattern(pattern: NamedTuplePattern): Pattern {
+  override fun visitNamedTuplePattern(pattern: EnumVariantPattern): Pattern {
     return transformNamedTuplePattern(
       pattern.copy(
         type = visitQualifiedPath(pattern.type),

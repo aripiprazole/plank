@@ -94,6 +94,7 @@ import org.plank.syntax.element.DecimalAttributeExpr
 import org.plank.syntax.element.Decl
 import org.plank.syntax.element.DerefExpr
 import org.plank.syntax.element.EnumDecl
+import org.plank.syntax.element.EnumVariantPattern
 import org.plank.syntax.element.Expr
 import org.plank.syntax.element.ExprBody
 import org.plank.syntax.element.ExprStmt
@@ -112,7 +113,6 @@ import org.plank.syntax.element.LetDecl
 import org.plank.syntax.element.Location
 import org.plank.syntax.element.MatchExpr
 import org.plank.syntax.element.ModuleDecl
-import org.plank.syntax.element.NamedTuplePattern
 import org.plank.syntax.element.NoBody
 import org.plank.syntax.element.Pattern
 import org.plank.syntax.element.PlankElement
@@ -395,8 +395,8 @@ class DescriptorMapper(val file: PlankFile) : PlankParserBaseVisitor<PlankElemen
     else -> error("Unsupported primary ${ctx::class.simpleName}")
   }
 
-  override fun visitNamedTuplePattern(ctx: NamedTuplePatternContext): NamedTuplePattern {
-    return NamedTuplePattern(
+  override fun visitNamedTuplePattern(ctx: NamedTuplePatternContext): EnumVariantPattern {
+    return EnumVariantPattern(
       visitQualifiedPath(ctx.type!!),
       ctx.findPattern().map(::visitPattern),
       ctx.location,

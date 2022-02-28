@@ -11,7 +11,7 @@ sealed interface TypedPattern : TypedPlankElement {
   interface Visitor<T> {
     fun visitPattern(pattern: TypedPattern): T = pattern.accept(this)
 
-    fun visitNamedTuplePattern(pattern: TypedNamedTuplePattern): T
+    fun visitNamedTuplePattern(pattern: TypedEnumVariantPattern): T
     fun visitIdentPattern(pattern: TypedIdentPattern): T
 
     fun visitPatterns(many: List<TypedPattern>): List<T> = many.map(::visitPattern)
@@ -22,14 +22,14 @@ sealed interface TypedPattern : TypedPlankElement {
   fun <T> accept(visitor: Visitor<T>): T
 }
 
-data class TypedNamedTuplePattern(
+data class TypedEnumVariantPattern(
   val name: QualifiedPath,
   val properties: List<TypedPattern> = emptyList(),
   override val ty: Ty,
   override val subst: Subst,
   override val location: Location,
 ) : TypedPattern {
-  override fun ap(subst: Subst): TypedNamedTuplePattern =
+  override fun ap(subst: Subst): TypedEnumVariantPattern =
     copy(ty = ty.ap(subst), subst = subst.compose(subst))
 
   override fun <T> accept(visitor: TypedPattern.Visitor<T>): T {

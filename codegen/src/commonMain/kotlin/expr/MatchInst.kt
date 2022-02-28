@@ -1,8 +1,8 @@
 package org.plank.codegen.expr
 
+import org.plank.analyzer.element.TypedEnumVariantPattern
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedMatchExpr
-import org.plank.analyzer.element.TypedNamedTuplePattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
@@ -52,7 +52,7 @@ fun CodegenContext.checkPattern(
 ): Value {
   return when (pattern) {
     is TypedIdentPattern -> i1.getConstant(1, false) // true
-    is TypedNamedTuplePattern -> {
+    is TypedEnumVariantPattern -> {
       val tag = createLoad(getField(subject, 0))
 
       createICmp(IntPredicate.EQ, tag, i8.getConstant(index, false))
@@ -65,7 +65,7 @@ fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
     is TypedIdentPattern -> {
       setSymbol(pattern.name.text, pattern.ty, unsafeAlloca(subject))
     }
-    is TypedNamedTuplePattern -> {
+    is TypedEnumVariantPattern -> {
       var idx = 1
       val member = createBitCast(subject, pattern.ty.typegen().pointer(AddrSpace.Generic))
 

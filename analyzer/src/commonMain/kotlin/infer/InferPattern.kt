@@ -1,7 +1,7 @@
 package org.plank.analyzer.infer
 
+import org.plank.syntax.element.EnumVariantPattern
 import org.plank.syntax.element.IdentPattern
-import org.plank.syntax.element.NamedTuplePattern
 import org.plank.syntax.element.Pattern
 
 fun Infer.inferPattern(env: TyEnv, pattern: Pattern, subject: Ty): TyEnv {
@@ -11,7 +11,7 @@ fun Infer.inferPattern(env: TyEnv, pattern: Pattern, subject: Ty): TyEnv {
 
       env
     }
-    is NamedTuplePattern -> {
+    is EnumVariantPattern -> {
       val scheme = env.lookup(pattern.type.text) ?: throw UnboundVar(pattern.type.toIdentifier())
       val parameters = instantiate(scheme).callable().chainParameters()
 
