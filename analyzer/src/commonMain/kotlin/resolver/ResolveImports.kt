@@ -45,15 +45,14 @@ class ResolveImports(val file: PlankFile, val tree: ModuleTree) {
     .apply {
       addVertex(file.module)
 
-      modules.forEach { module ->
-        runDependencyTreeWalker((module.scope as FileScope).file)
+      modules
+        .map { it.scope }
+        .filterIsInstance<FileScope>()
+        .forEach { scope ->
+          runDependencyTreeWalker(scope.file)
 
-        val scope = module.scope
-
-        if (scope is FileScope) {
           scope.file = resolveUses(scope.file, dependencies, tree, scope)
         }
-      }
 
       runDependencyTreeWalker(file)
     }
