@@ -5,6 +5,7 @@ import org.plank.analyzer.infer.arr
 import org.plank.analyzer.infer.undefTy
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef
+import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.EnumDecl
 import org.plank.syntax.element.Expr
 import org.plank.syntax.element.FunDecl
@@ -14,6 +15,7 @@ import org.plank.syntax.element.LetDecl
 import org.plank.syntax.element.ModuleDecl
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.QualifiedPath
+import org.plank.syntax.element.SetExpr
 import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.StructDecl
 import org.plank.syntax.element.TypeRef
@@ -124,6 +126,25 @@ fun resolveUses(
           dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
 
           AccessExpr(name = expr.property, module = path, loc = expr.loc)
+        }
+        else -> expr
+      }
+      is SetExpr -> when (val receiver = expr.receiver) {
+        is GetExpr -> {
+          val chain = concatModule(receiver).asReversed().ifEmpty { return expr }
+          val path = QualifiedPath(chain)
+
+          dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
+
+          AssignExpr(name = expr.property, value = expr.value, module = path, loc = expr.loc)
+        }
+        is AccessExpr -> {
+          val fullPath = receiver.module?.fullPath.orEmpty().toTypedArray()
+          val path = qualifiedPath(*fullPath, receiver.name)
+
+          dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
+
+          AssignExpr(name = expr.property, value = expr.value, module = path, loc = expr.loc)
         }
         else -> expr
       }
