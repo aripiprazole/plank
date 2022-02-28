@@ -11,10 +11,6 @@ data class EnumDecl(
   data class Member(val name: Identifier, val parameters: List<TypeRef>) {
     constructor(name: Identifier, vararg parameters: TypeRef) : this(name, parameters.toList())
   }
-
-  override fun <T> accept(visitor: Stmt.Visitor<T>): T {
-    return visitor.visitEnumDecl(this)
-  }
 }
 
 data class StructDecl(
@@ -24,18 +20,10 @@ data class StructDecl(
   override val location: Location = Location.Generated,
 ) : Decl {
   data class Property(val mutable: Boolean, val name: Identifier, val type: TypeRef)
-
-  override fun <T> accept(visitor: Stmt.Visitor<T>): T {
-    return visitor.visitStructDecl(this)
-  }
 }
 
 data class UseDecl(val path: QualifiedPath, override val location: Location = Location.Generated) :
-  Decl {
-  override fun <T> accept(visitor: Stmt.Visitor<T>): T {
-    return visitor.visitUseDecl(this)
-  }
-}
+  Decl
 
 data class ModuleDecl(
   val path: QualifiedPath,
@@ -43,11 +31,7 @@ data class ModuleDecl(
   override val location: Location = Location.Generated,
 ) : Decl {
   constructor(path: QualifiedPath, vararg content: Decl, location: Location = Location.Generated) :
-    this(path, content.toList())
-
-  override fun <T> accept(visitor: Stmt.Visitor<T>): T {
-    return visitor.visitModuleDecl(this)
-  }
+    this(path, content.toList(), location)
 }
 
 data class FunDecl(
@@ -57,11 +41,7 @@ data class FunDecl(
   val body: FunctionBody,
   val attributes: List<Attribute> = emptyList(),
   override val location: Location = Location.Generated,
-) : Decl {
-  override fun <T> accept(visitor: Stmt.Visitor<T>): T {
-    return visitor.visitFunDecl(this)
-  }
-}
+) : Decl
 
 data class LetDecl(
   val name: Identifier,
@@ -69,8 +49,4 @@ data class LetDecl(
   val type: TypeRef? = null,
   val mutable: Boolean = false,
   override val location: Location = Location.Generated,
-) : Decl {
-  override fun <T> accept(visitor: Stmt.Visitor<T>): T {
-    return visitor.visitLetDecl(this)
-  }
-}
+) : Decl

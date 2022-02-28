@@ -25,10 +25,6 @@ data class PlankFile(
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
 ) : PlankElement {
-  interface Visitor<T> {
-    fun visitPlankFile(file: PlankFile): T
-  }
-
   val realFile = File(path)
   val module = moduleName?.toIdentifier() ?: Identifier(realFile.name)
   val isValid get() = violations.isEmpty()

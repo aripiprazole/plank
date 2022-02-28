@@ -1,69 +1,30 @@
 package org.plank.syntax.element
 
-sealed interface TypeRef : PlankElement {
-  interface Visitor<T> {
-    fun visitTypeRef(ref: TypeRef): T = ref.accept(this)
+sealed interface TypeRef : PlankElement
 
-    fun visitAccessTypeRef(ref: AccessTypeRef): T
-    fun visitGenericTypeRef(ref: GenericTypeRef): T
-    fun visitPointerTypeRef(ref: PointerTypeRef): T
-    fun visitApplyTypeRef(ref: ApplyTypeRef): T
-    fun visitFunctionTypeRef(ref: FunctionTypeRef): T
-    fun visitUnitTypeRef(ref: UnitTypeRef): T
-
-    fun visitTypeRefs(many: List<TypeRef>): List<T> = many.map(::visitTypeRef)
-  }
-
-  fun <T> accept(visitor: Visitor<T>): T
-}
-
-data class UnitTypeRef(override val location: Location = Location.Generated) : TypeRef {
-  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
-    return visitor.visitUnitTypeRef(this)
-  }
-}
+data class UnitTypeRef(override val location: Location = Location.Generated) : TypeRef
 
 data class GenericTypeRef(
   val name: Identifier,
   override val location: Location = Location.Generated,
-) : TypeRef {
-  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
-    return visitor.visitGenericTypeRef(this)
-  }
-}
+) : TypeRef
 
 data class AccessTypeRef(
   val path: QualifiedPath,
   override val location: Location = Location.Generated,
-) : TypeRef {
-  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
-    return visitor.visitAccessTypeRef(this)
-  }
-}
+) : TypeRef
 
 data class PointerTypeRef(val type: TypeRef, override val location: Location = Location.Generated) :
-  TypeRef {
-  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
-    return visitor.visitPointerTypeRef(this)
-  }
-}
+  TypeRef
 
 data class ApplyTypeRef(
   val function: TypeRef,
   val arguments: List<TypeRef>,
   override val location: Location,
-) : TypeRef {
-  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
-    return visitor.visitApplyTypeRef(this)
-  }
-}
+) : TypeRef
 
 data class FunctionTypeRef(
   val parameterType: TypeRef,
   val returnType: TypeRef,
   override val location: Location = Location.Generated,
-) : TypeRef {
-  override fun <T> accept(visitor: TypeRef.Visitor<T>): T {
-    return visitor.visitFunctionTypeRef(this)
-  }
-}
+) : TypeRef
