@@ -12,6 +12,7 @@ import org.plank.analyzer.infer.i8Ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Type
+import org.plank.syntax.element.toQualifiedPath
 import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 
 @Suppress("Detekt.ComplexMethod")
@@ -23,8 +24,14 @@ fun CodegenContext.typegen(ty: Ty): Type {
     i8Ty -> i8
     i16Ty -> i16
     i32Ty -> i32
-    is ConstTy -> findStruct(ty.name) ?: codegenError("Unresolved type `${ty.name}`")
     is PtrTy -> ty.arg.typegen().pointer(AddrSpace.Generic)
+    is ConstTy -> {
+      val path = ty.name.toQualifiedPath()
+      val name = path.last()
+      val module = findModule(path.dropLast().text) ?: this
+
+      module.findStruct(name.text) ?: codegenError("Unresolved type `${ty.name}`")
+    }
     is FunTy -> {
       val returnTy = ty.returnTy.typegen()
       val parameterTy = ty.parameterTy.typegen()
