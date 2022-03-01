@@ -40,8 +40,8 @@ class CurryFunctionSymbol(
       closure = if (parameters.isNotEmpty()) {
         List(parameters.size - 1, ::identity)
           .reversed()
-          .fold(generateNesting(reversedParameters.size - 1)) { acc, i ->
-            generateNesting(i) { returnTy ->
+          .fold(nested(reversedParameters.size - 1)) { acc, i ->
+            nested(i) { returnTy ->
               val func = acc.also { it.codegen() }.access()!!
               val ty = returnTy.typegen()
 
@@ -64,10 +64,7 @@ class CurryFunctionSymbol(
     return closure
   }
 
-  private fun generateNesting(
-    index: Int,
-    builder: ExecContext.(returnType: Ty) -> Unit = { generate() },
-  ): ClosureFunctionSymbol {
+  private fun nested(index: Int, builder: NestBuilder = { generate() }): ClosureFunctionSymbol {
     val ty = FunTy(parameters[index].second, ty.nest(index))
 
     return ClosureFunctionSymbol(
@@ -82,6 +79,8 @@ class CurryFunctionSymbol(
     )
   }
 }
+
+typealias NestBuilder = ExecContext.(returnType: Ty) -> Unit
 
 fun CodegenCtx.addCurryFunction(
   descriptor: ResolvedFunDecl,
