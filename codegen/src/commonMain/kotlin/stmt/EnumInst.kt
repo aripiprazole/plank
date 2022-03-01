@@ -5,13 +5,13 @@ import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.element.addGlobalFunction
 import org.plank.codegen.getField
 import org.plank.codegen.mangle
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val enum = createNamedStruct(mangle(descriptor.name)) {
       elements = listOf(i8, i8.pointer(AddrSpace.Generic))
     }

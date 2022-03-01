@@ -29,14 +29,14 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Loc
 import org.plank.syntax.element.QualifiedPath
 
-sealed interface CodegenContext : Context, IRBuilder {
+sealed interface CodegenCtx : Context, IRBuilder {
   val scope: String
   val file: ResolvedPlankFile
   val debug: DebugContext
   val currentModule: Module
   val loc: Loc
   val path: QualifiedPath
-  val enclosing: CodegenContext?
+  val enclosing: CodegenCtx?
 
   val subst: Subst get() = enclosing?.subst ?: nullSubst()
 
@@ -48,14 +48,14 @@ sealed interface CodegenContext : Context, IRBuilder {
   fun addFunction(function: FunctionSymbol, isGeneric: Boolean = false): Value
   fun addStruct(name: String, struct: Type)
 
-  fun getSymbol(scope: CodegenContext, name: String, subst: Subst = nullSubst()): User
+  fun getSymbol(scope: CodegenCtx, name: String, subst: Subst = nullSubst()): User
   fun setSymbol(name: String, value: Symbol): Value
 
   fun setSymbol(name: String, type: Ty, variable: User): Value {
     return setSymbol(name, ValueSymbol(type, variable))
   }
 
-  fun setSymbolLazy(name: String, type: Ty, lazyValue: CodegenContext.() -> Value): Value {
+  fun setSymbolLazy(name: String, type: Ty, lazyValue: CodegenCtx.() -> Value): Value {
     return setSymbol(name, LazySymbol(type, name, lazyValue))
   }
 
@@ -67,12 +67,12 @@ sealed interface CodegenContext : Context, IRBuilder {
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
-  fun Symbol.access(subst: Subst = nullSubst()): User? = with(this@CodegenContext) { access(subst) }
+  fun Symbol.access(subst: Subst = nullSubst()): User? = with(this@CodegenCtx) { access(subst) }
 
   fun Ty.typegen(): Type = typegen(this.ap(subst))
   fun Collection<Ty>.typegen(): List<Type> = map { it.typegen() }
 
-  fun CodegenInstruction.codegen(): Value = with(this@CodegenContext) { codegen() }
+  fun CodegenInstruction.codegen(): Value = with(this@CodegenCtx) { codegen() }
   fun Collection<ResolvedPlankElement>.codegen(): List<Value> = map { it.codegen() }
 
   fun ResolvedPlankElement.codegen(): Value =

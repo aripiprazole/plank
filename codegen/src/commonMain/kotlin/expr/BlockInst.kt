@@ -4,11 +4,11 @@ import org.plank.analyzer.element.TypedBlockExpr
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.codegenError
 import org.plank.codegen.element.addClosure
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.Value
 
 class BlockInst(private val descriptor: TypedBlockExpr) : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val symbol = addClosure(
       name = "anonymous$${descriptor.hashCode()}",
       returnTy = descriptor.ty,

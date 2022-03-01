@@ -8,7 +8,7 @@ import org.plank.codegen.alloca
 import org.plank.codegen.expr.createIf
 import org.plank.codegen.getField
 import org.plank.codegen.mangle
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
@@ -19,23 +19,23 @@ import org.plank.syntax.element.Identifier
 sealed interface Symbol : CodegenInstruction {
   val ty: Ty
 
-  fun CodegenContext.access(subst: Subst = nullSubst()): User?
+  fun CodegenCtx.access(subst: Subst = nullSubst()): User?
 }
 
 class ValueSymbol(override val ty: Ty, private val value: User) : Symbol {
-  override fun CodegenContext.access(subst: Subst): User = value
+  override fun CodegenCtx.access(subst: Subst): User = value
 
-  override fun CodegenContext.codegen(): Value = value
+  override fun CodegenCtx.codegen(): Value = value
 }
 
 class LazySymbol(
   override val ty: Ty,
   val name: String,
-  val lazyValue: CodegenContext.() -> Value,
+  val lazyValue: CodegenCtx.() -> Value,
 ) : Symbol {
   private var getter: Function? = null
 
-  override fun CodegenContext.access(subst: Subst): User? {
+  override fun CodegenCtx.access(subst: Subst): User? {
     val getter = getter ?: return null
 
     return lazyLocal(name) {
@@ -43,7 +43,7 @@ class LazySymbol(
     }
   }
 
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val type = ty.typegen()
     val name = mangle(name)
 

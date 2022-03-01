@@ -6,14 +6,14 @@ import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedPattern
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.getField
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.IntPredicate
 import org.plank.llvm4k.ir.Value
 
 class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val type = descriptor.ty.typegen()
     val patterns = descriptor.patterns.entries.toList()
 
@@ -45,7 +45,7 @@ class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
   }
 }
 
-fun CodegenContext.checkPattern(
+fun CodegenCtx.checkPattern(
   subject: Value,
   pattern: TypedPattern,
   index: Int, // TODO: remove
@@ -60,7 +60,7 @@ fun CodegenContext.checkPattern(
   }
 }
 
-fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
+fun CodegenCtx.deconstructPattern(subject: Value, pattern: TypedPattern) {
   when (pattern) {
     is TypedIdentPattern -> {
       setSymbol(pattern.name.text, pattern.ty, unsafeAlloca(subject))

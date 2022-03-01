@@ -1,10 +1,10 @@
 package org.plank.codegen
 
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 
-class CodegenError(message: String, val context: CodegenContext) :
+class CodegenError(message: String, val context: CodegenCtx) :
   Exception("$message at $context")
 
-fun CodegenContext.codegenError(message: String): Nothing {
+fun CodegenCtx.codegenError(message: String): Nothing {
   throw CodegenError(message, this)
 }

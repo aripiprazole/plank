@@ -1,13 +1,13 @@
 package org.plank.codegen
 
 import org.plank.analyzer.element.ResolvedFunDecl
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.QualifiedPath
 import org.plank.syntax.element.toIdentifier
 
 // TODO: mangle parameters types with name
-fun CodegenContext.mangle(path: ResolvedFunDecl): String {
+fun CodegenCtx.mangle(path: ResolvedFunDecl): String {
   return when {
     subst.toMap().isNotEmpty() -> {
       mangle(*subst.types.map { it.toString().toIdentifier() }.toTypedArray(), path.name)
@@ -16,15 +16,15 @@ fun CodegenContext.mangle(path: ResolvedFunDecl): String {
   }
 }
 
-fun CodegenContext.mangle(path: String): String {
+fun CodegenCtx.mangle(path: String): String {
   return mangle(Identifier(path))
 }
 
-fun CodegenContext.mangle(vararg path: Identifier): String {
+fun CodegenCtx.mangle(vararg path: Identifier): String {
   return mangle(QualifiedPath(path.toList()))
 }
 
-fun CodegenContext.mangle(path: QualifiedPath): String {
+fun CodegenCtx.mangle(path: QualifiedPath): String {
   val module = QualifiedPath(scope)
 
   return buildString {

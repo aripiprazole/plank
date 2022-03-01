@@ -10,13 +10,13 @@ import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
 import org.plank.codegen.createUnit
 import org.plank.codegen.element.addClosure
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.createScopeContext
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
 
 class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     return createIf(
       descriptor.ty.typegen(),
       descriptor.cond.codegen(),
@@ -26,7 +26,7 @@ class IfInst(private val descriptor: TypedIfExpr) : CodegenInstruction {
   }
 }
 
-fun CodegenContext.codegenBranch(branch: TypedIfBranch): Value {
+fun CodegenCtx.codegenBranch(branch: TypedIfBranch): Value {
   return when (branch) {
     is TypedThenBranch -> branch.value.codegen()
     is TypedBlockBranch -> {
@@ -48,11 +48,11 @@ fun CodegenContext.codegenBranch(branch: TypedIfBranch): Value {
   }
 }
 
-fun CodegenContext.createIf(
+fun CodegenCtx.createIf(
   type: Type,
   cond: Value,
-  thenStmts: CodegenContext.() -> Value,
-  elseStmts: CodegenContext.() -> Value? = constant(null),
+  thenStmts: CodegenCtx.() -> Value,
+  elseStmts: CodegenCtx.() -> Value? = constant(null),
 ): Value {
   val insertionBlock = insertionBlock ?: codegenError("No block in context")
   val currentFunction = insertionBlock.function ?: codegenError("No function in context")

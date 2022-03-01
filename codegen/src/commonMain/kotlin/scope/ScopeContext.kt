@@ -35,9 +35,9 @@ data class ScopeContext(
   override val currentModule: Module = llvm.createModule(file.module.text),
   private val irBuilder: IRBuilder = llvm.createIRBuilder(),
   override val loc: Loc = file.loc,
-  override val enclosing: CodegenContext? = null,
+  override val enclosing: CodegenCtx? = null,
   override val subst: Subst = nullSubst(),
-) : IRBuilder by irBuilder, Context by llvm, CodegenContext {
+) : IRBuilder by irBuilder, Context by llvm, CodegenCtx {
   /** TODO: add support for nested function intrinsics*/
   override val path: QualifiedPath = file.moduleName ?: QualifiedPath(file.module)
 
@@ -78,7 +78,7 @@ data class ScopeContext(
     structs[name] = struct
   }
 
-  override fun getSymbol(scope: CodegenContext, name: String, subst: Subst): User {
+  override fun getSymbol(scope: CodegenCtx, name: String, subst: Subst): User {
     return findAlloca(name, subst)
       ?: findFunction(name)?.run { with(scope) { access(subst) } }
       ?: codegenError("Unresolved symbol `$name`")
@@ -139,7 +139,7 @@ data class ScopeContext(
   }
 }
 
-fun CodegenContext.ap(subst: Subst): CodegenContext {
+fun CodegenCtx.ap(subst: Subst): CodegenCtx {
   return when (this) {
     is DescriptorContext -> DescriptorContext(descriptor, enclosing, subst)
     is ExecContext -> ExecContext(enclosing, function, returnType, arguments, subst)
@@ -147,7 +147,7 @@ fun CodegenContext.ap(subst: Subst): CodegenContext {
   }
 }
 
-fun CodegenContext.scopeContext(): ScopeContext {
+fun CodegenCtx.scopeContext(): ScopeContext {
   return when (this) {
     is DescriptorContext -> enclosing
     is ExecContext -> enclosing
@@ -156,7 +156,7 @@ fun CodegenContext.scopeContext(): ScopeContext {
 }
 
 @OptIn(ExperimentalContracts::class)
-inline fun CodegenContext.createScopeContext(
+inline fun CodegenCtx.createScopeContext(
   moduleName: String,
   builder: ScopeContext.() -> Unit = {},
 ): ScopeContext {
@@ -171,6 +171,6 @@ inline fun CodegenContext.createScopeContext(
   }
 }
 
-fun CodegenContext.createFileContext(file: ResolvedPlankFile = this.file): ScopeContext {
+fun CodegenCtx.createFileContext(file: ResolvedPlankFile = this.file): ScopeContext {
   return scopeContext().copy(enclosing = this, file = file, scope = file.module.text)
 }

@@ -8,7 +8,7 @@ import org.plank.analyzer.infer.Ty
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.mangle
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.ExecContext
 import org.plank.codegen.scope.createScopeContext
 import org.plank.llvm4k.ir.AllocaInst
@@ -26,13 +26,13 @@ class CurryFunctionSymbol(
 ) : FunctionSymbol {
   private val parameters = realParameters.entries.toList().map { it.toPair() }
 
-  override fun CodegenContext.access(subst: Subst): AllocaInst? {
+  override fun CodegenCtx.access(subst: Subst): AllocaInst? {
     return currentModule.getFunction(mangled)?.let {
       alloca(createCall(it), "curry.$name") // get instance of curried function
     }
   }
 
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val reversedParameters = realParameters.keys
     val closure: Value
 
@@ -83,7 +83,7 @@ class CurryFunctionSymbol(
   }
 }
 
-fun CodegenContext.addCurryFunction(
+fun CodegenCtx.addCurryFunction(
   descriptor: ResolvedFunDecl,
   nested: Boolean = false,
   generate: GenerateBody,

@@ -10,14 +10,14 @@ import org.plank.analyzer.infer.i16Ty
 import org.plank.analyzer.infer.i32Ty
 import org.plank.analyzer.infer.i8Ty
 import org.plank.analyzer.infer.unitTy
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Type
 import org.plank.syntax.element.toQualifiedPath
 import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 
 @Suppress("Detekt.ComplexMethod")
-fun CodegenContext.typegen(ty: Ty): Type {
+fun CodegenCtx.typegen(ty: Ty): Type {
   return when (ty) {
     unitTy -> unit
     boolTy -> i1

@@ -3,7 +3,7 @@ package org.plank.codegen
 import org.plank.analyzer.checker.StructInfo
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedExpr
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
@@ -14,31 +14,31 @@ import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
-expect fun CodegenContext.unsafeAlloca(value: Value): AllocaInst
+expect fun CodegenCtx.unsafeAlloca(value: Value): AllocaInst
 
-expect fun CodegenContext.unsafeFunction(value: Value): Function
+expect fun CodegenCtx.unsafeFunction(value: Value): Function
 
-fun CodegenContext.castClosure(closure: Value, type: Type): LoadInst {
+fun CodegenCtx.castClosure(closure: Value, type: Type): LoadInst {
   type as StructType
 
   return createLoad(createBitCast(closure, type.pointer(AddrSpace.Generic)))
 }
 
-fun CodegenContext.createUnit(): Constant {
+fun CodegenCtx.createUnit(): Constant {
   return unit.getConstant(i8.getConstant(0, false), isPacked = false)
 }
 
-fun CodegenContext.getOrCreateStruct(name: String, builder: StructType.() -> Unit): StructType {
+fun CodegenCtx.getOrCreateStruct(name: String, builder: StructType.() -> Unit): StructType {
   return currentModule.getTypeByName(name) ?: createNamedStruct(name, builder)
 }
 
-fun CodegenContext.alloca(value: Value, name: String? = null): AllocaInst {
+fun CodegenCtx.alloca(value: Value, name: String? = null): AllocaInst {
   val alloca = createAlloca(value.type, name = name)
   createStore(value, alloca)
   return alloca
 }
 
-inline fun CodegenContext.instantiate(
+inline fun CodegenCtx.instantiate(
   struct: StructType,
   vararg arguments: Value,
   name: String? = null,
@@ -55,11 +55,11 @@ inline fun CodegenContext.instantiate(
   return instance
 }
 
-fun CodegenContext.getField(value: Value, idx: Int, name: String? = null): Value {
+fun CodegenCtx.getField(value: Value, idx: Int, name: String? = null): Value {
   return createGEP(value, i32.getConstant(0, false), i32.getConstant(idx, false), name = name)
 }
 
-fun CodegenContext.findField(receiver: TypedExpr, info: StructInfo, name: Identifier): Value {
+fun CodegenCtx.findField(receiver: TypedExpr, info: StructInfo, name: Identifier): Value {
   val struct = when (receiver) {
     is TypedAccessExpr -> receiver.name.text
     else -> receiver.ty.toString()

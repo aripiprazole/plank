@@ -8,6 +8,6 @@ class DescriptorContext(
   val descriptor: ResolvedPlankElement,
   override val enclosing: ScopeContext,
   override val subst: Subst = enclosing.subst,
-) : CodegenContext by enclosing {
+) : CodegenCtx by enclosing {
   override val loc: Loc = descriptor.loc
 }

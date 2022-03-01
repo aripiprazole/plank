@@ -2,13 +2,13 @@ package org.plank.codegen
 
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.codegen.expr.callClosure
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
 
 class Entrypoint : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val descriptor = file.program
       .filterIsInstance<ResolvedFunDecl>()
       .find { it.name.text == "main" }

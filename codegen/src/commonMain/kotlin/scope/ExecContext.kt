@@ -11,4 +11,4 @@ class ExecContext(
   val returnType: Type,
   val arguments: MutableMap<String, Value> = linkedMapOf(),
   override val subst: Subst = enclosing.subst,
-) : CodegenContext by enclosing
+) : CodegenCtx by enclosing

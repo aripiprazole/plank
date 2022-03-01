@@ -8,7 +8,7 @@ import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.codegenError
 import org.plank.codegen.mangle
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
@@ -17,12 +17,12 @@ import org.plank.syntax.element.Identifier
 class GlobalFunctionSymbol(
   override val ty: FunTy,
   override val name: String,
-  private val mangleName: CodegenContext.() -> String,
+  private val mangleName: CodegenCtx.() -> String,
   private val references: Map<Identifier, Ty>,
   private val parameters: Map<Identifier, Ty>,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
-  override fun CodegenContext.access(subst: Subst): AllocaInst? {
+  override fun CodegenCtx.access(subst: Subst): AllocaInst? {
     println("Access global function symbol")
     println("  ${mangleName()}")
     return currentModule.getFunction(mangleName())?.let {
@@ -30,7 +30,7 @@ class GlobalFunctionSymbol(
     }
   }
 
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val closureReturnType = ty.typegen()
 
     val insertionBlock = insertionBlock
@@ -70,7 +70,7 @@ class GlobalFunctionSymbol(
   }
 }
 
-fun CodegenContext.addGlobalFunction(
+fun CodegenCtx.addGlobalFunction(
   ty: FunTy,
   name: String,
   mangled: String,
@@ -83,7 +83,7 @@ fun CodegenContext.addGlobalFunction(
   )
 }
 
-fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
+fun CodegenCtx.addGlobalFunction(descriptor: ResolvedFunDecl, generate: GenerateBody): Value {
   return addFunction(
     GlobalFunctionSymbol(
       ty = descriptor.ty,

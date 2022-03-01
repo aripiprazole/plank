@@ -6,12 +6,12 @@ import org.plank.codegen.codegenError
 import org.plank.codegen.element.BodyGenerator
 import org.plank.codegen.element.addCurryFunction
 import org.plank.codegen.element.addGlobalFunction
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
 
 class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     return when {
       descriptor.isNested -> addCurryFunction(descriptor, true, BodyGenerator(descriptor))
       descriptor.hasAttribute("intrinsic") -> {

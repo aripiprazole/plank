@@ -6,7 +6,7 @@ import org.plank.analyzer.infer.Ty
 import org.plank.codegen.codegenError
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.ExecContext
 import org.plank.codegen.scope.createScopeContext
 import org.plank.codegen.unsafeAlloca
@@ -25,11 +25,11 @@ class ClosureFunctionSymbol(
   private val returnTy: Ty,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
-  override fun CodegenContext.access(subst: Subst): User {
+  override fun CodegenCtx.access(subst: Subst): User {
     return getSymbol(this, mangled)
   }
 
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val returnTy = returnTy.typegen()
     val references = references.mapKeys { (name) -> name.text }
 
@@ -111,7 +111,7 @@ class ClosureFunctionSymbol(
   }
 }
 
-fun CodegenContext.addClosure(
+fun CodegenCtx.addClosure(
   name: String,
   returnTy: Ty,
   mangled: String = name,

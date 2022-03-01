@@ -4,12 +4,12 @@ import org.plank.analyzer.element.TypedInstanceExpr
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.codegenError
 import org.plank.codegen.instantiate
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Value
 
 class InstanceInst(private val descriptor: TypedInstanceExpr) : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val struct = descriptor.ty.typegen() as StructType
 
     val arguments = descriptor.info.members

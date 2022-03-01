@@ -12,7 +12,7 @@ import org.plank.analyzer.element.TypedIntNEQExpr
 import org.plank.analyzer.element.TypedIntOperationExpr
 import org.plank.analyzer.element.TypedIntSubExpr
 import org.plank.codegen.CodegenInstruction
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.IntPredicate.EQ
 import org.plank.llvm4k.ir.IntPredicate.NE
 import org.plank.llvm4k.ir.IntPredicate.SGE
@@ -26,7 +26,7 @@ import org.plank.llvm4k.ir.Value
 
 class IntOperationInst(private val descriptor: TypedIntOperationExpr) : CodegenInstruction {
   @Suppress("ComplexMethod")
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val rhs = descriptor.rhs.codegen()
     val lhs = descriptor.lhs.codegen()
     val unsigned = descriptor.unsigned

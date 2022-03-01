@@ -6,13 +6,13 @@ import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.getField
-import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.unsafeFunction
 import org.plank.llvm4k.ir.PointerType
 import org.plank.llvm4k.ir.Value
 
 class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
-  override fun CodegenContext.codegen(): Value {
+  override fun CodegenCtx.codegen(): Value {
     val ty = descriptor.callee.ty as FunTy
     val callee = descriptor.callee.codegen()
 
@@ -25,7 +25,7 @@ class CallInst(private val descriptor: TypedCallExpr) : CodegenInstruction {
   }
 }
 
-fun CodegenContext.callClosure(value: Value, vararg arguments: Value, name: String? = null): Value {
+fun CodegenCtx.callClosure(value: Value, vararg arguments: Value, name: String? = null): Value {
   var closure = value
 
   if (closure.type !is PointerType) {
