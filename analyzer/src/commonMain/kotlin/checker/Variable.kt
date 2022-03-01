@@ -19,6 +19,23 @@ sealed interface Variable {
   fun notInScope(): Variable
 }
 
+data class EnumConstructor(
+  override val scheme: Scheme,
+  override val name: Identifier,
+  override val declaredIn: Scope,
+  override val isInScope: Boolean = false,
+) : Variable {
+  override val mutable: Boolean = false
+  override val ty: Ty = scheme.ty
+
+  override fun name(name: Identifier): EnumConstructor = copy(name = name)
+  override fun inScope(): EnumConstructor = copy(isInScope = true)
+  override fun notInScope(): EnumConstructor = copy(isInScope = false)
+
+  override fun toString(): String =
+    "EnumConstructor(name=$name, scheme=$scheme, isInScope=$isInScope)"
+}
+
 data class RankedVariable(
   override val scheme: Scheme,
   override val mutable: Boolean,

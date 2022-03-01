@@ -112,9 +112,9 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         val funTy = FunTy(ty, params.ty().map(::checkTy))
 
         val variantScheme = if (params.isEmpty()) {
-          scope.declare(name, scheme)
+          scope.declare(EnumConstructor(scheme, name, scope))
         } else {
-          scope.declare(name, instantiate(funTy.generalize()).generalize())
+          scope.declare(EnumConstructor(instantiate(funTy.generalize()).generalize(), name, scope))
         }
 
         val variantTy = instantiate(Scheme(variantScheme.names, ConstTy(name.text)))

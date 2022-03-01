@@ -3,6 +3,7 @@
 package org.plank.analyzer
 
 import org.plank.analyzer.checker.DoubleInfo
+import org.plank.analyzer.checker.EnumConstructor
 import org.plank.analyzer.checker.EnumInfo
 import org.plank.analyzer.checker.FloatInfo
 import org.plank.analyzer.checker.InlineVariable
@@ -430,6 +431,7 @@ fun Scope.pretty(indent: String = ""): String = buildString {
       is InlineVariable -> append("inline ${name.text.padEnd(variableLength)} : ${variable.ty}")
       is LocalVariable -> append("local ${name.text.padEnd(variableLength)} : ${variable.ty}")
       is RankedVariable -> append("ranked ${name.text.padEnd(variableLength)} : ${variable.scheme}")
+      is EnumConstructor -> append("cons ${name.text.padEnd(variableLength)} : ${variable.scheme}")
     }
     appendLine()
   }

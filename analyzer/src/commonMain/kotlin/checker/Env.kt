@@ -26,7 +26,7 @@ fun Scope.asTyEnv(): TyEnv {
       when (variable) {
         is InlineVariable -> Scheme(variable.ty)
         is LocalVariable -> Scheme(variable.ty)
-        is RankedVariable -> variable.scheme
+        else -> variable.scheme
       }
     }
 

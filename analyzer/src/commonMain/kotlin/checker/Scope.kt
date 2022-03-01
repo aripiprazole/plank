@@ -67,6 +67,11 @@ sealed class Scope {
     return Scheme(emptySet(), ty)
   }
 
+  fun declare(variable: Variable): Scheme {
+    _variables[variable.name] = variable
+    return variable.scheme
+  }
+
   fun declareInline(name: String, returnTy: Ty, vararg parameters: Ty, builder: InlineBuilder) {
     val ty = FunTy(returnTy, parameters.toList())
     val id = name.toIdentifier()

@@ -23,11 +23,10 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
 
       scope.declare(name, subject.ty)
 
-      val scheme = scope.lookupVariable(name)
-        ?.scheme
+      val variable = scope.lookupVariable(name) as? EnumConstructor
         ?: return TypedIdentPattern(name, subject.ty, subject.subst, location)
 
-      val ty = instantiate(scheme)
+      val ty = instantiate(variable.scheme)
 
       TypedEnumVariantPattern(name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
     }
