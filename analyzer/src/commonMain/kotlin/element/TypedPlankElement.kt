@@ -5,7 +5,6 @@ import org.plank.analyzer.infer.Ty
 
 interface TypedPlankElement : ResolvedPlankElement {
   val ty: Ty
-  val subst: Subst
 
   infix fun ap(subst: Subst): TypedPlankElement
 }

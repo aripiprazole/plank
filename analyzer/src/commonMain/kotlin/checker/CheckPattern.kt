@@ -9,7 +9,6 @@ import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.ap
 import org.plank.analyzer.infer.chainParameters
 import org.plank.analyzer.infer.enumVariant
-import org.plank.analyzer.infer.nullSubst
 import org.plank.syntax.element.EnumVariantPattern
 import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.Pattern
@@ -24,14 +23,14 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
       scope.declare(name, subject.ty)
 
       val variable = scope.lookupVariable(name) as? EnumConstructor
-        ?: return TypedIdentPattern(name, subject.ty, subject.subst, location)
+        ?: return TypedIdentPattern(name, subject.ty, location)
 
       val info = variable.info
       val scheme = variable.scheme
 
       val ty = instantiate(scheme)
 
-      TypedEnumVariantPattern(info, name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
+      TypedEnumVariantPattern(info, name.toQualifiedPath(), emptyList(), ty, location)
     }
     is EnumVariantPattern -> {
       val name = pattern.type.toIdentifier()
@@ -55,10 +54,10 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         val tv = parameters.elementAtOrNull(i)
           ?: return violate(next, IncorrectEnumArity(parameters.size, i + 1, name))
 
-        checkPattern(next, TypedEnumIndexAccess(subject, i, tv, nullSubst(), next.loc))
+        checkPattern(next, TypedEnumIndexAccess(subject, i, tv, next.loc))
       }
 
-      TypedEnumVariantPattern(info, pattern.type, properties, t2, nullSubst(), pattern.loc)
+      TypedEnumVariantPattern(info, pattern.type, properties, t2, pattern.loc)
     }
   }
 }

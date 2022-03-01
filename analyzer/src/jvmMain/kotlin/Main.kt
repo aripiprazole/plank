@@ -3,6 +3,7 @@ package org.plank.analyzer
 import org.plank.analyzer.checker.typeCheck
 import org.plank.analyzer.resolver.ModuleTree
 import org.plank.analyzer.resolver.resolveImports
+import org.plank.syntax.debug.dumpTree
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 
@@ -29,8 +30,8 @@ private val maybePlank = PlankFile.of(
     Nothing
   }
 
-  fun unwrap(m: Maybe[Int32]) -> Int32 = match m {
-    Just(x) => x + 1,
+  fun unwrap(m: Maybe[a]) -> a = match m {
+    Just(x) => x,
     Nothing => panic("unwrap: Nothing")
   }
   """.trimIndent(),
@@ -64,11 +65,11 @@ fun main() {
   }
 
   file.dependencies.forEach {
-    println(it.pretty())
+    println(it.dumpTree())
     println()
   }
 
-  println(file.pretty())
+  println(file.dumpTree())
   println()
 }
 

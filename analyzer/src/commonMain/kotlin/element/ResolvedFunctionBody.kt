@@ -16,7 +16,6 @@ data class ResolvedExprBody(
   override val loc: Loc = GeneratedLoc,
 ) : ResolvedFunctionBody, TypedPlankElement {
   override val ty: Ty = expr.ty
-  override val subst: Subst = expr.subst
 
   override fun ap(subst: Subst): ResolvedExprBody = copy(expr = expr.ap(subst))
 }
