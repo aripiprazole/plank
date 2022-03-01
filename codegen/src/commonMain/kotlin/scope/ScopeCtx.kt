@@ -131,7 +131,7 @@ data class ScopeCtx(
     }
   }
 
-  override fun toString(): String = "ScopeContext(scope=$scope, enclosing=$enclosing)"
+  override fun toString(): String = "ScopeCtx(:$scope) <: $enclosing"
 
   override fun close() {
     llvm.close()
@@ -143,7 +143,7 @@ fun CodegenCtx.ap(subst: Subst): CodegenCtx {
   return when (this) {
     is DescriptorCtx -> DescriptorCtx(descriptor, enclosing, subst)
     is ExecCtx -> ExecCtx(enclosing, function, returnType, arguments, subst)
-    is ScopeCtx -> copy(subst = subst)
+    else -> (this as ScopeCtx).copy(subst = subst)
   }
 }
 
@@ -151,7 +151,7 @@ fun CodegenCtx.scopeContext(): ScopeCtx {
   return when (this) {
     is DescriptorCtx -> enclosing
     is ExecCtx -> enclosing
-    is ScopeCtx -> this
+    else -> this as ScopeCtx
   }
 }
 
@@ -165,9 +165,9 @@ inline fun CodegenCtx.createScopeContext(
   }
 
   return when (this) {
-    is ScopeCtx -> copy(enclosing = this, scope = moduleName).apply(builder)
     is DescriptorCtx -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
     is ExecCtx -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
+    else -> (this as ScopeCtx).copy(enclosing = this, scope = moduleName).apply(builder)
   }
 }
 

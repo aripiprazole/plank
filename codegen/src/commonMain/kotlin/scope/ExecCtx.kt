@@ -11,4 +11,6 @@ class ExecCtx(
   val returnType: Type,
   val arguments: MutableMap<String, Value> = linkedMapOf(),
   override val subst: Subst = enclosing.subst,
-) : CodegenCtx by enclosing
+) : CodegenCtx by enclosing {
+  override fun toString(): String = "ExecCtx(${function.name}) <: $enclosing"
+}

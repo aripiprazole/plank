@@ -22,6 +22,7 @@ import org.plank.analyzer.element.ResolvedFunctionBody
 import org.plank.analyzer.element.ResolvedLetDecl
 import org.plank.analyzer.element.ResolvedModuleDecl
 import org.plank.analyzer.element.ResolvedNoBody
+import org.plank.analyzer.element.ResolvedPlankElement
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedReturnStmt
 import org.plank.analyzer.element.ResolvedStmt
@@ -73,6 +74,16 @@ fun ResolvedPlankFile.pretty(): String = buildString {
   program.forEach { decl ->
     append(decl.pretty("", topLevel = true))
   }
+}
+
+fun ResolvedPlankElement.pretty(indent: String = ""): String = when (this) {
+  is ResolvedPlankFile -> pretty(indent)
+  is ResolvedStmt -> pretty(indent)
+  is ResolvedFunctionBody -> pretty(indent)
+  is TypedIfBranch -> pretty(indent)
+  is TypedPattern -> pretty(indent)
+  is TypedExpr -> pretty(indent)
+  else -> toString()
 }
 
 fun TypedIfBranch.pretty(indent: String = ""): String = buildString {
