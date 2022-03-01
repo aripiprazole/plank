@@ -105,7 +105,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         .generalize()
 
       val ty = instantiate(scheme).also {
-        scope.createTyInfo(StructInfo(scope, stmt.name, it, stmt.generics))
+        scope.createTyInfo(EnumInfo(scope, stmt.name, it, stmt.generics))
       }
 
       val members = stmt.members.associate { (name, params) ->

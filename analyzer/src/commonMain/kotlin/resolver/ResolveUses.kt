@@ -28,6 +28,9 @@ fun resolveUses(
 
   fun enterDecl(decl: Stmt): Stmt {
     return when (decl) {
+      is EnumDecl -> decl.apply { currentScope.create(name) }
+      is StructDecl -> decl.apply { currentScope.create(name) }
+
       is FunDecl -> decl.apply {
         currentScope.declare(name)
 
@@ -49,8 +52,6 @@ fun resolveUses(
 
   fun exitDecl(decl: Stmt): Stmt {
     return when (decl) {
-      is EnumDecl -> decl.apply { currentScope.create(name) }
-      is StructDecl -> decl.apply { currentScope.create(name) }
       is LetDecl -> decl.apply { currentScope.declare(name) }
 
       is UseDecl -> decl.apply {
