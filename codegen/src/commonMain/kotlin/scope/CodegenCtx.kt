@@ -22,7 +22,6 @@ import org.plank.codegen.typegen
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.IRBuilder
 import org.plank.llvm4k.Module
-import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.User
@@ -69,8 +68,6 @@ sealed interface CodegenCtx : Context, IRBuilder {
   fun findStruct(name: String): Type?
   fun findAlloca(name: String, subst: Subst = nullSubst()): User?
   fun findIntrinsic(name: String): IntrinsicFunction?
-
-  fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
   fun MangledId.get(): String = with(this@CodegenCtx) { get() }
   fun Symbol.access(subst: Subst = nullSubst()): User? = with(this@CodegenCtx) { access(subst) }

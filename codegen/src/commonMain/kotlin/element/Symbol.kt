@@ -39,9 +39,7 @@ class LazySymbol(
   override fun CodegenCtx.access(subst: Subst): User? {
     val getter = getter ?: return null
 
-    return lazyLocal(name) {
-      alloca(createCall(getter, name = "lazy.call.$name"), "lazy.$name")
-    }
+    return alloca(createCall(getter, name = "lazy.call.$name"), "lazy.$name")
   }
 
   override fun CodegenCtx.codegen(): Value {

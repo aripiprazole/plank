@@ -119,18 +119,6 @@ data class ScopeCtx(
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findIntrinsic(name) }
   }
 
-  override fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst? {
-    return lazy[name] ?: run {
-      val value = builder()
-
-      if (value != null) {
-        lazy[name] = value
-      }
-
-      value
-    }
-  }
-
   override fun toString(): String = "ScopeCtx(:$scope) <: $enclosing"
 
   override fun close() {
