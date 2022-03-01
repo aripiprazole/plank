@@ -19,7 +19,7 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
     addStruct(descriptor.name.text, enum.pointer(AddrSpace.Generic))
 
     descriptor.members.values.forEachIndexed { tag, member ->
-      val (_, name, _, funTy) = member
+      val (_, name, _, _, funTy) = member
 
       val mangled = mangle(name, descriptor.name)
       val construct = mangle(name, descriptor.name, Identifier("construct"))

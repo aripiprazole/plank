@@ -26,7 +26,6 @@ data class EnumConstructor(
   override val declaredIn: Scope,
   override val isInScope: Boolean = false,
 ) : Variable {
-
   override val mutable: Boolean = false
   override val ty: Ty = scheme.ty
 

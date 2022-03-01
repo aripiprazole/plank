@@ -12,7 +12,6 @@ import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.infer.AppTy
 import org.plank.analyzer.infer.ConstTy
 import org.plank.analyzer.infer.FunTy
-import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
 import org.plank.analyzer.infer.ty
@@ -112,20 +111,26 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         val funTy = FunTy(ty, params.ty().map(::checkTy))
         val funScheme = instantiate(funTy.generalize()).generalize()
 
-        val variantScheme = when {
-          params.isEmpty() -> funScheme
-          else -> scheme
+        name to when {
+          params.isEmpty() -> {
+            val variant = instantiate(scheme.copy(ty = ConstTy(name.text)))
+            val info = EnumMemberInfo(scope, name, variant, scheme, funTy, emptyList()).also {
+              scope.createTyInfo(it)
+            }
+
+            scope.declare(EnumConstructor(info, scheme, name, scope))
+            info
+          }
+          else -> {
+            val variant = instantiate(funScheme.copy(ty = ConstTy(name.text)))
+            val info = EnumMemberInfo(scope, name, variant, funScheme, funTy).also {
+              scope.createTyInfo(it)
+            }
+
+            scope.declare(EnumConstructor(info, funScheme, name, scope))
+            info
+          }
         }
-
-        val variantTy = instantiate(variantScheme.copy(ty = ConstTy(name.text)))
-        val info = scope.createTyInfo(EnumMemberInfo(scope, name, variantTy, funTy, variantScheme))
-
-        when {
-          params.isEmpty() -> scope.declare(EnumConstructor(info, scheme, name, scope))
-          else -> scope.declare(EnumConstructor(info, funScheme, name, scope))
-        }
-
-        name to info
       }
       val info = scope.createTyInfo(EnumInfo(scope, stmt.name, ty, stmt.generics, members))
 

@@ -65,10 +65,10 @@ data class EnumMemberInfo(
   override val declaredIn: Scope,
   override val name: Identifier,
   override val ty: Ty,
-  val funTy: FunTy,
   val scheme: Scheme,
+  val funTy: FunTy,
+  val parameters: List<Ty> = funTy.chainParameters(),
 ) : TyInfo {
-  val parameters: List<Ty> = funTy.chainParameters()
   override val generics: Set<Identifier> = emptySet()
 
   override fun toString(): String = name.text
