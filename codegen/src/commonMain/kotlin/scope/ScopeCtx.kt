@@ -69,8 +69,10 @@ data class ScopeCtx(
     modules[module.scope] = module
   }
 
-  override fun addFunction(function: FunctionSymbol, isGeneric: Boolean): Value {
-    val symbol = if (isGeneric) RankedSymbol(function) else function
+  override fun addFunction(function: FunctionSymbol): Value {
+    val names = function.scheme.names.filter { subst[it] == null }
+    val isGeneric = names.isNotEmpty()
+    val symbol = RankedSymbol(function, isGeneric)
     return symbol.also { functions[function.name] = it }.codegen()
   }
 

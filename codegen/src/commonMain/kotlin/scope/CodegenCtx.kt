@@ -46,7 +46,7 @@ sealed interface CodegenCtx : Context, IRBuilder {
   fun expand(scope: ScopeCtx)
   fun addModule(module: ScopeCtx)
 
-  fun addFunction(function: FunctionSymbol, isGeneric: Boolean = false): Value
+  fun addFunction(function: FunctionSymbol): Value
   fun addStruct(name: String, struct: Type)
 
   fun getSymbol(scope: CodegenCtx, name: String, subst: Subst = nullSubst()): User

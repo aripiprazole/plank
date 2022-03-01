@@ -96,6 +96,5 @@ fun CodegenCtx.addGlobalFunction(descriptor: ResolvedFunDecl, generate: Generate
       parameters = descriptor.parameters,
       generate = generate,
     ),
-    descriptor.info.generics.isNotEmpty(),
   )
 }
