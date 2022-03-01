@@ -1,5 +1,6 @@
 package org.plank.codegen
 
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType

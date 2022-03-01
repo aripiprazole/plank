@@ -5,13 +5,13 @@ import org.plank.analyzer.element.TypedBlockBranch
 import org.plank.analyzer.element.TypedIfBranch
 import org.plank.analyzer.element.TypedIfExpr
 import org.plank.analyzer.element.TypedThenBranch
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
-import org.plank.codegen.createScopeContext
 import org.plank.codegen.createUnit
 import org.plank.codegen.element.addClosure
+import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.createScopeContext
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
 

@@ -4,9 +4,9 @@ import org.plank.analyzer.element.TypedEnumVariantPattern
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedPattern
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.getField
+import org.plank.codegen.scope.CodegenContext
 import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.IntPredicate

@@ -2,6 +2,7 @@ package org.plank.codegen
 
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.codegen.expr.callClosure
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value

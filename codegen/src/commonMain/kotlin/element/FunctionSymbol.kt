@@ -6,10 +6,10 @@ import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.element.ResolvedNoBody
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.unitTy
-import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.codegenError
 import org.plank.codegen.createUnit
+import org.plank.codegen.scope.ExecContext
 import org.plank.llvm4k.ir.Argument
 import org.plank.syntax.element.Identifier
 

@@ -10,6 +10,7 @@ import org.plank.analyzer.infer.i16Ty
 import org.plank.analyzer.infer.i32Ty
 import org.plank.analyzer.infer.i8Ty
 import org.plank.analyzer.infer.unitTy
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Type
 import org.plank.syntax.element.toQualifiedPath

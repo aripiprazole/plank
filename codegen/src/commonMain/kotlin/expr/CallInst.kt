@@ -2,11 +2,11 @@ package org.plank.codegen.expr
 
 import org.plank.analyzer.element.TypedCallExpr
 import org.plank.analyzer.infer.FunTy
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.getField
+import org.plank.codegen.scope.CodegenContext
 import org.plank.codegen.unsafeFunction
 import org.plank.llvm4k.ir.PointerType
 import org.plank.llvm4k.ir.Value

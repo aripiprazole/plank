@@ -3,12 +3,12 @@ package org.plank.codegen.element
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.nullSubst
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.expr.createIf
 import org.plank.codegen.getField
 import org.plank.codegen.mangle
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType

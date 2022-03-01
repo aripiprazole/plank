@@ -5,12 +5,12 @@ import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
-import org.plank.codegen.CodegenContext
-import org.plank.codegen.ExecContext
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
-import org.plank.codegen.createScopeContext
 import org.plank.codegen.mangle
+import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.ExecContext
+import org.plank.codegen.scope.createScopeContext
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier

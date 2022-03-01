@@ -1,6 +1,7 @@
 package org.plank.codegen
 
 import org.plank.analyzer.element.ResolvedFunDecl
+import org.plank.codegen.scope.CodegenContext
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.QualifiedPath
 import org.plank.syntax.element.toIdentifier

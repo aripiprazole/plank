@@ -3,12 +3,12 @@ package org.plank.codegen.element
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
-import org.plank.codegen.CodegenContext
-import org.plank.codegen.ExecContext
 import org.plank.codegen.codegenError
-import org.plank.codegen.createScopeContext
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
+import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.ExecContext
+import org.plank.codegen.scope.createScopeContext
 import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.User

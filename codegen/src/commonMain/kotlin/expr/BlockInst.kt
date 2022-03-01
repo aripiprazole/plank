@@ -1,10 +1,10 @@
 package org.plank.codegen.expr
 
 import org.plank.analyzer.element.TypedBlockExpr
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.codegenError
 import org.plank.codegen.element.addClosure
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.Value
 
 class BlockInst(private val descriptor: TypedBlockExpr) : CodegenInstruction {

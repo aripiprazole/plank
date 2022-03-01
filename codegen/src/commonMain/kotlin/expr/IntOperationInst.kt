@@ -11,8 +11,8 @@ import org.plank.analyzer.element.TypedIntMulExpr
 import org.plank.analyzer.element.TypedIntNEQExpr
 import org.plank.analyzer.element.TypedIntOperationExpr
 import org.plank.analyzer.element.TypedIntSubExpr
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.IntPredicate.EQ
 import org.plank.llvm4k.ir.IntPredicate.NE
 import org.plank.llvm4k.ir.IntPredicate.SGE

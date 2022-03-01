@@ -1,11 +1,11 @@
 package org.plank.codegen.expr
 
 import org.plank.analyzer.element.TypedConstExpr
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.codegenError
 import org.plank.codegen.createUnit
 import org.plank.codegen.mangle
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.Value
 
 class ConstInst(private val descriptor: TypedConstExpr) : CodegenInstruction {

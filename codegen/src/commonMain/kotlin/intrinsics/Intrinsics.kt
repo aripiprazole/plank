@@ -1,9 +1,9 @@
 package org.plank.codegen.intrinsics
 
-import org.plank.codegen.CodegenContext
-import org.plank.codegen.ExecContext
 import org.plank.codegen.createUnit
 import org.plank.codegen.mangle
+import org.plank.codegen.scope.CodegenContext
+import org.plank.codegen.scope.ExecContext
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Argument

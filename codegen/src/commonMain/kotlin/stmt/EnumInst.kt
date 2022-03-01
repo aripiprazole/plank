@@ -1,11 +1,11 @@
 package org.plank.codegen.stmt
 
 import org.plank.analyzer.element.ResolvedEnumDecl
-import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.element.addGlobalFunction
 import org.plank.codegen.getField
 import org.plank.codegen.mangle
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier

@@ -6,10 +6,10 @@ import org.plank.analyzer.resolver.FileScope
 import org.plank.analyzer.resolver.ModuleTree
 import org.plank.codegen.DebugOptions
 import org.plank.codegen.Entrypoint
-import org.plank.codegen.ScopeContext
-import org.plank.codegen.createFileContext
 import org.plank.codegen.intrinsics.DefaultIntrinsics
 import org.plank.codegen.intrinsics.Intrinsics
+import org.plank.codegen.scope.ScopeContext
+import org.plank.codegen.scope.createFileContext
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.Module
 import org.plank.shared.depthFirstSearch

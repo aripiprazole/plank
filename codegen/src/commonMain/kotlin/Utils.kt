@@ -3,6 +3,7 @@ package org.plank.codegen
 import org.plank.analyzer.checker.StructInfo
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedExpr
+import org.plank.codegen.scope.CodegenContext
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
