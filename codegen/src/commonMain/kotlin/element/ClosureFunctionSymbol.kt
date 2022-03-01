@@ -1,6 +1,7 @@
 package org.plank.codegen.element
 
 import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
@@ -24,7 +25,7 @@ class ClosureFunctionSymbol(
   private val returnTy: Ty,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
-  override fun CodegenContext.access(): User {
+  override fun CodegenContext.access(subst: Subst): User {
     return getSymbol(this, mangled)
   }
 

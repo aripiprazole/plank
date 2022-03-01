@@ -4,9 +4,13 @@ import org.plank.analyzer.element.ResolvedPlankElement
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.ap
+import org.plank.analyzer.infer.nullSubst
 import org.plank.codegen.element.FunctionSymbol
 import org.plank.codegen.element.LazySymbol
+import org.plank.codegen.element.RankedSymbol
 import org.plank.codegen.element.Symbol
 import org.plank.codegen.element.ValueSymbol
 import org.plank.codegen.intrinsics.IntrinsicFunction
@@ -35,15 +39,17 @@ sealed interface CodegenContext : Context, IRBuilder {
   val path: QualifiedPath
   val enclosing: CodegenContext?
 
+  val subst: Subst get() = enclosing?.subst ?: nullSubst()
+
   val unit: StructType
 
   fun expand(scope: ScopeContext)
   fun addModule(module: ScopeContext)
 
-  fun addFunction(function: FunctionSymbol): Value
+  fun addFunction(function: FunctionSymbol, isGeneric: Boolean = false): Value
   fun addStruct(name: String, struct: Type)
 
-  fun getSymbol(scope: CodegenContext, name: String): User
+  fun getSymbol(scope: CodegenContext, name: String, subst: Subst = nullSubst()): User
   fun setSymbol(name: String, value: Symbol): Value
 
   fun setSymbol(name: String, type: Ty, variable: User): Value {
@@ -54,17 +60,17 @@ sealed interface CodegenContext : Context, IRBuilder {
     return setSymbol(name, LazySymbol(type, name, lazyValue))
   }
 
-  fun findFunction(name: String): FunctionSymbol?
+  fun findFunction(name: String): Symbol?
   fun findModule(name: String): ScopeContext?
   fun findStruct(name: String): Type?
-  fun findAlloca(name: String): User?
+  fun findAlloca(name: String, subst: Subst = nullSubst()): User?
   fun findIntrinsic(name: String): IntrinsicFunction?
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
-  fun Symbol.access(): User? = with(this@CodegenContext) { access() }
+  fun Symbol.access(subst: Subst = nullSubst()): User? = with(this@CodegenContext) { access(subst) }
 
-  fun Ty.typegen(): Type = typegen(this)
+  fun Ty.typegen(): Type = typegen(this.ap(subst))
   fun Collection<Ty>.typegen(): List<Type> = map { it.typegen() }
 
   fun CodegenInstruction.codegen(): Value = with(this@CodegenContext) { codegen() }
@@ -85,11 +91,13 @@ class ExecContext(
   val function: Function,
   val returnType: Type,
   val arguments: MutableMap<String, Value> = linkedMapOf(),
+  override val subst: Subst = enclosing.subst,
 ) : CodegenContext by enclosing
 
 class DescriptorContext(
   val descriptor: ResolvedPlankElement,
   override val enclosing: ScopeContext,
+  override val subst: Subst = enclosing.subst,
 ) : CodegenContext by enclosing {
   override val loc: Loc = descriptor.loc
 }
@@ -104,6 +112,7 @@ data class ScopeContext(
   private val irBuilder: IRBuilder = llvm.createIRBuilder(),
   override val loc: Loc = file.loc,
   override val enclosing: CodegenContext? = null,
+  override val subst: Subst = nullSubst(),
 ) : IRBuilder by irBuilder, Context by llvm, CodegenContext {
   /** TODO: add support for nested function intrinsics*/
   override val path: QualifiedPath = file.moduleName ?: QualifiedPath(file.module)
@@ -116,7 +125,7 @@ data class ScopeContext(
     DebugContext(this, debugOptions)
   }
 
-  private val functions = mutableMapOf<String, FunctionSymbol>()
+  private val functions = mutableMapOf<String, Symbol>()
   private val symbols = mutableMapOf<String, Symbol>()
   private val structs = mutableMapOf<String, Type>()
   private val lazy = mutableMapOf<String, AllocaInst>()
@@ -136,19 +145,18 @@ data class ScopeContext(
     modules[module.scope] = module
   }
 
-  override fun addFunction(function: FunctionSymbol): Value {
-    functions[function.name] = function
-
-    return function.codegen()
+  override fun addFunction(function: FunctionSymbol, isGeneric: Boolean): Value {
+    val symbol = if (isGeneric) RankedSymbol(function) else function
+    return symbol.also { functions[function.name] = it }.codegen()
   }
 
   override fun addStruct(name: String, struct: Type) {
     structs[name] = struct
   }
 
-  override fun getSymbol(scope: CodegenContext, name: String): User {
-    return findAlloca(name)
-      ?: findFunction(name)?.run { with(scope) { access() } }
+  override fun getSymbol(scope: CodegenContext, name: String, subst: Subst): User {
+    return findAlloca(name, subst)
+      ?: findFunction(name)?.run { with(scope) { access(subst) } }
       ?: codegenError("Unresolved symbol `$name`")
   }
 
@@ -157,7 +165,7 @@ data class ScopeContext(
     return value.codegen()
   }
 
-  override fun findFunction(name: String): FunctionSymbol? {
+  override fun findFunction(name: String): Symbol? {
     return functions[name]
       ?: enclosing?.findFunction(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findFunction(name) }
@@ -175,10 +183,10 @@ data class ScopeContext(
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findStruct(name) }
   }
 
-  override fun findAlloca(name: String): User? {
-    return symbols[name]?.access()
-      ?: enclosing?.findAlloca(name)
-      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findAlloca(name) }
+  override fun findAlloca(name: String, subst: Subst): User? {
+    return symbols[name]?.access(subst)
+      ?: enclosing?.findAlloca(name, subst)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findAlloca(name, subst) }
   }
 
   override fun findIntrinsic(name: String): IntrinsicFunction? {
@@ -204,6 +212,14 @@ data class ScopeContext(
   override fun close() {
     llvm.close()
     irBuilder.close()
+  }
+}
+
+fun CodegenContext.ap(subst: Subst): CodegenContext {
+  return when (this) {
+    is DescriptorContext -> DescriptorContext(descriptor, enclosing, subst)
+    is ExecContext -> ExecContext(enclosing, function, returnType, arguments, subst)
+    is ScopeContext -> copy(subst = subst)
   }
 }
 

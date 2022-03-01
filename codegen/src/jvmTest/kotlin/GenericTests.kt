@@ -4,6 +4,27 @@ import kotlin.test.Test
 
 class GenericTests {
   @Test
+  fun `test creating simple generic functions`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        fun generic_fn(value: a) {
+        }
+
+        fun main(argc: Int32, argv: **Char) {
+          generic_fn("");
+          generic_fn(10);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+  @Test
   fun `test creating enum with generics`() {
     TestCompilation
       .of(

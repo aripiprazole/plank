@@ -3,7 +3,6 @@ package org.plank.analyzer
 import org.plank.analyzer.checker.typeCheck
 import org.plank.analyzer.resolver.ModuleTree
 import org.plank.analyzer.resolver.resolveImports
-import org.plank.syntax.debug.dumpTree
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 
@@ -65,11 +64,11 @@ fun main() {
   }
 
   file.dependencies.forEach {
-    println(it.dumpTree())
+    println(it.pretty())
     println()
   }
 
-  println(file.dumpTree())
+  println(file.pretty())
   println()
 }
 

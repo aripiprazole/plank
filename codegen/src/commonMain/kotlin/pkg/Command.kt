@@ -31,8 +31,10 @@ data class Command(val executable: File, private val args: MutableList<String> =
 }
 
 @Suppress("MemberVisibilityCanBePrivate", "CanBeParameter")
-class CommandFailedException(val command: String, val exitCode: Int) : RuntimeException() {
-  override val message: String = "Command $command failed with exit code $exitCode"
+class CommandFailedException(val command: String, val exitCode: Int, val output: String) :
+  RuntimeException() {
+  override val message: String =
+    "Command $command failed with exit code $exitCode with output: $output"
 }
 
 fun locateBinary(name: String): File {

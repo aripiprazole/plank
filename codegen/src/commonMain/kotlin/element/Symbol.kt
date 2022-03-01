@@ -1,6 +1,8 @@
 package org.plank.codegen.element
 
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
+import org.plank.analyzer.infer.nullSubst
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
@@ -17,11 +19,11 @@ import org.plank.syntax.element.Identifier
 sealed interface Symbol : CodegenInstruction {
   val ty: Ty
 
-  fun CodegenContext.access(): User?
+  fun CodegenContext.access(subst: Subst = nullSubst()): User?
 }
 
 class ValueSymbol(override val ty: Ty, private val value: User) : Symbol {
-  override fun CodegenContext.access(): User = value
+  override fun CodegenContext.access(subst: Subst): User = value
 
   override fun CodegenContext.codegen(): Value = value
 }
@@ -33,7 +35,7 @@ class LazySymbol(
 ) : Symbol {
   private var getter: Function? = null
 
-  override fun CodegenContext.access(): User? {
+  override fun CodegenContext.access(subst: Subst): User? {
     val getter = getter ?: return null
 
     return lazyLocal(name) {

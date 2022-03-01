@@ -3,6 +3,7 @@ package org.plank.codegen.element
 import arrow.core.identity
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.ExecContext
@@ -25,11 +26,9 @@ class CurryFunctionSymbol(
 ) : FunctionSymbol {
   private val parameters = realParameters.entries.toList().map { it.toPair() }
 
-  override fun CodegenContext.access(): AllocaInst? {
-    return lazyLocal("curry.$name") {
-      currentModule.getFunction(mangled)?.let {
-        alloca(createCall(it), "curry.$name") // get instance of curried function
-      }
+  override fun CodegenContext.access(subst: Subst): AllocaInst? {
+    return currentModule.getFunction(mangled)?.let {
+      alloca(createCall(it), "curry.$name") // get instance of curried function
     }
   }
 

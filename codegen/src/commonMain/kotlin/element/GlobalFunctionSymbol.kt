@@ -2,6 +2,7 @@ package org.plank.codegen.element
 
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.codegen.CodegenContext
 import org.plank.codegen.alloca
@@ -16,16 +17,16 @@ import org.plank.syntax.element.Identifier
 class GlobalFunctionSymbol(
   override val ty: FunTy,
   override val name: String,
-  private val mangled: String,
+  private val mangleName: CodegenContext.() -> String,
   private val references: Map<Identifier, Ty>,
   private val parameters: Map<Identifier, Ty>,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
-  override fun CodegenContext.access(): AllocaInst? {
-    return lazyLocal(name) {
-      currentModule.getFunction(mangled)?.let {
-        alloca(createCall(it), name)
-      }
+  override fun CodegenContext.access(subst: Subst): AllocaInst? {
+    println("Access global function symbol")
+    println("  ${mangleName()}")
+    return currentModule.getFunction(mangleName())?.let {
+      alloca(createCall(it), name)
     }
   }
 
@@ -34,7 +35,7 @@ class GlobalFunctionSymbol(
 
     val insertionBlock = insertionBlock
     val function = FunctionType(closureReturnType).let {
-      currentModule.addFunction(mangled, it)
+      currentModule.addFunction(mangleName(), it)
     }
 
     val entry = createBasicBlock("entry")
@@ -47,7 +48,7 @@ class GlobalFunctionSymbol(
         nested = false,
         references = references,
         name = name,
-        mangled = mangled,
+        mangled = mangleName(),
         realParameters = parameters,
         generate = generate,
       )
@@ -78,7 +79,7 @@ fun CodegenContext.addGlobalFunction(
   generate: GenerateBody,
 ): Value {
   return addFunction(
-    GlobalFunctionSymbol(ty, name, mangled, references, parameters, generate)
+    GlobalFunctionSymbol(ty, name, { mangled }, references, parameters, generate)
   )
 }
 
@@ -88,9 +89,10 @@ fun CodegenContext.addGlobalFunction(descriptor: ResolvedFunDecl, generate: Gene
       ty = descriptor.ty,
       references = descriptor.references,
       name = descriptor.name.text,
-      mangled = mangle(descriptor),
+      mangleName = { mangle(descriptor) },
       parameters = descriptor.parameters,
       generate = generate,
-    )
+    ),
+    descriptor.info.generics.isNotEmpty(),
   )
 }

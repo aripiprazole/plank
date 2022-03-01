@@ -104,6 +104,7 @@ class TestCompilation(
           }
       } catch (error: CommandFailedException) {
         exitCode = error.exitCode
+        throw error
       } catch (error: AnalyzerError) {
         analyzerViolations = error.violations
       } catch (error: SyntaxError) {

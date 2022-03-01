@@ -3,7 +3,9 @@ package org.plank.analyzer.infer
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class Subst(val map: Map<VarTy, Ty> = emptyMap()) {
+value class Subst(private val map: Map<VarTy, Ty> = emptyMap()) {
+  val types: Collection<Ty> get() = map.values
+
   constructor(name: String, ty: Ty) : this(mapOf(VarTy(name) to ty))
 
   infix fun compose(other: Subst): Subst {
@@ -11,6 +13,8 @@ value class Subst(val map: Map<VarTy, Ty> = emptyMap()) {
   }
 
   operator fun get(name: String): Ty? = map[VarTy(name)]
+
+  fun toMap(): Map<VarTy, Ty> = map
 
   override fun toString(): String =
     "Subst ${map.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}: ${it.value}" }}"
@@ -41,7 +45,7 @@ fun Ty.ftv(): Set<String> {
 infix fun Ty.ap(subst: Subst): Ty {
   return when (this) {
     is ConstTy -> this
-    is VarTy -> subst.map[this] ?: this
+    is VarTy -> subst[name] ?: this
     is AppTy -> AppTy(fn ap subst, arg ap subst)
     is PtrTy -> PtrTy(arg ap subst)
     is FunTy -> FunTy(parameterTy ap subst, returnTy ap subst)

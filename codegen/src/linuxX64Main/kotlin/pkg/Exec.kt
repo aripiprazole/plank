@@ -23,7 +23,7 @@ actual fun Command.exec(): String {
 
   val status = pclose(fp)
   if (status != 0) {
-    throw CommandFailedException(toString(), status)
+    throw CommandFailedException(toString(), status, stdout)
   }
 
   return stdout

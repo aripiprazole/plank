@@ -60,13 +60,14 @@ data class TypedAccessExpr(
   val subst: Subst,
   override val ty: Ty,
   override val loc: Loc,
-  val unapplied: Ty = ty,
 ) : TypedExpr {
   val scope: Scope = variable.declaredIn
   val name: Identifier = variable.name
 
   override fun ap(subst: Subst): TypedAccessExpr {
-    val realSubst = runCatching { unify(unapplied, ty ap subst) }.getOrDefault(nullSubst())
+    val realSubst =
+      runCatching { unify(variable.scheme.ty, ty ap subst) }
+        .getOrDefault(nullSubst())
 
     return copy(ty = ty.ap(subst), subst = realSubst)
   }

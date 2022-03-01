@@ -1,6 +1,7 @@
 package org.plank.codegen
 
-class CodegenError(override val message: String, val context: CodegenContext) : Exception(message)
+class CodegenError(message: String, val context: CodegenContext) :
+  Exception("$message at $context")
 
 fun CodegenContext.codegenError(message: String): Nothing {
   throw CodegenError(message, this)

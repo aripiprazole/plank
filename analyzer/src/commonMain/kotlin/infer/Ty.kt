@@ -105,6 +105,18 @@ fun TypeRef.ty(): Ty = when (this) {
   is UnitTypeRef -> unitTy
 }
 
+fun Ty.chainExecution(): List<Ty> = when (this) {
+  is FunTy -> buildList {
+    var ty: Ty = this@chainExecution
+    while (ty is FunTy) {
+      add(ty.parameterTy)
+      ty = ty.returnTy
+    }
+    add(ty)
+  }
+  else -> emptyList()
+}
+
 fun Ty.chainParameters(): List<Ty> = when (this) {
   is FunTy -> buildList {
     var ty: Ty = this@chainParameters

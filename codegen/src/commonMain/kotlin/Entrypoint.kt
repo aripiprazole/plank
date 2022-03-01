@@ -13,9 +13,6 @@ class Entrypoint : CodegenInstruction {
       .find { it.name.text == "main" }
 
     if (descriptor != null) {
-      val main = currentModule.getFunction(mangle(descriptor))
-        ?: codegenError("Unable to find main function")
-
       val function = FunctionType(
         i32,
         i32,
@@ -26,12 +23,14 @@ class Entrypoint : CodegenInstruction {
 
       positionAfter(createBasicBlock("entry").also(function::appendBasicBlock))
 
+      val main = findFunction("main")?.access() ?: codegenError("Unable to find main function")
+
       val (argc, argv) = function.arguments
 
       argc.name = "argc"
       argv.name = "argv"
 
-      callClosure(callClosure(createCall(main), argc), argv)
+      callClosure(callClosure(main, argc), argv)
 
       createRet(i32.getConstant(0, false))
     }
