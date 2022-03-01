@@ -218,10 +218,10 @@ class EnumTests {
         }
 
         fun show(list: List) -> *Char {
-          return match list {
+          match list {
             Cons(value, next) => value,
             Nil() => "nil"
-          };
+          }
         }
 
         fun main(argc: Int32, argv: **Char) -> () {

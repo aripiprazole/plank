@@ -32,7 +32,7 @@ fun resolveUses(
         currentScope.create(name)
 
         members.forEach {
-          currentScope.create(it.name)
+          currentScope.declare(it.name)
         }
       }
       is StructDecl -> decl.apply { currentScope.create(name) }
