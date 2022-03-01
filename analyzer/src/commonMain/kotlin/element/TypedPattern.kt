@@ -1,5 +1,6 @@
 package org.plank.analyzer.element
 
+import org.plank.analyzer.checker.EnumMemberInfo
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.ap
@@ -12,6 +13,7 @@ sealed interface TypedPattern : TypedPlankElement {
 }
 
 data class TypedEnumVariantPattern(
+  val info: EnumMemberInfo,
   val name: QualifiedPath,
   val properties: List<TypedPattern> = emptyList(),
   override val ty: Ty,

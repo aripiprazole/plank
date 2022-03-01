@@ -26,16 +26,21 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
       val variable = scope.lookupVariable(name) as? EnumConstructor
         ?: return TypedIdentPattern(name, subject.ty, subject.subst, location)
 
-      val ty = instantiate(variable.scheme)
+      val info = variable.info
+      val scheme = variable.scheme
 
-      TypedEnumVariantPattern(name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
+      val ty = instantiate(scheme)
+
+      TypedEnumVariantPattern(info, name.toQualifiedPath(), emptyList(), ty, nullSubst(), location)
     }
     is EnumVariantPattern -> {
       val name = pattern.type.toIdentifier()
 
-      val scheme = scope.lookupVariable(name)
-        ?.scheme
+      val variable = scope.lookupVariable(name) as? EnumConstructor
         ?: return violate(pattern.type, UnresolvedEnumVariant(name))
+
+      val info = variable.info
+      val scheme = variable.scheme
 
       val t1 = instantiate(scheme).enumVariant()
       val params = t1.chainParameters()
@@ -53,7 +58,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         checkPattern(next, TypedEnumIndexAccess(subject, i, tv, nullSubst(), next.loc))
       }
 
-      TypedEnumVariantPattern(pattern.type, properties, t2, nullSubst(), pattern.loc)
+      TypedEnumVariantPattern(info, pattern.type, properties, t2, nullSubst(), pattern.loc)
     }
   }
 }

@@ -110,19 +110,22 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
       val members = stmt.members.associate { (name, params) ->
         val funTy = FunTy(ty, params.ty().map(::checkTy))
+        val funScheme = instantiate(funTy.generalize()).generalize()
 
-        val variantScheme = if (params.isEmpty()) {
-          scope.declare(EnumConstructor(scheme, name, scope))
-        } else {
-          scope.declare(EnumConstructor(instantiate(funTy.generalize()).generalize(), name, scope))
+        val variantScheme = when {
+          params.isEmpty() -> funScheme
+          else -> scheme
         }
 
-        val variantTy = instantiate(Scheme(variantScheme.names, ConstTy(name.text)))
-        val memberInfo = scope.createTyInfo(
-          EnumMemberInfo(scope, name, variantTy, funTy, variantScheme),
-        )
+        val variantTy = instantiate(variantScheme.copy(ty = ConstTy(name.text)))
+        val info = scope.createTyInfo(EnumMemberInfo(scope, name, variantTy, funTy, variantScheme))
 
-        name to memberInfo
+        when {
+          params.isEmpty() -> scope.declare(EnumConstructor(info, scheme, name, scope))
+          else -> scope.declare(EnumConstructor(info, funScheme, name, scope))
+        }
+
+        name to info
       }
       val info = scope.createTyInfo(EnumInfo(scope, stmt.name, ty, stmt.generics, members))
 

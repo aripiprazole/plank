@@ -20,11 +20,13 @@ sealed interface Variable {
 }
 
 data class EnumConstructor(
+  val info: EnumMemberInfo,
   override val scheme: Scheme,
   override val name: Identifier,
   override val declaredIn: Scope,
   override val isInScope: Boolean = false,
 ) : Variable {
+
   override val mutable: Boolean = false
   override val ty: Ty = scheme.ty
 

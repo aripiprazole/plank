@@ -67,7 +67,7 @@ fun CodegenContext.deconstructPattern(subject: Value, pattern: TypedPattern) {
     }
     is TypedEnumVariantPattern -> {
       var idx = 1
-      val member = createBitCast(subject, pattern.ty.typegen().pointer(AddrSpace.Generic))
+      val member = createBitCast(subject, pattern.info.ty.typegen().pointer(AddrSpace.Generic))
 
       pattern.properties.forEach { nestedPattern ->
         val prop = getField(member, idx)
