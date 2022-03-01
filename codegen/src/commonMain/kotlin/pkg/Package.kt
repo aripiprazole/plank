@@ -50,5 +50,5 @@ data class Package(
 
   enum class Kind { Binary, Library }
 
-  val tree = ModuleTree(include + main + include)
+  val tree = ModuleTree.create(include + main + include)
 }

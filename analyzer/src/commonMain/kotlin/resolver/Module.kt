@@ -13,58 +13,28 @@ data class Module(val name: Identifier, val content: List<Stmt>) {
   override fun toString(): String = "Module($name, scope: $scope)"
 }
 
-class ModuleTree(scopes: List<ResolverScope> = emptyList(), val enclosing: ModuleTree?) {
-  val globalScope: ResolverScope = GlobalScope
+class ModuleTree(scopes: List<ResolverScope> = emptyList()) {
+  private val _modules: MutableMap<Identifier, Module> = mutableMapOf()
+
+  val modules: Map<Identifier, Module> get() = _modules
 
   val dependencies = Graph<Identifier>().apply {
     scopes.map(ResolverScope::name).forEach(this::addVertex)
   }
 
-  private val _modules = mutableMapOf<Identifier, Module>()
-  val modules: Map<Identifier, Module> get() = _modules
-
   init {
     scopes.forEach { file ->
       _modules[file.name] = Module(file.name, file.content).apply {
-        scope = file.enclose(globalScope)
+        scope = file.enclose(GlobalScope)
       }
     }
-  }
-
-  constructor(enclosing: ModuleTree, scopes: List<ResolverScope> = emptyList()) :
-    this(scopes, enclosing)
-
-  constructor(files: List<PlankFile>) : this(emptyList<ResolverScope>(), null) {
-    files
-      .map { Module(it.module, it.program).apply { scope = FileScope(it, globalScope) } }
-      .map { it.scope }
-      .forEach { module ->
-        dependencies.addVertex(module.name)
-
-        _modules[module.name] = Module(module.name, module.content).apply {
-          scope = module
-        }
-      }
-  }
-
-  constructor(vararg files: PlankFile) : this(emptyList<ResolverScope>(), null) {
-    files
-      .map { Module(it.module, it.program).apply { scope = FileScope(it, globalScope) } }
-      .map { it.scope }
-      .forEach { module ->
-        dependencies.addVertex(module.name)
-
-        _modules[module.name] = Module(module.name, module.content).apply {
-          scope = module
-        }
-      }
   }
 
   fun findFiles(): List<PlankFile> {
     return _modules.values
       .map(Module::scope)
       .filterIsInstance<FileScope>()
-      .map(FileScope::file) + enclosing?.findFiles().orEmpty()
+      .map(FileScope::file)
   }
 
   fun addDependency(scope: ResolverScope, on: ResolverScope) {
@@ -93,11 +63,6 @@ class ModuleTree(scopes: List<ResolverScope> = emptyList(), val enclosing: Modul
 
   fun findModule(name: Identifier): Module? {
     return dependencies.depthFirstSearch(name).firstOrNull()?.let(_modules::get)
-      ?: enclosing?.findModule(name)
-  }
-
-  fun contains(name: Identifier): Boolean {
-    return findModule(name) != null
   }
 
   override fun toString(): String {
@@ -105,5 +70,18 @@ class ModuleTree(scopes: List<ResolverScope> = emptyList(), val enclosing: Modul
     val hashCodeStr = unsignedHashCode.toString(16)
 
     return "ModuleTree@$hashCodeStr"
+  }
+
+  companion object {
+    fun create(files: List<PlankFile>): ModuleTree {
+      return files
+        .map { Module(it.module, it.program).apply { scope = FileScope(it, GlobalScope) } }
+        .map { it.scope }
+        .let(::ModuleTree)
+    }
+
+    fun create(vararg files: PlankFile): ModuleTree {
+      return create(files.toList())
+    }
   }
 }

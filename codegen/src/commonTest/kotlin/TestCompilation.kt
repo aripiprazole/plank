@@ -116,7 +116,7 @@ class TestCompilation(
           pkg.severe("LLVM Error:")
           pkg.severe(llvmError.message)
         }
-        fail(error.message)
+        throw error
       } catch (error: Throwable) {
         error.printStackTrace()
         throw error

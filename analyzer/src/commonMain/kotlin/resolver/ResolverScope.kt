@@ -38,8 +38,7 @@ sealed class ResolverScope {
   }
 
   fun findModule(name: Identifier): Module? {
-    return tree.findModule(name)
-      ?: enclosing?.findModule(name)
+    return tree.findModule(name) ?: enclosing?.findModule(name)
   }
 
   fun containsVariable(name: Identifier): Boolean {

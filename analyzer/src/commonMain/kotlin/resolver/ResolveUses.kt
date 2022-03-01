@@ -22,7 +22,6 @@ import org.plank.syntax.element.transformTree
 fun resolveUses(
   f: PlankFile,
   dependencies: MutableList<Module>,
-  tree: ModuleTree,
   _scope: ResolverScope,
 ): PlankFile {
   var currentScope = _scope
@@ -30,21 +29,14 @@ fun resolveUses(
   fun enterDecl(decl: Stmt): Stmt {
     return when (decl) {
       is FunDecl -> decl.apply {
-        val scope = FunctionScope(
-          name = name,
-          content = body.stmts,
-          enclosing = currentScope,
-          tree = ModuleTree(tree)
-        )
-
         currentScope.declare(name)
 
-        currentScope = scope
+        currentScope = FunctionScope(name, body.stmts, currentScope)
       }
       is ModuleDecl -> decl.apply {
-        val module = tree.findModule(decl.path.toIdentifier())
+        val module = currentScope.findModule(decl.path.toIdentifier())
           ?: Module(decl.path.toIdentifier(), decl.content).apply {
-            scope = ModuleScope(name, content, currentScope, ModuleTree(tree))
+            scope = ModuleScope(name, content, currentScope)
 
             currentScope.tree.createModule(this)
           }
@@ -62,7 +54,8 @@ fun resolveUses(
       is LetDecl -> decl.apply { currentScope.declare(name) }
 
       is UseDecl -> decl.apply {
-        val module = currentScope.findModule(path.toIdentifier()) ?: return decl
+        val module = currentScope.findModule(path.toIdentifier())
+          ?: return decl
 
         currentScope.expand(module.scope)
       }
@@ -106,7 +99,9 @@ fun resolveUses(
           val chain = concatModule(receiver).asReversed().ifEmpty { return expr }
           val path = QualifiedPath(chain)
 
-          dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
+          val module = currentScope.findModule(path.toIdentifier())
+            ?: return expr
+          dependencies.add(module)
 
           AccessExpr(name = expr.property, module = path, loc = expr.loc)
         }
@@ -114,7 +109,10 @@ fun resolveUses(
           val fullPath = receiver.module?.fullPath.orEmpty().toTypedArray()
           val path = qualifiedPath(*fullPath, receiver.name)
 
-          dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
+          val module = currentScope.findModule(path.toIdentifier())
+            ?: return expr
+
+          dependencies.add(module)
 
           AccessExpr(name = expr.property, module = path, loc = expr.loc)
         }
@@ -125,7 +123,10 @@ fun resolveUses(
           val chain = concatModule(receiver).asReversed().ifEmpty { return expr }
           val path = QualifiedPath(chain)
 
-          dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
+          val module = currentScope.findModule(path.toIdentifier())
+            ?: return expr
+
+          dependencies.add(module)
 
           AssignExpr(name = expr.property, value = expr.value, module = path, loc = expr.loc)
         }
@@ -133,14 +134,18 @@ fun resolveUses(
           val fullPath = receiver.module?.fullPath.orEmpty().toTypedArray()
           val path = qualifiedPath(*fullPath, receiver.name)
 
-          dependencies.add(tree.findModule(path.toIdentifier()) ?: return expr)
+          val module = currentScope.findModule(path.toIdentifier())
+            ?: return expr
+
+          dependencies.add(module)
 
           AssignExpr(name = expr.property, value = expr.value, module = path, loc = expr.loc)
         }
         else -> expr
       }
       is AccessExpr -> {
-        val variable = currentScope.lookupVariable(expr.name) ?: return expr
+        val variable = currentScope.lookupVariable(expr.name)
+          ?: return expr
 
         expr.copy(module = variable.declaredIn.fullPath())
       }

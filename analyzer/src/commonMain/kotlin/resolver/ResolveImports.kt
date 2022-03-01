@@ -34,7 +34,7 @@ class ResolveImports(val file: PlankFile, val tree: ModuleTree) {
     val module = requireNotNull(tree.findModule(file.module)) { "Could not find file in tree" }
     val scope = module.scope as? FileScope ?: error("File scope expected")
 
-    return resolveUses(scope.file, dependencies, tree, scope).also { file ->
+    return resolveUses(scope.file, dependencies, scope).also { file ->
       scope.file = file
       dependencies.reverse()
       dependencies.add(0, module)
@@ -50,8 +50,6 @@ class ResolveImports(val file: PlankFile, val tree: ModuleTree) {
         .filterIsInstance<FileScope>()
         .forEach { scope ->
           runDependencyTreeWalker(scope.file)
-
-          scope.file = resolveUses(scope.file, dependencies, tree, scope)
         }
 
       runDependencyTreeWalker(file)
@@ -59,14 +57,23 @@ class ResolveImports(val file: PlankFile, val tree: ModuleTree) {
     .depthFirstSearch(file.module)
     .filter { it != file.module }
     .mapNotNull(tree::findModule)
+    .map { module ->
+      when (val scope = module.scope) {
+        is FileScope -> {
+          scope.file = resolveUses(scope.file, dependencies, scope)
+          module
+        }
+        else -> module
+      }
+    }
 
   fun Graph<Identifier>.runDependencyTreeWalker(f: PlankFile) {
     val module = tree.findModule(f.module)
-      ?.apply { scope = FileScope(f, tree.globalScope, tree) }
+      ?.apply { scope = FileScope(f, GlobalScope, tree) }
       ?: Module(f.module, f.program).apply {
         tree.createModule(this)
 
-        scope = FileScope(f, tree.globalScope, tree)
+        scope = FileScope(f, GlobalScope, tree)
       }
 
     val scope = module.scope as FileScope

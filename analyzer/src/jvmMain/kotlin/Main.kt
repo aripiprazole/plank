@@ -56,7 +56,7 @@ typealias Transformer = (PlankFile, ModuleTree) -> PlankFile
 val logger = CompilerLogger(debug = true, verbose = true)
 
 fun main() {
-  val tree = ModuleTree(maybePlank, ioPlank)
+  val tree = ModuleTree.create(maybePlank, ioPlank)
   val file = resolveImports(mainPlank, tree).typeCheck(logger)
 
   file.checkViolations.forEach {
