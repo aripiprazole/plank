@@ -20,7 +20,7 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
     addStruct(descriptor.name.text, enum.pointer(AddrSpace.Generic))
 
     descriptor.members.values.forEachIndexed { tag, member ->
-      val (_, name, _, _, funTy) = member
+      val (_, name, _, scheme, funTy) = member
 
       val mangled = pathMangled { listOf(name, descriptor.name) }
       val construct = pathMangled { listOf(name, descriptor.name, Identifier("construct")) }
@@ -32,7 +32,7 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
       addStruct(name.text, memberStruct)
 
       when {
-        member.parameters.isEmpty() -> setSymbolLazy(name.text, descriptor.ty) {
+        member.parameters.isEmpty() -> setSymbolLazy(name.text, scheme) {
           val instance = createMalloc(memberStruct)
           createStore(i8.getConstant(tag, false), getField(instance, 0))
           createBitCast(instance, enum.pointer(AddrSpace.Generic))

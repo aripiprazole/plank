@@ -2,6 +2,7 @@ package org.plank.codegen.element
 
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.codegen.MangledId
@@ -18,6 +19,7 @@ import org.plank.syntax.element.Identifier
 class GlobalFunctionSymbol(
   override val ty: FunTy,
   override val name: String,
+  override val scheme: Scheme,
   private val mangled: MangledId,
   private val references: Map<Identifier, Ty>,
   private val parameters: Map<Identifier, Ty>,
@@ -44,6 +46,7 @@ class GlobalFunctionSymbol(
     val closure = addFunction(
       CurryFunctionSymbol(
         ty = ty,
+        scheme = scheme,
         nested = false,
         references = references,
         name = name,
@@ -78,7 +81,7 @@ fun CodegenCtx.addGlobalFunction(
   generate: GenerateBody,
 ): Value {
   return addFunction(
-    GlobalFunctionSymbol(ty, name, mangled, references, parameters, generate)
+    GlobalFunctionSymbol(ty, name, Scheme(ty), mangled, references, parameters, generate)
   )
 }
 
@@ -86,6 +89,7 @@ fun CodegenCtx.addGlobalFunction(descriptor: ResolvedFunDecl, generate: Generate
   return addFunction(
     GlobalFunctionSymbol(
       ty = descriptor.ty,
+      scheme = descriptor.scheme,
       references = descriptor.references,
       name = descriptor.name.text,
       mangled = funMangled(descriptor),

@@ -4,6 +4,8 @@ import org.plank.analyzer.element.TypedEnumVariantPattern
 import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedMatchExpr
 import org.plank.analyzer.element.TypedPattern
+import org.plank.analyzer.infer.Scheme
+import org.plank.analyzer.infer.ftv
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.getField
 import org.plank.codegen.scope.CodegenCtx
@@ -63,7 +65,7 @@ fun CodegenCtx.checkPattern(
 fun CodegenCtx.deconstructPattern(subject: Value, pattern: TypedPattern) {
   when (pattern) {
     is TypedIdentPattern -> {
-      setSymbol(pattern.name.text, pattern.ty, unsafeAlloca(subject))
+      setSymbol(pattern.name.text, Scheme(pattern.ty.ftv(), pattern.ty), unsafeAlloca(subject))
     }
     is TypedEnumVariantPattern -> {
       var idx = 1

@@ -3,6 +3,7 @@ package org.plank.codegen.element
 import arrow.core.identity
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.codegen.MangledId
@@ -19,6 +20,7 @@ import org.plank.syntax.element.Identifier
 class CurryFunctionSymbol(
   override val ty: FunTy,
   override val name: String,
+  override val scheme: Scheme,
   private val mangled: MangledId,
   private val nested: Boolean,
   private val references: Map<Identifier, Ty>,
@@ -59,7 +61,7 @@ class CurryFunctionSymbol(
     }
 
     if (nested) {
-      setSymbol(name, ty, closure as AllocaInst)
+      setSymbol(name, scheme, closure as AllocaInst)
     }
 
     return closure
@@ -71,6 +73,7 @@ class CurryFunctionSymbol(
         name = mangled.plus("#$idx").get(),
         mangled = mangled + "{{closure}}#$idx",
         ty = ty,
+        scheme = Scheme(ty),
         returnTy = ty.returnTy,
         references = references + parameters.dropLast(1),
         parameters = mapOf(parameters[idx]),
@@ -89,6 +92,7 @@ fun CodegenCtx.addCurryFunction(
 ): Value = addFunction(
   CurryFunctionSymbol(
     ty = descriptor.ty,
+    scheme = descriptor.scheme,
     nested = nested,
     references = descriptor.references,
     name = descriptor.name.text,

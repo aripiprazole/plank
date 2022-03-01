@@ -4,6 +4,7 @@ import org.plank.analyzer.element.ResolvedPlankElement
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.element.ResolvedStmt
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.ap
@@ -51,15 +52,15 @@ sealed interface CodegenCtx : Context, IRBuilder {
   fun getSymbol(scope: CodegenCtx, name: String, subst: Subst = nullSubst()): User
   fun setSymbol(name: String, value: Symbol): Value
 
-  fun setSymbol(name: String, type: Ty, variable: User): Value {
+  fun setSymbol(name: String, type: Scheme, variable: User): Value {
     return setSymbol(name, ValueSymbol(type, variable))
   }
 
-  fun setSymbol(mangled: MangledId, type: Ty, variable: User): Value {
+  fun setSymbol(mangled: MangledId, type: Scheme, variable: User): Value {
     return setSymbol(mangled.get(), ValueSymbol(type, variable))
   }
 
-  fun setSymbolLazy(name: String, type: Ty, lazyValue: CodegenCtx.() -> Value): Value {
+  fun setSymbolLazy(name: String, type: Scheme, lazyValue: CodegenCtx.() -> Value): Value {
     return setSymbol(name, LazySymbol(type, name, lazyValue))
   }
 

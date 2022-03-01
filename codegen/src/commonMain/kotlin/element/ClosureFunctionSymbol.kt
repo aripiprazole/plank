@@ -1,6 +1,7 @@
 package org.plank.codegen.element
 
 import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.codegen.MangledId
@@ -19,6 +20,7 @@ import org.plank.syntax.element.Identifier
 class ClosureFunctionSymbol(
   override val ty: Ty,
   override val name: String,
+  override val scheme: Scheme,
   private val mangled: MangledId,
   private val references: Map<Identifier, Ty>,
   private val parameters: Map<Identifier, Ty>,
@@ -71,7 +73,7 @@ class ClosureFunctionSymbol(
             this.arguments[reference] = createLoad(variable)
           }
 
-          setSymbol(reference, ty, unsafeAlloca(variable))
+          setSymbol(reference, Scheme(ty), unsafeAlloca(variable))
         }
 
         val realArguments = arguments.drop(1)
@@ -106,7 +108,7 @@ class ClosureFunctionSymbol(
     }
     val closure = instantiate(closureFunctionType, function, environment)
 
-    setSymbol(mangled, ty, closure)
+    setSymbol(mangled, scheme, closure)
 
     return closure
   }
@@ -124,6 +126,7 @@ fun CodegenCtx.addClosure(
     name = name,
     mangled = mangled,
     ty = FunTy(returnTy, realParameters.values),
+    scheme = Scheme(FunTy(returnTy, realParameters.values)),
     references = references,
     parameters = realParameters,
     realParameters = realParameters,

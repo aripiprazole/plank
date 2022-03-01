@@ -1,5 +1,6 @@
 package org.plank.codegen.element
 
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.nullSubst
@@ -18,19 +19,20 @@ import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Identifier
 
 sealed interface Symbol : CodegenInstruction {
-  val ty: Ty
+  val ty: Ty get() = scheme.ty
+  val scheme: Scheme
 
   fun CodegenCtx.access(subst: Subst = nullSubst()): User?
 }
 
-class ValueSymbol(override val ty: Ty, private val value: User) : Symbol {
+class ValueSymbol(override val scheme: Scheme, private val value: User) : Symbol {
   override fun CodegenCtx.access(subst: Subst): User = value
 
   override fun CodegenCtx.codegen(): Value = value
 }
 
 class LazySymbol(
-  override val ty: Ty,
+  override val scheme: Scheme,
   val name: String,
   val lazyValue: CodegenCtx.() -> Value,
 ) : Symbol {

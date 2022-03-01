@@ -4,6 +4,7 @@ import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedExprBody
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.element.ResolvedNoBody
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.codegen.alloca
@@ -42,7 +43,7 @@ class BodyGenerator(private val descriptor: ResolvedFunDecl) : (ExecCtx) -> Unit
 
 fun ExecCtx.generateParameter(parameters: Map<Identifier, Ty>) =
   fun(index: Int, argument: Argument) {
-    val (name, type) = parameters.entries.elementAtOrElse(index) {
+    val (name, ty) = parameters.entries.elementAtOrElse(index) {
       codegenError("Unresolved parameter `$index`")
     }
 
@@ -50,5 +51,5 @@ fun ExecCtx.generateParameter(parameters: Map<Identifier, Ty>) =
 
     arguments[name.text] = argument
 
-    setSymbol(name.text, type, alloca(argument, "parameter.${name.text}"))
+    setSymbol(name.text, Scheme(ty), alloca(argument, "parameter.${name.text}"))
   }
