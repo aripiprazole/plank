@@ -42,8 +42,8 @@ sealed interface CodegenCtx : Context, IRBuilder {
 
   val unit: StructType
 
-  fun expand(scope: ScopeContext)
-  fun addModule(module: ScopeContext)
+  fun expand(scope: ScopeCtx)
+  fun addModule(module: ScopeCtx)
 
   fun addFunction(function: FunctionSymbol, isGeneric: Boolean = false): Value
   fun addStruct(name: String, struct: Type)
@@ -60,7 +60,7 @@ sealed interface CodegenCtx : Context, IRBuilder {
   }
 
   fun findFunction(name: String): Symbol?
-  fun findModule(name: String): ScopeContext?
+  fun findModule(name: String): ScopeCtx?
   fun findStruct(name: String): Type?
   fun findAlloca(name: String, subst: Subst = nullSubst()): User?
   fun findIntrinsic(name: String): IntrinsicFunction?
@@ -76,7 +76,7 @@ sealed interface CodegenCtx : Context, IRBuilder {
   fun Collection<ResolvedPlankElement>.codegen(): List<Value> = map { it.codegen() }
 
   fun ResolvedPlankElement.codegen(): Value =
-    DescriptorContext(this, scopeContext()).let { context ->
+    DescriptorCtx(this, scopeContext()).let { context ->
       when (context.descriptor) {
         is TypedExpr -> exprToInstruction(context.descriptor).run { context.codegen() }
         is ResolvedStmt -> stmtToInstruction(context.descriptor).run { context.codegen() }

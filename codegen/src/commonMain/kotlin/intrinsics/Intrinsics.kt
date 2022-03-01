@@ -3,7 +3,7 @@ package org.plank.codegen.intrinsics
 import org.plank.codegen.createUnit
 import org.plank.codegen.mangle
 import org.plank.codegen.scope.CodegenCtx
-import org.plank.codegen.scope.ExecContext
+import org.plank.codegen.scope.ExecCtx
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Argument
@@ -68,19 +68,19 @@ class IntrinsicModule(val name: String, val context: CodegenCtx) : Context by co
 
 class IntrinsicFunction {
   private var function: (Function.() -> Unit)? = null
-  private var entry: (ExecContext.() -> Unit)? = null
+  private var entry: (ExecCtx.() -> Unit)? = null
 
   fun function(builder: Function.() -> Unit) {
     function = builder
   }
 
-  fun entry(builder: ExecContext.(List<Argument>) -> Unit) {
+  fun entry(builder: ExecCtx.(List<Argument>) -> Unit) {
     entry = {
       builder(function.arguments.drop(1))
     }
   }
 
-  fun build(context: ExecContext) {
+  fun build(context: ExecCtx) {
     function?.invoke(context.function)
     entry?.invoke(context)
   }

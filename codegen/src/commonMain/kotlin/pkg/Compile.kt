@@ -8,7 +8,7 @@ import org.plank.codegen.DebugOptions
 import org.plank.codegen.Entrypoint
 import org.plank.codegen.intrinsics.DefaultIntrinsics
 import org.plank.codegen.intrinsics.Intrinsics
-import org.plank.codegen.scope.ScopeContext
+import org.plank.codegen.scope.ScopeCtx
 import org.plank.codegen.scope.createFileContext
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.Module
@@ -33,7 +33,7 @@ fun compile(
   }
 
   val llvm = Context()
-  val context = ScopeContext(llvm, main, debug).copy(scope = "Global").apply {
+  val context = ScopeCtx(llvm, main, debug).copy(scope = "Global").apply {
     addIntrinsics(intrinsics)
   }
 

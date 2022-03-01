@@ -26,7 +26,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-data class ScopeContext(
+data class ScopeCtx(
   private val llvm: Context,
   override val file: ResolvedPlankFile,
   private val debugOptions: DebugOptions,
@@ -54,18 +54,18 @@ data class ScopeContext(
   private val structs = mutableMapOf<String, Type>()
   private val lazy = mutableMapOf<String, AllocaInst>()
 
-  private val expanded = mutableListOf<ScopeContext>()
-  private val modules = mutableMapOf<String, ScopeContext>()
+  private val expanded = mutableListOf<ScopeCtx>()
+  private val modules = mutableMapOf<String, ScopeCtx>()
 
   fun addIntrinsics(intrinsics: Intrinsics) {
     this.intrinsics += intrinsics.toFunctionMap(this)
   }
 
-  override fun expand(scope: ScopeContext) {
+  override fun expand(scope: ScopeCtx) {
     expanded += scope
   }
 
-  override fun addModule(module: ScopeContext) {
+  override fun addModule(module: ScopeCtx) {
     modules[module.scope] = module
   }
 
@@ -95,7 +95,7 @@ data class ScopeContext(
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findFunction(name) }
   }
 
-  override fun findModule(name: String): ScopeContext? {
+  override fun findModule(name: String): ScopeCtx? {
     return modules[name]
       ?: enclosing?.findModule(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findModule(name) }
@@ -141,36 +141,36 @@ data class ScopeContext(
 
 fun CodegenCtx.ap(subst: Subst): CodegenCtx {
   return when (this) {
-    is DescriptorContext -> DescriptorContext(descriptor, enclosing, subst)
-    is ExecContext -> ExecContext(enclosing, function, returnType, arguments, subst)
-    is ScopeContext -> copy(subst = subst)
+    is DescriptorCtx -> DescriptorCtx(descriptor, enclosing, subst)
+    is ExecCtx -> ExecCtx(enclosing, function, returnType, arguments, subst)
+    is ScopeCtx -> copy(subst = subst)
   }
 }
 
-fun CodegenCtx.scopeContext(): ScopeContext {
+fun CodegenCtx.scopeContext(): ScopeCtx {
   return when (this) {
-    is DescriptorContext -> enclosing
-    is ExecContext -> enclosing
-    is ScopeContext -> this
+    is DescriptorCtx -> enclosing
+    is ExecCtx -> enclosing
+    is ScopeCtx -> this
   }
 }
 
 @OptIn(ExperimentalContracts::class)
 inline fun CodegenCtx.createScopeContext(
   moduleName: String,
-  builder: ScopeContext.() -> Unit = {},
-): ScopeContext {
+  builder: ScopeCtx.() -> Unit = {},
+): ScopeCtx {
   contract {
     callsInPlace(builder, InvocationKind.EXACTLY_ONCE)
   }
 
   return when (this) {
-    is ScopeContext -> copy(enclosing = this, scope = moduleName).apply(builder)
-    is DescriptorContext -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
-    is ExecContext -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
+    is ScopeCtx -> copy(enclosing = this, scope = moduleName).apply(builder)
+    is DescriptorCtx -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
+    is ExecCtx -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
   }
 }
 
-fun CodegenCtx.createFileContext(file: ResolvedPlankFile = this.file): ScopeContext {
+fun CodegenCtx.createFileContext(file: ResolvedPlankFile = this.file): ScopeCtx {
   return scopeContext().copy(enclosing = this, file = file, scope = file.module.text)
 }

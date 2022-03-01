@@ -7,7 +7,7 @@ import org.plank.codegen.codegenError
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
 import org.plank.codegen.scope.CodegenCtx
-import org.plank.codegen.scope.ExecContext
+import org.plank.codegen.scope.ExecCtx
 import org.plank.codegen.scope.createScopeContext
 import org.plank.codegen.unsafeAlloca
 import org.plank.llvm4k.ir.AddrSpace
@@ -60,7 +60,7 @@ class ClosureFunctionSymbol(
       val arguments = function.arguments
       val environment = arguments.first().apply { name = "env" }
 
-      val executionContext = ExecContext(this, function, returnTy)
+      val executionContext = ExecCtx(this, function, returnTy)
 
       with(executionContext) {
         references.entries.forEachIndexed { index, (reference, ty) ->

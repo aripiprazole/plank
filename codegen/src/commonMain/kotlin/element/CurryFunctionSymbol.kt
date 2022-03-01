@@ -9,7 +9,7 @@ import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.mangle
 import org.plank.codegen.scope.CodegenCtx
-import org.plank.codegen.scope.ExecContext
+import org.plank.codegen.scope.ExecCtx
 import org.plank.codegen.scope.createScopeContext
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Value
@@ -80,7 +80,7 @@ class CurryFunctionSymbol(
   }
 }
 
-typealias NestBuilder = ExecContext.(returnType: Ty) -> Unit
+typealias NestBuilder = ExecCtx.(returnType: Ty) -> Unit
 
 fun CodegenCtx.addCurryFunction(
   descriptor: ResolvedFunDecl,

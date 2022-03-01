@@ -5,8 +5,8 @@ import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.Value
 
-class ExecContext(
-  override val enclosing: ScopeContext,
+class ExecCtx(
+  override val enclosing: ScopeCtx,
   val function: Function,
   val returnType: Type,
   val arguments: MutableMap<String, Value> = linkedMapOf(),
