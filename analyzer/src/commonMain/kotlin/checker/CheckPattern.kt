@@ -39,7 +39,11 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         ?: return violate(pattern.type, UnresolvedEnumVariant(name))
 
       val t1 = instantiate(scheme).enumVariant()
-      val s1 = unify(t1, FunTy(subject.ty, t1.chainParameters()))
+      val params = t1.chainParameters()
+      val s1 = when {
+        params.isEmpty() -> unify(t1, subject.ty)
+        else -> unify(t1, FunTy(subject.ty, params))
+      }
       val t2 = t1 ap s1
       val parameters = t2.chainParameters()
 

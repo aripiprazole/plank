@@ -28,7 +28,13 @@ fun resolveUses(
 
   fun enterDecl(decl: Stmt): Stmt {
     return when (decl) {
-      is EnumDecl -> decl.apply { currentScope.create(name) }
+      is EnumDecl -> decl.apply {
+        currentScope.create(name)
+
+        members.forEach {
+          currentScope.create(it.name)
+        }
+      }
       is StructDecl -> decl.apply { currentScope.create(name) }
 
       is FunDecl -> decl.apply {

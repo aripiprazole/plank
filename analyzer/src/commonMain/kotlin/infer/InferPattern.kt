@@ -13,7 +13,7 @@ fun Infer.inferPattern(env: TyEnv, pattern: Pattern, subject: Ty): TyEnv {
     }
     is EnumVariantPattern -> {
       val scheme = env.lookup(pattern.type.text) ?: throw UnboundVar(pattern.type.toIdentifier())
-      val parameters = instantiate(scheme).callable().chainParameters()
+      val parameters = instantiate(scheme).chainParameters()
 
       val expected = parameters.size
 
