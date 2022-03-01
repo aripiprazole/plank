@@ -7,7 +7,7 @@ import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 
 class RankedSymbol(val delegate: Symbol, val isGeneric: Boolean) : Symbol by delegate {
-  private val bindings: MutableMap<Subst, User> = mutableMapOf()
+  private val bindings: MutableMap<Subst, Symbol> = mutableMapOf()
   private lateinit var context: CodegenCtx
 
   override fun CodegenCtx.codegen(): Value {
@@ -21,11 +21,13 @@ class RankedSymbol(val delegate: Symbol, val isGeneric: Boolean) : Symbol by del
   override fun CodegenCtx.access(subst: Subst): User? {
     if (!isGeneric) return delegate.access(subst)
 
-    return bindings.getOrPut(subst) {
+    bindings.getOrPut(subst) {
       context.ap(subst).run {
         delegate.codegen()
-        delegate.access()!!
+        delegate
       }
     }
+
+    return context.ap(subst).run { delegate.access(subst) }
   }
 }
