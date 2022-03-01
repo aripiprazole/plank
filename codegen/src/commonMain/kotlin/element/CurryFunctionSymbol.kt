@@ -5,9 +5,10 @@ import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
+import org.plank.codegen.MangledId
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
-import org.plank.codegen.mangle
+import org.plank.codegen.funMangled
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.ExecCtx
 import org.plank.codegen.scope.createScopeContext
@@ -18,7 +19,7 @@ import org.plank.syntax.element.Identifier
 class CurryFunctionSymbol(
   override val ty: FunTy,
   override val name: String,
-  private val mangled: String,
+  private val mangled: MangledId,
   private val nested: Boolean,
   private val references: Map<Identifier, Ty>,
   private val realParameters: Map<Identifier, Ty>,
@@ -27,7 +28,7 @@ class CurryFunctionSymbol(
   private val parameters = realParameters.entries.toList().map { it.toPair() }
 
   override fun CodegenCtx.access(subst: Subst): AllocaInst? {
-    return currentModule.getFunction(mangled)?.let {
+    return currentModule.getFunction(mangled.get())?.let {
       alloca(createCall(it), "curry.$name") // get instance of curried function
     }
   }
@@ -51,7 +52,7 @@ class CurryFunctionSymbol(
           .also { it.codegen() }
           .access()!!
       } else {
-        addClosure(name, ty.returnTy, "${mangled}_empty", references, generate = generate)
+        addClosure(name, ty.returnTy, mangled + "_empty", references, generate = generate)
           .also { it.codegen() }
           .access()!!
       }
@@ -64,20 +65,19 @@ class CurryFunctionSymbol(
     return closure
   }
 
-  private fun nested(index: Int, builder: NestBuilder = { generate() }): ClosureFunctionSymbol {
-    val ty = FunTy(parameters[index].second, ty.nest(index))
-
-    return ClosureFunctionSymbol(
-      name = "$mangled#$index",
-      mangled = "$mangled{{closure}}#$index",
-      ty = ty,
-      returnTy = ty.returnTy,
-      references = references + parameters.dropLast(1),
-      parameters = mapOf(parameters[index]),
-      realParameters = realParameters,
-      generate = { builder(ty.returnTy) },
-    )
-  }
+  private fun CodegenCtx.nested(idx: Int, builder: NestBuilder = { generate() }) =
+    FunTy(parameters[idx].second, ty.nest(idx)).let { ty ->
+      ClosureFunctionSymbol(
+        name = mangled.plus("#$idx").get(),
+        mangled = mangled + "{{closure}}#$idx",
+        ty = ty,
+        returnTy = ty.returnTy,
+        references = references + parameters.dropLast(1),
+        parameters = mapOf(parameters[idx]),
+        realParameters = realParameters,
+        generate = { builder(ty.returnTy) },
+      )
+    }
 }
 
 typealias NestBuilder = ExecCtx.(returnType: Ty) -> Unit
@@ -92,7 +92,7 @@ fun CodegenCtx.addCurryFunction(
     nested = nested,
     references = descriptor.references,
     name = descriptor.name.text,
-    mangled = mangle(descriptor),
+    mangled = funMangled(descriptor),
     realParameters = descriptor.parameters,
     generate = generate,
   )

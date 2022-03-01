@@ -1,7 +1,6 @@
 package org.plank.codegen.intrinsics
 
 import org.plank.codegen.createUnit
-import org.plank.codegen.mangle
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.ExecCtx
 import org.plank.llvm4k.Context
@@ -97,28 +96,28 @@ val DefaultIntrinsics = Intrinsics {
 
     val println by function(unit, i8.pointer(AddrSpace.Generic)) {
       entry { (msg) ->
-        createCall(printf, createGlobalStringPtr("%s$lineSeparator", mangle("println.str")), msg)
+        createCall(printf, createGlobalStringPtr("%s$lineSeparator", "println.str"), msg)
         createRet(createUnit())
       }
     }
 
     val print_int by function(unit, i32) {
       entry { (msg) ->
-        createCall(printf, createGlobalStringPtr("%d$lineSeparator", mangle("print_int.str")), msg)
+        createCall(printf, createGlobalStringPtr("%d$lineSeparator", "print_int.str"), msg)
         createRet(createUnit())
       }
     }
 
     val print_bool by function(unit, i32) {
       entry { (msg) ->
-        createCall(printf, createGlobalStringPtr("%d$lineSeparator", mangle("print_bool.str")), msg)
+        createCall(printf, createGlobalStringPtr("%d$lineSeparator", "print_bool.str"), msg)
         createRet(createUnit())
       }
     }
 
     val print by function(unit, i8.pointer(AddrSpace.Generic)) {
       entry { (msg) ->
-        createCall(printf, createGlobalStringPtr("%s", mangle("print.str")), msg)
+        createCall(printf, createGlobalStringPtr("%s", "print.str"), msg)
         createRet(createUnit())
       }
     }

@@ -4,7 +4,8 @@ import org.plank.analyzer.element.ResolvedEnumDecl
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.element.addGlobalFunction
 import org.plank.codegen.getField
-import org.plank.codegen.mangle
+import org.plank.codegen.idMangled
+import org.plank.codegen.pathMangled
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Value
@@ -12,7 +13,7 @@ import org.plank.syntax.element.Identifier
 
 class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
   override fun CodegenCtx.codegen(): Value {
-    val enum = createNamedStruct(mangle(descriptor.name)) {
+    val enum = createNamedStruct(idMangled { descriptor.name }.get()) {
       elements = listOf(i8, i8.pointer(AddrSpace.Generic))
     }
 
@@ -21,10 +22,10 @@ class EnumInst(private val descriptor: ResolvedEnumDecl) : CodegenInstruction {
     descriptor.members.values.forEachIndexed { tag, member ->
       val (_, name, _, _, funTy) = member
 
-      val mangled = mangle(name, descriptor.name)
-      val construct = mangle(name, descriptor.name, Identifier("construct"))
+      val mangled = pathMangled { listOf(name, descriptor.name) }
+      val construct = pathMangled { listOf(name, descriptor.name, Identifier("construct")) }
 
-      val memberStruct = createNamedStruct(mangled) {
+      val memberStruct = createNamedStruct(mangled.get()) {
         elements = listOf(i8, *member.parameters.typegen().toTypedArray())
       }
 

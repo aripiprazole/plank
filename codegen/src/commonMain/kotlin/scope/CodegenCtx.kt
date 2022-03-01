@@ -10,6 +10,7 @@ import org.plank.analyzer.infer.ap
 import org.plank.analyzer.infer.nullSubst
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.DebugContext
+import org.plank.codegen.MangledId
 import org.plank.codegen.element.FunctionSymbol
 import org.plank.codegen.element.LazySymbol
 import org.plank.codegen.element.Symbol
@@ -55,6 +56,10 @@ sealed interface CodegenCtx : Context, IRBuilder {
     return setSymbol(name, ValueSymbol(type, variable))
   }
 
+  fun setSymbol(mangled: MangledId, type: Ty, variable: User): Value {
+    return setSymbol(mangled.get(), ValueSymbol(type, variable))
+  }
+
   fun setSymbolLazy(name: String, type: Ty, lazyValue: CodegenCtx.() -> Value): Value {
     return setSymbol(name, LazySymbol(type, name, lazyValue))
   }
@@ -67,6 +72,7 @@ sealed interface CodegenCtx : Context, IRBuilder {
 
   fun lazyLocal(name: String, builder: () -> AllocaInst?): AllocaInst?
 
+  fun MangledId.get(): String = with(this@CodegenCtx) { get() }
   fun Symbol.access(subst: Subst = nullSubst()): User? = with(this@CodegenCtx) { access(subst) }
 
   fun Ty.typegen(): Type = typegen(this.ap(subst))

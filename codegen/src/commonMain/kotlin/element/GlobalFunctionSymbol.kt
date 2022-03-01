@@ -4,10 +4,11 @@ import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
+import org.plank.codegen.MangledId
 import org.plank.codegen.alloca
 import org.plank.codegen.castClosure
 import org.plank.codegen.codegenError
-import org.plank.codegen.mangle
+import org.plank.codegen.funMangled
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.FunctionType
@@ -17,15 +18,13 @@ import org.plank.syntax.element.Identifier
 class GlobalFunctionSymbol(
   override val ty: FunTy,
   override val name: String,
-  private val mangleName: CodegenCtx.() -> String,
+  private val mangled: MangledId,
   private val references: Map<Identifier, Ty>,
   private val parameters: Map<Identifier, Ty>,
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   override fun CodegenCtx.access(subst: Subst): AllocaInst? {
-    println("Access global function symbol")
-    println("  ${mangleName()}")
-    return currentModule.getFunction(mangleName())?.let {
+    return currentModule.getFunction(mangled.get())?.let {
       alloca(createCall(it), name)
     }
   }
@@ -35,7 +34,7 @@ class GlobalFunctionSymbol(
 
     val insertionBlock = insertionBlock
     val function = FunctionType(closureReturnType).let {
-      currentModule.addFunction(mangleName(), it)
+      currentModule.addFunction(mangled.get(), it)
     }
 
     val entry = createBasicBlock("entry")
@@ -48,7 +47,7 @@ class GlobalFunctionSymbol(
         nested = false,
         references = references,
         name = name,
-        mangled = mangleName(),
+        mangled = mangled,
         realParameters = parameters,
         generate = generate,
       )
@@ -73,13 +72,13 @@ class GlobalFunctionSymbol(
 fun CodegenCtx.addGlobalFunction(
   ty: FunTy,
   name: String,
-  mangled: String,
+  mangled: MangledId,
   references: Map<Identifier, Ty> = emptyMap(),
   parameters: Map<Identifier, Ty> = emptyMap(),
   generate: GenerateBody,
 ): Value {
   return addFunction(
-    GlobalFunctionSymbol(ty, name, { mangled }, references, parameters, generate)
+    GlobalFunctionSymbol(ty, name, mangled, references, parameters, generate)
   )
 }
 
@@ -89,7 +88,7 @@ fun CodegenCtx.addGlobalFunction(descriptor: ResolvedFunDecl, generate: Generate
       ty = descriptor.ty,
       references = descriptor.references,
       name = descriptor.name.text,
-      mangleName = { mangle(descriptor) },
+      mangled = funMangled(descriptor),
       parameters = descriptor.parameters,
       generate = generate,
     ),

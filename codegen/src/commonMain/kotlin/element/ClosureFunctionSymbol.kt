@@ -3,6 +3,7 @@ package org.plank.codegen.element
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
+import org.plank.codegen.MangledId
 import org.plank.codegen.codegenError
 import org.plank.codegen.getField
 import org.plank.codegen.instantiate
@@ -18,7 +19,7 @@ import org.plank.syntax.element.Identifier
 class ClosureFunctionSymbol(
   override val ty: Ty,
   override val name: String,
-  private val mangled: String,
+  private val mangled: MangledId,
   private val references: Map<Identifier, Ty>,
   private val parameters: Map<Identifier, Ty>,
   private val realParameters: Map<Identifier, Ty>,
@@ -26,14 +27,14 @@ class ClosureFunctionSymbol(
   private val generate: GenerateBody,
 ) : FunctionSymbol {
   override fun CodegenCtx.access(subst: Subst): User {
-    return getSymbol(this, mangled)
+    return getSymbol(this, mangled.get())
   }
 
   override fun CodegenCtx.codegen(): Value {
     val returnTy = returnTy.typegen()
     val references = references.mapKeys { (name) -> name.text }
 
-    val environmentType = createNamedStruct("closure.env.$mangled") {
+    val environmentType = createNamedStruct("closure.env.${mangled.get()}") {
       elements = references.map { it.value.typegen() }
     }
 
@@ -43,14 +44,14 @@ class ClosureFunctionSymbol(
       *parameters.values.toList().typegen().toTypedArray(),
     )
 
-    val closureFunctionType = createNamedStruct("closure.fn.$mangled") {
+    val closureFunctionType = createNamedStruct("closure.fn.${mangled.get()}") {
       elements = listOf(
         functionType.pointer(AddrSpace.Generic),
         environmentType.pointer(AddrSpace.Generic)
       )
     }
 
-    val function = currentModule.addFunction(mangled, functionType)
+    val function = currentModule.addFunction(mangled.get(), functionType)
 
     // All closures are nested
     val enclosingBlock = insertionBlock ?: codegenError("No block in context")
@@ -114,7 +115,7 @@ class ClosureFunctionSymbol(
 fun CodegenCtx.addClosure(
   name: String,
   returnTy: Ty,
-  mangled: String = name,
+  mangled: MangledId = MangledId { name },
   references: Map<Identifier, Ty> = linkedMapOf(),
   realParameters: Map<Identifier, Ty> = emptyMap(),
   generate: GenerateBody,

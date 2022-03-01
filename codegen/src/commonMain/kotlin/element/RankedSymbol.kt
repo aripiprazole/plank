@@ -17,9 +17,6 @@ class RankedSymbol(val delegate: Symbol) : Symbol by delegate {
   }
 
   override fun CodegenCtx.access(subst: Subst): User {
-    println("Access ranked symbol $subst")
-    println("  $delegate")
-    println()
     return bindings.getOrPut(subst) {
       context.ap(subst).run {
         delegate.codegen()

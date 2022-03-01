@@ -7,8 +7,9 @@ import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.alloca
 import org.plank.codegen.expr.createIf
 import org.plank.codegen.getField
-import org.plank.codegen.mangle
+import org.plank.codegen.pathMangled
 import org.plank.codegen.scope.CodegenCtx
+import org.plank.codegen.stringMangled
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Function
 import org.plank.llvm4k.ir.FunctionType
@@ -45,13 +46,13 @@ class LazySymbol(
 
   override fun CodegenCtx.codegen(): Value {
     val type = ty.typegen()
-    val name = mangle(name)
+    val name = stringMangled { name }
 
-    val struct = createNamedStruct(name) {
+    val struct = createNamedStruct(name.get()) {
       elements = listOf(type.pointer(AddrSpace.Generic))
     }
 
-    val variable = currentModule.addGlobalVariable(name, struct, AddrSpace.Generic).apply {
+    val variable = currentModule.addGlobalVariable(name.get(), struct, AddrSpace.Generic).apply {
       initializer = struct.getConstant(
         type.pointer(AddrSpace.Generic).constPointerNull(),
         isPacked = false
@@ -60,8 +61,12 @@ class LazySymbol(
 
     val insertionBlock = insertionBlock
 
+    val mangled = pathMangled {
+      listOf(Identifier(this@LazySymbol.name), Identifier("Get"))
+    }
+
     getter = currentModule
-      .addFunction(mangle(Identifier(this@LazySymbol.name), Identifier("Get")), FunctionType(type))
+      .addFunction(mangled.get(), FunctionType(type))
       .apply {
         positionAfter(createBasicBlock("entry").also(::appendBasicBlock))
 
