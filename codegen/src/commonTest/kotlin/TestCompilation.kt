@@ -104,7 +104,6 @@ class TestCompilation(
           }
       } catch (error: CommandFailedException) {
         exitCode = error.exitCode
-        throw error
       } catch (error: AnalyzerError) {
         analyzerViolations = error.violations
       } catch (error: SyntaxError) {
@@ -112,10 +111,14 @@ class TestCompilation(
       } catch (error: CodegenError) {
         pkg.severe("Codegen Error: ${error.message}:")
         pkg.severe(error.context.currentModule.toString())
-        (runCatching { error.context.currentModule.verify() }.exceptionOrNull() as? LLVMError)?.let { llvmError ->
-          pkg.severe()
-          pkg.severe("LLVM Error:")
-          pkg.severe(llvmError.message)
+        runCatching { error.context.currentModule.verify() }.onFailure { failure ->
+          when (failure) {
+            is LLVMError -> {
+              pkg.severe()
+              pkg.severe("LLVM Error:")
+              pkg.severe(failure.message)
+            }
+          }
         }
         throw error
       } catch (error: Throwable) {
