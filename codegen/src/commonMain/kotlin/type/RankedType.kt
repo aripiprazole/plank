@@ -23,9 +23,6 @@ class RankedType(val delegate: CodegenType, val scheme: Scheme, val isGeneric: B
       }
     }
 
-    println("  - returning ${bindings[subst]}")
-    println()
-
     return context.ap(subst).run {
       delegate.get(subst)
     }
@@ -34,7 +31,7 @@ class RankedType(val delegate: CodegenType, val scheme: Scheme, val isGeneric: B
   override fun CodegenCtx.declare() {
     context = this
 
-    if (!isGeneric) return delegate.run { codegen() }
+    if (!isGeneric) return delegate.run { declare() }
   }
 
   override fun CodegenCtx.codegen() {
