@@ -117,10 +117,9 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
         name to when {
           params.isEmpty() -> {
-            val inst = instantiate(scheme)
-            val variant = inst.chainExecution().last()
+            val inst = instantiate(scheme.copy(ty = ConstTy(name.text)))
             val s = unify(ty, funScheme.ty.chainExecution().last())
-            val info = EnumMemberInfo(scope, name, variant, scheme, funTy, s, emptyList()).also {
+            val info = EnumMemberInfo(scope, name, inst, scheme, funTy, s, emptyList()).also {
               scope.createTyInfo(it)
             }
 
@@ -128,10 +127,9 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
             info
           }
           else -> {
-            val inst = instantiate(funScheme)
-            val variant = inst.chainExecution().last()
+            val inst = instantiate(funScheme.copy(ty = ConstTy(name.text)))
             val s = unify(ty, funScheme.ty.chainExecution().last())
-            val info = EnumMemberInfo(scope, name, variant, funScheme, funTy, s).also {
+            val info = EnumMemberInfo(scope, name, inst, funScheme, funTy, s).also {
               scope.createTyInfo(it)
             }
 

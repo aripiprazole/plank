@@ -76,7 +76,6 @@ class TestCompilation(
       debugPretty()
       debugLlvmIR()
       debugCompilation()
-      debugResolvedTree()
     }
 
     @Suppress("PrintStackTrace", "TooGenericExceptionCaught")

@@ -33,7 +33,7 @@ fun compile(
     logger.debug()
   }
 
-  if (debug.prettyDebug) {
+  if (debug.resolvedTreeDebug) {
     logger.debug("Resolved AST Dump:")
     logger.debug(main.dumpTree())
   }

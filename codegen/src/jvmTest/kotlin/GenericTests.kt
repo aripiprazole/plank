@@ -91,6 +91,7 @@ class GenericTests {
         """.trimIndent()
       )
       .debugAll()
+      .debugResolvedTree()
       .runTest {
         expectSuccess()
       }
