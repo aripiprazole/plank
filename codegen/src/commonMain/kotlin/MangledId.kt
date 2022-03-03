@@ -13,6 +13,22 @@ class MangledId(private val fn: CodegenCtx.() -> String) {
   fun CodegenCtx.get(): String = fn()
 }
 
+@Suppress("unused")
+fun CodegenCtx.typeMangled(fn: CodegenCtx.() -> List<Identifier>): MangledId = MangledId {
+  buildString {
+    append("_Z")
+    subst.types.toIdentifier().plus(fn()).forEach { str ->
+      append(str.text.length)
+      append(str.text)
+    }
+  }
+}
+
+@Suppress("unused")
+fun CodegenCtx.pathTypeMangled(fn: CodegenCtx.() -> List<Identifier>): MangledId = pathMangled {
+  subst.types.toIdentifier() + fn()
+}
+
 fun CodegenCtx.funMangled(decl: ResolvedFunDecl): MangledId = pathMangled {
   subst.types.toIdentifier() + decl.name
 }

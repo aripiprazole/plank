@@ -56,15 +56,37 @@ class GenericTests {
         """
         module Main;
 
+        enum Maybe[a] {
+          Just(a),
+          Nothing
+        }
+
+        fun main(argc: Int32, argv: **Char) {
+          Just("yes");
+          Just(123);
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
+  fun `test creating recursive enum with generics and applying a constant to call`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
         enum List[a] {
           Cons(a, List[a]),
           Nil
         }
 
-        fun show_list(list: List[a]) {}
-
         fun main(argc: Int32, argv: **Char) {
-          show_list(Nil);
+          Cons(10, Nil);
         }
         """.trimIndent()
       )

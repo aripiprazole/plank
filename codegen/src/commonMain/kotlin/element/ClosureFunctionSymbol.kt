@@ -63,9 +63,7 @@ class ClosureFunctionSymbol(
       val arguments = function.arguments
       val environment = arguments.first().apply { name = "env" }
 
-      val executionContext = ExecCtx(this, function, returnTy)
-
-      with(executionContext) {
+      ExecCtx(this, function, returnTy).run {
         references.entries.forEachIndexed { index, (reference, ty) ->
           val variable = getField(environment, index, "env.$reference")
 

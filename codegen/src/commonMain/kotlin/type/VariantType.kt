@@ -2,61 +2,37 @@ package org.plank.codegen.type
 
 import org.plank.analyzer.checker.EnumInfo
 import org.plank.analyzer.checker.EnumMemberInfo
-import org.plank.codegen.element.addGlobalFunction
-import org.plank.codegen.getField
-import org.plank.codegen.pathMangled
+import org.plank.analyzer.infer.Subst
+import org.plank.codegen.codegenError
 import org.plank.codegen.scope.CodegenCtx
+import org.plank.codegen.typeMangled
 import org.plank.llvm4k.ir.Type
-import org.plank.syntax.element.toIdentifier
 
 class VariantType(
-  val enum: Type,
+  val enum: CodegenType,
   val tag: Int,
   val descriptor: EnumInfo,
   val info: EnumMemberInfo,
 ) : CodegenType {
-  override fun CodegenCtx.get(): Type {
-    return findStruct(info.name.text)!!
+  override fun CodegenCtx.get(subst: Subst): Type {
+    val name = typeMangled { listOf(descriptor.name, info.name) }.get()
+
+    return findStruct(name)
+      ?: codegenError("Unresolved enum variant $name with subst ${this.subst}")
   }
 
   override fun CodegenCtx.declare() {
-    val struct = createNamedStruct(pathMangled { listOf(descriptor.name, info.name) }.get()) {
+    val name = typeMangled { listOf(descriptor.name, info.name) }.get()
+    val struct = createNamedStruct(name) {
       elements = listOf(i8, *info.parameters.typegen().toTypedArray())
     }
 
-    addStruct(info.name.text, struct)
+    addStruct(name, struct)
   }
 
   override fun CodegenCtx.codegen() {
-    val (_, name, _, scheme, funTy) = info
-
-    val struct = get()
-    val construct = pathMangled { listOf(name, info.name, "construct".toIdentifier()) }
-
-    when {
-      info.parameters.isEmpty() -> setSymbolLazy(name.text, scheme) {
-        val instance = createMalloc(struct)
-        createStore(i8.getConstant(tag, false), getField(instance, 0))
-        createBitCast(instance, enum)
-      }
-      else -> {
-        val parameters = info.parameters.withIndex().associate {
-          it.index.toString().toIdentifier() to it.value
-        }
-
-        addGlobalFunction(funTy, name.text, construct, parameters = parameters) {
-          var idx = 1
-          val instance = createMalloc(struct)
-          createStore(i8.getConstant(tag, false), getField(instance, 0))
-
-          arguments.values.forEach { argument ->
-            createStore(argument, getField(instance, idx))
-            idx++
-          }
-
-          createRet(createBitCast(instance, enum))
-        }
-      }
-    }
+    return
   }
+
+  override fun toString(): String = "VariantType(${info.name})"
 }

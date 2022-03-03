@@ -13,6 +13,7 @@ import org.plank.codegen.scope.createFileContext
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.Module
 import org.plank.shared.depthFirstSearch
+import org.plank.syntax.debug.dumpTree
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 
@@ -30,6 +31,11 @@ fun compile(
     logger.debug("Pretty dump:")
     logger.debug(main.pretty())
     logger.debug()
+  }
+
+  if (debug.prettyDebug) {
+    logger.debug("Resolved AST Dump:")
+    logger.debug(main.dumpTree())
   }
 
   val llvm = Context()

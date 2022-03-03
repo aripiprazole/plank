@@ -2,6 +2,7 @@ package org.plank.analyzer.checker
 
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Scheme
+import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.chainParameters
 import org.plank.analyzer.infer.doubleTy
@@ -35,6 +36,7 @@ data class StructInfo(
   override val name: Identifier,
   override val ty: Ty,
   override val generics: Set<Identifier> = emptySet(),
+  val scheme: Scheme,
   val members: Map<Identifier, StructMemberInfo> = emptyMap(),
 ) : TyInfo {
   override fun toString(): String = name.text
@@ -56,6 +58,7 @@ data class EnumInfo(
   override val name: Identifier,
   override val ty: Ty,
   override val generics: Set<Identifier> = emptySet(),
+  val scheme: Scheme,
   val members: Map<Identifier, EnumMemberInfo> = emptyMap(),
 ) : TyInfo {
   override fun toString(): String = name.text
@@ -67,6 +70,7 @@ data class EnumMemberInfo(
   override val ty: Ty,
   val scheme: Scheme,
   val funTy: FunTy,
+  val subst: Subst,
   val parameters: List<Ty> = funTy.chainParameters(),
 ) : TyInfo {
   override val generics: Set<Identifier> = emptySet()

@@ -37,7 +37,13 @@ data class ScopeCtx(
   private val irBuilder: IRBuilder = llvm.createIRBuilder(),
   override val loc: Loc = file.loc,
   override val enclosing: CodegenCtx? = null,
-  override val subst: Subst = nullSubst(),
+  override var subst: Subst = nullSubst(),
+
+  private val functions: MutableMap<String, Symbol> = mutableMapOf(),
+  private val symbols: MutableMap<String, Symbol> = mutableMapOf(),
+  private val types: MutableMap<String, CodegenType> = mutableMapOf(),
+  private val structs: MutableMap<String, Type> = mutableMapOf(),
+  private val lazy: MutableMap<String, AllocaInst> = mutableMapOf(),
 ) : IRBuilder by irBuilder, Context by llvm, CodegenCtx {
   /** TODO: add support for nested function intrinsics*/
   override val path: QualifiedPath = file.moduleName ?: QualifiedPath(file.module)
@@ -49,12 +55,6 @@ data class ScopeCtx(
   override val debug: DebugContext by lazy {
     DebugContext(this, debugOptions)
   }
-
-  private val functions = mutableMapOf<String, Symbol>()
-  private val symbols = mutableMapOf<String, Symbol>()
-  private val types = mutableMapOf<String, CodegenType>()
-  private val structs = mutableMapOf<String, Type>()
-  private val lazy = mutableMapOf<String, AllocaInst>()
 
   private val expanded = mutableListOf<ScopeCtx>()
   private val modules = mutableMapOf<String, ScopeCtx>()
@@ -76,8 +76,8 @@ data class ScopeCtx(
     return symbol.also { functions[function.name] = it }.codegen()
   }
 
-  override fun addType(name: String, type: CodegenType) {
-    type.apply {
+  override fun addType(name: String, type: CodegenType): CodegenType {
+    return type.apply {
       declare()
       types[name] = type
       codegen()
@@ -169,12 +169,41 @@ inline fun CodegenCtx.createScopeContext(
   }
 
   return when (this) {
-    is DescriptorCtx -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
-    is ExecCtx -> enclosing.copy(enclosing = enclosing, scope = moduleName).apply(builder)
-    else -> (this as ScopeCtx).copy(enclosing = this, scope = moduleName).apply(builder)
+    is DescriptorCtx -> enclosing.copy(
+      enclosing = enclosing,
+      scope = moduleName,
+      functions = mutableMapOf(),
+      symbols = mutableMapOf(),
+      types = mutableMapOf(),
+      structs = mutableMapOf(),
+      lazy = mutableMapOf(),
+    ).apply(builder)
+    is ExecCtx -> enclosing.copy(
+      enclosing = enclosing, scope = moduleName,
+      functions = mutableMapOf(),
+      symbols = mutableMapOf(),
+      types = mutableMapOf(),
+      structs = mutableMapOf(),
+      lazy = mutableMapOf(),
+    ).apply(builder)
+    else -> (this as ScopeCtx).copy(
+      enclosing = this, scope = moduleName,
+      functions = mutableMapOf(),
+      symbols = mutableMapOf(),
+      types = mutableMapOf(),
+      structs = mutableMapOf(),
+      lazy = mutableMapOf(),
+    ).apply(builder)
   }
 }
 
 fun CodegenCtx.createFileContext(file: ResolvedPlankFile = this.file): ScopeCtx {
-  return scopeContext().copy(enclosing = this, file = file, scope = file.module.text)
+  return scopeContext().copy(
+    enclosing = this, file = file, scope = file.module.text,
+    functions = mutableMapOf(),
+    symbols = mutableMapOf(),
+    types = mutableMapOf(),
+    structs = mutableMapOf(),
+    lazy = mutableMapOf(),
+  )
 }

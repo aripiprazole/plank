@@ -14,6 +14,7 @@ import org.plank.analyzer.infer.ConstTy
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
+import org.plank.analyzer.infer.chainExecution
 import org.plank.analyzer.infer.ty
 import org.plank.analyzer.infer.unitTy
 import org.plank.syntax.element.ConstExpr
@@ -51,13 +52,16 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         .generalize()
 
       val ty = instantiate(scheme).also {
-        scope.createTyInfo(StructInfo(scope, stmt.name, it, stmt.generics))
+        scope.createTyInfo(StructInfo(scope, stmt.name, it, stmt.generics, scheme))
       }
 
       val members = stmt.properties.associate { (mutable, name, type) ->
         name to StructMemberInfo(scope, name, checkTy(type.ty()), mutable)
       }
-      val info = scope.createTyInfo(StructInfo(scope, stmt.name, ty, stmt.generics, members))
+
+      val info = scope.createTyInfo(
+        StructInfo(scope, stmt.name, ty, stmt.generics, scheme, members),
+      )
 
       ResolvedStructDecl(info, stmt.loc)
     }
@@ -104,7 +108,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         .generalize()
 
       val ty = instantiate(scheme).also {
-        scope.createTyInfo(EnumInfo(scope, stmt.name, it, stmt.generics))
+        scope.createTyInfo(EnumInfo(scope, stmt.name, it, stmt.generics, scheme))
       }
 
       val members = stmt.members.associate { (name, params) ->
@@ -113,8 +117,10 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
         name to when {
           params.isEmpty() -> {
-            val variant = instantiate(scheme.copy(ty = ConstTy(name.text)))
-            val info = EnumMemberInfo(scope, name, variant, scheme, funTy, emptyList()).also {
+            val inst = instantiate(scheme)
+            val variant = inst.chainExecution().last()
+            val s = unify(ty, funScheme.ty.chainExecution().last())
+            val info = EnumMemberInfo(scope, name, variant, scheme, funTy, s, emptyList()).also {
               scope.createTyInfo(it)
             }
 
@@ -122,8 +128,10 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
             info
           }
           else -> {
-            val variant = instantiate(funScheme.copy(ty = ConstTy(name.text)))
-            val info = EnumMemberInfo(scope, name, variant, funScheme, funTy).also {
+            val inst = instantiate(funScheme)
+            val variant = inst.chainExecution().last()
+            val s = unify(ty, funScheme.ty.chainExecution().last())
+            val info = EnumMemberInfo(scope, name, variant, funScheme, funTy, s).also {
               scope.createTyInfo(it)
             }
 
@@ -132,7 +140,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
           }
         }
       }
-      val info = scope.createTyInfo(EnumInfo(scope, stmt.name, ty, stmt.generics, members))
+      val info = scope.createTyInfo(EnumInfo(scope, stmt.name, ty, stmt.generics, scheme, members))
 
       ResolvedEnumDecl(info, stmt.loc)
     }

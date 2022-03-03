@@ -8,6 +8,8 @@ value class Subst(private val map: Map<VarTy, Ty> = emptyMap()) {
 
   constructor(name: String, ty: Ty) : this(mapOf(VarTy(name) to ty))
 
+  constructor(builder: MutableMap<VarTy, Ty>.() -> Unit) : this(buildMap(builder))
+
   infix fun compose(other: Subst): Subst {
     return Subst((map + other.map).mapValues { it.value ap this })
   }

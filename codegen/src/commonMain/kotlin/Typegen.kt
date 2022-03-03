@@ -1,5 +1,6 @@
 package org.plank.codegen
 
+import org.plank.analyzer.infer.AppTy
 import org.plank.analyzer.infer.ConstTy
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.PtrTy
@@ -9,8 +10,12 @@ import org.plank.analyzer.infer.charTy
 import org.plank.analyzer.infer.i16Ty
 import org.plank.analyzer.infer.i32Ty
 import org.plank.analyzer.infer.i8Ty
+import org.plank.analyzer.infer.ungeneralize
+import org.plank.analyzer.infer.unify
 import org.plank.analyzer.infer.unitTy
 import org.plank.codegen.scope.CodegenCtx
+import org.plank.codegen.type.CodegenType
+import org.plank.codegen.type.RankedType
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Type
 import org.plank.syntax.element.toQualifiedPath
@@ -48,6 +53,25 @@ fun CodegenCtx.typegen(ty: Ty): Type {
         elements = listOf(functionType.pointer(AddrSpace.Generic), i8.pointer(AddrSpace.Generic))
       }
     }
+    is AppTy -> {
+      val codegenType = codegenType(ty) as RankedType
+      val subst = unify(codegenType.scheme.ty, ty)
+
+      codegenType.get(subst)
+    }
     else -> codegenError("Unsupported type `$ty`")
   }
+}
+
+fun CodegenCtx.codegenType(ty: Ty): CodegenType = when (ty) {
+  is AppTy -> codegenType(ty.ungeneralize())
+  is ConstTy -> {
+    val path = ty.name.toQualifiedPath()
+    val name = path.last()
+    val module = findModule(path.dropLast().text) ?: this
+
+    module.findType(name.text)
+      ?: codegenError("Unresolved type `${ty.name}` with $subst")
+  }
+  else -> codegenError("Can not get a codegen type of ${ty::class.simpleName}($ty)")
 }

@@ -65,6 +65,7 @@ class TestCompilation(
 
     fun debugTree(): Builder = apply { options.treeDebug = true }
     fun debugPlainAst(): Builder = apply { options.plainAstDebug = true }
+    fun debugResolvedTree(): Builder = apply { options.resolvedTreeDebug = true }
     fun debugPretty(): Builder = apply { options.prettyDebug = true }
     fun debugLlvmIR(): Builder = apply { options.llvmIrDebug = true }
     fun debugParser(): Builder = apply { options.parserDebug = true }
@@ -75,6 +76,7 @@ class TestCompilation(
       debugPretty()
       debugLlvmIR()
       debugCompilation()
+      debugResolvedTree()
     }
 
     @Suppress("PrintStackTrace", "TooGenericExceptionCaught")

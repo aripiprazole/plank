@@ -114,7 +114,7 @@ fun Ty.chainExecution(): List<Ty> = when (this) {
     }
     add(ty)
   }
-  else -> emptyList()
+  else -> listOf(this)
 }
 
 fun Ty.chainParameters(): List<Ty> = when (this) {

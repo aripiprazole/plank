@@ -48,7 +48,7 @@ sealed interface CodegenCtx : Context, IRBuilder {
 
   fun addModule(module: ScopeCtx)
   fun addFunction(function: FunctionSymbol): Value
-  fun addType(name: String, type: CodegenType)
+  fun addType(name: String, type: CodegenType): CodegenType
   fun addStruct(name: String, type: Type)
 
   fun getSymbol(scope: CodegenCtx, name: String, subst: Subst = nullSubst()): User
@@ -73,7 +73,7 @@ sealed interface CodegenCtx : Context, IRBuilder {
   fun findAlloca(name: String, subst: Subst = nullSubst()): User?
   fun findIntrinsic(name: String): IntrinsicFunction?
 
-  fun CodegenType.get(): Type = with(this@CodegenCtx) { get() }
+  fun CodegenType.get(subst: Subst = nullSubst()): Type = with(this@CodegenCtx) { get(subst) }
 
   fun MangledId.get(): String = with(this@CodegenCtx) { get() } +
     subst.types.joinToString("") { ty -> "${ty.toString().length}$ty" }
