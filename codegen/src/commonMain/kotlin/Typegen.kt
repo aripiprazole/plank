@@ -31,7 +31,8 @@ fun CodegenCtx.typegen(ty: Ty): Type {
       val name = path.last()
       val module = findModule(path.dropLast().text) ?: this
 
-      module.findStruct(name.text) ?: codegenError("Unresolved type `${ty.name}`")
+      module.findType(name.text)?.get()
+        ?: codegenError("Unresolved type `${ty.name}`")
     }
     is FunTy -> {
       val returnTy = ty.returnTy.typegen()

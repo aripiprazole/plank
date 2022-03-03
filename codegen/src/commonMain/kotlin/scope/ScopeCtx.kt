@@ -12,6 +12,7 @@ import org.plank.codegen.element.Symbol
 import org.plank.codegen.getOrCreateStruct
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.intrinsics.Intrinsics
+import org.plank.codegen.type.CodegenType
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.IRBuilder
 import org.plank.llvm4k.Module
@@ -51,6 +52,7 @@ data class ScopeCtx(
 
   private val functions = mutableMapOf<String, Symbol>()
   private val symbols = mutableMapOf<String, Symbol>()
+  private val types = mutableMapOf<String, CodegenType>()
   private val structs = mutableMapOf<String, Type>()
   private val lazy = mutableMapOf<String, AllocaInst>()
 
@@ -70,14 +72,20 @@ data class ScopeCtx(
   }
 
   override fun addFunction(function: FunctionSymbol): Value {
-    val names = function.scheme.names.filter { subst[it] == null }
-    val isGeneric = names.isNotEmpty()
-    val symbol = RankedSymbol(function, isGeneric)
+    val symbol = RankedSymbol(function, function.scheme)
     return symbol.also { functions[function.name] = it }.codegen()
   }
 
-  override fun addStruct(name: String, struct: Type) {
-    structs[name] = struct
+  override fun addType(name: String, type: CodegenType) {
+    type.apply {
+      declare()
+      types[name] = type
+      codegen()
+    }
+  }
+
+  override fun addStruct(name: String, type: Type) {
+    structs[name] = type
   }
 
   override fun getSymbol(scope: CodegenCtx, name: String, subst: Subst): User {
@@ -101,6 +109,12 @@ data class ScopeCtx(
     return modules[name]
       ?: enclosing?.findModule(name)
       ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findModule(name) }
+  }
+
+  override fun findType(name: String): CodegenType? {
+    return types[name]
+      ?: enclosing?.findType(name)
+      ?: expanded.filter { it != this }.firstNotNullOfOrNull { it.findType(name) }
   }
 
   override fun findStruct(name: String): Type? {

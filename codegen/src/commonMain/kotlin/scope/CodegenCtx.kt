@@ -19,6 +19,7 @@ import org.plank.codegen.element.ValueSymbol
 import org.plank.codegen.exprToInstruction
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.stmtToInstruction
+import org.plank.codegen.type.CodegenType
 import org.plank.codegen.typegen
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.IRBuilder
@@ -44,10 +45,11 @@ sealed interface CodegenCtx : Context, IRBuilder {
   val unit: StructType
 
   fun expand(scope: ScopeCtx)
-  fun addModule(module: ScopeCtx)
 
+  fun addModule(module: ScopeCtx)
   fun addFunction(function: FunctionSymbol): Value
-  fun addStruct(name: String, struct: Type)
+  fun addType(name: String, type: CodegenType)
+  fun addStruct(name: String, type: Type)
 
   fun getSymbol(scope: CodegenCtx, name: String, subst: Subst = nullSubst()): User
   fun setSymbol(name: String, value: Symbol): Value
@@ -66,11 +68,16 @@ sealed interface CodegenCtx : Context, IRBuilder {
 
   fun findFunction(name: String): Symbol?
   fun findModule(name: String): ScopeCtx?
+  fun findType(name: String): CodegenType?
   fun findStruct(name: String): Type?
   fun findAlloca(name: String, subst: Subst = nullSubst()): User?
   fun findIntrinsic(name: String): IntrinsicFunction?
 
-  fun MangledId.get(): String = with(this@CodegenCtx) { get() }
+  fun CodegenType.get(): Type = with(this@CodegenCtx) { get() }
+
+  fun MangledId.get(): String = with(this@CodegenCtx) { get() } +
+    subst.types.joinToString("") { ty -> "${ty.toString().length}$ty" }
+
   fun Symbol.access(subst: Subst = nullSubst()): User? = with(this@CodegenCtx) { access(subst) }
 
   fun Ty.typegen(): Type = typegen(this.ap(subst))

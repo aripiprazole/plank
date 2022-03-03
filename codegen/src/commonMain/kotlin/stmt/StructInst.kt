@@ -3,16 +3,12 @@ package org.plank.codegen.stmt
 import org.plank.analyzer.element.ResolvedStructDecl
 import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.scope.CodegenCtx
+import org.plank.codegen.type.StructType
 import org.plank.llvm4k.ir.Value
 
 class StructInst(private val descriptor: ResolvedStructDecl) : CodegenInstruction {
   override fun CodegenCtx.codegen(): Value {
-    val name = descriptor.name.text
-    val struct = createNamedStruct(name) {
-      elements = descriptor.members.values.map { it.ty.typegen() }
-    }
-
-    addStruct(name, struct)
+    addType(descriptor.name.text, StructType(descriptor))
 
     return i1.constantNull
   }

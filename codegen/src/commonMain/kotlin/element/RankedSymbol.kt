@@ -1,5 +1,6 @@
 package org.plank.codegen.element
 
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.ap
@@ -30,4 +31,8 @@ class RankedSymbol(val delegate: Symbol, val isGeneric: Boolean) : Symbol by del
 
     return context.ap(subst).run { delegate.access(subst) }
   }
+}
+
+fun CodegenCtx.RankedSymbol(delegate: Symbol, scheme: Scheme): RankedSymbol {
+  return RankedSymbol(delegate, scheme.names.any { subst[it] == null })
 }
