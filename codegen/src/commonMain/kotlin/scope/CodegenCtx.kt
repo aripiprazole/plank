@@ -20,6 +20,7 @@ import org.plank.codegen.exprToInstruction
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.stmtToInstruction
 import org.plank.codegen.type.CodegenType
+import org.plank.codegen.type.RankedType
 import org.plank.codegen.typegen
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.IRBuilder
@@ -48,7 +49,7 @@ sealed interface CodegenCtx : Context, IRBuilder {
 
   fun addModule(module: ScopeCtx)
   fun addFunction(function: FunctionSymbol): Value
-  fun addType(name: String, type: CodegenType): CodegenType
+  fun addType(name: String, type: RankedType): CodegenType
   fun addStruct(name: String, type: Type)
 
   fun getSymbol(scope: CodegenCtx, name: String, subst: Subst = nullSubst()): User

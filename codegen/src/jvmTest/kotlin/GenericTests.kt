@@ -50,6 +50,38 @@ class GenericTests {
   }
 
   @Test
+  fun `test creating enum with generics and applying a constant to call and pattern match`() {
+    TestCompilation
+      .of(
+        """
+        module Main;
+
+        use Std.IO;
+
+        enum Maybe[a] {
+          Just(a),
+          Nothing
+        }
+
+        fun show(maybe: Maybe[Int32]) {
+          match maybe {
+            Just(value) => print_int(value),
+            Nothing => println("Nothing")
+          }
+        }
+
+        fun main(argc: Int32, argv: **Char) {
+          show(Just(10));
+        }
+        """.trimIndent()
+      )
+      .debugAll()
+      .runTest {
+        expectSuccess()
+      }
+  }
+
+  @Test
   fun `test creating enum with generics and applying a constant to call`() {
     TestCompilation
       .of(

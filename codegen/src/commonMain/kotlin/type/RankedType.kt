@@ -28,6 +28,10 @@ class RankedType(val delegate: CodegenType, val scheme: Scheme, val isGeneric: B
     }
   }
 
+  override fun CodegenCtx.genSubTypes(target: RankedType) {
+    delegate.run { genSubTypes(this@RankedType) }
+  }
+
   override fun CodegenCtx.declare() {
     context = this
 

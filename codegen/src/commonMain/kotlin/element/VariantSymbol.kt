@@ -4,6 +4,7 @@ import org.plank.analyzer.checker.EnumInfo
 import org.plank.analyzer.checker.EnumMemberInfo
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
+import org.plank.analyzer.infer.VarTy
 import org.plank.codegen.getField
 import org.plank.codegen.pathTypeMangled
 import org.plank.codegen.scope.CodegenCtx
@@ -35,8 +36,14 @@ class VariantSymbol(
     val transformedSubst = Subst {
       val map = (subst compose newSubst).toMap()
 
-      newSubst.toMap().forEach { (v) ->
-        map[v]?.let { put(v, it) }
+      newSubst.toMap().forEach { (key, _) ->
+        map[key]?.let {
+          if (it is VarTy) {
+            subst[key.name]?.let { ty -> put(key, ty) }
+          } else {
+            put(key, it)
+          }
+        }
       }
     }
 

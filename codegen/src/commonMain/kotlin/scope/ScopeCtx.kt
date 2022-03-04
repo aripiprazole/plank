@@ -13,6 +13,7 @@ import org.plank.codegen.getOrCreateStruct
 import org.plank.codegen.intrinsics.IntrinsicFunction
 import org.plank.codegen.intrinsics.Intrinsics
 import org.plank.codegen.type.CodegenType
+import org.plank.codegen.type.RankedType
 import org.plank.llvm4k.Context
 import org.plank.llvm4k.IRBuilder
 import org.plank.llvm4k.Module
@@ -76,10 +77,11 @@ data class ScopeCtx(
     return symbol.also { functions[function.name] = it }.codegen()
   }
 
-  override fun addType(name: String, type: CodegenType): CodegenType {
+  override fun addType(name: String, type: RankedType): CodegenType {
     return type.apply {
       declare()
       types[name] = type
+      genSubTypes(type)
       codegen()
     }
   }
