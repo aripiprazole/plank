@@ -4,6 +4,7 @@ import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.ap
+import org.plank.codegen.scope.createScopeContext
 import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 
@@ -12,7 +13,7 @@ class RankedSymbol(val delegate: Symbol, val isGeneric: Boolean) : Symbol by del
   private lateinit var context: CodegenCtx
 
   override fun CodegenCtx.codegen(): Value {
-    context = this
+    context = createScopeContext("RankedSymbol")
 
     if (!isGeneric) return delegate.codegen()
 
