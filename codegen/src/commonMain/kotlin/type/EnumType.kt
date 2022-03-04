@@ -29,7 +29,10 @@ class EnumType(val descriptor: ResolvedEnumDecl) : CodegenType {
 
   override fun CodegenCtx.genSubTypes(target: RankedType) {
     descriptor.members.values.forEachIndexed { i, info ->
-      val symbol = RankedSymbol(VariantSymbol(target, i, descriptor.info, info), info.scheme)
+      val variant = VariantSymbol(target, i, descriptor.info, info).apply {
+        typegen()
+      }
+      val symbol = RankedSymbol(variant, info.scheme)
 
       setSymbol(info.name.text, symbol)
     }

@@ -71,6 +71,7 @@ data class EnumMemberInfo(
   val scheme: Scheme,
   val funTy: FunTy,
   val subst: Subst,
+  val enum: EnumInfo,
   val parameters: List<Ty> = funTy.chainParameters(),
 ) : TyInfo {
   override val generics: Set<Identifier> = emptySet()

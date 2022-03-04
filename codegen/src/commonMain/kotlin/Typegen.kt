@@ -1,16 +1,18 @@
 package org.plank.codegen
 
+import org.plank.analyzer.checker.lastName
+import org.plank.analyzer.checker.replaceLastName
 import org.plank.analyzer.infer.AppTy
 import org.plank.analyzer.infer.ConstTy
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.PtrTy
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.boolTy
+import org.plank.analyzer.infer.chainExecution
 import org.plank.analyzer.infer.charTy
 import org.plank.analyzer.infer.i16Ty
 import org.plank.analyzer.infer.i32Ty
 import org.plank.analyzer.infer.i8Ty
-import org.plank.analyzer.infer.ungeneralize
 import org.plank.analyzer.infer.unify
 import org.plank.analyzer.infer.unitTy
 import org.plank.codegen.scope.CodegenCtx
@@ -55,7 +57,9 @@ fun CodegenCtx.typegen(ty: Ty): Type {
     }
     is AppTy -> {
       val codegenType = codegenType(ty) as RankedType
-      val subst = unify(codegenType.scheme.ty, ty)
+      val schemeTy = codegenType.scheme.ty.chainExecution().last()
+
+      val subst = unify(schemeTy, ty.replaceLastName(codegenType.scheme.ty.lastName()))
 
       codegenType.get(subst)
     }
@@ -64,7 +68,7 @@ fun CodegenCtx.typegen(ty: Ty): Type {
 }
 
 fun CodegenCtx.codegenType(ty: Ty): CodegenType = when (ty) {
-  is AppTy -> codegenType(ty.ungeneralize())
+  is AppTy -> codegenType(ty.fn)
   is ConstTy -> {
     val path = ty.name.toQualifiedPath()
     val name = path.last()

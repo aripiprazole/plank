@@ -4,7 +4,7 @@ import org.plank.analyzer.checker.EnumInfo
 import org.plank.analyzer.checker.EnumMemberInfo
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst
-import org.plank.analyzer.infer.VarTy
+import org.plank.codegen.ap
 import org.plank.codegen.getField
 import org.plank.codegen.pathTypeMangled
 import org.plank.codegen.scope.CodegenCtx
@@ -24,6 +24,12 @@ class VariantSymbol(
 ) : Symbol {
   override val scheme: Scheme = info.scheme
 
+  fun CodegenCtx.typegen(): CodegenType {
+    return RankedType(VariantType(enum, tag, descriptor, info), descriptor.scheme).also {
+      addType(info.name.text, it)
+    }
+  }
+
   override fun CodegenCtx.access(subst: Subst): User {
     val mangled = pathTypeMangled { listOf(descriptor.name, info.name, "variant".toIdentifier()) }
 
@@ -33,27 +39,11 @@ class VariantSymbol(
   override fun CodegenCtx.codegen(): Value {
     val (_, name, _, scheme, funTy, newSubst) = info
 
-    val transformedSubst = Subst {
-      val map = (subst compose newSubst).toMap()
-
-      newSubst.toMap().forEach { (key, _) ->
-        map[key]?.let {
-          if (it is VarTy) {
-            subst[key.name]?.let { ty -> put(key, ty) }
-          } else {
-            put(key, it)
-          }
-        }
+    ap(subst ap newSubst).apply {
+      val type = typegen().apply {
+        declare()
+        codegen()
       }
-    }
-
-    ap(transformedSubst).apply {
-      val type = RankedType(VariantType(enum, tag, descriptor, info), scheme)
-        .also { addType(info.name.text, it) }
-        .apply {
-          declare()
-          codegen()
-        }
 
       val enumType = enum.get(subst)
       val memberType = type.get(subst)

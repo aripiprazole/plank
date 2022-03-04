@@ -7,6 +7,7 @@ import org.plank.analyzer.element.TypedIdentPattern
 import org.plank.analyzer.element.TypedPattern
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.ap
+import org.plank.analyzer.infer.chainExecution
 import org.plank.analyzer.infer.chainParameters
 import org.plank.analyzer.infer.enumVariant
 import org.plank.syntax.element.EnumVariantPattern
@@ -49,6 +50,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
       }
       val t2 = t1 ap s1
       val parameters = t2.chainParameters()
+      val t3 = t2.chainExecution().last()
 
       val properties = pattern.properties.mapIndexed { i, next ->
         val tv = parameters.elementAtOrNull(i)
@@ -57,7 +59,11 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         checkPattern(next, TypedEnumIndexAccess(subject, i, tv, next.loc))
       }
 
-      TypedEnumVariantPattern(info, pattern.type, properties, t2, pattern.loc)
+      val newInfo = info.copy(
+        ty = info.ty ap unify(t3.replaceLastName(info.ty.lastName()), info.ty),
+      )
+
+      TypedEnumVariantPattern(newInfo, pattern.type, properties, t3, pattern.loc)
     }
   }
 }

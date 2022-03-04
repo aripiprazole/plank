@@ -12,6 +12,8 @@ import org.plank.analyzer.element.ResolvedUseDecl
 import org.plank.analyzer.infer.AppTy
 import org.plank.analyzer.infer.ConstTy
 import org.plank.analyzer.infer.FunTy
+import org.plank.analyzer.infer.PtrTy
+import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
 import org.plank.analyzer.infer.chainExecution
@@ -107,19 +109,20 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
         }
         .generalize()
 
-      val ty = instantiate(scheme).also {
-        scope.createTyInfo(EnumInfo(scope, stmt.name, it, stmt.generics, scheme))
-      }
+      val ty = instantiate(scheme)
+      val enum = scope.createTyInfo(EnumInfo(scope, stmt.name, ty, stmt.generics, scheme))
 
       val members = stmt.members.associate { (name, params) ->
         val funTy = FunTy(ty, params.ty().map(::checkTy))
         val funScheme = instantiate(funTy.generalize()).generalize()
 
+        val memberName = (scope.fullPath() + name).text
+
         name to when {
           params.isEmpty() -> {
-            val inst = instantiate(scheme.copy(ty = ConstTy(name.text)))
+            val inst = instantiate(scheme.replaceLastName(memberName))
             val s = unify(ty, funScheme.ty.chainExecution().last())
-            val info = EnumMemberInfo(scope, name, inst, scheme, funTy, s, emptyList()).also {
+            val info = EnumMemberInfo(scope, name, inst, scheme, funTy, s, enum, emptyList()).also {
               scope.createTyInfo(it)
             }
 
@@ -127,9 +130,9 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
             info
           }
           else -> {
-            val inst = instantiate(funScheme.copy(ty = ConstTy(name.text)))
+            val inst = instantiate(funScheme.replaceLastName(memberName)).chainExecution().last()
             val s = unify(ty, funScheme.ty.chainExecution().last())
-            val info = EnumMemberInfo(scope, name, inst, funScheme, funTy, s).also {
+            val info = EnumMemberInfo(scope, name, inst, funScheme, funTy, s, enum).also {
               scope.createTyInfo(it)
             }
 
@@ -182,5 +185,29 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
       ResolvedFunDecl(body, stmt.attributes, references, info, isNested, stmt.loc)
     }
+  }
+}
+
+fun Scheme.replaceLastName(name: String): Scheme {
+  return copy(ty = ty.replaceLastName(name))
+}
+
+fun Ty.lastName(): String {
+  return when (this) {
+    is AppTy -> fn.lastName()
+    is ConstTy -> name
+    is VarTy -> name
+    is PtrTy -> arg.lastName()
+    is FunTy -> returnTy.lastName()
+  }
+}
+
+fun Ty.replaceLastName(name: String): Ty {
+  return when (this) {
+    is AppTy -> copy(fn = fn.replaceLastName(name))
+    is ConstTy -> copy(name = name)
+    is FunTy -> copy(returnTy = returnTy.replaceLastName(name))
+    is VarTy -> copy(name = name)
+    is PtrTy -> copy(arg = arg.replaceLastName(name))
   }
 }

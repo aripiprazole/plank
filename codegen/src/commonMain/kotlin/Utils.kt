@@ -3,6 +3,8 @@ package org.plank.codegen
 import org.plank.analyzer.checker.StructInfo
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedExpr
+import org.plank.analyzer.infer.Subst
+import org.plank.analyzer.infer.VarTy
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.AllocaInst
@@ -17,6 +19,22 @@ import org.plank.syntax.element.Identifier
 expect fun CodegenCtx.unsafeAlloca(value: Value): AllocaInst
 
 expect fun CodegenCtx.unsafeFunction(value: Value): Function
+
+infix fun Subst.ap(other: Subst): Subst {
+  return Subst {
+    val map = (this@ap compose other).toMap()
+
+    other.toMap().forEach { (key, _) ->
+      map[key]?.let {
+        if (it is VarTy) {
+          this@ap[key.name]?.let { ty -> put(key, ty) }
+        } else {
+          put(key, it)
+        }
+      }
+    }
+  }
+}
 
 fun CodegenCtx.castClosure(closure: Value, type: Type): LoadInst {
   type as StructType
