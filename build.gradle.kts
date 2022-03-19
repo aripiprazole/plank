@@ -46,7 +46,6 @@ subprojects {
     maven("https://jitpack.io")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-    maven("https://plank.jfrog.io/artifactory/default-gradle-dev-local/")
   }
 
   group = "org.plank"

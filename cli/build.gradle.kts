@@ -90,20 +90,20 @@ kotlin {
         implementation(projects.shared)
         implementation(projects.analyzer)
         implementation(projects.codegen)
+        implementation(projects.llvm4k)
         implementation(libs.clikt)
-        implementation(libs.llvm4k.common)
       }
     }
 
     val linuxX64Main by getting {
       dependencies {
-        implementation(libs.llvm4k.linuxX64)
+        implementation(projects.llvm4k)
       }
     }
 
     val mingwX64Main by getting {
       dependencies {
-        implementation(libs.llvm4k.mingwX64)
+        implementation(projects.llvm4k)
       }
     }
   }

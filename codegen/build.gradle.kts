@@ -78,7 +78,7 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(libs.arrow.core)
-        implementation(libs.llvm4k.common)
+        implementation(projects.llvm4k)
         implementation(projects.syntax)
         implementation(projects.shared)
         implementation(projects.analyzer)
@@ -93,7 +93,7 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        implementation(libs.llvm4k.jvm)
+        implementation(projects.llvm4k)
         implementation(libs.bytedeco.llvm)
         implementation(libs.bytedeco.libffi)
         implementation(libs.jna)
@@ -110,13 +110,13 @@ kotlin {
 
     val linuxX64Main by getting {
       dependencies {
-        implementation(libs.llvm4k.linuxX64)
+        implementation(projects.llvm4k)
       }
     }
 
     val mingwX64Main by getting {
       dependencies {
-        implementation(libs.llvm4k.mingwX64)
+        implementation(projects.llvm4k)
       }
     }
   }

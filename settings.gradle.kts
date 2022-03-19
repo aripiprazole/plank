@@ -11,6 +11,7 @@ pluginManagement {
 }
 
 include("codegen")
+include("llvm4k")
 include("syntax")
 include("cli")
 include("lang-server")
