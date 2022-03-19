@@ -76,4 +76,21 @@ configure<KotlinMultiplatformExtension> {
       includeDirs(LlvmConfig.cmd("--includedir").absolutePath())
     }
   }
+
+  sourceSets {
+    val commonMain by getting
+    val commonTest by getting {
+      dependencies {
+        implementation(kotlin("test"))
+      }
+    }
+
+    val jvmMain by getting {
+      dependencies {
+        implementation(libs.bytedeco.llvm)
+        implementation(libs.bytedeco.libffi)
+        implementation(libs.jna)
+      }
+    }
+  }
 }
