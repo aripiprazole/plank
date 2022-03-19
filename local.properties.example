@@ -1,1 +1,3 @@
 llvm.config=/usr/lib/llvm-13/bin/llvm-config
+artifactory.password=
+artifactory.username=

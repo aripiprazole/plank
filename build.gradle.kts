@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.KtlintPlugin
+import org.plank.build.LocalProperties
 
 buildscript {
   repositories {
@@ -28,6 +29,8 @@ plugins {
 
 group = "org"
 version = "1.0-SNAPSHOT"
+
+LocalProperties.init(rootProject)
 
 repositories {
   mavenCentral()
