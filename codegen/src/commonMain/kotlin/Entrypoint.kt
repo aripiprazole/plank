@@ -3,7 +3,6 @@ package org.plank.codegen
 import org.plank.analyzer.element.ResolvedFunDecl
 import org.plank.codegen.expr.callClosure
 import org.plank.codegen.scope.CodegenCtx
-import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Value
 
@@ -17,7 +16,7 @@ class Entrypoint : CodegenInstruction {
       val function = FunctionType(
         i32,
         i32,
-        i8.pointer(AddrSpace.Generic).pointer(AddrSpace.Generic),
+        i8.pointer().pointer(),
       ).let {
         currentModule.addFunction("main", it)
       }

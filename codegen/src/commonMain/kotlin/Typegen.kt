@@ -18,7 +18,6 @@ import org.plank.analyzer.infer.unitTy
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.type.CodegenType
 import org.plank.codegen.type.RankedType
-import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Type
 import org.plank.syntax.element.toQualifiedPath
 import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
@@ -32,7 +31,7 @@ fun CodegenCtx.typegen(ty: Ty): Type {
     i8Ty -> i8
     i16Ty -> i16
     i32Ty -> i32
-    is PtrTy -> ty.arg.typegen().pointer(AddrSpace.Generic)
+    is PtrTy -> ty.arg.typegen().pointer()
     is ConstTy -> {
       val path = ty.name.toQualifiedPath()
       val name = path.last()
@@ -46,13 +45,13 @@ fun CodegenCtx.typegen(ty: Ty): Type {
       val parameterTy = ty.parameterTy.typegen()
 
       val functionType = if (parameterTy.kind == Type.Kind.Void) {
-        LLVMFunctionType(returnTy, i8.pointer(AddrSpace.Generic))
+        LLVMFunctionType(returnTy, i8.pointer())
       } else {
-        LLVMFunctionType(returnTy, i8.pointer(AddrSpace.Generic), parameterTy)
+        LLVMFunctionType(returnTy, i8.pointer(), parameterTy)
       }
 
       getOrCreateStruct("$ty") {
-        elements = listOf(functionType.pointer(AddrSpace.Generic), i8.pointer(AddrSpace.Generic))
+        elements = listOf(functionType.pointer(), i8.pointer())
       }
     }
     is AppTy -> {

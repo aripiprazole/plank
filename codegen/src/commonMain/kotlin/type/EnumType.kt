@@ -7,7 +7,6 @@ import org.plank.codegen.element.RankedSymbol
 import org.plank.codegen.element.VariantSymbol
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.typeMangled
-import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.Type
 
 class EnumType(val descriptor: ResolvedEnumDecl) : CodegenType {
@@ -21,10 +20,10 @@ class EnumType(val descriptor: ResolvedEnumDecl) : CodegenType {
   override fun CodegenCtx.declare() {
     val name = typeMangled { listOf(descriptor.name) }.get()
     val struct = createNamedStruct(name) {
-      elements = listOf(i8, i8.pointer(AddrSpace.Generic))
+      elements = listOf(i8, i8.pointer())
     }
 
-    addStruct(name, struct.pointer(AddrSpace.Generic))
+    addStruct(name, struct.pointer())
   }
 
   override fun CodegenCtx.genSubTypes(target: RankedType) {

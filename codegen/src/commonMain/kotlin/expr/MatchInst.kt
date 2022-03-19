@@ -10,7 +10,6 @@ import org.plank.codegen.CodegenInstruction
 import org.plank.codegen.getField
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.unsafeAlloca
-import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.IntPredicate
 import org.plank.llvm4k.ir.Value
 
@@ -69,7 +68,7 @@ fun CodegenCtx.deconstructPattern(subject: Value, pattern: TypedPattern) {
     }
     is TypedEnumVariantPattern -> {
       var idx = 1
-      val member = createBitCast(subject, pattern.info.ty.typegen().pointer(AddrSpace.Generic))
+      val member = createBitCast(subject, pattern.info.ty.typegen().pointer())
 
       pattern.properties.forEach { nestedPattern ->
         val prop = getField(member, idx)

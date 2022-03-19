@@ -49,12 +49,12 @@ class LazySymbol(
     val name = stringMangled { name }
 
     val struct = createNamedStruct(name.get()) {
-      elements = listOf(type.pointer(AddrSpace.Generic))
+      elements = listOf(type.pointer())
     }
 
     val variable = currentModule.addGlobalVariable(name.get(), struct, AddrSpace.Generic).apply {
       initializer = struct.getConstant(
-        type.pointer(AddrSpace.Generic).constPointerNull(),
+        type.pointer().constPointerNull(),
         isPacked = false
       )
     }

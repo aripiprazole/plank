@@ -6,7 +6,6 @@ import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.VarTy
 import org.plank.codegen.scope.CodegenCtx
-import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.Constant
 import org.plank.llvm4k.ir.Function
@@ -39,7 +38,7 @@ infix fun Subst.ap(other: Subst): Subst {
 fun CodegenCtx.castClosure(closure: Value, type: Type): LoadInst {
   type as StructType
 
-  return createLoad(createBitCast(closure, type.pointer(AddrSpace.Generic)))
+  return createLoad(createBitCast(closure, type.pointer()))
 }
 
 fun CodegenCtx.createUnit(): Constant {
