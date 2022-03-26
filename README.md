@@ -5,7 +5,7 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/plank-lang/plank?color=orange&style=for-the-badge)
 
 Plank is a simple language made with LLVM and ANTLR in Kotlin. Need help? contact me
-on [Twitter](https://twitter.com/gabrielleeg1) or message me on discord **gabii#9722**.
+on [Twitter](https://twitter.com/gabrielleeg1) or message me on discord **Gabii#3336**.
 
 ### Content
 
