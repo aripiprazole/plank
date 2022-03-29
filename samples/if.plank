@@ -1,5 +1,0 @@
-import Std.IO;
-
-fun main(argc: Int, argv: **Char) {
-  if (true) println("True!") else println("False!");
-}

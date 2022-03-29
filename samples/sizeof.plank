@@ -1,7 +1,0 @@
-import Std.IO;
-
-type Person = { name: *Char, age: Int };
-
-fun main(argc: Int, argv: **Char): Void {
-  println(sizeof Person);
-}
