@@ -11,12 +11,11 @@ on [Twitter](https://twitter.com/gabrielleeg1) or message me on discord **Gabii#
 
 * [Example](#example)
 * [Modules](#modules)
-* [Dependencies](#dependencies)
 * [CLI](#cli)
 * [Building](#building)
-* Documentation (WIP)
 * [Pull Requests](#pull-requests)
 * [Ending](#ending)
+* Documentation (WIP)
 
 ## Example
 
@@ -25,7 +24,7 @@ Hello world in plank:
 ```ocaml
 use Std.IO;
 
-fun main(argc: Int32, argv: **Char) -> Void {
+fun main(argc: Int32, argv: **Char) {
   println("Hello, world");
 }
 ```
@@ -34,16 +33,16 @@ You can find more examples [here](samples)
 
 ## Modules
 
-| Name                           | Description                                      |
-|--------------------------------|--------------------------------------------------|
-| [cli](cli)                     | All command-line stuff                           | 
-| [syntax](syntax)               | AST and Descriptor Mapping                       |
-| [parser](parser)               | ANTLR grammar                                    |
-| [codegen](codegen)             | The LLVM core that compiles to IR representation |
-| [analyzer](runtime)            | Code analyzing                                   |
-| [runtime](runtime)             | Runtime functions                                |
-| [stdlib](stdlib)               | Language stdlib                                  |
-| [vscode-plugin](vscode-plugin) | VSCode tooling plugin                            |
+| Name                                   | Description                                      |
+|----------------------------------------|--------------------------------------------------|
+| [cli](modules/cli)                     | All command-line stuff                           | 
+| [syntax](modules/syntax)               | AST and Descriptor Mapping                       |
+| [parser](modules/parser)               | ANTLR grammar                                    |
+| [codegen](modules/codegen)             | The LLVM core that compiles to IR representation |
+| [analyzer](modules/analyzer)           | Code analyzing                                   |
+| [vscode-plugin](modules/vscode-plugin) | VSCode tooling plugin                            |
+| [runtime](runtime)                     | Runtime functions                                |
+| [stdlib](stdlib)                       | Language stdlib                                  |
 
 ## CLI
 
