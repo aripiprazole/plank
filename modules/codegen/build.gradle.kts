@@ -13,19 +13,26 @@ kotlin {
     }
 
     binaries {
-      executable("plank") {
+      getTest("debug").apply {
         linkerOpts.addAll(LlvmConfig.cmd("--ldflags").split(" ").filter { it.isNotBlank() })
         linkerOpts.addAll(LlvmConfig.cmd("--system-libs").split(" ").filter { it.isNotBlank() })
         linkerOpts.addAll(LlvmConfig.cmd("--libs").split(" ").filter { it.isNotBlank() })
-        entryPoint = "org.plank.cli.main"
       }
     }
   }
 
   sourceSets {
+    all {
+      languageSettings.optIn("kotlin.RequiresOptIn")
+    }
+
     val commonMain by getting {
       dependencies {
         implementation(libs.arrow.core)
+        implementation(projects.modules.llvm4k)
+        implementation(projects.modules.syntax)
+        implementation(projects.modules.shared)
+        implementation(projects.modules.analyzer)
       }
     }
     val commonTest by getting {
@@ -35,26 +42,32 @@ kotlin {
       }
     }
 
-    val nativeMain by getting {
+    val jvmMain by getting {
       dependencies {
-        implementation(projects.syntax)
-        implementation(projects.shared)
-        implementation(projects.analyzer)
-        implementation(projects.codegen)
-        implementation(projects.llvm4k)
-        implementation(libs.clikt)
+        implementation(projects.modules.llvm4k)
+        implementation(libs.bytedeco.llvm)
+        implementation(libs.bytedeco.libffi)
+        implementation(libs.jna)
+      }
+    }
+
+    val jvmTest by getting {
+      dependencies {
+        implementation(libs.kt.test.junit)
+        implementation(libs.jupiter.api)
+        implementation(libs.jupiter.engine)
       }
     }
 
     val linuxX64Main by getting {
       dependencies {
-        implementation(projects.llvm4k)
+        implementation(projects.modules.llvm4k)
       }
     }
 
     val mingwX64Main by getting {
       dependencies {
-        implementation(projects.llvm4k)
+        implementation(projects.modules.llvm4k)
       }
     }
   }

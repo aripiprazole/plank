@@ -2,8 +2,8 @@ kotlin {
   sourceSets {
     val commonMain by getting {
       dependencies {
-        implementation(projects.syntax)
-        implementation(projects.shared)
+        implementation(projects.modules.syntax)
+        implementation(projects.modules.shared)
       }
     }
 

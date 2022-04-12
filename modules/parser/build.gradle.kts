@@ -14,7 +14,7 @@ kotlin {
       dependsOn(commonAntlr)
 
       dependencies {
-        implementation(projects.shared)
+        implementation(projects.modules.shared)
       }
 
       kotlin.srcDir(buildDir.resolve("generated-src").resolve("commonAntlr").resolve("kotlin"))

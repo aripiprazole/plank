@@ -82,7 +82,7 @@ class TestCompilation(
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
       installDebugPretty()
 
-      val pkg = Package(code, File("..")) {
+      val pkg = Package(code, File("../..")) {
         linker = locateBinary("clang++")
         workingDir = createTempDirectory("plank-test")
         output = workingDir.child("main")

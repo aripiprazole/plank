@@ -10,11 +10,11 @@ pluginManagement {
   }
 }
 
-include("codegen")
-include("llvm4k")
-include("syntax")
-include("cli")
-include("lang-server")
-include("analyzer")
-include("shared")
-include("parser")
+include("modules:codegen")
+include("modules:llvm4k")
+include("modules:syntax")
+include("modules:cli")
+include("modules:lang-server")
+include("modules:analyzer")
+include("modules:shared")
+include("modules:parser")
