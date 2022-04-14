@@ -15,5 +15,13 @@ kotlin {
         implementation(libs.kt.reflect)
       }
     }
+
+    val jvmTest by getting {
+      dependencies {
+        implementation(libs.kt.test.junit)
+        implementation(libs.jupiter.api)
+        implementation(libs.jupiter.engine)
+      }
+    }
   }
 }

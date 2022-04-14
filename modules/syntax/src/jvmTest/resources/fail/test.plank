@@ -1,0 +1,5 @@
+import Std.IO;
+
+fun main(argc: Int, argv: **Char): Void {
+  println("Hello, world!");
+}
