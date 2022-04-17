@@ -37,24 +37,24 @@ kotlin {
 
     val nativeMain by getting {
       dependencies {
-        implementation(projects.modules.syntax)
-        implementation(projects.modules.shared)
-        implementation(projects.modules.analyzer)
-        implementation(projects.modules.codegen)
-        implementation(projects.modules.llvm4k)
+        implementation(projects.compiler.syntax)
+        implementation(projects.compiler.shared)
+        implementation(projects.compiler.analyzer)
+        implementation(projects.compiler.codegen)
+        implementation(projects.compiler.llvm4k)
         implementation(libs.clikt)
       }
     }
 
     val linuxX64Main by getting {
       dependencies {
-        implementation(projects.modules.llvm4k)
+        implementation(projects.compiler.llvm4k)
       }
     }
 
     val mingwX64Main by getting {
       dependencies {
-        implementation(projects.modules.llvm4k)
+        implementation(projects.compiler.llvm4k)
       }
     }
   }
