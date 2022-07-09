@@ -1,21 +1,21 @@
 package org.plank.syntax.element
 
+import okio.Path
+import okio.Path.Companion.toPath
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.DiagnosticErrorListener
 import org.antlr.v4.kotlinruntime.atn.PredictionMode
 import org.plank.parser.PlankLexer
 import org.plank.parser.PlankParser
+import org.plank.shared.nameWithoutExtension
+import org.plank.shared.readText
 import org.plank.syntax.SyntaxErrorListener
 import org.plank.syntax.SyntaxViolation
 import org.plank.syntax.debug.DontDump
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.parser.toParseTree
 import org.plank.syntax.parsing.fileToAst
-import pw.binom.io.file.File
-import pw.binom.io.file.name
-import pw.binom.io.file.nameWithoutExtension
-import pw.binom.io.file.readText
 
 data class PlankFile(
   @DontDump
@@ -25,7 +25,7 @@ data class PlankFile(
   val program: List<Decl> = emptyList(),
   val violations: List<SyntaxViolation> = emptyList(),
 ) : SimplePlankElement {
-  val realFile = File(path)
+  val realFile = path.toPath()
   val module = moduleName?.toIdentifier() ?: Identifier(realFile.name)
   val isValid get() = violations.isEmpty()
 
@@ -45,16 +45,16 @@ data class PlankFile(
     }
 
     fun of(
-      file: File,
+      file: Path,
       treeDebug: Boolean = false,
       parserDebug: Boolean = false,
       logger: CompilerLogger = CompilerLogger(),
     ): PlankFile {
       val module = file.nameWithoutExtension
-      val path = file.path
+      val path = file.toString()
 
       return of(file.readText(), module, path, treeDebug, parserDebug, logger)
-        .copy(path = file.path)
+        .copy(path = path)
         .let {
           if (it.moduleName == null) {
             it.copy(moduleName = QualifiedPath(file.nameWithoutExtension))

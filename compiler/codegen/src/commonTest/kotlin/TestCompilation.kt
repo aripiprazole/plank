@@ -2,6 +2,7 @@
 
 package org.plank.codegen
 
+import okio.Path.Companion.toPath
 import org.plank.analyzer.checker.CheckViolation
 import org.plank.codegen.pkg.AnalyzerError
 import org.plank.codegen.pkg.Command
@@ -17,7 +18,6 @@ import org.plank.llvm4k.LLVMError
 import org.plank.syntax.SyntaxViolation
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.message.lineSeparator
-import pw.binom.io.file.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.fail
@@ -82,7 +82,7 @@ class TestCompilation(
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
       installDebugPretty()
 
-      val pkg = Package(code, File("../..")) {
+      val pkg = Package(code, "../..".toPath()) {
         linker = locateBinary("clang++")
         workingDir = createTempDirectory("plank-test")
         output = workingDir.child("main")

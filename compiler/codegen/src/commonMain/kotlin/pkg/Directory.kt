@@ -1,23 +1,29 @@
 package org.plank.codegen.pkg
 
-import pw.binom.io.file.File
-import pw.binom.io.file.mkdirs
-import pw.binom.io.file.rewrite
+import okio.FileSystem
+import okio.Path
+import org.plank.shared.Platform
 
-fun File.child(name: String, recreate: Boolean = false, dir: Boolean = false): File {
-  val file = File(this, name)
+fun Path.child(name: String, recreate: Boolean = false, dir: Boolean = false): Path {
+  val file = resolve(name)
 
   if (recreate) {
-    file.delete()
+    Platform.FileSystem.delete(file)
 
     if (dir) {
-      file.mkdirs()
+      Platform.FileSystem.createDirectory(file)
     } else {
-      file.rewrite("")
+      Platform.FileSystem.write(file) {
+        write(byteArrayOf())
+      }
     }
   }
 
   return file
 }
 
-expect fun createTempDirectory(name: String): File
+fun createTempDirectory(name: String): Path {
+  return FileSystem.SYSTEM_TEMPORARY_DIRECTORY.resolve(name).also { temp ->
+    Platform.FileSystem.createDirectory(temp)
+  }
+}

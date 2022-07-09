@@ -1,15 +1,15 @@
 package org.plank.codegen.pkg
 
-import pw.binom.Environment
-import pw.binom.getEnv
-import pw.binom.io.file.File
-import pw.binom.io.file.isExist
+import okio.Path
+import okio.Path.Companion.toPath
+import org.plank.shared.Environment
+import org.plank.shared.Platform
 
 expect val pathSeparator: String
 
 expect fun Command.exec(): String
 
-data class Command(val executable: File, private val args: MutableList<String> = mutableListOf()) {
+data class Command(val executable: Path, private val args: MutableList<String> = mutableListOf()) {
   fun arg(arg: String): Command {
     args.add(arg)
     return this
@@ -20,7 +20,7 @@ data class Command(val executable: File, private val args: MutableList<String> =
   }
 
   companion object {
-    fun of(executable: File): Command {
+    fun of(executable: Path): Command {
       return Command(executable)
     }
 
@@ -37,8 +37,8 @@ class CommandFailedException(val command: String, val exitCode: Int, val output:
     "Command $command failed with exit code $exitCode with output: $output"
 }
 
-fun locateBinary(name: String): File {
-  return Environment.getEnv("PATH")!!
+fun locateBinary(name: String): Path {
+  return Environment["PATH"]!!
     .split(pathSeparator)
     .map { path ->
       if (path.startsWith("'") || path.startsWith("\"")) {
@@ -47,8 +47,8 @@ fun locateBinary(name: String): File {
         path
       }
     }
-    .map { File(it) }
-    .firstOrNull { directory -> File(directory, name).isExist }
-    ?.let { File(it, name) }
+    .map { it.toPath() }
+    .firstOrNull { directory -> Platform.FileSystem.exists(directory.resolve(name)) }
+    ?.resolve(name)
     ?: error("Could not find `$name` in PATH")
 }

@@ -2,7 +2,7 @@
 ktx = "1.6.0"
 kt = "1.6.10"
 lsp4j = "0.10.0"
-binom = "0.1.32"
+okio = "3.2.0"
 antlr4 = "4.7.1"
 antlr-kotlin = "160bc0b70f"
 arrow = "1.0.1"
@@ -46,9 +46,9 @@ version.ref = "lsp4j"
 module = "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc"
 version.ref = "lsp4j"
 
-[libraries.binom-file]
-module = "pw.binom.io:file"
-version.ref = "binom"
+[libraries.okio]
+module = "com.squareup.okio:okio"
+version.ref = "okio"
 
 [libraries.antlr4]
 module = "org.antlr:antlr4"

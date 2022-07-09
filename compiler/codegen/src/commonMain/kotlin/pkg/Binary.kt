@@ -1,17 +1,18 @@
 package org.plank.codegen.pkg
 
+import okio.Path
 import org.plank.analyzer.analyze
 import org.plank.analyzer.resolver.FileScope
 import org.plank.shared.depthFirstSearch
+import org.plank.shared.extension
+import org.plank.shared.list
+import org.plank.shared.nameWithoutExtension
+import org.plank.shared.rewrite
 import org.plank.syntax.debug.dumpTree
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.lineSeparator
-import pw.binom.io.file.File
-import pw.binom.io.file.extension
-import pw.binom.io.file.nameWithoutExtension
-import pw.binom.io.file.rewrite
 
-fun Package.compileBinary(): File {
+fun Package.compileBinary(): Path {
   verbose("Selected home: ${options.plankHome}")
   verbose("Current workdir: ${options.workingDir}")
 
@@ -28,12 +29,12 @@ fun Package.compileBinary(): File {
     .map { generateObject(it) }
     .toList()
 
-  cmd(compileCommand(options.objects.list(), options.output.path))
+  cmd(compileCommand(options.objects.list(), options.output.toString()))
 
   return options.output
 }
 
-private fun Package.generateObject(file: File): File {
+private fun Package.generateObject(file: Path): Path {
   val obj = options.objects.child("${file.nameWithoutExtension}.o")
 
   cmd(linkCommand(file, obj))
@@ -43,7 +44,7 @@ private fun Package.generateObject(file: File): File {
   return obj
 }
 
-private fun Package.generateIR(file: PlankFile): File {
+private fun Package.generateIR(file: PlankFile): Path {
   val target = options.ir.child("${file.realFile.nameWithoutExtension}.ll")
 
   if (options.debug.plainAstDebug) {
@@ -52,14 +53,13 @@ private fun Package.generateIR(file: PlankFile): File {
     logger.debug()
   }
 
-  compile(file, ::analyze, options.debug, tree, logger).toString()
-    .also { ir ->
-      if (options.debug.llvmIrDebug) {
-        logger.debug("Llvm IR:")
-        logger.debug(ir)
-        logger.debug()
-      }
+  compile(file, ::analyze, options.debug, tree, logger).toString().also { ir ->
+    if (options.debug.llvmIrDebug) {
+      logger.debug("Llvm IR:")
+      logger.debug(ir)
+      logger.debug()
     }
+  }
     .also(target::rewrite)
 
   return target
@@ -77,21 +77,21 @@ private fun Package.generateStdlibObjects() {
   logger.verbose("Successfully generated stdlib objects")
 }
 
-fun Package.compileStdlibFile(file: File, target: File): Command {
+fun Package.compileStdlibFile(file: Path, target: Path): Command {
   return Command.of(options.linker)
     .arg("-g")
     .arg("-O3")
-    .arg("-c ${file.path}")
-    .arg("-o ${target.path}")
+    .arg("-c $file")
+    .arg("-o $target")
 }
 
-fun Package.linkCommand(file: File, target: File): Command {
+fun Package.linkCommand(file: Path, target: Path): Command {
   return Command.of(options.linker)
-    .arg("-c ${file.path}")
-    .arg("-o ${target.path}")
+    .arg("-c $file")
+    .arg("-o $target")
 }
 
-fun Package.compileCommand(files: List<File>, name: String): Command {
+fun Package.compileCommand(files: List<Path>, name: String): Command {
   return Command.of(options.linker)
     .arg("-o $name")
     .arg("-v ${files.joinToString(" ")}")

@@ -1,22 +1,20 @@
 package org.plank.shared
 
-import pw.binom.Stack
-
 // TODO add support for recursive dependencies
 fun <T> Graph<T>.depthFirstSearch(root: T): Set<T> {
   if (!hasVertex(root)) return emptySet()
 
   val visited = linkedSetOf<T>()
-  val stack = Stack<T>().apply { pushLast(root) }
+  val stack = LinkedHashSet<T>().apply { add(root) }
 
-  while (!stack.isEmpty) {
-    val vertex = stack.popLast()
+  while (!stack.isEmpty()) {
+    val vertex = stack.pop()
 
     visited.add(vertex)
 
     val edges = values.getOrPut(vertex) { mutableSetOf() }
 
-    edges.forEach(stack::pushFirst)
+    edges.forEach(stack::add)
   }
 
   return visited

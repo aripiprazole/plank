@@ -1,10 +1,11 @@
 package org.plank.codegen.pkg
 
+import okio.Path
+import okio.Path.Companion.toPath
 import org.plank.analyzer.resolver.ModuleTree
+import org.plank.shared.readText
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
-import pw.binom.io.file.File
-import pw.binom.io.file.readText
 
 data class Package(
   val name: String,
@@ -16,15 +17,15 @@ data class Package(
   val logger: CompilerLogger get() = options.logger
 
   constructor(
-    file: File,
-    home: File = File("."),
+    file: Path,
+    home: Path = ".".toPath(),
     includeStd: Boolean = true,
     builder: CompileOptions.() -> Unit = {},
-  ) : this(file.readText(), includeStd, CompileOptions(home).apply(builder), file.path)
+  ) : this(file.readText(), includeStd, CompileOptions(home).apply(builder), file.toString())
 
   constructor(
     text: String,
-    home: File = File("."),
+    home: Path = ".".toPath(),
     includeStd: Boolean = true,
     builder: CompileOptions.() -> Unit = {},
   ) : this(text, includeStd, CompileOptions(home).apply(builder))

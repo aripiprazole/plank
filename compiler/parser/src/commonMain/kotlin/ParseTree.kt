@@ -2,7 +2,6 @@ package org.plank.syntax.parser
 
 import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
-import pw.binom.collection.LinkedList
 
 sealed interface ParseTreeElement {
   override fun toString(): String
@@ -17,7 +16,7 @@ class ParseTreeLeaf(val text: String) : ParseTreeElement {
 }
 
 class ParseTreeNode(val name: String) : ParseTreeElement {
-  val children = LinkedList<ParseTreeElement>()
+  val children: MutableSet<ParseTreeElement> = LinkedHashSet()
 
   fun child(element: ParseTreeElement): ParseTreeNode {
     children.add(element)

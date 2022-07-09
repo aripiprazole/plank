@@ -1,20 +1,22 @@
 package org.plank.codegen.pkg
 
+import okio.Path
+import okio.Path.Companion.toPath
 import org.plank.codegen.DebugOptions
+import org.plank.shared.list
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
-import pw.binom.io.file.File
 
-data class CompileOptions(val plankHome: File) {
+data class CompileOptions(val plankHome: Path) {
   var debug = DebugOptions()
 
   var emitIR = false
   var logger: CompilerLogger = CompilerLogger()
 
   var linker = locateBinary("clang++")
-  var output = File("main")
+  var output = "main".toPath()
 
-  var workingDir: File = createTempDirectory("plank")
+  var workingDir: Path = createTempDirectory("plank")
 
   val objects by lazy { workingDir.child("objects", recreate = true, dir = true) }
   val ir by lazy { workingDir.child("ir", recreate = true, dir = true) }
@@ -22,7 +24,7 @@ data class CompileOptions(val plankHome: File) {
   /** TODO: use a package manager */
   val stdlib by lazy {
     plankHome.child("stdlib").list()
-      .filter { it.path.endsWith(".plank") }
+      .filter { it.toString().endsWith(".plank") }
       .map { PlankFile.of(it) }
   }
 
