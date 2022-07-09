@@ -12,6 +12,10 @@ object LlvmConfig {
       ?: locate()
   }
 
+  fun hasLlvm(): Boolean {
+    return runCatching { executable }.isSuccess
+  }
+
   fun locate(): File {
     return getenv("PATH").split(File.pathSeparatorChar)
       .map { path ->

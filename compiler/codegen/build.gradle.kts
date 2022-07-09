@@ -14,9 +14,11 @@ kotlin {
 
     binaries {
       getTest("debug").apply {
-        linkerOpts.addAll(LlvmConfig.cmd("--ldflags").split(" ").filter { it.isNotBlank() })
-        linkerOpts.addAll(LlvmConfig.cmd("--system-libs").split(" ").filter { it.isNotBlank() })
-        linkerOpts.addAll(LlvmConfig.cmd("--libs").split(" ").filter { it.isNotBlank() })
+        if (LlvmConfig.hasLlvm()) {
+          linkerOpts.addAll(LlvmConfig.cmd("--ldflags").split(" ").filter { it.isNotBlank() })
+          linkerOpts.addAll(LlvmConfig.cmd("--system-libs").split(" ").filter { it.isNotBlank() })
+          linkerOpts.addAll(LlvmConfig.cmd("--libs").split(" ").filter { it.isNotBlank() })
+        }
       }
     }
   }

@@ -14,10 +14,12 @@ kotlin {
 
     binaries {
       executable("plank") {
-        linkerOpts.addAll(LlvmConfig.cmd("--ldflags").split(" ").filter { it.isNotBlank() })
-        linkerOpts.addAll(LlvmConfig.cmd("--system-libs").split(" ").filter { it.isNotBlank() })
-        linkerOpts.addAll(LlvmConfig.cmd("--libs").split(" ").filter { it.isNotBlank() })
-        entryPoint = "org.plank.cli.main"
+        if (LlvmConfig.hasLlvm()) {
+          linkerOpts.addAll(LlvmConfig.cmd("--ldflags").split(" ").filter { it.isNotBlank() })
+          linkerOpts.addAll(LlvmConfig.cmd("--system-libs").split(" ").filter { it.isNotBlank() })
+          linkerOpts.addAll(LlvmConfig.cmd("--libs").split(" ").filter { it.isNotBlank() })
+          entryPoint = "org.plank.cli.main"
+        }
       }
     }
   }

@@ -72,8 +72,10 @@ configure<KotlinMultiplatformExtension> {
 
   configure(listOf(linuxX64, mingwX64)) {
     val main by compilations.getting
-    val llvm by main.cinterops.creating {
-      includeDirs(LlvmConfig.cmd("--includedir").absolutePath())
+    if (LlvmConfig.hasLlvm()) {
+      val llvm by main.cinterops.creating {
+        includeDirs(LlvmConfig.cmd("--includedir").absolutePath())
+      }
     }
   }
 
