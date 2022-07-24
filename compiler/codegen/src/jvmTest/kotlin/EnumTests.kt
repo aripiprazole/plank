@@ -17,7 +17,7 @@ class EnumTests {
 
         fun main(argc: Int32, argv: **Char) -> () {
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -40,7 +40,7 @@ class EnumTests {
         fun main(argc: Int32, argv: **Char) -> () {
           let cons = Cons("hello", Nil);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -63,7 +63,7 @@ class EnumTests {
         fun main(argc: Int32, argv: **Char) -> () {
           let cons = Cons("hello", Nil);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -96,7 +96,7 @@ class EnumTests {
           print_list(Cons("hello", Nil));
           print_list(Nil);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -129,7 +129,7 @@ class EnumTests {
           print_list(Cons("hello", Nil));
           print_list(Nil);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -162,7 +162,7 @@ class EnumTests {
           println(show(Cons("hello", Nil)));
           println(show(Nil));
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -195,7 +195,7 @@ class EnumTests {
           print_list(Cons("hello", Nil));
           print_list(Nil);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -228,7 +228,7 @@ class EnumTests {
           println(show(Cons("hello", Nil)));
           println(show(Nil));
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

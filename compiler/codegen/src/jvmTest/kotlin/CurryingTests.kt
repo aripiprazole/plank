@@ -15,7 +15,7 @@ class CurryingTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println("Hello, world");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -41,7 +41,7 @@ class CurryingTests {
         fun main(argc: Int32, argv: **Char) -> () {
           print_full_name("Isabela", "Freitas");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -67,7 +67,7 @@ class CurryingTests {
         fun main(argc: Int32, argv: **Char) -> () {
           print_full_name("Isabela")("Freitas");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -94,7 +94,7 @@ class CurryingTests {
           print_full_name("Isabela")("Freitas");
           print_full_name("Isabela")("Freitas");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -120,7 +120,7 @@ class CurryingTests {
         fun main(argc: Int32, argv: **Char) -> () {
           let print_surname = print_full_name("Isabela");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -147,7 +147,7 @@ class CurryingTests {
           let print_surname = print_full_name("Isabela");
           print_surname("Freitas");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -175,7 +175,7 @@ class CurryingTests {
           print_surname("Freitas");
           print_surname("Freitas");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -199,7 +199,7 @@ class CurryingTests {
         fun main(argc: Int32, argv: **Char) -> () {
           empty();
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

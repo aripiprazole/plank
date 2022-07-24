@@ -99,5 +99,5 @@ fun CodegenCtx.addCurryFunction(
     mangled = funMangled(descriptor),
     realParameters = descriptor.parameters,
     generate = generate,
-  )
+  ),
 )

@@ -1,5 +1,7 @@
 package org.plank.codegen.intrinsics
 
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
 import org.plank.codegen.createUnit
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.scope.ExecCtx
@@ -10,8 +12,6 @@ import org.plank.llvm4k.ir.FunctionType
 import org.plank.llvm4k.ir.Linkage
 import org.plank.llvm4k.ir.Type
 import org.plank.syntax.message.lineSeparator
-import kotlin.properties.PropertyDelegateProvider
-import kotlin.properties.ReadOnlyProperty
 
 class Intrinsics(builder: Intrinsics.() -> Unit = {}) {
   private val modules: MutableMap<String, IntrinsicModule.() -> Unit> = linkedMapOf()

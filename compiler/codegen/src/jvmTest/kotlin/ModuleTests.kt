@@ -20,7 +20,7 @@ class ModuleTests {
 
         fun main(argc: Int32, argv: **Char) -> () {
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -46,7 +46,7 @@ class ModuleTests {
         fun main(argc: Int32, argv: **Char) -> () {
           Print.str("Hello world");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -72,7 +72,7 @@ class ModuleTests {
         fun main(argc: Int32, argv: **Char) -> () {
           Print.str("Hello world");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -95,7 +95,7 @@ class ModuleTests {
 
         fun main(argc: Int32, argv: **Char) -> () {
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -119,7 +119,7 @@ class ModuleTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(Test.x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -144,7 +144,7 @@ class ModuleTests {
           println(Test.x);
           println(Test.x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -170,7 +170,7 @@ class ModuleTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(Test.x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -194,7 +194,7 @@ class ModuleTests {
         fun main(argc: Int32, argv: **Char) -> () {
           Test.x("hello");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -217,7 +217,7 @@ class ModuleTests {
 
         fun main(argc: Int32, argv: **Char) -> () {
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -241,7 +241,7 @@ class ModuleTests {
         fun main(argc: Int32, argv: **Char) -> () {
           Test.x := "updated";
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -267,7 +267,7 @@ class ModuleTests {
           Test.x := "updated";
           println(Test.x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

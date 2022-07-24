@@ -54,7 +54,8 @@ public actual sealed class Value : Owner<LLVMValueRef> {
 
   public actual open val isConstant: Boolean get() = llvm.LLVMIsConstant(ref) == 1
   public actual open val isUndef: Boolean get() = llvm.LLVMIsUndef(ref) == 1
-  public actual open val asBasicBlock: BasicBlock get() = BasicBlock(llvm.LLVMValueAsBasicBlock(ref))
+  public actual open val asBasicBlock: BasicBlock
+    get() = BasicBlock(llvm.LLVMValueAsBasicBlock(ref))
 
   public actual open fun replace(other: Value) {
     llvm.LLVMReplaceAllUsesWith(ref, other.ref)

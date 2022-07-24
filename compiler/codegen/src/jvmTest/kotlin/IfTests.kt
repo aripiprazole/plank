@@ -15,7 +15,7 @@ class IfTests {
         fun main(argc: Int32, argv: **Char) -> () {
           if true then println("x") else println("y");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -35,7 +35,7 @@ class IfTests {
         fun main(argc: Int32, argv: **Char) -> () {
           if false then println("x") else println("y");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -55,7 +55,7 @@ class IfTests {
         fun main(argc: Int32, argv: **Char) -> () {
           if true then println("x");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -75,7 +75,7 @@ class IfTests {
         fun main(argc: Int32, argv: **Char) -> () {
           if false then println("x");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -95,7 +95,7 @@ class IfTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(if true then "x" else "y");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -115,7 +115,7 @@ class IfTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(if false then "x" else "y");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

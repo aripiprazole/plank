@@ -63,6 +63,7 @@ class ResolveImports(val file: PlankFile, val tree: ModuleTree) {
           scope.file = resolveUses(scope.file, dependencies, scope)
           module
         }
+
         else -> module
       }
     }

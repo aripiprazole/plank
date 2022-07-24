@@ -37,7 +37,7 @@ fun main() {
       person.name := "Alberto";
       println(person.name);
     }
-    """.trimIndent()
+    """.trimIndent(),
   )
   val lexer = PlankLexer(stream)
   val parser = PlankParser(CommonTokenStream(lexer))

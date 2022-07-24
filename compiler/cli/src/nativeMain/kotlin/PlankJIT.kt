@@ -11,6 +11,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import kotlin.system.exitProcess
 import org.plank.analyzer.analyze
 import org.plank.codegen.pkg.AnalyzerError
 import org.plank.codegen.pkg.Package
@@ -20,7 +21,6 @@ import org.plank.llvm4k.OptimizationLevel
 import org.plank.syntax.message.CompilerLogger
 import pw.binom.io.file.File
 import pw.binom.io.file.isExist
-import kotlin.system.exitProcess
 
 /**
  * TODO: add support for multiple files

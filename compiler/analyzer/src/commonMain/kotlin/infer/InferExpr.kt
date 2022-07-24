@@ -102,6 +102,7 @@ fun Infer.inferExpr(env: TyEnv, expr: Expr): Pair<Ty, Subst> = when (expr) {
 
       unitTy to (s3 compose s2 compose s1)
     }
+
     else -> {
       val tv = fresh()
       val (t1, s1) = inferExpr(env, expr.cond)
@@ -127,7 +128,7 @@ fun Infer.inferExpr(env: TyEnv, expr: Expr): Pair<Ty, Subst> = when (expr) {
         expr
           .patterns.entries
           .fold(
-            inferExpr(inferPattern(env, fst.key, t1), fst.value)
+            inferExpr(inferPattern(env, fst.key, t1), fst.value),
           ) { (t2, s2), (pattern, value) ->
             val (t3, s3) = inferExpr(inferPattern(env, pattern, t1), value)
             val s4 = unify(t3 ap s2, t2)

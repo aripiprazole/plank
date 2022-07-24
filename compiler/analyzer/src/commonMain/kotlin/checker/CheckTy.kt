@@ -40,5 +40,6 @@ fun TypeCheck.lookupInfo(ty: Ty): TyInfo? = when (ty) {
       }
     }
   }
+
   else -> null
 }

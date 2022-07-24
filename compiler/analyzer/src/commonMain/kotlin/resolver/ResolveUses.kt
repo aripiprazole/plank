@@ -35,6 +35,7 @@ fun resolveUses(
           currentScope.declare(it.name)
         }
       }
+
       is StructDecl -> decl.apply { currentScope.create(name) }
 
       is FunDecl -> decl.apply {
@@ -42,6 +43,7 @@ fun resolveUses(
 
         currentScope = FunctionScope(name, body.stmts, currentScope)
       }
+
       is ModuleDecl -> decl.apply {
         val module = currentScope.findModule(decl.path.toIdentifier())
           ?: Module(decl.path.toIdentifier(), decl.content).apply {
@@ -52,6 +54,7 @@ fun resolveUses(
 
         currentScope = module.scope
       }
+
       else -> decl
     }
   }
@@ -70,6 +73,7 @@ fun resolveUses(
       is ModuleDecl,
       is FunDecl,
       -> decl.apply { currentScope = currentScope.enclosing!! }
+
       else -> decl
     }
   }
@@ -86,6 +90,7 @@ fun resolveUses(
 
           ref.copy(path = info.declaredIn.fullPath() + name)
         }
+
         else -> {
           val name = ref.path.toIdentifier()
 
@@ -95,6 +100,7 @@ fun resolveUses(
           ref.copy(path = info.declaredIn.fullPath() + name)
         }
       }
+
       else -> ref
     }
   }
@@ -112,6 +118,7 @@ fun resolveUses(
 
           AccessExpr(name = expr.property, module = path, loc = expr.loc)
         }
+
         is AccessExpr -> {
           val fullPath = receiver.module?.fullPath.orEmpty().toTypedArray()
           val path = qualifiedPath(*fullPath, receiver.name)
@@ -123,8 +130,10 @@ fun resolveUses(
 
           AccessExpr(name = expr.property, module = path, loc = expr.loc)
         }
+
         else -> expr
       }
+
       is SetExpr -> when (val receiver = expr.receiver) {
         is GetExpr -> {
           val chain = concatModule(receiver).asReversed().ifEmpty { return expr }
@@ -137,6 +146,7 @@ fun resolveUses(
 
           AssignExpr(name = expr.property, value = expr.value, module = path, loc = expr.loc)
         }
+
         is AccessExpr -> {
           val fullPath = receiver.module?.fullPath.orEmpty().toTypedArray()
           val path = qualifiedPath(*fullPath, receiver.name)
@@ -148,14 +158,17 @@ fun resolveUses(
 
           AssignExpr(name = expr.property, value = expr.value, module = path, loc = expr.loc)
         }
+
         else -> expr
       }
+
       is AccessExpr -> {
         val variable = currentScope.lookupVariable(expr.name)
           ?: return expr
 
         expr.copy(module = variable.declaredIn.fullPath())
       }
+
       else -> expr
     }
   }

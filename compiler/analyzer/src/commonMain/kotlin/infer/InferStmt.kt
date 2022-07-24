@@ -35,6 +35,7 @@ fun Infer.inferStmt(env: TyEnv, stmt: Stmt, module: QualifiedPath = QualifiedPat
         }
       }
     }
+
     is LetDecl -> {
       val tv = fresh()
       val (t1, s1) = inferExpr(env, stmt.value)
@@ -43,6 +44,7 @@ fun Infer.inferStmt(env: TyEnv, stmt: Stmt, module: QualifiedPath = QualifiedPat
 
       env.extend((module + stmt.name).text, env.generalize(tv ap s2))
     }
+
     is FunDecl -> {
       val cache = mutableMapOf<String, Ty>()
       val tv = fresh()
@@ -61,5 +63,6 @@ fun Infer.inferStmt(env: TyEnv, stmt: Stmt, module: QualifiedPath = QualifiedPat
         inferFunctionBody(it, stmt.body)
       }
     }
+
     else -> env
   }

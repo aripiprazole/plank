@@ -109,6 +109,7 @@ fun TypedPattern.pretty(indent: String = ""): String = buildString {
         append(pattern.pretty(indent))
       }
     }
+
     is TypedIdentPattern -> append(name.text)
   }
 }
@@ -120,24 +121,30 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
     is TypedCallExpr -> paren {
       prettyCall(indent, this@pretty)
     }
+
     is TypedSizeofExpr -> paren {
       append("sizeof ").append(ty)
     }
+
     is TypedRefExpr -> paren {
       append("ref ").append(value.pretty(indent))
     }
+
     is TypedDerefExpr -> paren {
       append("deref ").append(value.pretty(indent))
     }
+
     is TypedGetExpr -> paren {
       append("get ").append(receiver.pretty(indent)).space()
       append(member.text)
     }
+
     is TypedSetExpr -> paren {
       append("set ").append(receiver.pretty(indent)).space()
       append(member.text).space()
       prettyArgument(indent, value)
     }
+
     is TypedIfExpr -> paren {
       append("if ").append(cond.pretty(indent)).space()
 
@@ -149,11 +156,13 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
         append("$indent  ").append(elseBranch.pretty("$indent  "))
       }
     }
+
     is TypedAssignExpr -> paren {
       append("assign ")
       append((scope.fullPath() + name.text).text).space()
       prettyArgument(indent, value)
     }
+
     is TypedInstanceExpr -> paren {
       append("inst ")
       append(info.name.text)
@@ -163,6 +172,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
         prettyArgument(indent, expr)
       }
     }
+
     is TypedBlockExpr -> paren {
       appendLine()
       stmts.forEach { stmt ->
@@ -172,6 +182,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
       append("$indent  ")
       append(value.pretty("$indent  "))
     }
+
     is TypedMatchExpr -> paren {
       val patternLength = patterns.keys
         .maxByOrNull { it.pretty("$indent  ").length }!!
@@ -188,6 +199,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
         }
       }
     }
+
     is TypedConstExpr -> when (val value = value) {
       is String -> append("\"$value\"")
       is Char -> append("'$value'")
@@ -201,6 +213,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
       is Unit -> append("()")
       else -> append(value)
     }
+
     is TypedIntOperationExpr -> when (this@pretty) {
       is TypedIntAddExpr -> paren("iadd ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
       is TypedIntDivExpr -> paren("idiv ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
@@ -213,6 +226,7 @@ fun TypedExpr.pretty(indent: String = ""): String = buildString {
       is TypedIntNEQExpr -> paren("ineq ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
       is TypedIntSubExpr -> paren("isub ${lhs.pretty(indent)} ${rhs.pretty(indent)}")
     }
+
     is TypedEnumIndexAccess -> paren {
       append("enum-index ").append(value.ty.ungeneralize()).space().append(index)
     }
@@ -231,10 +245,12 @@ fun ResolvedFunctionBody.pretty(indent: String = ""): String = buildString {
         append(indent).append(value.pretty(indent))
       }
     }
+
     is ResolvedExprBody -> {
       appendLine("; Expr body")
       append(indent).append(expr.pretty(indent))
     }
+
     is ResolvedNoBody -> {
       appendLine("; No body")
       append(indent).paren("sorry!")
@@ -255,6 +271,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
     is ResolvedUseDecl -> paren {
       append("use ").append(module.name.text)
     }
+
     is ResolvedModuleDecl -> paren {
       append("mod ").append(name.text)
       appendLine()
@@ -263,6 +280,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
         append(decl.pretty("$indent  "))
       }
     }
+
     is ResolvedStructDecl -> paren {
       val nameLength = members.keys.maxByOrNull { it.text.length }!!.text.length
 
@@ -277,12 +295,14 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
         }
       }
     }
+
     is ResolvedReturnStmt -> paren {
       when (value) {
         null -> append("ret")
         else -> append("ret ").append(value.pretty(indent))
       }
     }
+
     is ResolvedEnumDecl -> paren {
       val nameLength = members.keys.maxByOrNull { it.text.length }!!.text.length
 
@@ -297,6 +317,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
         }
       }
     }
+
     is ResolvedFunDecl -> paren {
       append("defun ").append(name.text).space()
       append(scheme.pretty()).space()
@@ -305,6 +326,7 @@ fun ResolvedStmt.pretty(indent: String = "", topLevel: Boolean = false): String 
       appendLine("$indent  ; References ${references.keys}")
       append(body.pretty("$indent  "))
     }
+
     is ResolvedLetDecl -> paren {
       append("def ")
       if (mutable) {
@@ -330,6 +352,7 @@ fun StringBuilder.prettyArgument(indent: String, expr: TypedExpr) {
       prettyCall(indent, expr)
       append(" : ").append(expr.ty)
     }
+
     else -> paren {
       append(expr.pretty(indent))
       append(" : ").append(expr.ty)
@@ -350,6 +373,7 @@ fun StringBuilder.prettyCallee(indent: String, expr: TypedExpr) {
       space()
       prettyArgument(indent, expr.argument)
     }
+
     else -> append(expr.pretty(indent))
   }
 }
@@ -397,6 +421,7 @@ fun Scope.pretty(indent: String = ""): String = buildString {
         }
         appendLine()
       }
+
       is StructInfo -> {
         val variantLength = info.members.keys
           .maxByOrNull { it.text.length }
@@ -413,16 +438,19 @@ fun Scope.pretty(indent: String = ""): String = buildString {
         }
         appendLine()
       }
+
       is DoubleInfo -> {
         append(indent)
         append("double ${name.text}")
         appendLine()
       }
+
       is FloatInfo -> {
         append(indent)
         append("float ${name.text}")
         appendLine()
       }
+
       is IntInfo -> {
         append(indent)
         append("int ")
@@ -432,6 +460,7 @@ fun Scope.pretty(indent: String = ""): String = buildString {
         append(name.text)
         appendLine()
       }
+
       else -> {}
     }
   }

@@ -1,7 +1,7 @@
 parser grammar PlankParser;
 
 @header {
-/* ktlint-disable no-wildcard-imports */
+/* ktlint-disable */
 @file:Suppress(
   "UNNECESSARY_NOT_NULL_ASSERTION",
   "UNUSED_PARAMETER", "USELESS_CAST", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER",

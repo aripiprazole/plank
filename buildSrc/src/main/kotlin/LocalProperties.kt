@@ -1,7 +1,7 @@
 package org.plank.build
 
-import org.gradle.api.Project
 import java.util.Properties
+import org.gradle.api.Project
 
 object LocalProperties {
   lateinit var properties: Properties

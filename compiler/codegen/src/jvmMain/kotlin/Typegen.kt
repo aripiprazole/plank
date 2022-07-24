@@ -18,9 +18,9 @@ import org.plank.analyzer.infer.unitTy
 import org.plank.codegen.scope.CodegenCtx
 import org.plank.codegen.type.CodegenType
 import org.plank.codegen.type.RankedType
+import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 import org.plank.llvm4k.ir.Type
 import org.plank.syntax.element.toQualifiedPath
-import org.plank.llvm4k.ir.FunctionType as LLVMFunctionType
 
 @Suppress("Detekt.ComplexMethod")
 fun CodegenCtx.typegen(ty: Ty): Type {
@@ -40,6 +40,7 @@ fun CodegenCtx.typegen(ty: Ty): Type {
       module.findType(name.text)?.get()
         ?: codegenError("Unresolved type `${ty.name}`")
     }
+
     is FunTy -> {
       val returnTy = ty.returnTy.typegen()
       val parameterTy = ty.parameterTy.typegen()
@@ -54,6 +55,7 @@ fun CodegenCtx.typegen(ty: Ty): Type {
         elements = listOf(functionType.pointer(), i8.pointer())
       }
     }
+
     is AppTy -> {
       val codegenType = codegenType(ty) as RankedType
       val schemeTy = codegenType.scheme.ty.chainExecution().last()
@@ -62,6 +64,7 @@ fun CodegenCtx.typegen(ty: Ty): Type {
 
       codegenType.get(subst)
     }
+
     else -> codegenError("Unsupported type `$ty`")
   }
 }
@@ -76,5 +79,6 @@ fun CodegenCtx.codegenType(ty: Ty): CodegenType = when (ty) {
     module.findType(name.text)
       ?: codegenError("Unresolved type `${ty.name}` with $subst")
   }
+
   else -> codegenError("Can not get a codegen type of ${ty::class.simpleName}($ty)")
 }

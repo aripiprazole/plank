@@ -21,6 +21,7 @@ class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
             ?: codegenError("Unable to find intrinsic `${path.text}.${descriptor.name.text}`")
         }
       }
+
       descriptor.hasAttribute("external") -> {
         val returnTy = descriptor.returnTy
         val parameters = descriptor.parameters
@@ -45,6 +46,7 @@ class FunInst(private val descriptor: ResolvedFunDecl) : CodegenInstruction {
           createRet(value)
         }
       }
+
       else -> addGlobalFunction(descriptor, BodyGenerator(descriptor))
     }
   }

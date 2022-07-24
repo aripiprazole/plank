@@ -1,5 +1,6 @@
 package org.plank.analyzer.checker
 
+import kotlin.reflect.KClass
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.VarTy
 import org.plank.analyzer.resolver.Module
@@ -7,7 +8,6 @@ import org.plank.syntax.element.GeneratedLoc
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Loc
 import org.plank.syntax.message.CompilerLogger
-import kotlin.reflect.KClass
 
 sealed class CheckViolation(val message: String, var loc: Loc) {
   fun render(logger: CompilerLogger) {
@@ -112,5 +112,5 @@ class IncorrectEnumArity(
   loc: Loc = GeneratedLoc,
 ) : CheckViolation(
   "Expecting $expected fields when matching `${name.text}`, got $got fields instead",
-  loc
+  loc,
 )

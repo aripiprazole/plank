@@ -16,7 +16,7 @@
 
 package org.plank.llvm4k.ir
 
-import llvm.LLVMOpcode.*
+import llvm.LLVMOpcode.* // ktlint-disable no-wildcard-imports
 import llvm.LLVMValueRef
 
 public actual sealed class ConstantExpr : Constant()

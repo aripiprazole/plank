@@ -33,6 +33,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
 
       TypedEnumVariantPattern(info, name.toQualifiedPath(), emptyList(), ty, location)
     }
+
     is EnumVariantPattern -> {
       val name = pattern.type.toIdentifier()
 

@@ -16,6 +16,8 @@
 
 package org.plank.llvm4k
 
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
 import kotlinx.cinterop.toCValues
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.AllocaInst
@@ -50,8 +52,6 @@ import org.plank.llvm4k.ir.SwitchInst
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.UnreachableInst
 import org.plank.llvm4k.ir.Value
-import kotlin.properties.PropertyDelegateProvider
-import kotlin.properties.ReadOnlyProperty
 
 internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
   override val insertionBlock: BasicBlock?
@@ -62,7 +62,9 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     return this
   }
 
-  override fun createGlobalStringPtr(value: String): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>> {
+  override fun createGlobalStringPtr(
+    value: String,
+  ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>> {
     return PropertyDelegateProvider { _, property ->
       val ptr = createGlobalStringPtr(value, property.name)
 
@@ -74,7 +76,9 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     return GlobalVariable(llvm.LLVMBuildGlobalStringPtr(ref, value, name))
   }
 
-  override fun createGlobalString(value: String): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>> {
+  override fun createGlobalString(
+    value: String,
+  ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>> {
     return PropertyDelegateProvider { _, property ->
       val string = createGlobalString(value, property.name)
 
@@ -99,7 +103,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
 
   override fun createAggregateRet(values: List<Value>): ReturnInst {
     return ReturnInst(
-      llvm.LLVMBuildAggregateRet(ref, values.map { it.ref }.toCValues(), values.size.toUInt())
+      llvm.LLVMBuildAggregateRet(ref, values.map { it.ref }.toCValues(), values.size.toUInt()),
     )
   }
 
@@ -128,8 +132,14 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     name: String?,
   ): InvokeInst {
     val ref = llvm.LLVMBuildInvoke2(
-      ref, type.ref, callee.ref, args.map { it.ref }.toCValues(), args.size.toUInt(),
-      normalDest.ref, unwindDest.ref, name ?: ""
+      ref,
+      type.ref,
+      callee.ref,
+      args.map { it.ref }.toCValues(),
+      args.size.toUInt(),
+      normalDest.ref,
+      unwindDest.ref,
+      name ?: "",
     )
 
     return InvokeInst(ref)
@@ -143,8 +153,13 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     name: String?,
   ): InvokeInst {
     val ref = llvm.LLVMBuildInvoke(
-      ref, callee.ref, args.map { it.ref }.toCValues(), args.size.toUInt(),
-      normalDest.ref, unwindDest.ref, name ?: ""
+      ref,
+      callee.ref,
+      args.map { it.ref }.toCValues(),
+      args.size.toUInt(),
+      normalDest.ref,
+      unwindDest.ref,
+      name ?: "",
     )
 
     return InvokeInst(ref)
@@ -165,7 +180,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     name: String?,
   ): CatchSwitchInst {
     return CatchSwitchInst(
-      llvm.LLVMBuildCatchSwitch(ref, parentPad.ref, unwindBB.ref, numHandlers.toUInt(), name ?: "")
+      llvm.LLVMBuildCatchSwitch(ref, parentPad.ref, unwindBB.ref, numHandlers.toUInt(), name ?: ""),
     )
   }
 
@@ -184,13 +199,14 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
   override fun createCleanupPad(
     parentPad: Value,
     args: List<Value>,
-    name: String?
+    name: String?,
   ): CleanupPadInst {
     val ref = llvm.LLVMBuildCleanupPad(
       ref,
       parentPad.ref,
-      args.map { it.ref }.toCValues(), args.size.toUInt(),
-      name ?: ""
+      args.map { it.ref }.toCValues(),
+      args.size.toUInt(),
+      name ?: "",
     )
 
     return CleanupPadInst(ref)
@@ -353,7 +369,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     type: Type,
     addrSpace: AddrSpace,
     value: Value,
-    name: String?
+    name: String?,
   ): CallInst {
     return CallInst(llvm.LLVMBuildArrayMalloc(ref, type.ref, value.ref, name ?: ""))
   }
@@ -389,7 +405,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
       new.ref,
       successOrdering.llvm,
       failOrdering.llvm,
-      singleThread.toInt()
+      singleThread.toInt(),
     )
 
     return AtomicCmpXchgInst(ref)
@@ -400,7 +416,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     ptr: Value,
     value: Value,
     order: AtomicOrdering,
-    singleThread: Boolean
+    singleThread: Boolean,
   ): AtomicRMWInst {
     val ref = llvm.LLVMBuildAtomicRMW(
       ref,
@@ -408,7 +424,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
       ptr.ref,
       value.ref,
       order.llvm,
-      singleThread.toInt()
+      singleThread.toInt(),
     )
 
     return AtomicRMWInst(ref)
@@ -418,7 +434,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     pointer: Value,
     indices: List<Value>,
     inBounds: Boolean,
-    name: String?
+    name: String?,
   ): Value {
     val ref = when {
       inBounds -> llvm.LLVMBuildInBoundsGEP(
@@ -426,14 +442,15 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
         pointer.ref,
         indices.map { it.ref }.toCValues(),
         indices.size.toUInt(),
-        name ?: ""
+        name ?: "",
       )
+
       else -> llvm.LLVMBuildGEP(
         ref,
         pointer.ref,
         indices.map { it.ref }.toCValues(),
         indices.size.toUInt(),
-        name ?: ""
+        name ?: "",
       )
     }
 
@@ -445,7 +462,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
     pointer: Value,
     indices: List<Value>,
     inBounds: Boolean,
-    name: String?
+    name: String?,
   ): Value {
     val ref = when {
       inBounds -> llvm.LLVMBuildInBoundsGEP2(
@@ -454,15 +471,16 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
         pointer.ref,
         indices.map { it.ref }.toCValues(),
         indices.size.toUInt(),
-        name ?: ""
+        name ?: "",
       )
+
       else -> llvm.LLVMBuildGEP2(
         ref,
         type.ref,
         pointer.ref,
         indices.map { it.ref }.toCValues(),
         indices.size.toUInt(),
-        name ?: ""
+        name ?: "",
       )
     }
 
@@ -577,7 +595,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
       func.ref,
       arguments.map { it.ref }.toCValues(),
       arguments.size.toUInt(),
-      name ?: ""
+      name ?: "",
     )
 
     return CallInst(ref)
@@ -589,7 +607,7 @@ internal class IRBuilderImpl(val ref: llvm.LLVMBuilderRef?) : IRBuilder {
       func.ref,
       arguments.map { it.ref }.toCValues(),
       arguments.size.toUInt(),
-      name ?: ""
+      name ?: "",
     )
 
     return CallInst(ref)

@@ -2,6 +2,9 @@
 
 package org.plank.codegen
 
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.fail
 import okio.Path.Companion.toPath
 import org.plank.analyzer.checker.CheckViolation
 import org.plank.codegen.pkg.AnalyzerError
@@ -18,9 +21,6 @@ import org.plank.llvm4k.LLVMError
 import org.plank.syntax.SyntaxViolation
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.message.lineSeparator
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.fail
 
 class TestCompilation(
   private val pkg: Package,

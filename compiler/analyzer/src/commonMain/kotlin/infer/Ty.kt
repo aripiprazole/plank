@@ -91,6 +91,7 @@ fun Ty.unapply(): List<Ty> = when (this) {
       ty = ty.fn
     }
   }
+
   else -> emptyList()
 }
 
@@ -114,6 +115,7 @@ fun Ty.chainExecution(): List<Ty> = when (this) {
     }
     add(ty)
   }
+
   else -> listOf(this)
 }
 
@@ -125,6 +127,7 @@ fun Ty.chainParameters(): List<Ty> = when (this) {
       ty = ty.returnTy
     }
   }
+
   else -> emptyList()
 }
 

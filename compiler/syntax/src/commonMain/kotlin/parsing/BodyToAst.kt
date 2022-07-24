@@ -16,5 +16,6 @@ fun FunctionBodyContext.bodyToAst(file: PlankFile): FunctionBody = when (this) {
   is CodeBodyContext -> {
     CodeBody(findStmt().map { it.stmtToAst(file) }, value?.exprToAst(file), treeLoc(file))
   }
+
   else -> error("Unsupported function body ${this::class.simpleName}")
 }

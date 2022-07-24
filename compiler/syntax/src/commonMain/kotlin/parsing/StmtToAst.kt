@@ -38,7 +38,7 @@ fun DeclContext.declToAst(file: PlankFile): Decl = when (this) {
   is ModuleDeclContext -> ModuleDecl(
     path = path!!.pathToAst(file),
     content = findDecl().map { it.declToAst(file) },
-    loc = treeLoc(file)
+    loc = treeLoc(file),
   )
 
   is InferLetDeclContext -> LetDecl(
@@ -54,7 +54,7 @@ fun DeclContext.declToAst(file: PlankFile): Decl = when (this) {
     mutable = MUTABLE() != null,
     type = type!!.typeRefToAst(file),
     value = value!!.exprToAst(file),
-    loc = treeLoc(file)
+    loc = treeLoc(file),
   )
 
   is StructDeclContext -> StructDecl(
@@ -65,7 +65,7 @@ fun DeclContext.declToAst(file: PlankFile): Decl = when (this) {
       StructDecl.Property(mutable, prop.name!!.tokenToAst(file), prop.type!!.typeRefToAst(file))
     },
     generics = names?.IDENTIFIER()?.map { it.terminalToAst(file) }?.toSet().orEmpty(),
-    loc = treeLoc(file)
+    loc = treeLoc(file),
   )
 
   is EnumDeclContext -> EnumDecl(

@@ -17,13 +17,14 @@ class GenericTests {
           generic_fn("");
           generic_fn(10);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
         expectSuccess()
       }
   }
+
   @Test
   fun `test creating enum with generics`() {
     TestCompilation
@@ -41,7 +42,7 @@ class GenericTests {
 
         fun main(argc: Int32, argv: **Char) {
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -73,7 +74,7 @@ class GenericTests {
         fun main(argc: Int32, argv: **Char) {
           show(Just(10));
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -97,7 +98,7 @@ class GenericTests {
           Just("yes");
           Just(123);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -120,7 +121,7 @@ class GenericTests {
         fun main(argc: Int32, argv: **Char) {
           Cons(10, Nil);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .debugResolvedTree()
@@ -146,7 +147,7 @@ class GenericTests {
         fun main(argc: Int32, argv: **Char) {
           show_list(Cons(1, Nil));
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -172,7 +173,7 @@ class GenericTests {
           let person = Person{name: "John", age: 42};
           show_person(person);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

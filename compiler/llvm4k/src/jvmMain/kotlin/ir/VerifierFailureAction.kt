@@ -16,7 +16,7 @@
 
 package org.plank.llvm4k.ir
 
-import org.bytedeco.llvm.global.LLVM.*
+import org.bytedeco.llvm.global.LLVM.* // ktlint-disable no-wildcard-imports
 
 public actual enum class VerifierFailureAction(public val llvm: Int) {
   AbortProcess(LLVMAbortProcessAction),

@@ -17,7 +17,7 @@
 package org.plank.llvm4k.ir
 
 import org.bytedeco.llvm.LLVM.LLVMValueRef
-import org.bytedeco.llvm.global.LLVM.*
+import org.bytedeco.llvm.global.LLVM.* // ktlint-disable no-wildcard-imports
 
 public actual sealed class ConstantExpr : Constant()
 

@@ -30,14 +30,14 @@ class MatchInst(private val descriptor: TypedMatchExpr) : CodegenInstruction {
           type,
           checkPattern(subject, lastPattern.key, patterns.size - 1),
           { deconstructPattern(subject, lastPattern.key); lastPattern.value.codegen() },
-          { createLoad(createAlloca(type)) }
-        )
+          { createLoad(createAlloca(type)) },
+        ),
       ) { index, acc, (pattern, expr) ->
         fun(): Value = createIf(
           type,
           checkPattern(subject, pattern, index),
           { deconstructPattern(subject, pattern); expr.codegen() },
-          { acc.invoke() }
+          { acc.invoke() },
         )
       }
       .invoke()
@@ -66,6 +66,7 @@ fun CodegenCtx.deconstructPattern(subject: Value, pattern: TypedPattern) {
     is TypedIdentPattern -> {
       setSymbol(pattern.name.text, Scheme(pattern.ty.ftv(), pattern.ty), unsafeAlloca(subject))
     }
+
     is TypedEnumVariantPattern -> {
       var idx = 1
       val member = createBitCast(subject, pattern.info.ty.typegen().pointer())

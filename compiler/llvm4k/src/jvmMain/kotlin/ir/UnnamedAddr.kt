@@ -16,7 +16,7 @@
 
 package org.plank.llvm4k.ir
 
-import org.bytedeco.llvm.global.LLVM.*
+import org.bytedeco.llvm.global.LLVM.* // ktlint-disable no-wildcard-imports
 
 public actual enum class UnnamedAddr(public val llvm: Int) {
   None(LLVMNoUnnamedAddr),

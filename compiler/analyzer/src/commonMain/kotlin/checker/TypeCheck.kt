@@ -1,5 +1,6 @@
 package org.plank.analyzer.checker
 
+import kotlin.reflect.KClass
 import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedExprStmt
 import org.plank.analyzer.element.ResolvedFunctionBody
@@ -34,7 +35,6 @@ import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.toIdentifier
 import org.plank.syntax.message.CompilerLogger
 import org.plank.syntax.message.NoopCompilerLogger
-import kotlin.reflect.KClass
 
 fun ResolveResult.typeCheck(logger: CompilerLogger = NoopCompilerLogger): ResolvedPlankFile {
   return TypeCheck(this, logger).check()
@@ -123,6 +123,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
       ResolvedStmt::class -> {
         ResolvedExprStmt(TypedConstExpr(Unit, undefTy, loc = loc), loc) as A
       }
+
       ResolvedDecl::class -> {
         ResolvedLetDecl(
           name = "<undef>".toIdentifier(),
@@ -132,6 +133,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
           loc = loc,
         ) as A
       }
+
       else -> error("Unsupported type: $type")
     }
   }

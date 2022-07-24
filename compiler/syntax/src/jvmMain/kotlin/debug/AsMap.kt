@@ -9,7 +9,7 @@ internal actual fun List<*>.asMap(): Map<String, DumpEntry> {
   return withIndex().associate { (index, value) ->
     index.toString() to DumpEntry(
       if (value != null) value::class.starProjectedType else typeOf<Any?>(),
-      value
+      value,
     )
   }
 }

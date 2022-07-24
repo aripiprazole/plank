@@ -1,5 +1,6 @@
 package org.plank.analyzer
 
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.plank.analyzer.infer.AppTy
@@ -51,7 +52,6 @@ import org.plank.syntax.element.SizeofExpr
 import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.ThenBranch
 import org.plank.syntax.element.UnitTypeRef
-import kotlin.test.assertEquals
 
 class InferTest {
   @Test
@@ -179,7 +179,7 @@ class InferTest {
               to AccessExpr("name"),
           ),
         ),
-      )
+      ),
     ) { env ->
       expectSchemeEquals(env, strTy, env.lookup("foo"))
     }
@@ -223,7 +223,7 @@ class InferTest {
       EnumDecl("Person", "a") {
         member("MkPerson", PointerTypeRef(AccessTypeRef("Char")))
       },
-      LetDecl("foo", CallExpr(AccessExpr("MkPerson"), ConstExpr("John")))
+      LetDecl("foo", CallExpr(AccessExpr("MkPerson"), ConstExpr("John"))),
     ) { env ->
       expectSchemeEquals(env, AppTy(ConstTy("Person"), VarTy("a")), env.lookup("foo"))
     }
@@ -235,7 +235,7 @@ class InferTest {
       EnumDecl("Person", "a") {
         member("MkPerson", PointerTypeRef(AccessTypeRef("Char")))
       },
-      LetDecl("foo", CallExpr(AccessExpr("MkPerson"), ConstExpr("John")))
+      LetDecl("foo", CallExpr(AccessExpr("MkPerson"), ConstExpr("John"))),
     ) { env ->
       expectSchemeEquals(env, AppTy(ConstTy("Person"), VarTy("a")), env.lookup("foo"))
     }

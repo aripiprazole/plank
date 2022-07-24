@@ -55,7 +55,7 @@ class LazySymbol(
     val variable = currentModule.addGlobalVariable(name.get(), struct, AddrSpace.Generic).apply {
       initializer = struct.getConstant(
         type.pointer().constPointerNull(),
-        isPacked = false
+        isPacked = false,
       )
     }
 
@@ -73,7 +73,8 @@ class LazySymbol(
         val field = getField(variable, 0)
 
         createIf(
-          type, createIsNull(createLoad(field)),
+          type,
+          createIsNull(createLoad(field)),
           { createStore(alloca(lazyValue()), field) },
         )
 

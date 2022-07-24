@@ -18,6 +18,8 @@
 
 package org.plank.llvm4k
 
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
 import org.plank.llvm4k.ir.AddrSpace
 import org.plank.llvm4k.ir.AllocaInst
 import org.plank.llvm4k.ir.AtomicCmpXchgInst
@@ -51,19 +53,21 @@ import org.plank.llvm4k.ir.SwitchInst
 import org.plank.llvm4k.ir.Type
 import org.plank.llvm4k.ir.UnreachableInst
 import org.plank.llvm4k.ir.Value
-import kotlin.properties.PropertyDelegateProvider
-import kotlin.properties.ReadOnlyProperty
 
 public interface IRBuilder : Disposable {
   public val insertionBlock: BasicBlock?
 
   public fun positionAfter(block: BasicBlock): IRBuilder
 
-  public fun createGlobalStringPtr(value: String): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>>
+  public fun createGlobalStringPtr(
+    value: String,
+  ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>>
 
   public fun createGlobalStringPtr(value: String, name: String): GlobalVariable
 
-  public fun createGlobalString(value: String): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>>
+  public fun createGlobalString(
+    value: String,
+  ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, GlobalVariable>>
 
   public fun createGlobalString(value: String, name: String): GlobalVariable
 
@@ -261,7 +265,7 @@ public interface IRBuilder : Disposable {
   public fun createFence(
     order: AtomicOrdering,
     singleThread: Boolean = true,
-    name: String? = null
+    name: String? = null,
   ): FenceInst
 
   public fun createAtomicCmpXchg(
@@ -368,7 +372,7 @@ public interface IRBuilder : Disposable {
     value: Value,
     type: Type,
     isSigned: Boolean = true,
-    name: String? = null
+    name: String? = null,
   ): Value
 
   public fun createFPCast(value: Value, type: Type, name: String? = null): Value

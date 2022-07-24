@@ -15,7 +15,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_bool(1 == 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -35,7 +35,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_bool(1 != 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -55,7 +55,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_bool(1 >= 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -75,7 +75,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_bool(1 > 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -95,7 +95,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_bool(1 <= 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -115,7 +115,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_bool(1 < 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -135,7 +135,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_int(1 + 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -155,7 +155,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_int(1 - 1);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -175,7 +175,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_int(3 * 2);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -195,7 +195,7 @@ class IntOpsTest {
         fun main(argc: Int32, argv: **Char) {
           print_int(6 / 2);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -226,7 +226,7 @@ class IntOpsTest {
           print_int(fib(4));
           print_int(fib(5));
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

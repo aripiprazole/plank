@@ -34,17 +34,20 @@ fun <A : SimplePlankElement> transformTree(
     is GetExpr -> exitExpr(expr.copy(receiver = visitExpr(expr.receiver), property = expr.property))
     is SizeofExpr -> exitExpr(expr.copy(type = visitTypeRef(expr.type)))
     is BlockExpr -> exitExpr(
-      expr.copy(stmts = expr.stmts.map(visitStmt), value = expr.value?.let { visitExpr(it) })
+      expr.copy(stmts = expr.stmts.map(visitStmt), value = expr.value?.let { visitExpr(it) }),
     )
+
     is CallExpr -> exitExpr(
       expr.copy(callee = visitExpr(expr.callee), arguments = expr.arguments.map(visitExpr)),
     )
+
     is InstanceExpr -> exitExpr(
       expr.copy(
         type = visitTypeRef(expr.type),
         arguments = expr.arguments.mapValues { visitExpr(it.value) },
       ),
     )
+
     is SetExpr -> exitExpr(
       expr.copy(
         receiver = visitExpr(expr.receiver),
@@ -52,6 +55,7 @@ fun <A : SimplePlankElement> transformTree(
         property = expr.property,
       ),
     )
+
     is IfExpr -> exitExpr(
       expr.copy(
         cond = visitExpr(expr.cond),
@@ -59,6 +63,7 @@ fun <A : SimplePlankElement> transformTree(
         elseBranch = expr.elseBranch?.let { visitBranch(it) },
       ),
     )
+
     is MatchExpr -> exitExpr(
       expr.copy(
         subject = visitExpr(expr.subject),
@@ -76,25 +81,29 @@ fun <A : SimplePlankElement> transformTree(
     is ModuleDecl -> exitStmt(
       stmt.copy(content = stmt.content.map(visitStmt).filterIsInstance<Decl>()),
     )
+
     is LetDecl -> exitStmt(
-      stmt.copy(type = stmt.type?.let(visitTypeRef), value = visitExpr(stmt.value))
+      stmt.copy(type = stmt.type?.let(visitTypeRef), value = visitExpr(stmt.value)),
     )
+
     is StructDecl -> exitStmt(
       stmt.copy(
         properties = stmt.properties.map { it.copy(type = visitTypeRef(it.type)) },
-      )
+      ),
     )
+
     is EnumDecl -> exitStmt(
       stmt.copy(
         members = stmt.members.map { it.copy(parameters = it.parameters.map(visitTypeRef)) },
       ),
     )
+
     is FunDecl -> exitStmt(
       stmt.copy(
         body = visitBody(stmt.body),
         parameters = stmt.parameters.mapValues { visitTypeRef(it.value) },
         returnType = visitTypeRef(stmt.returnType),
-      )
+      ),
     )
   }
 
@@ -131,6 +140,7 @@ fun <A : SimplePlankElement> transformTree(
         arguments = ref.arguments.map(visitTypeRef),
       ),
     )
+
     is FunctionTypeRef -> exitTypeRef(
       ref.copy(
         returnType = visitTypeRef(ref.returnType),

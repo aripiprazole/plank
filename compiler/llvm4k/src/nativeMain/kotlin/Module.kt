@@ -134,7 +134,7 @@ public actual class Module(public override val ref: LLVMModuleRef?) :
       name.length.toULong(),
       type.ref,
       addrSpace.value,
-      resolver?.ref
+      resolver?.ref,
     )
 
     return GlobalIFunc(ref)

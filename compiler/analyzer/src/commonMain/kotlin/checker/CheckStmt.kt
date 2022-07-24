@@ -129,6 +129,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
             scope.declare(EnumConstructor(info, scheme, name, scope))
             info
           }
+
           else -> {
             val inst = instantiate(funScheme.replaceLastName(memberName)).chainExecution().last()
             val s = unify(ty, funScheme.ty.chainExecution().last())

@@ -48,7 +48,7 @@ class ClosureFunctionSymbol(
     val closureFunctionType = createNamedStruct("closure.fn.${mangled.get()}") {
       elements = listOf(
         functionType.pointer(),
-        environmentType.pointer()
+        environmentType.pointer(),
       )
     }
 
