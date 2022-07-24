@@ -27,7 +27,7 @@ plugins {
   alias(libs.plugins.detekt) apply false
 }
 
-group = "org"
+group = "org.plank"
 version = "1.0-SNAPSHOT"
 
 LocalProperties.init(rootProject)
@@ -51,8 +51,8 @@ subprojects {
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
   }
 
-  group = "org.plank"
-  version = "1.0-SNAPSHOT"
+  group = rootProject.group
+  version = rootProject.version
 
   configure<KtlintExtension> {
     android.set(false)
