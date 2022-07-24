@@ -6,9 +6,9 @@ import java.io.File
 
 private val runtime = Runtime.getRuntime()
 
-actual val pathSeparator: String = File.pathSeparator
+val pathSeparator: String = File.pathSeparator
 
-actual fun Command.exec(): String {
+fun Command.exec(): String {
   val process = runtime.exec(toString())
 
   if (process.waitFor() != 0) {

@@ -5,10 +5,6 @@ import okio.Path.Companion.toPath
 import org.plank.shared.Environment
 import org.plank.shared.Platform
 
-expect val pathSeparator: String
-
-expect fun Command.exec(): String
-
 data class Command(val executable: Path, private val args: MutableList<String> = mutableListOf()) {
   fun arg(arg: String): Command {
     args.add(arg)
