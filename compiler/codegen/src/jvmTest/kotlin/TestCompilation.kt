@@ -80,8 +80,6 @@ class TestCompilation(
 
     @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
-      installDebugPretty()
-
       val pkg = Package(code, "../..".toPath()) {
         linker = locateBinary("clang++")
         workingDir = createTempDirectory("plank-test")
