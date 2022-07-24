@@ -149,6 +149,7 @@ public actual class StructType(public override val ref: LLVMTypeRef?) : Type() {
         elements.size.toUInt(),
         isPacked.toInt(),
       )
+
       else -> {
         llvm.LLVMConstNamedStruct(ref, elements.map { it.ref }.toCValues(), elements.size.toUInt())
       }
@@ -240,8 +241,8 @@ public actual class FunctionType(public override val ref: LLVMTypeRef?) : Type()
         returnType.ref,
         params.map { it.ref }.toCValues(),
         params.size.toUInt(),
-        isVarargs.toInt()
-      )
+        isVarargs.toInt(),
+      ),
     )
 
   public actual val returnType: Type get() = Type(llvm.LLVMGetReturnType(ref))

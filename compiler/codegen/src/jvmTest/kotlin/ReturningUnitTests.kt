@@ -15,7 +15,7 @@ class ReturningUnitTests {
         fun main(argc: Int32, argv: **Char) -> () {
           return println("Hello, world!");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

@@ -46,7 +46,7 @@ data class Package(
       treeDebug = options.debug.treeDebug,
       parserDebug = options.debug.parserDebug,
       logger = options.logger,
-    )
+    ),
   )
 
   enum class Kind { Binary, Library }

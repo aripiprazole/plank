@@ -28,6 +28,7 @@ fun TypePrimaryContext.typeRefToAst(file: PlankFile): TypeRef = when (this) {
 
     ApplyTypeRef(AccessTypeRef(path, path.loc), arguments, treeLoc(file))
   }
+
   else -> error("Unsupported primary type ref ${this::class.simpleName}")
 }
 
@@ -37,8 +38,9 @@ fun TypeRefContext.typeRefToAst(file: PlankFile): TypeRef = when (this) {
     FunctionTypeRef(
       parameterType = parameter!!.typeRefToAst(file),
       returnType!!.typeRefToAst(file),
-      treeLoc(file)
+      treeLoc(file),
     )
   }
+
   else -> error("Unsupported type ref ${this::class.simpleName}")
 }

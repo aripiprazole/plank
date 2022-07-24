@@ -1,3 +1,5 @@
+/* ktlint-disable max-line-length */
+
 @file:Suppress("MaximumLineLength", "MaxLineLength")
 
 package org.plank.codegen
@@ -21,7 +23,7 @@ class ClosureTests {
 
           println("Hello, world!");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -49,7 +51,7 @@ class ClosureTests {
 
           println("Hello, world!");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -73,7 +75,7 @@ class ClosureTests {
           println("Hello, world!");
           nested;
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -101,7 +103,7 @@ class ClosureTests {
 
           println("Hello, world!");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -131,7 +133,7 @@ class ClosureTests {
           println("Hello, world!");
           nested();
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -161,7 +163,7 @@ class ClosureTests {
           }
           nested();
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -190,7 +192,7 @@ class ClosureTests {
           }
           nested();
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -215,7 +217,7 @@ class ClosureTests {
           println("Hello, world!");
           nested();
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -239,7 +241,7 @@ class ClosureTests {
           }
           nested();
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -262,7 +264,7 @@ class ClosureTests {
           }
           nested("Hello, world");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -284,7 +286,7 @@ class ClosureTests {
           }
           nested("Hello")("world");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -311,7 +313,7 @@ class ClosureTests {
           }
           nested("Hello", "world");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -319,3 +321,5 @@ class ClosureTests {
       }
   }
 }
+
+/* ktlint-disable max-line-length */

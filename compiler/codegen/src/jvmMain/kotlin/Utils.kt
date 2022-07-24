@@ -65,7 +65,7 @@ inline fun CodegenCtx.instantiate(
   struct: StructType,
   vararg arguments: Value,
   name: String? = null,
-  generateGEPName: (Int, String) -> String? = { _, _ -> null }
+  generateGEPName: (Int, String) -> String? = { _, _ -> null },
 ): AllocaInst {
   val instance = createAlloca(struct, name = name)
 

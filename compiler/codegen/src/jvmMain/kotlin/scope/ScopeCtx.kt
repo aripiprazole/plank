@@ -1,5 +1,8 @@
 package org.plank.codegen.scope
 
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import org.plank.analyzer.element.ResolvedPlankFile
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.nullSubst
@@ -24,9 +27,6 @@ import org.plank.llvm4k.ir.User
 import org.plank.llvm4k.ir.Value
 import org.plank.syntax.element.Loc
 import org.plank.syntax.element.QualifiedPath
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 data class ScopeCtx(
   private val llvm: Context,
@@ -180,16 +180,20 @@ inline fun CodegenCtx.createScopeContext(
       structs = mutableMapOf(),
       lazy = mutableMapOf(),
     ).apply(builder)
+
     is ExecCtx -> enclosing.copy(
-      enclosing = enclosing, scope = moduleName,
+      enclosing = enclosing,
+      scope = moduleName,
       functions = mutableMapOf(),
       symbols = mutableMapOf(),
       types = mutableMapOf(),
       structs = mutableMapOf(),
       lazy = mutableMapOf(),
     ).apply(builder)
+
     else -> (this as ScopeCtx).copy(
-      enclosing = this, scope = moduleName,
+      enclosing = this,
+      scope = moduleName,
       functions = mutableMapOf(),
       symbols = mutableMapOf(),
       types = mutableMapOf(),
@@ -201,7 +205,9 @@ inline fun CodegenCtx.createScopeContext(
 
 fun CodegenCtx.createFileContext(file: ResolvedPlankFile = this.file): ScopeCtx {
   return scopeContext().copy(
-    enclosing = this, file = file, scope = file.module.text,
+    enclosing = this,
+    file = file,
+    scope = file.module.text,
     functions = mutableMapOf(),
     symbols = mutableMapOf(),
     types = mutableMapOf(),

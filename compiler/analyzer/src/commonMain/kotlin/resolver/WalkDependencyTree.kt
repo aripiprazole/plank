@@ -39,6 +39,7 @@ fun walkDependencyTree(
         tree.createModule(module)
         currentScope = module.scope
       }
+
       else -> {}
     }
   }

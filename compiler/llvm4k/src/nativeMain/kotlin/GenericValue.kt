@@ -64,7 +64,11 @@ public actual class IntegerValue(
   public override val ref: LLVMGenericValueRef?,
 ) : GenericValue<Int> {
   public actual constructor(type: IntegerType, value: Int, signed: Boolean) :
-    this(signed, type, llvm.LLVMCreateGenericValueOfInt(type.ref, value.toULong(), signed.toInt()))
+    this(
+      signed,
+      type,
+      llvm.LLVMCreateGenericValueOfInt(type.ref, value.toULong(), signed.toInt()),
+    )
 
   public override val value: Int get() = llvm.LLVMGenericValueToInt(ref, signed.toInt()).toInt()
 

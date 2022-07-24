@@ -33,5 +33,6 @@ fun AttrExprContext.attrExprToAst(file: PlankFile): AttributeExpr<*> = when (thi
     value = value!!.text!!.substring(1, value!!.text!!.length - 1),
     loc = treeLoc(file),
   )
+
   else -> error("Unsupported attr expr ${this::class.simpleName}")
 }

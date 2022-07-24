@@ -1,5 +1,6 @@
 package org.plank.tooling.langserver
 
+import java.util.concurrent.CompletableFuture
 import org.eclipse.lsp4j.CompletionOptions
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializeResult
@@ -12,7 +13,6 @@ import org.eclipse.lsp4j.services.LanguageServer
 import org.eclipse.lsp4j.services.TextDocumentService
 import org.eclipse.lsp4j.services.WorkspaceService
 import pw.binom.io.Closeable
-import java.util.concurrent.CompletableFuture
 
 class PlankLanguageServer : LanguageServer, LanguageClientAware, Closeable {
   private lateinit var client: LanguageClient
@@ -30,7 +30,7 @@ class PlankLanguageServer : LanguageServer, LanguageClientAware, Closeable {
     }
 
     return CompletableFuture.completedFuture(
-      InitializeResult(capabilities)
+      InitializeResult(capabilities),
     )
   }
 

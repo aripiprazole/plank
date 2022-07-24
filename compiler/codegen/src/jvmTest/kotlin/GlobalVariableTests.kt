@@ -16,7 +16,7 @@ class GlobalVariableTests {
 
         fun main(argc: Int32, argv: **Char) -> () {
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -38,7 +38,7 @@ class GlobalVariableTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -61,7 +61,7 @@ class GlobalVariableTests {
           println(x);
           println(x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -85,7 +85,7 @@ class GlobalVariableTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -107,7 +107,7 @@ class GlobalVariableTests {
         fun main(argc: Int32, argv: **Char) -> () {
           x("hello");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -128,7 +128,7 @@ class GlobalVariableTests {
 
         fun main(argc: Int32, argv: **Char) -> () {
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -150,7 +150,7 @@ class GlobalVariableTests {
         fun main(argc: Int32, argv: **Char) -> () {
           x := "updated";
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -174,7 +174,7 @@ class GlobalVariableTests {
           x := "updated";
           println(x);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

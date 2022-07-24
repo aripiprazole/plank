@@ -17,7 +17,7 @@ class BlockTests {
             println("Hello, world!");
           };
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -40,7 +40,7 @@ class BlockTests {
             println(message);
           };
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -64,7 +64,7 @@ class BlockTests {
 
           println(string);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -89,7 +89,7 @@ class BlockTests {
 
           println(string);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

@@ -48,8 +48,9 @@ fun PrimaryContext.exprToAst(file: PlankFile): Expr = when (this) {
   is DecimalExprContext -> ConstExpr(value!!.text!!.toDouble(), treeLoc(file))
   is StringExprContext -> ConstExpr(
     value!!.text!!.substring(1, value!!.text!!.length - 1),
-    treeLoc(file)
+    treeLoc(file),
   )
+
   is AccessExprContext -> AccessExpr(value!!.tokenToAst(file), null, treeLoc(file))
   is TrueExprContext -> ConstExpr(true, treeLoc(file))
   is FalseExprContext -> ConstExpr(false, treeLoc(file))
@@ -57,6 +58,7 @@ fun PrimaryContext.exprToAst(file: PlankFile): Expr = when (this) {
     null -> ConstExpr(Unit, treeLoc(file))
     else -> GroupExpr(value!!.exprToAst(file), treeLoc(file))
   }
+
   else -> error("Unsupported primary ${this::class.simpleName}")
 }
 
@@ -116,6 +118,7 @@ fun ExprContext.exprToAst(file: PlankFile): Expr = when (this) {
 
     SetExpr(property.receiver, property.property, value!!.exprToAst(file), treeLoc(file))
   }
+
   else -> error("Unsupported expr ${this::class.simpleName}")
 }
 
@@ -126,5 +129,6 @@ fun callFold(file: PlankFile) = fun(acc: Expr, next: ArgContext): Expr = when (n
     .fold(acc) { callee, arg ->
       CallExpr(callee, listOf(arg.exprToAst(file)), arg.treeLoc(file))
     }
+
   else -> error("Unsupported arg ${next::class.simpleName}")
 }

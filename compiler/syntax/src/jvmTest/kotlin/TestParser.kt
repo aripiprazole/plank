@@ -1,13 +1,13 @@
 package org.plank.syntax
 
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 import pw.binom.io.file.File
 import pw.binom.io.file.extension
 import pw.binom.io.file.iterator
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class TestParser {
   val logger = CompilerLogger(debug = true, verbose = true)
@@ -54,7 +54,7 @@ class TestParser {
         logger.info("Testing file ${file.path}")
 
         when (pFile.isValid) {
-          true ->  logger.severe("  - passed without any violations")
+          true -> logger.severe("  - passed without any violations")
           false -> {
             logger.info("  - didn't pass with ${pFile.violations.size} violations")
 

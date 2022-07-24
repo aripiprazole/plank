@@ -31,7 +31,10 @@ public actual class ExecutionEngine(
 ) : Disposable, Owner<LLVMExecutionEngineRef> {
   public actual fun runFunction(callee: Function, vararg args: GenericValue<*>): GenericValue<*> {
     val ref = LLVM.LLVMRunFunction(
-      ref, callee.ref, args.size, args.map { it.ref }.toPointerPointer()
+      ref,
+      callee.ref,
+      args.size,
+      args.map { it.ref }.toPointerPointer(),
     )
 
     return when (val returnType = callee.returnType) {
@@ -43,7 +46,9 @@ public actual class ExecutionEngine(
 
   public actual fun runFunctionAsMain(callee: Function, args: Array<String>): Int {
     return LLVM.LLVMRunFunctionAsMain(
-      ref, callee.ref, args.size,
+      ref,
+      callee.ref,
+      args.size,
       args.map { BytePointer(it) }.toPointerPointer(),
       emptyArray<String>().map { BytePointer(it) }.toPointerPointer(),
     )

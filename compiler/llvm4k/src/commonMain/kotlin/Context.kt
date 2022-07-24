@@ -16,6 +16,7 @@
 
 package org.plank.llvm4k
 
+import kotlin.js.JsName
 import org.plank.llvm4k.ir.BasicBlock
 import org.plank.llvm4k.ir.FloatType
 import org.plank.llvm4k.ir.IntegerType
@@ -25,7 +26,6 @@ import org.plank.llvm4k.ir.StructType
 import org.plank.llvm4k.ir.TokenType
 import org.plank.llvm4k.ir.VoidType
 import org.plank.llvm4k.ir.X86MMXType
-import kotlin.js.JsName
 
 public expect interface Context : Disposable {
   public val void: VoidType

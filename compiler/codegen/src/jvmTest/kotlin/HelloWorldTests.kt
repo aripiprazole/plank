@@ -15,7 +15,7 @@ class HelloWorldTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println("Hello, world!");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -36,7 +36,7 @@ class HelloWorldTests {
           println("Hello, world!");
           println("Hello, world!");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

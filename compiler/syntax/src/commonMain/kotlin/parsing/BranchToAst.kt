@@ -16,6 +16,7 @@ fun ThenBranchContext.thenBranchToAst(file: PlankFile): IfBranch = when (this) {
   is BlockThenBranchContext -> {
     BlockBranch(findStmt().map { it.stmtToAst(file) }, value?.exprToAst(file), treeLoc(file))
   }
+
   else -> error("Unsupported then branch ${this::class.simpleName}")
 }
 
@@ -24,5 +25,6 @@ fun ElseBranchContext.elseBranchToAst(file: PlankFile): IfBranch = when (this) {
   is BlockElseBranchContext -> {
     BlockBranch(findStmt().map { it.stmtToAst(file) }, value?.exprToAst(file), treeLoc(file))
   }
+
   else -> error("Unsupported else branch ${this::class.simpleName}")
 }

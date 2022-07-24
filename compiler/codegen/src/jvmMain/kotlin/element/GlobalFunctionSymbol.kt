@@ -53,7 +53,7 @@ class GlobalFunctionSymbol(
         mangled = mangled,
         realParameters = parameters,
         generate = generate,
-      )
+      ),
     )
 
     positionAfter(entry)
@@ -81,7 +81,7 @@ fun CodegenCtx.addGlobalFunction(
   generate: GenerateBody,
 ): Value {
   return addFunction(
-    GlobalFunctionSymbol(ty, name, Scheme(ty), mangled, references, parameters, generate)
+    GlobalFunctionSymbol(ty, name, Scheme(ty), mangled, references, parameters, generate),
   )
 }
 

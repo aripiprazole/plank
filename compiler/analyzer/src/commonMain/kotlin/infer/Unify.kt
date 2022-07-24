@@ -10,12 +10,14 @@ fun unify(a: Ty, b: Ty): Subst = when {
 
     s1 compose s2
   }
+
   a is FunTy && b is FunTy -> {
     val s1 = unify(a.returnTy, b.returnTy)
     val s2 = unify(a.parameterTy ap s1, b.parameterTy ap s1)
 
     s1 compose s2
   }
+
   a is PtrTy && b is PtrTy -> unify(a.arg, b.arg)
   else -> throw UnificationFail(a, b)
 }

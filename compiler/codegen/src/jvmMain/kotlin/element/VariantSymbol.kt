@@ -56,6 +56,7 @@ class VariantSymbol(
           createStore(i8.getConstant(tag, false), getField(instance, 0))
           createBitCast(instance, enumType)
         }
+
         else -> {
           val parameters = info.parameters.withIndex().associate { (i, value) ->
             "_$i".toIdentifier() to value

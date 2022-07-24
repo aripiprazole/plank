@@ -15,5 +15,6 @@ fun PatternContext.patternToAst(file: PlankFile): Pattern = when (this) {
     properties = findPattern().map { it.patternToAst(file) },
     loc = treeLoc(file),
   )
+
   else -> error("Unsupported pattern ${this::class.simpleName}")
 }

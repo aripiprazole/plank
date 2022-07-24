@@ -15,7 +15,7 @@ class BodyTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println("Hello, world!");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -37,7 +37,7 @@ class BodyTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(get_string());
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -59,7 +59,7 @@ class BodyTests {
         fun main(argc: Int32, argv: **Char) -> () {
           println(get_string());
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

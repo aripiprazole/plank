@@ -15,7 +15,7 @@ fun dumpInline(map: Map<String, Any?>, prefix: String = "", name: Any = "Element
       append(
         map.entries.reversed().joinToString(", ", prefix = "(", postfix = ")") { (a, b) ->
           "$a: $b"
-        }
+        },
       )
     }
     append('\n')
@@ -57,9 +57,10 @@ fun dumpTree(
           "$childrenPrefix├── $name: ",
           "$childrenPrefix│   ",
           "List[$itemType]",
-          true
+          true,
         )
       }
+
       is PlankElement -> {
         val typeName = value::class.simpleName!!
         val valueAsMap = value.asMap()
@@ -70,6 +71,7 @@ fun dumpTree(
           dumpInline(valueAsMap, "$childrenPrefix├── $name: ", typeName)
         }
       }
+
       is Map<*, *> -> {
         val keyType = type.arguments[0].type!!
         val valueType = type.arguments[1].type!!
@@ -80,9 +82,10 @@ fun dumpTree(
             .mapValues { (_, b) -> DumpEntry(valueType, b) },
           "$childrenPrefix├── $name: ",
           "$childrenPrefix│   ",
-          (if (value.isEmpty()) "EmptyMap" else "Map") + "[$keyType, $valueType]"
+          (if (value.isEmpty()) "EmptyMap" else "Map") + "[$keyType, $valueType]",
         )
       }
+
       else -> {
         dumpTree(mapOf(), "$childrenPrefix├── $name: ", "$childrenPrefix│   ", value.toString())
       }

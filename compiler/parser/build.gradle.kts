@@ -37,7 +37,7 @@ tasks {
 
     antlrClasspath = configurations.detachedConfiguration(
       dependencies.create("org.antlr:antlr4:$antlr4Version"),
-      dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinVersion")
+      dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinVersion"),
     )
     maxHeapSize = "64m"
     arguments = emptyList()

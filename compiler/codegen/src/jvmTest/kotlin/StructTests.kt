@@ -17,7 +17,7 @@ class StructTests {
         fun main(argc: Int32, argv: **Char) -> () {
           let person = Person{name: "Gabrielle"};
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -40,7 +40,7 @@ class StructTests {
           let person = Person{name: "Gabrielle"};
           println(person.name);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -80,7 +80,7 @@ class StructTests {
           person.name := "Alberto";
           println(person.name);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {

@@ -23,6 +23,7 @@ fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
 
       ResolvedCodeBody(stmts, value, body.loc)
     }
+
     is ExprBody -> {
       val value = checkExpr(body.expr)
       val scope = scope as FunctionScope
@@ -33,6 +34,7 @@ fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
 
       ResolvedExprBody(value, body.loc)
     }
+
     is NoBody -> ResolvedNoBody(body.loc)
   }
 }

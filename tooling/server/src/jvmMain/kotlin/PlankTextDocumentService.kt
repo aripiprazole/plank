@@ -30,7 +30,7 @@ class PlankTextDocumentService : TextDocumentService {
               println("Hello, world!");
             }
           """.trimIndent()
-        }
+        },
       )
       setIsIncomplete(false)
     }

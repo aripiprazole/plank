@@ -184,7 +184,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
           struct.generics.map { it.text }.toSet(),
           struct.generics.fold(structTy.ungeneralize() as Ty) { acc, next ->
             AppTy(acc, VarTy(next.text))
-          }
+          },
         ),
       )
 
@@ -255,6 +255,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
         expr.patterns.isEmpty() -> {
           TypedMatchExpr(subject, emptyMap(), unitTy, expr.loc)
         }
+
         else -> {
           val patterns = expr.patterns.entries.associate { (pattern, value) ->
             scoped(PatternScope(pattern, scope)) {

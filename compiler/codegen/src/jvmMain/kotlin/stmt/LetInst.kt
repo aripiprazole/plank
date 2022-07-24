@@ -19,6 +19,7 @@ class LetInst(private val descriptor: ResolvedLetDecl) : CodegenInstruction {
 
         createStore(value, variable)
       }
+
       false -> {
         setSymbolLazy(descriptor.name.text, descriptor.scheme) {
           descriptor.value.codegen()

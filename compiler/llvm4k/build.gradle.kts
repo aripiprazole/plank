@@ -16,11 +16,11 @@
 
 @file:Suppress("DSL_SCOPE_VIOLATION")
 
+import java.lang.System.getenv
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.plank.build.LlvmConfig
 import org.plank.build.LocalProperties
 import org.plank.build.absolutePath
-import java.lang.System.getenv
 
 plugins {
   alias(libs.plugins.artifactory)

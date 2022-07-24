@@ -40,7 +40,9 @@ public expect class Module : Disposable {
 
   public fun writeBitcode(file: String)
 
-  public fun createJITExecutionEngine(level: OptimizationLevel = OptimizationLevel.None): ExecutionEngine
+  public fun createJITExecutionEngine(
+    level: OptimizationLevel = OptimizationLevel.None,
+  ): ExecutionEngine
 
   public fun getTypeByName(name: String): StructType?
 

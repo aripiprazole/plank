@@ -3,7 +3,11 @@ package org.plank.analyzer.checker
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.TyEnv
 
-fun Scope.allVariables(original: Scope = this, inScope: Boolean = true, indent: String = ""): Set<Variable> {
+fun Scope.allVariables(
+  original: Scope = this,
+  inScope: Boolean = true,
+  indent: String = "",
+): Set<Variable> {
   if (original == this && !inScope) {
     return emptySet()
   }

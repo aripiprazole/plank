@@ -25,7 +25,7 @@ class HOFTests {
 
           hof(nested);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -58,7 +58,7 @@ class HOFTests {
 
           hof_nesting(nested);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -83,7 +83,7 @@ class HOFTests {
           println("Hello");
           hof_nesting(println);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -113,7 +113,7 @@ class HOFTests {
         fun main(argc: Int32, argv: **Char) -> () {
           hof(prefixed("info"));
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -144,7 +144,7 @@ class HOFTests {
 
           hof(write);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -177,7 +177,7 @@ class HOFTests {
 
           hof(prefixed);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -208,7 +208,7 @@ class HOFTests {
           let f = prefixed("info");
           hof(f);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -240,7 +240,7 @@ class HOFTests {
           hof(f);
           hof(f);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -272,7 +272,7 @@ class HOFTests {
           f("hello before");
           hof(f);
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
@@ -304,7 +304,7 @@ class HOFTests {
           hof(f);
           f("hello after");
         }
-        """.trimIndent()
+        """.trimIndent(),
       )
       .debugAll()
       .runTest {
