@@ -1,9 +1,7 @@
 package org.plank.codegen.pkg
 
-import okio.Path
-import okio.Path.Companion.toPath
+import java.io.File
 import org.plank.analyzer.resolver.ModuleTree
-import org.plank.shared.readText
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 
@@ -17,15 +15,15 @@ data class Package(
   val logger: CompilerLogger get() = options.logger
 
   constructor(
-    file: Path,
-    home: Path = ".".toPath(),
+    file: File,
+    home: File = File("."),
     includeStd: Boolean = true,
     builder: CompileOptions.() -> Unit = {},
   ) : this(file.readText(), includeStd, CompileOptions(home).apply(builder), file.toString())
 
   constructor(
     text: String,
-    home: Path = ".".toPath(),
+    home: File = File("."),
     includeStd: Boolean = true,
     builder: CompileOptions.() -> Unit = {},
   ) : this(text, includeStd, CompileOptions(home).apply(builder))
