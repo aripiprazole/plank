@@ -2,6 +2,7 @@ package org.plank.codegen.pkg
 
 import java.io.File
 import kotlin.io.path.createTempDirectory
+import okio.Path.Companion.toOkioPath
 import org.plank.codegen.DebugOptions
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
@@ -23,10 +24,10 @@ data class CompileOptions(val plankHome: File) {
   /** TODO: use a package manager */
   val stdlib by lazy {
     plankHome
-      .child("stdlib").list()
+      .child("stdlib").listFiles()
       .orEmpty()
-      .filter { it.toString().endsWith(".plank") }
-      .map { PlankFile.of(it) }
+      .filter { it.extension == "plank" }
+      .map { PlankFile.of(it.toOkioPath()) }
   }
 
   var runtime = plankHome.child("runtime")
