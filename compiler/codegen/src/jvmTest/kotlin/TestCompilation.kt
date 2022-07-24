@@ -2,10 +2,11 @@
 
 package org.plank.codegen
 
+import java.io.File
+import kotlin.io.path.createTempDirectory
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.fail
-import okio.Path.Companion.toPath
 import org.plank.analyzer.checker.CheckViolation
 import org.plank.codegen.pkg.AnalyzerError
 import org.plank.codegen.pkg.Command
@@ -14,7 +15,6 @@ import org.plank.codegen.pkg.Package
 import org.plank.codegen.pkg.SyntaxError
 import org.plank.codegen.pkg.child
 import org.plank.codegen.pkg.compileBinary
-import org.plank.codegen.pkg.createTempDirectory
 import org.plank.codegen.pkg.exec
 import org.plank.codegen.pkg.locateBinary
 import org.plank.llvm4k.LLVMError
@@ -80,9 +80,9 @@ class TestCompilation(
 
     @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
-      val pkg = Package(code, "../..".toPath()) {
+      val pkg = Package(code, File("../..")) {
         linker = locateBinary("clang++")
-        workingDir = createTempDirectory("plank-test")
+        workingDir = createTempDirectory("plank-test").toFile()
         output = workingDir.child("main")
         debug = options
         logger = CompilerLogger(debug = true, verbose = true)

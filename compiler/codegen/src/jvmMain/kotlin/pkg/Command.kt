@@ -1,11 +1,9 @@
 package org.plank.codegen.pkg
 
-import okio.Path
-import okio.Path.Companion.toPath
+import java.io.File
 import org.plank.shared.Environment
-import org.plank.shared.Platform
 
-data class Command(val executable: Path, private val args: MutableList<String> = mutableListOf()) {
+data class Command(val executable: File, private val args: MutableList<String> = mutableListOf()) {
   fun arg(arg: String): Command {
     args.add(arg)
     return this
@@ -16,7 +14,7 @@ data class Command(val executable: Path, private val args: MutableList<String> =
   }
 
   companion object {
-    fun of(executable: Path): Command {
+    fun of(executable: File): Command {
       return Command(executable)
     }
 
@@ -33,7 +31,7 @@ class CommandFailedException(val command: String, val exitCode: Int, val output:
     "Command $command failed with exit code $exitCode with output: $output"
 }
 
-fun locateBinary(name: String): Path {
+fun locateBinary(name: String): File {
   return Environment["PATH"]!!
     .split(pathSeparator)
     .map { path ->
@@ -43,8 +41,8 @@ fun locateBinary(name: String): Path {
         path
       }
     }
-    .map { it.toPath() }
-    .firstOrNull { directory -> Platform.FileSystem.exists(directory.resolve(name)) }
+    .map { File(it) }
+    .firstOrNull { directory -> directory.resolve(name).exists() }
     ?.resolve(name)
     ?: error("Could not find `$name` in PATH")
 }
