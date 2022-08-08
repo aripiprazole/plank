@@ -10,7 +10,6 @@ pluginManagement {
   }
 }
 
-include("frontend:codegen")
 include("frontend:llvm4k")
 include("frontend:syntax")
 include("frontend:cli")
