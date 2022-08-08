@@ -9,9 +9,9 @@ kotlin {
   sourceSets {
     val jvmMain by getting {
       dependencies {
-        implementation(projects.compiler.syntax)
-        implementation(projects.compiler.shared)
-        implementation(projects.compiler.analyzer)
+        implementation(projects.frontend.syntax)
+        implementation(projects.frontend.shared)
+        implementation(projects.frontend.analyzer)
         implementation(libs.ktx.coroutines.core)
         implementation(libs.ktx.coroutines.jdk8)
         implementation(libs.lsp4j.lsp4j)
