@@ -7,10 +7,10 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(libs.arrow.core)
-        implementation(projects.compiler.llvm4k)
-        implementation(projects.compiler.syntax)
-        implementation(projects.compiler.shared)
-        implementation(projects.compiler.analyzer)
+        implementation(projects.frontend.llvm4k)
+        implementation(projects.frontend.syntax)
+        implementation(projects.frontend.shared)
+        implementation(projects.frontend.analyzer)
       }
     }
     val commonTest by getting {
@@ -22,7 +22,7 @@ kotlin {
 
     val jvmMain by getting {
       dependencies {
-        implementation(projects.compiler.llvm4k)
+        implementation(projects.frontend.llvm4k)
         implementation(libs.bytedeco.llvm)
         implementation(libs.bytedeco.libffi)
         implementation(libs.jna)
