@@ -4,14 +4,14 @@ import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.Token
 import org.antlr.v4.kotlinruntime.misc.Interval
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
-import org.plank.parser.PlankParser.FileContext
-import org.plank.parser.PlankParser.ModuleContext
-import org.plank.parser.PlankParser.QualifiedPathContext
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.Identifier
 import org.plank.syntax.element.Loc
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.QualifiedPath
+import org.plank.syntax.parser.PlankParser.FileContext
+import org.plank.syntax.parser.PlankParser.ModuleContext
+import org.plank.syntax.parser.PlankParser.QualifiedPathContext
 
 fun FileContext.fileToAst(file: PlankFile): PlankFile {
   return file.copy(

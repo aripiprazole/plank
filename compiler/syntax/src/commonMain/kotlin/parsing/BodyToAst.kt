@@ -1,14 +1,14 @@
 package org.plank.syntax.parsing
 
-import org.plank.parser.PlankParser.CodeBodyContext
-import org.plank.parser.PlankParser.ExprBodyContext
-import org.plank.parser.PlankParser.FunctionBodyContext
-import org.plank.parser.PlankParser.NoBodyContext
 import org.plank.syntax.element.CodeBody
 import org.plank.syntax.element.ExprBody
 import org.plank.syntax.element.FunctionBody
 import org.plank.syntax.element.NoBody
 import org.plank.syntax.element.PlankFile
+import org.plank.syntax.parser.PlankParser.CodeBodyContext
+import org.plank.syntax.parser.PlankParser.ExprBodyContext
+import org.plank.syntax.parser.PlankParser.FunctionBodyContext
+import org.plank.syntax.parser.PlankParser.NoBodyContext
 
 fun FunctionBodyContext.bodyToAst(file: PlankFile): FunctionBody = when (this) {
   is NoBodyContext -> NoBody(treeLoc(file))

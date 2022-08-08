@@ -14,7 +14,7 @@ lexer grammar PlankLexer;
   "CanBeParameter", "unused",
   "Detekt.MaximumLineLength", "Detekt.MaxLineLength", "Detekt.FinalNewline", "EmptyFunctionBlock",
 )
-package org.plank.parser
+package org.plank.syntax.parser
 }
 
 WS: (' ' | '\t' | NEWLINE)+ -> channel(HIDDEN);

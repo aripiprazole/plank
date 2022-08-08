@@ -1,17 +1,5 @@
 package org.plank.syntax.parsing
 
-import org.plank.parser.PlankParser.DeclContext
-import org.plank.parser.PlankParser.DeclStmtContext
-import org.plank.parser.PlankParser.EnumDeclContext
-import org.plank.parser.PlankParser.ExprStmtContext
-import org.plank.parser.PlankParser.FunDeclContext
-import org.plank.parser.PlankParser.InferLetDeclContext
-import org.plank.parser.PlankParser.LetDeclContext
-import org.plank.parser.PlankParser.ModuleDeclContext
-import org.plank.parser.PlankParser.ReturnStmtContext
-import org.plank.parser.PlankParser.StmtContext
-import org.plank.parser.PlankParser.StructDeclContext
-import org.plank.parser.PlankParser.UseDeclContext
 import org.plank.syntax.element.Decl
 import org.plank.syntax.element.EnumDecl
 import org.plank.syntax.element.ExprStmt
@@ -24,6 +12,18 @@ import org.plank.syntax.element.Stmt
 import org.plank.syntax.element.StructDecl
 import org.plank.syntax.element.UnitTypeRef
 import org.plank.syntax.element.UseDecl
+import org.plank.syntax.parser.PlankParser.DeclContext
+import org.plank.syntax.parser.PlankParser.DeclStmtContext
+import org.plank.syntax.parser.PlankParser.EnumDeclContext
+import org.plank.syntax.parser.PlankParser.ExprStmtContext
+import org.plank.syntax.parser.PlankParser.FunDeclContext
+import org.plank.syntax.parser.PlankParser.InferLetDeclContext
+import org.plank.syntax.parser.PlankParser.LetDeclContext
+import org.plank.syntax.parser.PlankParser.ModuleDeclContext
+import org.plank.syntax.parser.PlankParser.ReturnStmtContext
+import org.plank.syntax.parser.PlankParser.StmtContext
+import org.plank.syntax.parser.PlankParser.StructDeclContext
+import org.plank.syntax.parser.PlankParser.UseDeclContext
 
 fun StmtContext.stmtToAst(file: PlankFile): Stmt = when (this) {
   is DeclStmtContext -> value!!.declToAst(file)
