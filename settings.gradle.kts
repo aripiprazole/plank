@@ -10,9 +10,7 @@ pluginManagement {
   }
 }
 
-include("frontend:llvm4k")
 include("frontend:syntax")
-include("frontend:cli")
 include("frontend:analyzer")
 include("frontend:shared")
 include("frontend:syntax:parser")
