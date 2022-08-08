@@ -5,7 +5,7 @@ kotlin {
     val commonMain by getting {
       dependencies {
         implementation(libs.mordant)
-        implementation(projects.compiler.parser)
+        implementation(projects.compiler.syntax.parser)
         implementation(projects.compiler.shared)
       }
     }

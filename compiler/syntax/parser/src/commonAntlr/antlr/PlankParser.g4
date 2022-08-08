@@ -14,7 +14,7 @@ parser grammar PlankParser;
   "CanBeParameter", "unused",
   "Detekt.MaximumLineLength", "Detekt.MaxLineLength", "Detekt.FinalNewline",
 )
-package org.plank.parser
+package org.plank.syntax.parser
 }
 
 options {tokenVocab=PlankLexer;}

@@ -1,29 +1,5 @@
 package org.plank.syntax.parsing
 
-import org.plank.parser.PlankParser.AccessExprContext
-import org.plank.parser.PlankParser.ArgContext
-import org.plank.parser.PlankParser.AssignExprContext
-import org.plank.parser.PlankParser.BinaryExprContext
-import org.plank.parser.PlankParser.BlockExprContext
-import org.plank.parser.PlankParser.CallArgContext
-import org.plank.parser.PlankParser.CallExprContext
-import org.plank.parser.PlankParser.DecimalExprContext
-import org.plank.parser.PlankParser.DerefExprContext
-import org.plank.parser.PlankParser.ExprContext
-import org.plank.parser.PlankParser.FalseExprContext
-import org.plank.parser.PlankParser.GetArgContext
-import org.plank.parser.PlankParser.GroupExprContext
-import org.plank.parser.PlankParser.IfExprContext
-import org.plank.parser.PlankParser.InstanceExprContext
-import org.plank.parser.PlankParser.IntExprContext
-import org.plank.parser.PlankParser.MatchExprContext
-import org.plank.parser.PlankParser.PrimaryContext
-import org.plank.parser.PlankParser.RefExprContext
-import org.plank.parser.PlankParser.SetExprContext
-import org.plank.parser.PlankParser.SizeofExprContext
-import org.plank.parser.PlankParser.StringExprContext
-import org.plank.parser.PlankParser.TrueExprContext
-import org.plank.parser.PlankParser.UnaryExprContext
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AssignExpr
 import org.plank.syntax.element.BlockExpr
@@ -40,6 +16,30 @@ import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.RefExpr
 import org.plank.syntax.element.SetExpr
 import org.plank.syntax.element.SizeofExpr
+import org.plank.syntax.parser.PlankParser.AccessExprContext
+import org.plank.syntax.parser.PlankParser.ArgContext
+import org.plank.syntax.parser.PlankParser.AssignExprContext
+import org.plank.syntax.parser.PlankParser.BinaryExprContext
+import org.plank.syntax.parser.PlankParser.BlockExprContext
+import org.plank.syntax.parser.PlankParser.CallArgContext
+import org.plank.syntax.parser.PlankParser.CallExprContext
+import org.plank.syntax.parser.PlankParser.DecimalExprContext
+import org.plank.syntax.parser.PlankParser.DerefExprContext
+import org.plank.syntax.parser.PlankParser.ExprContext
+import org.plank.syntax.parser.PlankParser.FalseExprContext
+import org.plank.syntax.parser.PlankParser.GetArgContext
+import org.plank.syntax.parser.PlankParser.GroupExprContext
+import org.plank.syntax.parser.PlankParser.IfExprContext
+import org.plank.syntax.parser.PlankParser.InstanceExprContext
+import org.plank.syntax.parser.PlankParser.IntExprContext
+import org.plank.syntax.parser.PlankParser.MatchExprContext
+import org.plank.syntax.parser.PlankParser.PrimaryContext
+import org.plank.syntax.parser.PlankParser.RefExprContext
+import org.plank.syntax.parser.PlankParser.SetExprContext
+import org.plank.syntax.parser.PlankParser.SizeofExprContext
+import org.plank.syntax.parser.PlankParser.StringExprContext
+import org.plank.syntax.parser.PlankParser.TrueExprContext
+import org.plank.syntax.parser.PlankParser.UnaryExprContext
 
 fun PrimaryContext.exprToAst(file: PlankFile): Expr = when (this) {
   is RefExprContext -> RefExpr(value!!.exprToAst(file), treeLoc(file))

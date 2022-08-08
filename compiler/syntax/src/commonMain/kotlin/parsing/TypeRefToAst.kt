@@ -1,14 +1,5 @@
 package org.plank.syntax.parsing
 
-import org.plank.parser.PlankParser.AccessTypeRefContext
-import org.plank.parser.PlankParser.ApplyTypeRefContext
-import org.plank.parser.PlankParser.FunctionTypeRefContext
-import org.plank.parser.PlankParser.GroupTypeRefContext
-import org.plank.parser.PlankParser.PointerTypeRefContext
-import org.plank.parser.PlankParser.PrimaryTypeRefContext
-import org.plank.parser.PlankParser.TypePrimaryContext
-import org.plank.parser.PlankParser.TypeRefContext
-import org.plank.parser.PlankParser.UnitTypeRefContext
 import org.plank.syntax.element.AccessTypeRef
 import org.plank.syntax.element.ApplyTypeRef
 import org.plank.syntax.element.FunctionTypeRef
@@ -16,6 +7,15 @@ import org.plank.syntax.element.PlankFile
 import org.plank.syntax.element.PointerTypeRef
 import org.plank.syntax.element.TypeRef
 import org.plank.syntax.element.UnitTypeRef
+import org.plank.syntax.parser.PlankParser.AccessTypeRefContext
+import org.plank.syntax.parser.PlankParser.ApplyTypeRefContext
+import org.plank.syntax.parser.PlankParser.FunctionTypeRefContext
+import org.plank.syntax.parser.PlankParser.GroupTypeRefContext
+import org.plank.syntax.parser.PlankParser.PointerTypeRefContext
+import org.plank.syntax.parser.PlankParser.PrimaryTypeRefContext
+import org.plank.syntax.parser.PlankParser.TypePrimaryContext
+import org.plank.syntax.parser.PlankParser.TypeRefContext
+import org.plank.syntax.parser.PlankParser.UnitTypeRefContext
 
 fun TypePrimaryContext.typeRefToAst(file: PlankFile): TypeRef = when (this) {
   is GroupTypeRefContext -> type!!.typeRefToAst(file)

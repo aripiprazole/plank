@@ -6,14 +6,14 @@ import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.DiagnosticErrorListener
 import org.antlr.v4.kotlinruntime.atn.PredictionMode
-import org.plank.parser.PlankLexer
-import org.plank.parser.PlankParser
 import org.plank.shared.nameWithoutExtension
 import org.plank.shared.readText
 import org.plank.syntax.SyntaxErrorListener
 import org.plank.syntax.SyntaxViolation
 import org.plank.syntax.debug.DontDump
 import org.plank.syntax.message.CompilerLogger
+import org.plank.syntax.parser.PlankLexer
+import org.plank.syntax.parser.PlankParser
 import org.plank.syntax.parser.toParseTree
 import org.plank.syntax.parsing.fileToAst
 
