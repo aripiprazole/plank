@@ -2,17 +2,17 @@
 
 package org.plank.analyzer
 
-import org.plank.analyzer.checker.DoubleInfo
-import org.plank.analyzer.checker.EnumConstructor
-import org.plank.analyzer.checker.EnumInfo
-import org.plank.analyzer.checker.FloatInfo
-import org.plank.analyzer.checker.InlineVariable
-import org.plank.analyzer.checker.IntInfo
-import org.plank.analyzer.checker.LocalVariable
-import org.plank.analyzer.checker.RankedVariable
-import org.plank.analyzer.checker.Scope
-import org.plank.analyzer.checker.StructInfo
-import org.plank.analyzer.checker.fullPath
+import org.plank.analyzer.infer.DoubleInfo
+import org.plank.analyzer.infer.EnumConstructor
+import org.plank.analyzer.infer.EnumInfo
+import org.plank.analyzer.infer.FloatInfo
+import org.plank.analyzer.infer.InlineVariable
+import org.plank.analyzer.infer.IntInfo
+import org.plank.analyzer.infer.LocalVariable
+import org.plank.analyzer.infer.RankedVariable
+import org.plank.analyzer.infer.Scope
+import org.plank.analyzer.infer.StructInfo
+import org.plank.analyzer.infer.fullPath
 import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedEnumDecl
 import org.plank.analyzer.element.ResolvedExprBody

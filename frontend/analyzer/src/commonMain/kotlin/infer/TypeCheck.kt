@@ -1,4 +1,4 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
 import kotlin.reflect.KClass
 import org.plank.analyzer.element.ResolvedDecl
@@ -47,7 +47,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
   val file = result.file
   val tree = result.tree
 
-  val violations: MutableSet<CheckViolation> = mutableSetOf()
+  val violations: MutableSet<InferViolation> = mutableSetOf()
   var scope: Scope = GlobalScope
 
   fun check(): ResolvedPlankFile {
@@ -59,7 +59,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
         checkFile(it.file)
       }
 
-    return checkFile(file).copy(dependencies = dependencies, checkViolations = violations.toList())
+    return checkFile(file).copy(dependencies = dependencies, inferViolations = violations.toList())
   }
 
   fun checkFile(file: PlankFile): ResolvedPlankFile {
@@ -67,7 +67,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
       val module = requireNotNull(tree.findModule(file.module)) { "Could not find file in tree" }
 
       return scoped(FileScope(file, scope).also(scope::createModule)) {
-        val program = file.program.map(::checkStmt).filterIsInstance<ResolvedDecl>()
+        val program = file.program.map(::inferStmt).filterIsInstance<ResolvedDecl>()
 
         ResolvedPlankFile(program, module, tree, file)
       }
@@ -109,7 +109,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
 
   inline fun <reified A : ResolvedPlankElement> violate(
     el: PlankElement,
-    violation: CheckViolation,
+    violation: InferViolation,
     fn: () -> A = { violatedElement(el.loc, A::class) },
   ): A {
     return fn().also { violations += violation.withLocation(el.loc) }
@@ -138,7 +138,7 @@ class TypeCheck(result: ResolveResult, val logger: CompilerLogger) {
     }
   }
 
-  fun TyError.asViolation(): CheckViolation = when (this) {
+  fun TyError.asViolation(): InferViolation = when (this) {
     is CanNotUngeneralize -> UnresolvedType(ty)
     is IncorrectEnumArity -> IncorrectEnumArity(expected, arity, variant.toIdentifier())
     is InfiniteTy -> TypeIsInfinite(variable, ty)

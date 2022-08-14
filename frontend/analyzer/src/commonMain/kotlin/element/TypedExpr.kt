@@ -1,8 +1,8 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.checker.Scope
-import org.plank.analyzer.checker.StructInfo
-import org.plank.analyzer.checker.Variable
+import org.plank.analyzer.infer.Scope
+import org.plank.analyzer.infer.StructInfo
+import org.plank.analyzer.infer.Variable
 import org.plank.analyzer.infer.PtrTy
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty

@@ -1,6 +1,6 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.checker.EnumMemberInfo
+import org.plank.analyzer.infer.EnumMemberInfo
 import org.plank.analyzer.infer.Subst
 import org.plank.analyzer.infer.Ty
 import org.plank.analyzer.infer.ap

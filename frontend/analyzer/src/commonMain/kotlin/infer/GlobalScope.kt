@@ -1,4 +1,4 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
 import org.plank.analyzer.element.TypedIntAddExpr
 import org.plank.analyzer.element.TypedIntDivExpr

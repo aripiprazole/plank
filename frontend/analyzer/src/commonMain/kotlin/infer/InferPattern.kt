@@ -1,4 +1,4 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
 import org.plank.analyzer.element.TypedEnumIndexAccess
 import org.plank.analyzer.element.TypedEnumVariantPattern
@@ -15,7 +15,7 @@ import org.plank.syntax.element.IdentPattern
 import org.plank.syntax.element.Pattern
 import org.plank.syntax.element.toQualifiedPath
 
-fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
+fun TypeCheck.inferPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
   return when (pattern) {
     is IdentPattern -> {
       val name = pattern.name
@@ -57,7 +57,7 @@ fun TypeCheck.checkPattern(pattern: Pattern, subject: TypedExpr): TypedPattern {
         val tv = parameters.elementAtOrNull(i)
           ?: return violate(next, IncorrectEnumArity(parameters.size, i + 1, name))
 
-        checkPattern(next, TypedEnumIndexAccess(subject, i, tv, next.loc))
+        inferPattern(next, TypedEnumIndexAccess(subject, i, tv, next.loc))
       }
 
       val newInfo = info.copy(

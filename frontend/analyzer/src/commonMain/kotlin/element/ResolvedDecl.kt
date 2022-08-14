@@ -1,11 +1,11 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.checker.EnumInfo
-import org.plank.analyzer.checker.EnumMemberInfo
-import org.plank.analyzer.checker.FunctionInfo
-import org.plank.analyzer.checker.Scope
-import org.plank.analyzer.checker.StructInfo
-import org.plank.analyzer.checker.StructMemberInfo
+import org.plank.analyzer.infer.EnumInfo
+import org.plank.analyzer.infer.EnumMemberInfo
+import org.plank.analyzer.infer.FunctionInfo
+import org.plank.analyzer.infer.Scope
+import org.plank.analyzer.infer.StructInfo
+import org.plank.analyzer.infer.StructMemberInfo
 import org.plank.analyzer.infer.FunTy
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.Subst

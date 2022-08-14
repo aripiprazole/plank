@@ -1,4 +1,4 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
 import org.plank.analyzer.element.ResolvedCodeBody
 import org.plank.analyzer.element.ResolvedExprBody
@@ -10,11 +10,11 @@ import org.plank.syntax.element.ExprBody
 import org.plank.syntax.element.FunctionBody
 import org.plank.syntax.element.NoBody
 
-fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
+fun TypeCheck.inferBody(body: FunctionBody): ResolvedFunctionBody {
   return when (body) {
     is CodeBody -> {
-      val stmts = body.stmts.map(::checkStmt)
-      val value = checkExpr(body.value ?: ConstExpr(Unit))
+      val stmts = body.stmts.map(::inferStmt)
+      val value = inferExpr(body.value ?: ConstExpr(Unit))
       val scope = scope as FunctionScope
 
       if (scope.returnTy != value.ty) {
@@ -25,7 +25,7 @@ fun TypeCheck.checkBody(body: FunctionBody): ResolvedFunctionBody {
     }
 
     is ExprBody -> {
-      val value = checkExpr(body.expr)
+      val value = inferExpr(body.expr)
       val scope = scope as FunctionScope
 
       if (scope.returnTy != value.ty) {

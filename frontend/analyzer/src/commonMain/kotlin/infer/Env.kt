@@ -1,5 +1,11 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
+import org.plank.analyzer.infer.GlobalScope
+import org.plank.analyzer.infer.InlineVariable
+import org.plank.analyzer.infer.LocalVariable
+import org.plank.analyzer.infer.Scope
+import org.plank.analyzer.infer.Variable
+import org.plank.analyzer.infer.fullPath
 import org.plank.analyzer.infer.Scheme
 import org.plank.analyzer.infer.TyEnv
 

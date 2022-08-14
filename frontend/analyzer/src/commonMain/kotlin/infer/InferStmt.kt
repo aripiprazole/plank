@@ -1,4 +1,4 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
 import org.plank.analyzer.element.ResolvedDecl
 import org.plank.analyzer.element.ResolvedEnumDecl
@@ -32,10 +32,10 @@ import org.plank.syntax.element.StructDecl
 import org.plank.syntax.element.UseDecl
 import org.plank.syntax.element.toIdentifier
 
-fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
+fun TypeCheck.inferStmt(stmt: Stmt): ResolvedStmt {
   return when (stmt) {
-    is ReturnStmt -> ResolvedExprStmt(checkExpr(stmt.value ?: ConstExpr(Unit)), stmt.loc)
-    is ExprStmt -> ResolvedExprStmt(checkExpr(stmt.expr), stmt.loc)
+    is ReturnStmt -> ResolvedExprStmt(inferExpr(stmt.value ?: ConstExpr(Unit)), stmt.loc)
+    is ExprStmt -> ResolvedExprStmt(inferExpr(stmt.expr), stmt.loc)
 
     is UseDecl -> {
       val module = scope.lookupModule(stmt.path.toIdentifier())
@@ -58,7 +58,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
       }
 
       val members = stmt.properties.associate { (mutable, name, type) ->
-        name to StructMemberInfo(scope, name, checkTy(type.ty()), mutable)
+        name to StructMemberInfo(scope, name, inferTy(type.ty()), mutable)
       }
 
       val info = scope.createTyInfo(
@@ -72,7 +72,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
       val module = scope.createModule(ModuleScope(stmt.path.toIdentifier(), scope))
 
       val content = scoped(module) {
-        stmt.content.map(::checkStmt).filterIsInstance<ResolvedDecl>()
+        stmt.content.map(::inferStmt).filterIsInstance<ResolvedDecl>()
       }
 
       ResolvedModuleDecl(stmt.path, content, stmt.loc)
@@ -80,13 +80,13 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
 
     is LetDecl -> {
       val (t1, s1) = infer(stmt.value)
-      val t2 = stmt.type?.ty()?.let(::checkTy) ?: t1
+      val t2 = stmt.type?.ty()?.let(::inferTy) ?: t1
 
       if (t2 != t1) {
         violate<ResolvedDecl>(stmt.value, TypeMismatch(t2, t1))
       }
 
-      val value = checkExpr(stmt.value)
+      val value = inferExpr(stmt.value)
 
       val scheme = scope.declare(stmt.name, t2.generalize(), stmt.mutable)
 
@@ -113,7 +113,7 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
       val enum = scope.createTyInfo(EnumInfo(scope, stmt.name, ty, stmt.generics, scheme))
 
       val members = stmt.members.associate { (name, params) ->
-        val funTy = FunTy(ty, params.ty().map(::checkTy))
+        val funTy = FunTy(ty, params.ty().map(::inferTy))
         val funScheme = instantiate(funTy.generalize()).generalize()
 
         val memberName = (scope.fullPath() + name).text
@@ -150,8 +150,8 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
     is FunDecl -> {
       if (scope.containsVariable(stmt.name)) return violate(stmt.name, Redeclaration(stmt.name))
 
-      val returnTy = checkTy(stmt.returnType.ty())
-      val parameters = stmt.parameters.values.ty().ifEmpty { listOf(unitTy) }.map(::checkTy)
+      val returnTy = inferTy(stmt.returnType.ty())
+      val parameters = stmt.parameters.values.ty().ifEmpty { listOf(unitTy) }.map(::inferTy)
       val ty = FunTy(returnTy, parameters)
       val scheme = scope.declare(stmt.name, ty.generalize())
 
@@ -178,10 +178,10 @@ fun TypeCheck.checkStmt(stmt: Stmt): ResolvedStmt {
       )
       val body = scoped(scope) {
         stmt.parameters.forEach { (name, type) ->
-          declare(name, checkTy(type.ty()))
+          declare(name, inferTy(type.ty()))
         }
 
-        checkBody(stmt.body)
+        inferBody(stmt.body)
       }
 
       ResolvedFunDecl(body, stmt.attributes, references, info, isNested, stmt.loc)

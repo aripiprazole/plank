@@ -1,6 +1,6 @@
 package org.plank.analyzer.element
 
-import org.plank.analyzer.checker.CheckViolation
+import org.plank.analyzer.infer.InferViolation
 import org.plank.analyzer.resolver.Module
 import org.plank.analyzer.resolver.ModuleTree
 import org.plank.syntax.SyntaxViolation
@@ -12,7 +12,7 @@ import org.plank.syntax.element.QualifiedPath
 
 /**
  * Represents a [PlankFile] with type definitions. The properties [syntaxViolations],
- * [checkViolations], [dependencies] will be fulfilled by copy the generated instances
+ * [inferViolations], [dependencies] will be fulfilled by copy the generated instances
  */
 data class ResolvedPlankFile(
   val program: List<ResolvedDecl>,
@@ -20,7 +20,7 @@ data class ResolvedPlankFile(
   val tree: ModuleTree,
   @DontDump val delegate: PlankFile,
   @DontDump val syntaxViolations: List<SyntaxViolation> = delegate.violations,
-  @DontDump val checkViolations: List<CheckViolation> = emptyList(),
+  @DontDump val inferViolations: List<InferViolation> = emptyList(),
   @DontDump val dependencies: List<ResolvedPlankFile> = emptyList(),
 ) : ResolvedPlankElement {
   val module: Identifier = delegate.module

@@ -1,4 +1,4 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
 import org.plank.analyzer.element.TypedExpr
 import org.plank.analyzer.infer.AppTy
@@ -13,11 +13,11 @@ import org.plank.syntax.element.QualifiedPath
 import org.plank.syntax.element.toIdentifier
 import org.plank.syntax.element.toQualifiedPath
 
-fun TypeCheck.checkTy(ty: Ty): Ty = when (ty) {
+fun TypeCheck.inferTy(ty: Ty): Ty = when (ty) {
   is VarTy -> ty
-  is AppTy -> AppTy(checkTy(ty.fn), checkTy(ty.arg))
-  is FunTy -> FunTy(checkTy(ty.parameterTy), checkTy(ty.returnTy))
-  is PtrTy -> PtrTy(checkTy(ty.arg))
+  is AppTy -> AppTy(inferTy(ty.fn), inferTy(ty.arg))
+  is FunTy -> FunTy(inferTy(ty.parameterTy), inferTy(ty.returnTy))
+  is PtrTy -> PtrTy(inferTy(ty.arg))
   is ConstTy -> lookupInfo(ty)?.let { ty }
     ?: violate<TypedExpr>(ConstExpr(Unit), UnresolvedType(ty)).ty
 }

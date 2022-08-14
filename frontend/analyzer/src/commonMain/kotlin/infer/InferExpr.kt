@@ -1,4 +1,4 @@
-package org.plank.analyzer.checker
+package org.plank.analyzer.infer
 
 import org.plank.analyzer.element.TypedAccessExpr
 import org.plank.analyzer.element.TypedAssignExpr
@@ -48,14 +48,14 @@ import org.plank.syntax.element.SizeofExpr
 import org.plank.syntax.element.orEmpty
 import org.plank.syntax.element.toIdentifier
 
-fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
+fun TypeCheck.inferExpr(expr: Expr): TypedExpr {
   return when (expr) {
-    is SizeofExpr -> TypedSizeofExpr(checkTy(expr.type.ty()), expr.loc)
-    is RefExpr -> TypedRefExpr(checkExpr(expr.value), expr.loc)
-    is GroupExpr -> TypedGroupExpr(checkExpr(expr.value), expr.loc)
+    is SizeofExpr -> TypedSizeofExpr(inferTy(expr.type.ty()), expr.loc)
+    is RefExpr -> TypedRefExpr(inferExpr(expr.value), expr.loc)
+    is GroupExpr -> TypedGroupExpr(inferExpr(expr.value), expr.loc)
 
     is DerefExpr -> {
-      val value = checkExpr(expr.value)
+      val value = inferExpr(expr.value)
       val ty = value.ty as? PtrTy ?: return violate(expr.value, TypeIsNotPointer(value.ty))
 
       TypedDerefExpr(value, ty.arg, expr.loc)
@@ -68,8 +68,8 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is BlockExpr -> scoped(ClosureScope("Block".toIdentifier(), scope)) {
-      val stmts = expr.stmts.map(::checkStmt)
-      val value = checkExpr(expr.value ?: ConstExpr(Unit))
+      val stmts = expr.stmts.map(::inferStmt)
+      val value = inferExpr(expr.value ?: ConstExpr(Unit))
 
       TypedBlockExpr(stmts, value, references, expr.loc)
     }
@@ -89,14 +89,14 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
 
     is IfExpr -> {
       val location = expr.loc
-      val cond = checkExpr(expr.cond)
+      val cond = inferExpr(expr.cond)
 
       if (boolTy != cond.ty) {
         return violate(cond, TypeMismatch(boolTy, cond.ty))
       }
 
-      val thenBranch = checkBranch(expr.thenBranch)
-      val elseBranch = expr.elseBranch?.let { checkBranch(it) }
+      val thenBranch = inferBranch(expr.thenBranch)
+      val elseBranch = expr.elseBranch?.let { inferBranch(it) }
         ?: return TypedIfExpr(cond, thenBranch, null, thenBranch.ty, location)
 
       val subst = unify(thenBranch.ty, elseBranch.ty)
@@ -110,7 +110,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is AssignExpr -> {
-      val value = checkExpr(expr.value)
+      val value = inferExpr(expr.value)
 
       val scope = scope.lookupModule(expr.module.orEmpty().toIdentifier()) ?: scope
       val variable = scope.lookupVariable(expr.name)
@@ -133,7 +133,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is GetExpr -> {
-      val receiver = checkExpr(expr.receiver)
+      val receiver = inferExpr(expr.receiver)
       val property = expr.property
 
       val info = lookupInfo(receiver.ty)
@@ -149,8 +149,8 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is SetExpr -> {
-      val receiver = checkExpr(expr.receiver)
-      val value = checkExpr(expr.value)
+      val receiver = inferExpr(expr.receiver)
+      val value = inferExpr(expr.value)
       val property = expr.property
 
       val info = lookupInfo(receiver.ty)
@@ -174,7 +174,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is InstanceExpr -> {
-      val structTy = checkTy(expr.type.ty())
+      val structTy = inferTy(expr.type.ty())
 
       val info = lookupInfo(structTy) ?: return violate(expr.type, UnresolvedType(structTy))
       val struct = info.getAs<StructInfo>() ?: return violate(expr.type, TypeIsNotStruct(structTy))
@@ -190,7 +190,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
 
       var subst = Subst()
       val arguments = expr.arguments.mapValues { (name, expr) ->
-        val value = checkExpr(expr)
+        val value = inferExpr(expr)
         val property = struct.members[name]
           ?: return violate(name, UnresolvedStructMember(name, struct))
 
@@ -208,7 +208,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is CallExpr -> {
-      val callee = checkExpr(expr.callee)
+      val callee = inferExpr(expr.callee)
       val ty = callee.ty as? FunTy ?: return violate(callee, TypeIsNotCallable(callee.ty))
       val parameters = ty.chainParameters()
 
@@ -218,7 +218,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
         parameters.size == expr.arguments.size
       ) {
         val variable = callee.variable
-        val arguments = expr.arguments.map(::checkExpr)
+        val arguments = expr.arguments.map(::inferExpr)
 
         arguments.zip(parameters).forEach { (arg, param) ->
           if (param != arg.ty) {
@@ -231,7 +231,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
 
       expr.arguments
         .ifEmpty { listOf(ConstExpr(Unit)) }
-        .map { checkExpr(it) }
+        .map { inferExpr(it) }
         .foldIndexed(callee) { i, acc, argument ->
           val t1 = acc.ty
 
@@ -249,7 +249,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
     }
 
     is MatchExpr -> {
-      val subject = checkExpr(expr.subject)
+      val subject = inferExpr(expr.subject)
 
       when {
         expr.patterns.isEmpty() -> {
@@ -259,7 +259,7 @@ fun TypeCheck.checkExpr(expr: Expr): TypedExpr {
         else -> {
           val patterns = expr.patterns.entries.associate { (pattern, value) ->
             scoped(PatternScope(pattern, scope)) {
-              checkPattern(pattern, subject) to checkExpr(value)
+              inferPattern(pattern, subject) to inferExpr(value)
             }
           }
 

@@ -59,7 +59,7 @@ fun main() {
   val tree = ModuleTree.create(maybePlank, ioPlank)
   val file = resolveImports(mainPlank, tree).typeCheck(logger)
 
-  file.checkViolations.forEach {
+  file.inferViolations.forEach {
     it.render(logger)
   }
 
