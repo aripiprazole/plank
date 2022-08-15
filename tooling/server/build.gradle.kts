@@ -11,7 +11,7 @@ kotlin {
       dependencies {
         implementation(projects.frontend.syntax)
         implementation(projects.frontend.shared)
-        implementation(projects.frontend.analyzer)
+        implementation(projects.frontend.resolver)
         implementation(libs.ktx.coroutines.core)
         implementation(libs.ktx.coroutines.jdk8)
         implementation(libs.lsp4j.lsp4j)
