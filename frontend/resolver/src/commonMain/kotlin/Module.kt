@@ -1,4 +1,4 @@
-package org.plank.analyzer.resolver
+package org.plank.resolver
 
 import org.plank.shared.Graph
 import org.plank.shared.depthFirstSearch

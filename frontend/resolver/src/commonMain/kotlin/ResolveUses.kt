@@ -1,4 +1,4 @@
-package org.plank.analyzer.resolver
+package org.plank.resolver
 
 import org.plank.syntax.element.AccessExpr
 import org.plank.syntax.element.AccessTypeRef

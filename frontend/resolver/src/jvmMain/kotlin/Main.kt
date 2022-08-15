@@ -1,8 +1,6 @@
-package org.plank.analyzer
+package org.plank.resolver
 
-import org.plank.analyzer.checker.typeCheck
-import org.plank.analyzer.resolver.ModuleTree
-import org.plank.analyzer.resolver.resolveImports
+import org.plank.resolver.checker.typeCheck
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 
