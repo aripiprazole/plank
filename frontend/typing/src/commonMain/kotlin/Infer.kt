@@ -17,11 +17,11 @@ import org.plank.syntax.element.SetExpr
 import org.plank.syntax.element.SizeofExpr
 
 class Infer {
+  var currentScope = Scope()
+
   private var currentSubst: Subst = emptySubst()
 
   private var state: Int = 0
-
-  private val currentScope = Scope()
 
   private val letters: Sequence<String> = sequence {
     var prefix = ""

@@ -2,11 +2,14 @@ package org.plank.typing
 
 sealed interface Type {
   companion object {
-    val Unit = ConType("()")
-    val Int32 = ConType("Int32")
-    val Bool = ConType("Bool")
-    val String = ConType("String")
-    val Arrow = ConType("->")
+    val Unit: Type = ConType("()")
+    val Int32: Type = ConType("Int32")
+    val Bool: Type = ConType("Bool")
+    val String: Type = ConType("String")
+    val Arrow: Type = ConType("->")
+
+    fun variable(name: String): Type = VarType(name)
+    fun constructor(name: String): Type = ConType(name)
   }
 }
 
