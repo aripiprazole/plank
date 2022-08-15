@@ -12,6 +12,7 @@ pluginManagement {
 
 include("frontend:syntax")
 include("frontend:resolver")
+include("frontend:typing")
 include("frontend:shared")
 include("frontend:syntax:parser")
 include("tooling:server")
