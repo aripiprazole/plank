@@ -10,8 +10,8 @@ class InferScope(builder: InferScope.() -> Unit = {}) {
     builder()
   }
 
-  fun variables(builder: MutableMap<String, Type>.() -> Unit) {
-    variables = buildMap(builder)
+  fun variables(builder: MutableMap<String, Hole<Type>>.() -> Unit) {
+    variables = buildMap(builder).mapValues { it.value.unwrap() }
   }
 
   fun runInfer(expr: Expr): Type {
@@ -21,11 +21,11 @@ class InferScope(builder: InferScope.() -> Unit = {}) {
       }
     }
 
-    return engine.runInfer(expr)
+    return engine.runInfer(expr).unwrap()
   }
 
-  fun Type.toEqual(expected: Type) {
-    assertEquals(expected, this)
+  fun Type.toEqual(expected: Hole<Type>) {
+    assertEquals(expected.unwrap(), this)
   }
 
   fun Type.toBe(expected: Type) {

@@ -19,8 +19,6 @@ import org.plank.syntax.element.SizeofExpr
 class Infer {
   var currentScope = Scope()
 
-  private var currentSubst: Subst = emptySubst()
-
   private var state: Int = 0
 
   private val letters: Sequence<String> = sequence {
@@ -36,7 +34,7 @@ class Infer {
     }
   }
 
-  fun runInfer(expr: Expr): Type {
+  fun runInfer(expr: Expr): Hole<Type> {
     return when (expr) {
       is SizeofExpr -> Type.Int32
       is ConstExpr -> when (expr.value) {
@@ -47,17 +45,18 @@ class Infer {
       }
 
       is AccessExpr -> currentScope.findVariable(expr.name.text)
+        ?.asHole()
         ?: throw InferFail("unbound ${expr.name}")
 
       is CallExpr -> {
         expr.arguments
           .ifEmpty { listOf(ConstExpr(Unit)) }
-          .fold(runInfer(expr.callee)) { t1, arg ->
-            val tv = fresh()
-            val t2 = runInfer(arg)
-            unify(t1, t2 arrow tv)
+          .fold(runInfer(expr.callee)) { callee, arg ->
+            val rhs = fresh()
+            val lhs = runInfer(arg)
+            unify(callee, lhs arrow rhs)
 
-            tv.applySubst()
+            rhs
           }
       }
 
@@ -75,31 +74,32 @@ class Infer {
     }
   }
 
-  fun unify(t1: Type, t2: Type) {
-    currentSubst = currentSubst compose mgu(t1, t2)
-  }
+  private fun unify(lhs: Hole<Type>, rhs: Hole<Type>) {
+    val lhsValue = lhs.unwrap()
+    val rhsValue = rhs.unwrap()
 
-  fun mgu(t1: Type, t2: Type): Subst = when {
-    t1 == t2 -> emptySubst()
-    t1 is VarType -> t1 bind t2
-    t2 is VarType -> t2 bind t1
-    t1 is AppType && t2 is AppType -> {
-      val s1 = mgu(t1.lhs, t2.lhs)
-      val s2 = mgu(t1.rhs apply s1, t2.rhs apply s1)
+    when {
+      lhs == rhs -> return
+      lhsValue is VarType -> lhs bind rhs
+      rhsValue is VarType -> rhs bind lhs
+      lhsValue is AppType && rhsValue is AppType -> {
+        unify(lhsValue.lhs, rhsValue.lhs)
+        unify(lhsValue.rhs, rhsValue.rhs)
+      }
 
-      s1 compose s2
+      else -> throw InferFail("can not unify $lhs and $rhs")
     }
-
-    else -> throw InferFail("can not unify $t1 and $t2")
   }
 
-  infix fun VarType.bind(other: Type): Subst = when {
-    this == other -> emptySubst()
-    name in other.ftv() -> throw InferFail("infinite type $name in $other")
-    else -> substOf(name to other)
+  private infix fun Hole<Type>.bind(other: Hole<Type>) {
+    val ref = unwrapAs<VarType>()
+
+    when {
+      this == other -> return
+      ref.name in other.unwrap().ftv() -> throw InferFail("infinite type ${ref.name} in $other")
+      else -> overwrite(other)
+    }
   }
 
-  fun fresh(): Type = VarType(letters.elementAt(++state))
-
-  fun Type.applySubst(): Type = apply(currentSubst)
+  private fun fresh(): Hole<Type> = VarType(letters.elementAt(++state)).asHole()
 }

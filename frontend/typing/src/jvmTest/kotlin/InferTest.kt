@@ -25,7 +25,8 @@ class InferTest {
 
     InferScope {
       variables {
-        put("println", Type.variable("a") arrow Type.variable("a"))
+        val a = Type.variable("a")
+        put("println", a arrow a)
       }
 
       runInfer(expr).toEqual(Type.String)
