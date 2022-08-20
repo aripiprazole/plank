@@ -140,7 +140,7 @@ fun FunctionBody.pretty(nesting: String): String = buildString {
         .append(stmts.joinToString("\n") { it.pretty("$nesting  ") })
 
       if (value != null) {
-        append(nesting).append("  ").appendLine(value!!.pretty(nesting))
+        append(nesting).append("  ").appendLine(value!!.pretty("$nesting  "))
       }
 
       append(nesting).appendLine("}")
@@ -186,7 +186,7 @@ fun Expr.pretty(nesting: String): String = buildString {
       }
 
       if (value != null) {
-        append(nesting).append("  ").appendLine(value!!.pretty(nesting))
+        append(nesting).append("  ").appendLine(value!!.pretty("$nesting  "))
       }
 
       append(nesting).append("}")
