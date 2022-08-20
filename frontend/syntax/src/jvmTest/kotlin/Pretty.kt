@@ -105,10 +105,11 @@ fun Stmt.pretty(nesting: String = ""): String = buildString {
     }
 
     is ModuleDecl -> {
-      appendLine("module ${path.text}")
+      appendLine("module ${path.text} {")
       content.forEach { decl ->
         append(decl.pretty("$nesting  "))
       }
+      append(nesting).append("}")
     }
 
     is StructDecl -> {
