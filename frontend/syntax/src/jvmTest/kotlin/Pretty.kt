@@ -129,8 +129,8 @@ fun Stmt.pretty(nesting: String = ""): String = buildString {
 
 fun FunctionBody.pretty(nesting: String): String = buildString {
   when (this@pretty) {
-    is ExprBody -> append("$nesting => ${expr.pretty(nesting)}")
-    is NoBody -> append("$nesting => ???")
+    is ExprBody -> append("=> ${expr.pretty(nesting)}")
+    is NoBody -> append("=> ???")
     is CodeBody -> {
       appendLine("{")
         .append(stmts.joinToString("\n") { it.pretty("$nesting  ") })
