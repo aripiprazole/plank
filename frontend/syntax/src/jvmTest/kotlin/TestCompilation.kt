@@ -61,11 +61,13 @@ class TestCompilation(
     @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
       val logger = CompilerLogger()
-      var syntaxViolations: Set<SyntaxViolation> = emptySet()
+      var syntaxViolations: Set<SyntaxViolation>
       val file: PlankFile
 
       try {
         file = PlankFile.of(code, "Anonymous.plank", logger = logger)
+
+        logger.info(file.debugPrint())
 
         syntaxViolations = file.violations.toSet()
       } catch (error: Throwable) {
