@@ -1,22 +1,5 @@
 lexer grammar PlankLexer;
 
-@header {
-/* ktlint-disable */
-@file:Suppress(
-  "UNNECESSARY_NOT_NULL_ASSERTION",
-  "UNUSED_PARAMETER", "USELESS_CAST", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER",
-  "PARAMETER_NAME_CHANGED_ON_OVERRIDE", "SENSELESS_COMPARISON", "UNCHECKED_CAST",
-  "RemoveRedundantQualifierName", "RedundantCompanionReference", "RedundantVisibilityModifier", "FunctionName",
-  "SpellCheckingInspection", "RedundantExplicitType", "ConvertSecondaryConstructorToPrimary", "ConstantConditionIf",
-  "CanBeVal", "LocalVariableName", "RemoveEmptySecondaryConstructorBody", "LiftReturnOrAssignment",
-  "MemberVisibilityCanBePrivate", "RedundantNullableReturnType", "OverridingDeprecatedMember", "EnumEntryName",
-  "RemoveExplicitTypeArguments", "PrivatePropertyName", "ProtectedInFinal", "MoveLambdaOutsideParentheses", "ClassName",
-  "CanBeParameter", "unused",
-  "Detekt.MaximumLineLength", "Detekt.MaxLineLength", "Detekt.FinalNewline", "EmptyFunctionBlock",
-)
-package org.plank.syntax.parser
-}
-
 WS: (' ' | '\t' | NEWLINE)+ -> channel(HIDDEN);
 NEWLINE: ([\r\n] | [\n])+;
 

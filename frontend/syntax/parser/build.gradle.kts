@@ -40,7 +40,7 @@ tasks {
       dependencies.create("com.strumenta.antlr-kotlin:antlr-kotlin-target:$antlrKotlinVersion"),
     )
     maxHeapSize = "64m"
-    arguments = emptyList()
+    arguments = listOf("-package", "org.plank.syntax.parser")
     source = project.objects
       .sourceDirectorySet("commonAntlr", "commonAntlr")
       .srcDir("src/commonAntlr/antlr").apply {
@@ -48,15 +48,4 @@ tasks {
       }
     outputDirectory = buildDir.resolve("generated-src").resolve("commonAntlr").resolve("kotlin")
   }
-
-  runKtlintFormatOverCommonMainSourceSet {
-    inputs.dir(generateParserSource.outputDirectory.absoluteFile)
-  }
-
-  kotlin.targets
-    .flatMap { it.compilations }
-    .map { it.compileKotlinTask }
-    .forEach { task ->
-      task.dependsOn(generateParserSource)
-    }
 }
