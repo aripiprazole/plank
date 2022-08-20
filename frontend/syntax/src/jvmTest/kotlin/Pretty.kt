@@ -115,9 +115,9 @@ fun Stmt.pretty(nesting: String = ""): String = buildString {
     is StructDecl -> {
       append(nesting).append("struct ").append(name.text).appendLine(" {")
       properties.forEach { (mutable, name, type) ->
-        append(nesting)
+        append(nesting).append("  ")
         if (mutable) append("mutable ")
-        append("${name.text}: ${type.pretty()}")
+        appendLine("${name.text}: ${type.pretty()}")
       }
 
       append(nesting).appendLine("}")
