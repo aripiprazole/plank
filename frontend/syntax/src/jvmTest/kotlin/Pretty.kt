@@ -146,7 +146,7 @@ fun FunctionBody.pretty(nesting: String): String = buildString {
 
 fun Expr.pretty(nesting: String): String = buildString {
   when (this@pretty) {
-    is SizeofExpr -> append("sizeof").append(type.pretty())
+    is SizeofExpr -> append("sizeof").append(" ").append(type.pretty())
     is DerefExpr -> append("*").append(value.pretty(nesting))
     is GetExpr -> append("${receiver.pretty(nesting)}.${property.text}")
     is GroupExpr -> append("(").append(value.pretty(nesting)).append(")")
