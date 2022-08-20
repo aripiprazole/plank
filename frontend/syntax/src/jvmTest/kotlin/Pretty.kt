@@ -60,9 +60,13 @@ fun Stmt.pretty(nesting: String = ""): String = buildString {
     is EnumDecl -> {
       append(nesting)
         .append("enum ")
-        .append("${name.text} [")
-        .append(generics.joinToString(", "))
-        .append("] {")
+        .append(name.text)
+
+      if (generics.isNotEmpty()) {
+        append("[").append(generics.joinToString(", ")).append("]")
+      }
+
+      appendLine(" {")
 
       members.forEach { member ->
         append(nesting).append("  ")
@@ -226,12 +230,12 @@ fun Expr.pretty(nesting: String): String = buildString {
       append("match ").append(subject.pretty(nesting)).appendLine(" {")
       patterns.forEach { (pattern, expr) ->
         append(nesting)
-          .append("  ").append("  ")
+          .append("  ")
           .append(pattern.pretty())
           .append(" => ")
           .appendLine(expr.pretty("$nesting   "))
       }
-      append(nesting).append("  ").appendLine("}")
+      append(nesting).append("}")
     }
   }
 }
