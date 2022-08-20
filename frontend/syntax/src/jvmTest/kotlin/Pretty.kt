@@ -54,7 +54,7 @@ fun PlankFile.pretty(nesting: String = ""): String = buildString {
 
 fun Stmt.pretty(nesting: String = ""): String = buildString {
   when (this@pretty) {
-    is UseDecl -> append(nesting).append("use ").append(path.text)
+    is UseDecl -> append(nesting).append("use ").appendLine(path.text)
     is ExprStmt -> append(nesting).append(expr.pretty(nesting)).appendLine(";")
 
     is EnumDecl -> {
