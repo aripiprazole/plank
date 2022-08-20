@@ -277,9 +277,9 @@ fun TypeRef.pretty(): String = buildString {
     is PointerTypeRef -> append("*${type.pretty()}")
     is ApplyTypeRef -> {
       append(function.pretty())
-        .append(" [ ")
+        .append("[")
         .append(arguments.joinToString(" ") { it.pretty() })
-        .append(" ]")
+        .append("]")
     }
   }
 }
