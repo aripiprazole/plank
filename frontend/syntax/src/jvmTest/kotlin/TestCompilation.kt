@@ -67,7 +67,7 @@ class TestCompilation(
       try {
         file = PlankFile.of(code, "Anonymous.plank", logger = logger)
 
-        logger.info(file.debugPrint())
+        println(file.pretty())
 
         syntaxViolations = file.violations.toSet()
       } catch (error: Throwable) {
