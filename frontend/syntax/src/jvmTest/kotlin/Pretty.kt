@@ -134,7 +134,12 @@ fun FunctionBody.pretty(nesting: String): String = buildString {
     is CodeBody -> {
       appendLine("{")
         .append(stmts.joinToString("\n") { it.pretty("$nesting  ") })
-        .append(nesting).appendLine("}")
+
+      if (value != null) {
+        append(nesting).append("  ").appendLine(value!!.pretty(nesting))
+      }
+
+      append(nesting).appendLine("}")
     }
   }
 }
