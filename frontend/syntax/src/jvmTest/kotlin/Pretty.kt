@@ -175,6 +175,11 @@ fun Expr.pretty(nesting: String): String = buildString {
       stmts.forEach { stmt ->
         append(stmt.pretty("$nesting  "))
       }
+
+      if (value != null) {
+        append(nesting).append("  ").appendLine(value!!.pretty(nesting))
+      }
+
       append(nesting).append("}")
     }
 
