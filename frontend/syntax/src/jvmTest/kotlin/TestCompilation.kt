@@ -8,6 +8,8 @@ import kotlin.test.fail
 import org.plank.syntax.element.PlankFile
 import org.plank.syntax.message.CompilerLogger
 
+private var totalAmbiguities = 0
+
 class TestCompilation(
   private val file: PlankFile,
   private val logger: CompilerLogger,
@@ -39,7 +41,7 @@ class TestCompilation(
     private var resolvedTreeDebug = false
     private var prettyDebug = false
     private var llvmIrDebug = false
-    private var parserDebug = false
+    private var parserDebug = true
     private var compilationDebug = false
     private var linkerVerbose = false
 
@@ -61,15 +63,20 @@ class TestCompilation(
     @Suppress("PrintStackTrace", "TooGenericExceptionCaught")
     fun runTest(compilation: TestCompilation.() -> Unit = {}): TestCompilation {
       val logger = CompilerLogger()
-      var syntaxViolations: Set<SyntaxViolation>
+      val syntaxViolations: Set<SyntaxViolation>
       val file: PlankFile
 
       try {
-        file = PlankFile.of(code, "Anonymous.plank", logger = logger)
+        file = PlankFile.of(code, "Anonymous.plank", logger = logger, parserDebug = parserDebug)
+
+        logger.warning(
+          "Reported new ${file.violations.size} ambiguities. Total counting $totalAmbiguities",
+        )
 
         println(file.pretty())
 
         syntaxViolations = file.violations.toSet()
+        totalAmbiguities += syntaxViolations.size
       } catch (error: Throwable) {
         error.printStackTrace()
         throw error
