@@ -226,12 +226,12 @@ fun Expr.pretty(nesting: String): String = buildString {
       append("match ").append(subject.pretty(nesting)).appendLine(" {")
       patterns.forEach { (pattern, expr) ->
         append(nesting)
-          .append("  ")
+          .append("  ").append("  ")
           .append(pattern.pretty())
           .append(" => ")
-          .append(expr.pretty("$nesting   "))
+          .appendLine(expr.pretty("$nesting   "))
       }
-      append(nesting).appendLine("}")
+      append(nesting).append("  ").appendLine("}")
     }
   }
 }
