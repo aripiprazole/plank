@@ -93,9 +93,12 @@ fun Stmt.pretty(nesting: String = ""): String = buildString {
     }
 
     is LetDecl -> {
-      append(nesting).append("let ").append(name.text)
+      append(nesting).append("let ")
 
       if (mutable) append("mutable ")
+
+      append(name.text)
+
       if (type != null) append(" : ").append(type!!.pretty())
 
       append(" = ").appendLine(value.pretty(nesting))
