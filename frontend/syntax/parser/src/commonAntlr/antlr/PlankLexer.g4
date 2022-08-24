@@ -1,7 +1,7 @@
 lexer grammar PlankLexer;
 
 WS: (' ' | '\t' | NEWLINE)+ -> channel(HIDDEN);
-NEWLINE: ([\r\n] | [\n])+;
+NEWLINE: ([\r] | [\n])+;
 
 // symbols
 AT: '@';
