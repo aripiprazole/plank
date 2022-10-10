@@ -5,16 +5,9 @@ options {tokenVocab=PlankLexer;}
 // file
 file: module? decl* ;
 
-module: MODULE path=qualifiedPath semis;
+qualifiedPath: QUALIFIED_PATH; // FIXME: it is not passing the location for the ABSTRACT SYNTAX TREE
 
-// utils
-semis: SEMICOLON ws;
-
-optionalSemis: semis?;
-
-ws: (SEMICOLON | WS)*;
-
-qualifiedPath: IDENTIFIER (DOT IDENTIFIER)*;
+module: MODULE path=qualifiedPath SEMIS;
 
 // types
 typeRef: parameter=typeRef ARROW_LEFT returnType=typeRef # FunctionTypeRef
@@ -33,18 +26,18 @@ param: name=IDENTIFIER COLON type=typeRef;
 generics: LBRACKET IDENTIFIER (COMMA IDENTIFIER)* RBRACKET;
 
 // decls
-decl: TYPE name=IDENTIFIER names=generics? EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)             optionalSemis         # StructDecl
-    | ENUM name=IDENTIFIER names=generics?       (LBRACE (enumMember (COMMA enumMember))? RBRACE)? optionalSemis         # EnumDecl
-    | MODULE path=qualifiedPath LBRACE decl* RBRACE                                                optionalSemis         # ModuleDecl
-    | USE path=qualifiedPath                                                                       semis                 # UseDecl
+decl: TYPE name=IDENTIFIER names=generics? EQUAL (LBRACE (prop (COMMA prop)*)? RBRACE)             OPTIONAL_SEMIS         # StructDecl
+    | ENUM name=IDENTIFIER names=generics?       (LBRACE (enumMember (COMMA enumMember))? RBRACE)? OPTIONAL_SEMIS         # EnumDecl
+    | MODULE path=qualifiedPath LBRACE decl* RBRACE                                                OPTIONAL_SEMIS         # ModuleDecl
+    | USE path=qualifiedPath                                                                       SEMIS                 # UseDecl
     | attr* FUN name=IDENTIFIER LPAREN (param (COMMA param)*)? RPAREN (ARROW_LEFT returnType=typeRef)? body=functionBody # FunDecl
-    | LET MUTABLE? name=IDENTIFIER EQUAL value=expr                                                semis                 # InferLetDecl
-    | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr                             semis                 # LetDecl
+    | LET MUTABLE? name=IDENTIFIER EQUAL value=expr                                                SEMIS                 # InferLetDecl
+    | LET MUTABLE? name=IDENTIFIER COLON type=typeRef EQUAL value=expr                             SEMIS                 # LetDecl
     ;
 
-functionBody : LBRACE stmt* value=expr? RBRACE optionalSemis       # CodeBody
-             | semis                                               # NoBody
-             | EQUAL value=expr                      optionalSemis # ExprBody
+functionBody : LBRACE stmt* value=expr? RBRACE OPTIONAL_SEMIS       # CodeBody
+             | SEMIS                                               # NoBody
+             | EQUAL value=expr                      OPTIONAL_SEMIS # ExprBody
              ;
 
 // types
@@ -66,8 +59,8 @@ attrExpr: value=INT        # AttrIntExpr
 
 // stmts
 stmt: value=decl               # DeclStmt
-    | value=expr         semis # ExprStmt
-    | RETURN value=expr? semis # ReturnStmt
+    | value=expr         SEMIS # ExprStmt
+    | RETURN value=expr? SEMIS # ReturnStmt
     ;
 
 // patterns

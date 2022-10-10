@@ -31,21 +31,21 @@ ADD: '+';
 SUB: '-';
 DIV: '/';
 TIMES: '*';
-CONCAT: ADD ADD;
+CONCAT: '++';
 
 BANG: '!';
 EQUAL: '=';
-ASSIGN: COLON EQUAL;
+ASSIGN: ':=';
 
 GT: '>';
 LT: '<';
-GTE: GT EQUAL;
-LTE: LT EQUAL;
-EQ: EQUAL EQUAL;
-NEQ: BANG EQUAL;
+GTE: '>=';
+LTE: '<=';
+EQ: '==';
+NEQ: '!=';
 
-DOUBLE_ARROW_LEFT: EQUAL GT;
-ARROW_LEFT: SUB GT;
+DOUBLE_ARROW_LEFT: '=>';
+ARROW_LEFT: '->';
 
 // keywords
 RETURN: 'return';
@@ -67,9 +67,14 @@ THEN: 'then';
 // identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
-STRING: '"' (~["\r\n\\] | '\\' ~[\r\n])*  '"'
-      | '\'' (~["\r\n\\] | '\\' ~[\r\n])*  '\''
-      ;
+QUALIFIED_PATH: IDENTIFIER ('.' IDENTIFIER)*;
+
+STRING: '"' (~["\r\n\\] | '\\' ~[\r\n])*  '"';
 
 INT: [0-9]+ ;
 DECIMAL: INT '.' INT;
+
+// semis
+SEMIS: SEMICOLON WS;
+
+OPTIONAL_SEMIS: (SEMIS) -> skip;
