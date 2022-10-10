@@ -67,7 +67,11 @@ THEN: 'then';
 // identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
-QUALIFIED_PATH: IDENTIFIER ('.' IDENTIFIER)*;
+/// This is not `QUALIFIED_PATH` because when creating a parser rule for this
+/// the parser can not distinguish between a `QUALIFIED_PATH` and a `qualifiedPath`,
+/// and it is thrown the following error with an input of `Main`:
+/// "line 1:0 mismatched input 'Main' expecting IDENTIFIER"
+PATH: IDENTIFIER ('.' IDENTIFIER)*;
 
 STRING: '"' (~["\r\n\\] | '\\' ~[\r\n])*  '"';
 

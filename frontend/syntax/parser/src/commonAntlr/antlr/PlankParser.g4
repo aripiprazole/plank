@@ -5,7 +5,7 @@ options {tokenVocab=PlankLexer;}
 // file
 file: module? decl* ;
 
-qualifiedPath: QUALIFIED_PATH; // FIXME: it is not passing the location for the ABSTRACT SYNTAX TREE
+qualifiedPath: PATH; // FIXME: it is not passing the location for the ABSTRACT SYNTAX TREE
 
 module: MODULE path=qualifiedPath SEMIS;
 
