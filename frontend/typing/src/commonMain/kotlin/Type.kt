@@ -42,6 +42,6 @@ infix fun Hole<Type>.arrow(rhs: Hole<Type>): Hole<Type> = AppType(
 infix fun Type.arrow(rhs: Type): Hole<Type> {
   val lhsHole = asHole()
   val rhsHole = if (rhs == this) lhsHole else rhs.asHole()
-  
+
   return lhsHole.arrow(rhsHole)
 }
