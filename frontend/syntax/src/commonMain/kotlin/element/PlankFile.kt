@@ -5,6 +5,7 @@ import okio.Path.Companion.toPath
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.DiagnosticErrorListener
+import org.antlr.v4.kotlinruntime.atn.PredictionMode
 import org.plank.shared.nameWithoutExtension
 import org.plank.shared.readText
 import org.plank.syntax.SyntaxErrorListener
@@ -34,7 +35,11 @@ data class PlankFile(
     private fun parser(text: String): PlankParser {
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
-      val parser = PlankParser(CommonTokenStream(lexer))
+      val parser = PlankParser(CommonTokenStream(lexer)).apply {
+        interpreter?.apply {
+          predictionMode = PredictionMode.SLL
+        }
+      }
 
       return parser
     }
