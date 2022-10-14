@@ -63,3 +63,5 @@ dist/
 *.log
 
 local.properties
+
+.fleet

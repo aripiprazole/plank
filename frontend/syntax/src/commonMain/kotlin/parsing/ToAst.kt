@@ -34,7 +34,7 @@ fun TerminalNode.terminalToAst(file: PlankFile): Identifier =
   Identifier(text, sourceInterval.treeLoc(file))
 
 fun QualifiedPathContext.pathToAst(file: PlankFile): QualifiedPath =
-  QualifiedPath(IDENTIFIER().map { it.terminalToAst(file) }, treeLoc(file))
+  QualifiedPath(text, treeLoc(file))
 
 fun Token.tokenToAst(file: PlankFile): Identifier {
   val text = text ?: error("No text received in Token")
