@@ -35,10 +35,10 @@ data class PlankFile(
     private fun parser(text: String): PlankParser {
       val stream = CharStreams.fromString(text)
       val lexer = PlankLexer(stream)
-      val parser = PlankParser(CommonTokenStream(lexer))
-
-      parser.interpreter?.apply {
-        predictionMode = PredictionMode.SLL
+      val parser = PlankParser(CommonTokenStream(lexer)).apply {
+        interpreter?.apply {
+          predictionMode = PredictionMode.SLL
+        }
       }
 
       return parser

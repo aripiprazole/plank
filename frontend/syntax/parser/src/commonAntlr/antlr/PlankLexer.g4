@@ -1,24 +1,7 @@
 lexer grammar PlankLexer;
 
-@header {
-/* ktlint-disable */
-@file:Suppress(
-  "UNNECESSARY_NOT_NULL_ASSERTION",
-  "UNUSED_PARAMETER", "USELESS_CAST", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER",
-  "PARAMETER_NAME_CHANGED_ON_OVERRIDE", "SENSELESS_COMPARISON", "UNCHECKED_CAST",
-  "RemoveRedundantQualifierName", "RedundantCompanionReference", "RedundantVisibilityModifier", "FunctionName",
-  "SpellCheckingInspection", "RedundantExplicitType", "ConvertSecondaryConstructorToPrimary", "ConstantConditionIf",
-  "CanBeVal", "LocalVariableName", "RemoveEmptySecondaryConstructorBody", "LiftReturnOrAssignment",
-  "MemberVisibilityCanBePrivate", "RedundantNullableReturnType", "OverridingDeprecatedMember", "EnumEntryName",
-  "RemoveExplicitTypeArguments", "PrivatePropertyName", "ProtectedInFinal", "MoveLambdaOutsideParentheses", "ClassName",
-  "CanBeParameter", "unused",
-  "Detekt.MaximumLineLength", "Detekt.MaxLineLength", "Detekt.FinalNewline", "EmptyFunctionBlock",
-)
-package org.plank.syntax.parser
-}
-
 WS: (' ' | '\t' | NEWLINE)+ -> channel(HIDDEN);
-NEWLINE: ([\r\n] | [\n])+;
+NEWLINE: ([\r] | [\n])+;
 
 // symbols
 AT: '@';
@@ -48,21 +31,21 @@ ADD: '+';
 SUB: '-';
 DIV: '/';
 TIMES: '*';
-CONCAT: ADD ADD;
+CONCAT: '++';
 
 BANG: '!';
 EQUAL: '=';
-ASSIGN: COLON EQUAL;
+ASSIGN: ':=';
 
 GT: '>';
 LT: '<';
-GTE: GT EQUAL;
-LTE: LT EQUAL;
-EQ: EQUAL EQUAL;
-NEQ: BANG EQUAL;
+GTE: '>=';
+LTE: '<=';
+EQ: '==';
+NEQ: '!=';
 
-DOUBLE_ARROW_LEFT: EQUAL GT;
-ARROW_LEFT: SUB GT;
+DOUBLE_ARROW_LEFT: '=>';
+ARROW_LEFT: '->';
 
 // keywords
 RETURN: 'return';
@@ -84,9 +67,18 @@ THEN: 'then';
 // identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
-STRING: '"' (~["\r\n\\] | '\\' ~[\r\n])*  '"'
-      | '\'' (~["\r\n\\] | '\\' ~[\r\n])*  '\''
-      ;
+/// This is not `QUALIFIED_PATH` because when creating a parser rule for this
+/// the parser can not distinguish between a `QUALIFIED_PATH` and a `qualifiedPath`,
+/// and it is thrown the following error with an input of `Main`:
+/// "line 1:0 mismatched input 'Main' expecting IDENTIFIER"
+PATH: IDENTIFIER ('.' IDENTIFIER)*;
+
+STRING: '"' (~["\r\n\\] | '\\' ~[\r\n])*  '"';
 
 INT: [0-9]+ ;
 DECIMAL: INT '.' INT;
+
+// semis
+SEMIS: SEMICOLON WS;
+
+OPTIONAL_SEMIS: (SEMIS) -> skip;
