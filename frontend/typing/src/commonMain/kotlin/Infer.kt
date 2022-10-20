@@ -37,6 +37,7 @@ class Infer {
   fun runInfer(expr: Expr): Hole<Type> {
     return when (expr) {
       is SizeofExpr -> Type.Int32
+      is GroupExpr -> runInfer(expr.value)
       is ConstExpr -> when (expr.value) {
         is Int -> Type.Int32
         is Boolean -> Type.Bool
@@ -65,7 +66,6 @@ class Infer {
 
       is DerefExpr -> TODO()
       is GetExpr -> TODO()
-      is GroupExpr -> TODO()
       is IfExpr -> TODO()
       is InstanceExpr -> TODO()
       is MatchExpr -> TODO()
